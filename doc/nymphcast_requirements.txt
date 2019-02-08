@@ -1,0 +1,48 @@
+NymphCast
+
+Requirements
+
+Author: Maya Posch
+Date:	2019/01/30
+---
+
+> Overview <
+
+NymphCast is intended to be a software solution and specification for an audio and video streaming platform that attaches to a TV or speaker. NymphCast clients can control the content playing on the NymphCast receiver, or stream content to said receiver.
+
+Receivers can support audio, video, or both.
+
+The protocol used consists out of RPC calls implemented using the NymphRPC library, with optional encryption.
+
+
+> Server <
+
+* Audio:
+	. Open stream from client.
+	. Obtain stream meta data.
+	. Accept buffers containing PCM audio data.
+	. Play back PCM data on local (default) audio device.
+	. Stop current stream.
+	
+> Client <
+
+* Audio:
+	. Connect to server.
+	. Send audio track meta data.
+	. Send buffers with PCM audio data to server.
+	. Stop playback.
+	. Terminate connection.
+	
+
+> API <
+
+* Connect:
+	. bool connect(string client_id)
+	. bool disconnect(string client_id)
+	
+* Audio:
+	. int session_start()
+	. int session_meta(string artist, string album, int track, string name)
+	. int session_data(string buffer)
+	. int session_end()
+	
