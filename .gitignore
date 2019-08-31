@@ -1,0 +1,4 @@
+vlc/
+*.exe
+build/
+*.user
