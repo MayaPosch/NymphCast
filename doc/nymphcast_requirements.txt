@@ -17,32 +17,40 @@ The protocol used consists out of RPC calls implemented using the NymphRPC libra
 
 > Server <
 
-* Audio:
-	. Open stream from client.
-	. Obtain stream meta data.
-	. Accept buffers containing PCM audio data.
-	. Play back PCM data on local (default) audio device.
-	. Stop current stream.
+* Audio/Video:
+	. Accept connection from client.
+	. Accept session from client, send session parameters to client.
+	. Receive session meta data.
+	. Accept buffers containing media data.
+	. Play back media data.
+	. Stop current session.
 	
 > Client <
 
-* Audio:
+* Audio/Video:
 	. Connect to server.
-	. Send audio track meta data.
-	. Send buffers with PCM audio data to server.
+	. Start session, receive session parameters.
+	. Send session meta data.
+	. Send buffers with media data to server.
 	. Stop playback.
+	. End session.
 	. Terminate connection.
 	
 
 > API <
+
+Structures:
+struct SessionParams {
+	int max_buffer;
+};
 
 * Connect:
 	. bool connect(string client_id)
 	. bool disconnect(string client_id)
 	
 * Audio:
-	. int session_start()
-	. int session_meta(string artist, string album, int track, string name)
-	. int session_data(string buffer)
-	. int session_end()
+	. SessionParams session_start()
+	. uint8 session_meta(string artist, string album, uint32 track, string name)
+	. uint8 session_data(string buffer)
+	. uint8 session_end()
 	
