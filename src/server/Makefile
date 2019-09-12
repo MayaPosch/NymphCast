@@ -8,8 +8,8 @@ RM = rm
 
 OUTPUT = nymphcast_server
 INCLUDE = -I .
-LIB := -lnymphrpc -lportaudio -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
-CFLAGS := $(INCLUDE) -g3
+LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lvlc -lSDL2 -lSDL2main
+CFLAGS := $(INCLUDE) -g3 -std=c++17
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.

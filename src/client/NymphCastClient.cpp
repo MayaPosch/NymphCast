@@ -16,18 +16,25 @@
 #include <nymph/nymph.h>
 
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <filesystem> 		// C++17
+
+namespace fs = std::filesystem;
 
 using namespace std;
 
-/* #include <Poco/Condition.h>
+#include <Poco/Condition.h>
 
-using namespace Poco; */
+using namespace Poco;
 
 
 // Globals
-/* Condition cnd;
-Mutex mtx; */
+Condition cnd;
+Mutex mtx;
+
+int handle;		// NymphRPC handle.
+std::ifstream source;
 // ---
 
 
@@ -40,25 +47,127 @@ void logFunction(int level, string logStr) {
 // This callback will be called once by the server and then discarded. This is
 // useful for one-off events, but can also be used for callbacks during the 
 // life-time of the client.
-/* void callbackFunction(NymphMessage* msg, void* data) {
-	cout << "Client callback function called.\n";
+void MediaReadCallback(NymphMessage* msg, void* data) {
+	std::cout << "Media Read callback function called.\n";
 	
-	// Remove the callback.
-	NymphRemoteServer::removeCallback("helloCallbackFunction");
+	// Call the 'session_data' remote function with new data buffer.
+	// Read N bytes from the file.
+	// TODO: receive desired block size here from remote?
 	
-	// Signal the condition variable.
-	//cnd.signal();
-} */
+	// FIXME: we're using 1M blocks for now. This should be made adjustable by the remote.
+	uint32_t bufLen = 1024 * 1024;
+	char* buffer = new char[bufLen];
+	source.read(buffer, bufLen);
+	
+	// Check characters read.
+	NymphBoolean* fileEof = new NymphBoolean(false);
+	if (source.gcount() < bufLen) { fileEof->setValue(true); }
+	
+	std::string block(buffer, source.gcount());
+	
+	// Debug
+	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
+	
+	std::vector<NymphType*> values;
+	values.push_back(new NymphString(block));
+	values.push_back(fileEof);
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(handle, "session_data", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+}
 
 
-int main() {
+void MediaStopCallback(NymphMessage* msg, void* data) {
+	std::cout << "Client callback function called.\n";
+	
+	// Remove the callbacks.
+	NymphRemoteServer::removeCallback("MediaReadCallback");
+	NymphRemoteServer::removeCallback("MediaStopCallback");
+	
+	// End NymphCast session and disconnect from server.
+	std::vector<NymphType*> values;
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(handle, "session_end", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "disconnect", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	// Signal the condition variable to terminate the application.
+	cnd.signal();
+}
+
+
+int main(int argc, char *argv[]) {
+	// Locate the available servers.
+	// TODO: implement something.
+	
+	// Try to open the file.
+	if (argc != 2) {
+		std::cerr << "Usage: nymphcast_client <filename>" << std::endl;
+		return 1;
+	}
+	
+	std::string filename(argv[1]);
+	
+	std::cout << "Opening file " << filename << std::endl;
+	
+	fs::path filePath(argv[1]);
+	if (!fs::exists(filePath)) {
+		std::cerr << "File " << filename << " doesn't exist." << std::endl;
+		return 1;
+	}
+	
+	std::cout << "Opening file " << filename << std::endl;
+	
+	source.open(filename, std::ios::binary);
+	if (!source.good()) {
+		std::cerr << "Failed to read input file." << std::endl;
+		return 1;
+	}
+	
 	// Initialise the remote client instance.
-	long timeout = 5000; // 5 seconds.
+	long timeout = 15000; // 15 seconds.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
 	
 	// Connect to the remote server.
-	int handle;
-	string result;
+	std::string result;
 	if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
 		cout << "Connecting to remote server failed: " << result << endl;
 		NymphRemoteServer::disconnect(handle, result);
@@ -84,47 +193,42 @@ int main() {
 		return 1;
 	}
 	
-	//string response = ((NymphString*) returnValue)->getValue();
-	
-	//cout << "Response string: " << response << endl;
-	
 	delete returnValue;
 	returnValue = 0;
 	
+	
+	// The remote NymphCast server works in a pull fashion, which means that we have to register
+	// a callback with the server. This callback will be called whenever the server needs more
+	// data from the file which we are streaming.
+		
 	// Register callback and send message with its ID to the server. Then wait
 	// for the callback to be called.
-	/* NymphRemoteServer::registerCallback("callbackFunction", callbackFunction, 0);
+	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
+	NymphRemoteServer::registerCallback("MediaStopCallback", MediaStopCallback, 0);
+	
+	// Start the session
+	// TODO: send meta data via this method.
+	NymphStruct* ms = new NymphStruct;
+	ms->addPair("filesize", new NymphUint32(fs::file_size(filePath)));
 	values.clear();
-	values.push_back(new NymphString("callbackFunction"));
-	if (!NymphRemoteServer::callMethod(handle, "helloCallbackFunction", values, returnValue, result)) {
+	values.push_back(ms);
+	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
 		cout << "Error calling remote method: " << result << endl;
 		NymphRemoteServer::disconnect(handle, result);
 		NymphRemoteServer::shutdown();
 		return 1;
 	}
 	
-	if (returnValue->type() != NYMPH_BOOL) {
-		cout << "Return value wasn't a boolean. Type: " << returnValue->type() << endl;
+	if (returnValue->type() != NYMPH_UINT8) {
+		cout << "Return value wasn't a uint8. Type: " << returnValue->type() << endl;
 		NymphRemoteServer::disconnect(handle, result);
 		NymphRemoteServer::shutdown();
 		return 1;
 	}
 	
-	if (!(((NymphBoolean*) returnValue)->getValue())) {
-		cout << "Remote method returned false. " << result << endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		return 1;
-	}
-	
-	delete returnValue;
-	returnValue = 0; */
-	
-	// Wait for the callback method to be called on the client. We wait for
-	// 5 seconds or until signalled, whichever comes first.
-	/* mtx.lock();
-	cnd.tryWait(mtx, 5000);
-	mtx.unlock(); */
+	// Wait for the condition to be signalled.
+	mtx.lock();
+	cnd.wait(mtx);
 	
 	cout << "Shutting down client...\n";
 	
