@@ -54,8 +54,8 @@ Mutex gMutex;
 
 
 // Debug
-#include <fstream>
-std::ofstream OUT_FILE("amv_out.mpg", std::ios::binary | std::ios::app);
+//#include <fstream>
+//std::ofstream OUT_FILE("amv_out.mpg", std::ios::binary | std::ios::app);
 
 
  
@@ -150,6 +150,8 @@ int activeSession;
 Poco::Mutex activeSessionMutex;
 bool playerStarted;
 bool requestInFlight;
+Poco::Condition bufferDelayCondition;
+Poco::Mutex bufferDelayMutex;
 // ---
 
 
@@ -168,7 +170,7 @@ void dataRequestFunction() {
 		activeSessionMutex.unlock();
 		
 		// Request more data.
-		// TODO: Initial buffer size is 1 MB. Make this dynamically scale.
+		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
 		std::vector<NymphType*> values;
 		std::string result;
 		NymphBoolean* resVal = 0;
@@ -182,29 +184,6 @@ void dataRequestFunction() {
 }
 
 
-// --- END SESSION FUNCTION ---
-//
-/* void endSessionFunction() {
-	// Wait for the condition to be signalled.
-	requestMutex.lock();
-	requestCondition.wait(requestMutex);
-	
-	activeSessionMutex.lock();
-	int session = activeSession;
-	activeSessionMutex.unlock();
-		
-	std::vector<NymphType*> values;
-	std::string result;
-	NymphBoolean* resVal = 0;
-	if (!NymphRemoteClient::callCallback(session, "MediaStopCallback", values, result)) {
-		std::cerr << "Calling stop callback failed: " << result << std::endl;
-	}
-	else {
-		it->second.sessionActive = false;
-	}
-} */
-
-
 // LibVLC callbacks.
 // --- MEDIA OPEN CB ---
 // 0 on success, non-zero on error. In case of failure, the other callbacks will not be invoked 
@@ -215,7 +194,12 @@ int media_open_cb(void *opaque, void **datap, uint64_t *sizep) {
 	
 	DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	
-    *sizep = db->data.size();
+    //*sizep = db->data.size();
+	// FIXME: determine the right size for this...
+    //*sizep = 10 * 1024; // 10 kB buffer.
+	bufferMutex.lock();
+    *sizep = db->size; // Set to stream size.
+	bufferMutex.unlock();
     *datap = opaque;
     return 0;
 }
@@ -229,8 +213,18 @@ ssize_t media_read_cb(void *opaque, unsigned char *buf, size_t len) {
 	// Return the read length.
 	// TODO: account for buffer underrun.
 	int bytesToCopy = 0;
-
+	
 	bufferMutex.lock();
+	
+	// Check if we're headed for a buffer underrun.
+	if (db->buffBytesLeft < len && !db->eof) {
+		requestCondition.signal(); // Ask for more data.
+		bufferMutex.unlock();
+		bufferDelayMutex.lock();
+		bufferDelayCondition.tryWait(bufferDelayMutex, 150);
+		bufferMutex.lock();
+	}
+
 	if (db->buffBytesLeft >= len) {  	// At least as many bytes remaining as requested
 		bytesToCopy = len;
 	} 
@@ -271,8 +265,8 @@ ssize_t media_read_cb(void *opaque, unsigned char *buf, size_t len) {
 	}
 	else {
 		// Debug
-		std::cout << "Index: " << db->currentIndex << "/" << db->slotSize 
-					<< ", Copy: " << bytesToCopy << "/" << db->slotBytesLeft << std::endl;
+		std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
+					<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
 		
 		// Just copy the bytes from the slot, adjusting the index and bytes left count.
 		std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
@@ -292,7 +286,7 @@ ssize_t media_read_cb(void *opaque, unsigned char *buf, size_t len) {
 	bufferMutex.unlock();
 	
 	// Debug
-	OUT_FILE.write((const char*) buf, bytesToCopy);
+	//OUT_FILE.write((const char*) buf, bytesToCopy);
 
 	return bytesToCopy;
 }
@@ -325,7 +319,7 @@ void media_close_cb(void *opaque) {
 	} */
 	
 	// Debug
-	OUT_FILE.close();
+	//OUT_FILE.close();
 }
 // End LibVLC callbacks.
 
@@ -424,6 +418,10 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	it->second.filesize = ((NymphUint32*) num)->getValue();
 	
+	bufferMutex.lock();
+    media_buffer.size = it->second.filesize; // Set to stream size.
+	bufferMutex.unlock();
+	
 	activeSessionMutex.lock();
 	activeSession = session;
 	activeSessionMutex.unlock();
@@ -479,7 +477,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
 		media_buffer.data[media_buffer.nextSlot] = mediaData;
-		std::cout << "Next buffer slot: " << media_buffer.nextSlot << std::endl;
 		if (media_buffer.nextSlot == media_buffer.currentSlot) {
 			media_buffer.slotSize = mediaData.length();
 			media_buffer.slotBytesLeft = mediaData.length();
@@ -488,11 +485,16 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		media_buffer.nextSlot++;
 		if (!(media_buffer.nextSlot < media_buffer.numSlots)) { media_buffer.nextSlot = 0; }
 		
+		std::cout << "Next buffer slot: " << media_buffer.nextSlot << std::endl;
+		
 		media_buffer.freeSlots--;
 		media_buffer.buffBytesLeft += mediaData.length();
 	}
 	
 	bufferMutex.unlock();
+	
+	// Signal the condition variable in the VLC read callback in case we're waiting there.
+	bufferDelayCondition.signal();
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
 	if (!playerStarted) {
@@ -507,6 +509,11 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		bufferMutex.unlock();
 	}
 	else {
+		// If there are free slots in the buffer, request more data from the client.
+		if (!requestInFlight && !(media_buffer.eof) && media_buffer.freeSlots > 0) {
+			requestCondition.signal();
+		}
+	
 		// Request as much data from the client as we have space in the buffer.
 		/* std::vector<NymphType*> values;
 		std::string result;
@@ -646,7 +653,7 @@ int main() {
  
 	// If you don't have this variable set you must have plugins directory
 	// with the executable or libvlc_new() will not work!
-	printf("VLC_PLUGIN_PATH=%s\n", getenv("VLC_PLUGIN_PATH"));
+	//printf("VLC_PLUGIN_PATH=%s\n", getenv("VLC_PLUGIN_PATH"));
  
 	// Initialise libVLC.
 	libvlc = libvlc_new(vlc_argc, vlc_argv);
