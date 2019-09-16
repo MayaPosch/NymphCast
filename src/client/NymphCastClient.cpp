@@ -69,7 +69,7 @@ void MediaReadCallback(NymphMessage* msg, void* data) {
 	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
 	
 	std::vector<NymphType*> values;
-	values.push_back(new NymphString(block));
+	values.push_back(new NymphBlob(block));
 	values.push_back(fileEof);
 	NymphType* returnValue = 0;
 	std::string result;
@@ -168,8 +168,8 @@ int main(int argc, char *argv[]) {
 	
 	// Connect to the remote server.
 	std::string result;
-	if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
-	//if (!NymphRemoteServer::connect("192.168.178.26", 4004, handle, 0, result)) {
+	//if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
+	if (!NymphRemoteServer::connect("192.168.178.26", 4004, handle, 0, result)) {
 		cout << "Connecting to remote server failed: " << result << endl;
 		NymphRemoteServer::disconnect(handle, result);
 		NymphRemoteServer::shutdown();
@@ -206,6 +206,8 @@ int main(int argc, char *argv[]) {
 	// for the callback to be called.
 	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
 	NymphRemoteServer::registerCallback("MediaStopCallback", MediaStopCallback, 0);
+	
+	std::cout << "Starting session with file of size: " << fs::file_size(filePath) << std::endl;
 	
 	// Start the session
 	// TODO: send meta data via this method.

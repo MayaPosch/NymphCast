@@ -20,9 +20,7 @@
 #include <string>
 #include <iterator>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mutex.h>
-#include <vlc/vlc.h>
+#include "av_io.h"
 #include <nymph/nymph.h>
 
 #include <Poco/Condition.h>
@@ -31,76 +29,11 @@
 using namespace Poco;
 
 
-#define SAMPLE_RATE (44100)
-
-#define WIDTH 640
-#define HEIGHT 480
- 
-#define VIDEOWIDTH 320
-#define VIDEOHEIGHT 240
- 
-struct context {
-	SDL_Renderer *renderer;
-	SDL_Texture *texture;
-	SDL_mutex *mutex;
-	int n;
-};
-
-
 // Global objects.
 Condition gCon;
 Mutex gMutex;
 // ---
 
-
-// Debug
-//#include <fstream>
-//std::ofstream OUT_FILE("amv_out.mpg", std::ios::binary | std::ios::app);
-
-
- 
-// VLC prepares to render a video frame.
-static void *lock(void *data, void **p_pixels) {
- 
-	struct context *c = (context *)data;
- 
-	int pitch;
-	SDL_LockMutex(c->mutex);
-	SDL_LockTexture(c->texture, NULL, p_pixels, &pitch);
- 
-	return NULL; // Picture identifier, not needed here.
-}
- 
-// VLC just rendered a video frame.
-static void unlock(void *data, void *id, void *const *p_pixels) {
- 
-	struct context *c = (context *)data;
- 
-	SDL_UnlockTexture(c->texture);
-	SDL_UnlockMutex(c->mutex);
-}
- 
-// VLC wants to display a video frame.
-static void display(void *data, void *id) {
- 
-	struct context *c = (context *)data;
- 
-	SDL_Rect rect;
-	rect.w = WIDTH;
-	rect.h = HEIGHT;
-	rect.x = 0;
-	rect.y = 0;
- 
-	SDL_SetRenderDrawColor(c->renderer, 0, 80, 0, 255);
-	SDL_RenderClear(c->renderer);
-	SDL_RenderCopy(c->renderer, c->texture, NULL, &rect);
-	SDL_RenderPresent(c->renderer);
-}
- 
-static void quit(int c) {
-	SDL_Quit();
-	exit(c);
-}
 
 #ifdef main
 #undef main
@@ -122,36 +55,10 @@ struct FileMetaInfo {
 };
 
 
-struct DataBuffer {
-	std::vector<std::string> data;	// The data byte, inside string instances.
-	uint64_t size;				// Number of bytes in data vector.
-	uint64_t currentIndex;		// The current index into the vector element.
-	uint32_t currentSlot;		// The current vector slot we're using.
-	uint32_t slotSize;			// Slot size in bytes.
-	uint32_t slotBytesLeft;		// Bytes left in the current slot.
-	uint32_t numSlots;			// Total number of slots in the data vector.
-	uint32_t nextSlot;			// Next slot to fill in the buffer vector.
-	uint32_t freeSlots;			// Slots free to write new data into.
-	uint32_t buffBytesLeft;		// Number of bytes available for reading in the buffer.
-	bool eof;					// Whether End of File for the source file has been reached.
-	
-	uint64_t buffIndexLow;		// File index at the buffer front.
-	uint64_t buffIndexHigh;		// File index at the buffer back.
-};
-
-
 // --- Globals ---
-libvlc_media_player_t* mp;
-DataBuffer media_buffer;
-Poco::Mutex bufferMutex;
-Poco::Condition requestCondition;
-Poco::Mutex requestMutex;
-int activeSession;
-Poco::Mutex activeSessionMutex;
 bool playerStarted;
-bool requestInFlight;
-Poco::Condition bufferDelayCondition;
-Poco::Mutex bufferDelayMutex;
+Poco::Thread avThread;
+AV_IO av_io;
 // ---
 
 
@@ -160,14 +67,14 @@ Poco::Mutex bufferDelayMutex;
 void dataRequestFunction() {
 	while (1) {
 		// Wait for the condition to be signalled.
-		requestMutex.lock();
-		requestCondition.wait(requestMutex);
+		media_buffer.requestMutex.lock();
+		media_buffer.requestCondition.wait(media_buffer.requestMutex);
 		
-		if (requestInFlight) { continue; }
+		if (media_buffer.requestInFlight) { continue; }
 		
-		activeSessionMutex.lock();
-		int session = activeSession;
-		activeSessionMutex.unlock();
+		media_buffer.mutex.lock();
+		int session = media_buffer.activeSession;
+		media_buffer.mutex.unlock();
 		
 		// Request more data.
 		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
@@ -179,149 +86,9 @@ void dataRequestFunction() {
 			return;
 		}
 		
-		requestInFlight = true;
+		media_buffer.requestInFlight = true;
 	}
 }
-
-
-// LibVLC callbacks.
-// --- MEDIA OPEN CB ---
-// 0 on success, non-zero on error. In case of failure, the other callbacks will not be invoked 
-// and any value stored in *datap and *sizep is discarded.
-int media_open_cb(void *opaque, void **datap, uint64_t *sizep) {
-	// Debug
-	std::cout << "Media open callback called." << std::endl;
-	
-	DataBuffer* db = static_cast<DataBuffer*>(opaque);
-	
-    //*sizep = db->data.size();
-	// FIXME: determine the right size for this...
-    //*sizep = 10 * 1024; // 10 kB buffer.
-	bufferMutex.lock();
-    *sizep = db->size; // Set to stream size.
-	bufferMutex.unlock();
-    *datap = opaque;
-    return 0;
-}
-
-
-// --- MEDIA READ CB ---
-ssize_t media_read_cb(void *opaque, unsigned char *buf, size_t len) {
-	DataBuffer* db = static_cast<DataBuffer*>(opaque);
-	
-	// Fill the buffer from the memory buffer.
-	// Return the read length.
-	// TODO: account for buffer underrun.
-	int bytesToCopy = 0;
-	
-	bufferMutex.lock();
-	
-	// Check if we're headed for a buffer underrun.
-	if (db->buffBytesLeft < len && !db->eof) {
-		requestCondition.signal(); // Ask for more data.
-		bufferMutex.unlock();
-		bufferDelayMutex.lock();
-		bufferDelayCondition.tryWait(bufferDelayMutex, 150);
-		bufferMutex.lock();
-	}
-
-	if (db->buffBytesLeft >= len) {  	// At least as many bytes remaining as requested
-		bytesToCopy = len;
-	} 
-	else if (db->buffBytesLeft < len) {	// Fewer than requested number of bytes remaining
-		bytesToCopy = db->buffBytesLeft;
-	} 
-	else {
-		bufferMutex.unlock();
-		return 0;   // No bytes left to copy
-	}
-
-	// Each slot has a limited depth. Check that we can copy the whole requested buffer
-	// from a single slot, only updating the index into that slot.
-	// Else, copy what is left in the current slot into the buffer, then copy the rest from the
-	// next slot.
-	if (db->slotBytesLeft < bytesToCopy) {
-		uint32_t secondBytes = bytesToCopy - db->slotBytesLeft;
-		uint32_t bufOffset = db->slotBytesLeft;
-		
-		// Copy the rest of the bytes in the slot, move onto the next slot.
-		std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
-				(db->data[db->currentSlot].begin() + db->currentIndex) + db->slotBytesLeft, 
-				buf);
-		
-		db->currentSlot++;
-		if (!(db->currentSlot < db->numSlots)) { db->currentSlot = 0; }
-		db->slotSize = db->data[db->currentSlot].length();
-		db->currentIndex = 0;
-		db->slotBytesLeft = db->slotSize;
-		db->freeSlots++; // The used buffer slot just became available for more data.
-		
-		std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
-				(db->data[db->currentSlot].begin() + db->currentIndex) + secondBytes, 
-				(buf + bufOffset));
-				
-		db->currentIndex += secondBytes;
-		db->slotBytesLeft -= secondBytes;
-	}
-	else {
-		// Debug
-		std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
-					<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
-		
-		// Just copy the bytes from the slot, adjusting the index and bytes left count.
-		std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
-				(db->data[db->currentSlot].begin() + db->currentIndex) + bytesToCopy, 
-				buf);
-		db->currentIndex += bytesToCopy;    // Increment bytes read count
-		db->slotBytesLeft -= bytesToCopy;
-	}
-	
-	db->buffBytesLeft -= bytesToCopy;
-	
-	// If there are free slots in the buffer, request more data from the client.
-	if (!requestInFlight && !(db->eof) && db->freeSlots > 0) {
-		requestCondition.signal();
-	}
-	
-	bufferMutex.unlock();
-	
-	// Debug
-	//OUT_FILE.write((const char*) buf, bytesToCopy);
-
-	return bytesToCopy;
-}
-
-int media_seek_cb(void* opaque, uint64_t offset) {
-	DataBuffer* db = static_cast<DataBuffer*>(opaque);
-	
-	// Try to find the index in the buffered data. If unavailable, read from file.
-	//db->index = offset;
-	
-	// TODO: implement.
-	
-	return 0;
-}
-
-void media_close_cb(void *opaque) {
-	// 
-	activeSessionMutex.lock();
-	int session = activeSession;
-	activeSessionMutex.unlock();
-		
-	std::vector<NymphType*> values;
-	std::string result;
-	NymphBoolean* resVal = 0;
-	if (!NymphRemoteClient::callCallback(session, "MediaStopCallback", values, result)) {
-		std::cerr << "Calling stop callback failed: " << result << std::endl;
-	}
-	/* else {
-		it->second.sessionActive = false;
-	} */
-	
-	// Debug
-	//OUT_FILE.close();
-}
-// End LibVLC callbacks.
 
 
 void signal_handler(int signal) {
@@ -330,8 +97,6 @@ void signal_handler(int signal) {
 
 
 // Data structure.
-
-
 struct SessionParams {
 	int max_buffer;
 };
@@ -418,19 +183,18 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	it->second.filesize = ((NymphUint32*) num)->getValue();
 	
-	bufferMutex.lock();
-    media_buffer.size = it->second.filesize; // Set to stream size.
-	bufferMutex.unlock();
+	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
-	activeSessionMutex.lock();
-	activeSession = session;
-	activeSessionMutex.unlock();
+	media_buffer.mutex.lock();
+    media_buffer.size = it->second.filesize; // Set to stream size.
+	media_buffer.activeSession = session;
+	media_buffer.mutex.unlock();
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
 	// TODO: Initial buffer size is 1 MB. Make this dynamically scale.
-	requestInFlight = false;
-	requestCondition.signal();
+	media_buffer.requestInFlight = false;
+	media_buffer.requestCondition.signal();
 	it->second.sessionActive = true;
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -453,7 +217,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// TODO: if this boolean is false already, dismiss message?
-	requestInFlight = false;
+	media_buffer.requestInFlight = false;
 	
 	// Get iterator to the session instance for the client.
 	std::map<int, CastClient>::iterator it;
@@ -464,7 +228,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Safely write the data for this session to the buffer.
-	std::string mediaData = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
 	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
 	
 	// Copy pointer into free slot of vector, delete data if not empty.
@@ -473,7 +237,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// TODO: optimise.
 	// TODO: prevent accidental overwriting.
 	// TODO: update front/back index counters.
-	bufferMutex.lock();
+	media_buffer.mutex.lock();
 	if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
 		media_buffer.data[media_buffer.nextSlot] = mediaData;
@@ -491,41 +255,29 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		media_buffer.buffBytesLeft += mediaData.length();
 	}
 	
-	bufferMutex.unlock();
+	media_buffer.mutex.unlock();
 	
 	// Signal the condition variable in the VLC read callback in case we're waiting there.
-	bufferDelayCondition.signal();
+	media_buffer.bufferDelayCondition.signal();
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
 	if (!playerStarted) {
 		playerStarted = true;
-		libvlc_media_player_play(mp);
+		//av_io.setBuffer(&media_buffer);
+		avThread.start(av_io);
 	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
 	if (done) {		
-		bufferMutex.lock();
+		media_buffer.mutex.lock();
 		media_buffer.eof = true;
-		bufferMutex.unlock();
+		media_buffer.mutex.unlock();
 	}
 	else {
 		// If there are free slots in the buffer, request more data from the client.
-		if (!requestInFlight && !(media_buffer.eof) && media_buffer.freeSlots > 0) {
-			requestCondition.signal();
+		if (!media_buffer.requestInFlight && !(media_buffer.eof) && media_buffer.freeSlots > 0) {
+			media_buffer.requestCondition.signal();
 		}
-	
-		// Request as much data from the client as we have space in the buffer.
-		/* std::vector<NymphType*> values;
-		std::string result;
-		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(session, "MediaReadCallback", values, result)) {
-			std::cerr << "Calling read callback failed: " << result << std::endl;
-			resVal = new NymphBoolean(false);
-		}
-		else { 
-			resVal = new NymphBoolean(true);
-			it->second.sessionActive = true;
-		} */
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -565,102 +317,6 @@ int main() {
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
 	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
-	
-	// Initialise the PortAudio library.
-	/* PaError err = Pa_Initialize();
-	if (err != paNoError) {
-		std::cerr << "PortAudio initialisation error: " << Pa_GetErrorText(err) << std::endl;
-		// TODO: handle.
-	} */
-	
-	// Open audio output.
-	//paTestData data;
-    //err = Pa_OpenDefaultStream( &stream,
-      //                          0,          /* no input channels */
-       //                         2,          /* stereo output */
-        //                        paFloat32,  /* 32 bit floating point output */
-         //                       SAMPLE_RATE,
-         //                       paFramesPerBufferUnspecified,        /* frames per buffer, i.e. the number
-         //                                          of sample frames that PortAudio will
-         //                                          request from the callback. Many apps
-         //                                          may want to use
-          //                                         paFramesPerBufferUnspecified, which
-          //                                         tells PortAudio to pick the best,
-         //                                          possibly changing, buffer size.*/
-         //                       patestCallback, /* this is your callback function */
-         //                       &data ); /*This is a pointer that will be passed to
-         //                                          your callback*/
-   /*  if (err != paNoError) {
-		std::cerr << "PortAudio initialisation error: " << Pa_GetErrorText(err) << std::endl;
-		// TODO: handle.
-	} */
-	
-	// Initialise LibVLC.
-	libvlc_instance_t *libvlc;
-	libvlc_media_t *m;
-	//libvlc_media_player_t *mp;
-	char const *vlc_argv[] = {
- 
-		//"--no-audio", // Don't play audio.
-		"--no-xlib", // Don't use Xlib.
-		"--verbose=2"
- 
-		// Apply a video filter.
-		//"--video-filter", "sepia",
-		//"--sepia-intensity=200"
-	};
-	int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
- 
-	SDL_Event event;
-	int done = 0, action = 0, pause = 0, n = 0;
- 
-	struct context context;
-	
-	// Initialise libSDL.
-	if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("Could not initialize SDL: %s.\n", SDL_GetError());
-		return EXIT_FAILURE;
-	}
- 
-	// Create SDL graphics objects.
-	SDL_Window * window = SDL_CreateWindow(
-			"NymphCast",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			WIDTH, HEIGHT,
-			SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
-	if (!window) {
-		fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
-		quit(3);
-	}
- 
-	context.renderer = SDL_CreateRenderer(window, -1, 0);
-	if (!context.renderer) {
-		fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
-		quit(4);
-	}
- 
-	context.texture = SDL_CreateTexture(
-			context.renderer,
-			SDL_PIXELFORMAT_BGR565, SDL_TEXTUREACCESS_STREAMING,
-			VIDEOWIDTH, VIDEOHEIGHT);
-	if (!context.texture) {
-		fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
-		quit(5);
-	}
- 
-	context.mutex = SDL_CreateMutex();
- 
-	// If you don't have this variable set you must have plugins directory
-	// with the executable or libvlc_new() will not work!
-	//printf("VLC_PLUGIN_PATH=%s\n", getenv("VLC_PLUGIN_PATH"));
- 
-	// Initialise libVLC.
-	libvlc = libvlc_new(vlc_argc, vlc_argv);
-	if(NULL == libvlc) {
-		printf("LibVLC initialization failure.\n");
-		return EXIT_FAILURE;
-	}
 	
 	
 	// Define all of the RPC methods we want to export for clients.
@@ -705,7 +361,7 @@ int main() {
 	// Returns: OK (0), ERROR (1).
 	// int session_data(string buffer)
 	parameters.clear();
-	parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_BLOB);
 	parameters.push_back(NYMPH_BOOL);
 	NymphMethod sessionDataFunction("session_data", parameters, NYMPH_UINT8);
 	sessionDataFunction.setCallback(session_data);
@@ -737,7 +393,7 @@ int main() {
 	// End client callback registration.
 	
 	// Create empty buffer with N entries, initialised as empty strings.
-	bufferMutex.lock();
+	media_buffer.mutex.lock();
 	media_buffer.data.assign(50, std::string());
 	media_buffer.size = media_buffer.data.size();
 	media_buffer.currentIndex = 0;		// The current index into the vector element.
@@ -748,30 +404,9 @@ int main() {
 	media_buffer.buffIndexHigh = 0;	
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
-	bufferMutex.unlock();
+	media_buffer.mutex.unlock();
 	
-	// Set up callbacks.
-	m = libvlc_media_new_callbacks(
-                                    libvlc,
-									media_open_cb,
-									media_read_cb,
-									media_seek_cb,
-									media_close_cb,
-									&media_buffer);
-	
-	// Debug
-	std::cout << "Created new LibVLC player." << std::endl;
- 
-	mp = libvlc_media_player_new_from_media(m);
- 
-	libvlc_video_set_callbacks(mp, lock, unlock, display, &context);
-	libvlc_video_set_format(mp, "RV16", VIDEOWIDTH, VIDEOHEIGHT, VIDEOWIDTH * 2);
-	//libvlc_media_player_play(mp);
 	playerStarted = false;
-	
-	// Debug
-	//std::cout << "Entering main loop." << std::endl;
-	
 	
 	// Install signal handler to terminate the server.
 	signal(SIGINT, signal_handler);
@@ -787,14 +422,10 @@ int main() {
 	gCon.wait(gMutex);
 	
 	// Clean-up
-	// Stop stream and clean up libVLC.
-	libvlc_media_player_stop(mp);
-	libvlc_media_player_release(mp);
-	libvlc_release(libvlc);
  
 	// Close window and clean up libSDL.
-	SDL_DestroyMutex(context.mutex);
-	SDL_DestroyRenderer(context.renderer);
+	av_io.quit();
+	avThread.join();
 	
 	NymphRemoteClient::shutdown();
 	
