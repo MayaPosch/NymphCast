@@ -17,6 +17,10 @@
 
 #include <nymph/nymph.h>
 
+// Debug
+#include <fstream>
+std::ofstream OUT_FILE("out.mpg", std::ios::binary | std::ios::app);
+
 
 // Static initialisations.
 struct SDLContext AV_IO::context;
@@ -71,7 +75,7 @@ bool AV_IO::vlcInit() {
 	char const *vlc_argv[] = {
  
 		//"--no-audio", // Don't play audio.
-		"--no-xlib", // Don't use Xlib.
+		//"--no-xlib", // Don't use Xlib.
 		"--verbose=2"
  
 		// Apply a video filter.
@@ -203,10 +207,6 @@ ssize_t AV_IO::media_read_cb(void* opaque, unsigned char* buf, size_t len) {
 	// Else, copy what is left in the current slot into the buffer, then copy the rest from the
 	// next slot.
 	if (db->slotBytesLeft < bytesToCopy) {
-		// Debug
-		std::cout << "Reading from slot " << db->currentSlot << std::endl;
-		std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
-					<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
 					
 		uint32_t nextBytes = bytesToCopy;
 		
@@ -225,12 +225,16 @@ ssize_t AV_IO::media_read_cb(void* opaque, unsigned char* buf, size_t len) {
 			else {
 				// Copy the remaining bytes into the buffer.
 				byteCount = nextBytes;
-				db->currentIndex += nextBytes;
 				nextBytes = 0;
 				if (db->slotBytesLeft == byteCount) {
 					nextSlot = true;
 				}
 			}
+			
+			// Debug
+			std::cout << "Reading from slot " << db->currentSlot << std::endl;
+			std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
+						<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
 			
 			std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
 					(db->data[db->currentSlot].begin() + db->currentIndex) + byteCount, 
@@ -246,6 +250,9 @@ ssize_t AV_IO::media_read_cb(void* opaque, unsigned char* buf, size_t len) {
 				db->currentIndex = 0;
 				db->slotBytesLeft = db->slotSize;
 				db->freeSlots++; // The used buffer slot just became available for more data.
+			}
+			else {
+				db->currentIndex += byteCount;
 			}
 		}
 	}
@@ -271,6 +278,9 @@ ssize_t AV_IO::media_read_cb(void* opaque, unsigned char* buf, size_t len) {
 	}
 	
 	db->mutex.unlock();
+	
+	// Debug
+	OUT_FILE.write((const char*) buf, bytesToCopy);
 
 	return bytesToCopy;
 }
