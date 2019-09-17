@@ -18,8 +18,8 @@
 #include <nymph/nymph.h>
 
 // Debug
-#include <fstream>
-std::ofstream OUT_FILE("out.mpg", std::ios::binary | std::ios::app);
+//#include <fstream>
+//std::ofstream OUT_FILE("out.mpg", std::ios::binary | std::ios::app);
 
 
 // Static initialisations.
@@ -280,7 +280,7 @@ ssize_t AV_IO::media_read_cb(void* opaque, unsigned char* buf, size_t len) {
 	db->mutex.unlock();
 	
 	// Debug
-	OUT_FILE.write((const char*) buf, bytesToCopy);
+	//OUT_FILE.write((const char*) buf, bytesToCopy);
 
 	return bytesToCopy;
 }
