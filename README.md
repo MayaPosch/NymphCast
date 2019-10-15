@@ -1,6 +1,6 @@
 # NymphCast #
 
-NymphCast is a server-client project that will allow for video and audio to be streamed over the network.
+NymphCast is a server-client project that allows for video and audio to be streamed over the network.
 
 ## Dependencies ##
 
@@ -8,8 +8,8 @@ To build NymphCast, one needs the following dependencies in addition to a C++ to
 
 ### Server ###
 
-* Libvlc
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
+* [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*)
 * LibSDL2
 * LibPOCO
 
@@ -32,7 +32,11 @@ The client binary has to be provided with the filename of a media file that shou
 
 * The client is hard-coded to use the local loopback connection.
 * The client can only play one file before exiting.
+* The server is assumed to have 100 MB heap space free for caching.
 
-## Issues ##
+## Status ##
 
-* Audio playback seems stable, but video playback is mostly non-functional. LibVLC topic: [https://forum.videolan.org/viewtopic.php?f=32&t=150785](https://forum.videolan.org/viewtopic.php?f=32&t=150785)
+This is alpha-level code. It's only guaranteed to have lots of unresolved issues. Feel free to submit tickets for any issues you have foun.
+
+
+
