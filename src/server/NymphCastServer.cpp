@@ -19,8 +19,10 @@
 #include <csignal>
 #include <string>
 #include <iterator>
+#include <thread>
 
-#include "av_io.h"
+//#include "av_io.h"
+#include "ffplay.h"
 #include <nymph/nymph.h>
 
 #include <Poco/Condition.h>
@@ -58,7 +60,8 @@ struct FileMetaInfo {
 // --- Globals ---
 bool playerStarted;
 Poco::Thread avThread;
-AV_IO av_io;
+//AV_IO av_io;
+Ffplay ffplay;
 // ---
 
 
@@ -72,9 +75,7 @@ void dataRequestFunction() {
 		
 		if (media_buffer.requestInFlight) { continue; }
 		
-		media_buffer.mutex.lock();
 		int session = media_buffer.activeSession;
-		media_buffer.mutex.unlock();
 		
 		// Request more data.
 		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
@@ -185,10 +186,8 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
-	media_buffer.mutex.lock();
     media_buffer.size = it->second.filesize; // Set to stream size.
 	media_buffer.activeSession = session;
-	media_buffer.mutex.unlock();
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
@@ -237,10 +236,11 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// TODO: optimise.
 	// TODO: prevent accidental overwriting.
 	// TODO: update front/back index counters.
-	media_buffer.mutex.lock();
 	if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
+		media_buffer.mutex.lock();
 		media_buffer.data[media_buffer.nextSlot] = mediaData;
+		media_buffer.mutex.unlock();
 		if (media_buffer.nextSlot == media_buffer.currentSlot) {
 			media_buffer.slotSize = mediaData.length();
 			media_buffer.slotBytesLeft = mediaData.length();
@@ -255,23 +255,19 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		media_buffer.buffBytesLeft += mediaData.length();
 	}
 	
-	media_buffer.mutex.unlock();
-	
 	// Signal the condition variable in the VLC read callback in case we're waiting there.
 	media_buffer.bufferDelayCondition.signal();
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
-	if (!playerStarted) {
+	if (!playerStarted && done) {
 		playerStarted = true;
-		//av_io.setBuffer(&media_buffer);
-		avThread.start(av_io);
+		//ffplay.setBuffer(&media_buffer);
+		avThread.start(ffplay);
 	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
-	if (done) {		
-		media_buffer.mutex.lock();
+	if (done) {
 		media_buffer.eof = true;
-		media_buffer.mutex.unlock();
 	}
 	else {
 		// If there are free slots in the buffer, request more data from the client.
@@ -396,6 +392,7 @@ int main() {
 	media_buffer.mutex.lock();
 	media_buffer.data.assign(50, std::string());
 	media_buffer.size = media_buffer.data.size();
+	media_buffer.mutex.unlock();
 	media_buffer.currentIndex = 0;		// The current index into the vector element.
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
@@ -404,7 +401,6 @@ int main() {
 	media_buffer.buffIndexHigh = 0;	
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
-	media_buffer.mutex.unlock();
 	
 	playerStarted = false;
 	
@@ -414,8 +410,8 @@ int main() {
 	// Start server on port 4004.
 	NymphRemoteClient::start(4004);
 	
-	// Start the data request handler.
-	dataRequestFunction();
+	// Start the data request handler in its own thread.
+	std::thread drq(dataRequestFunction);
 	
 	// Wait for the condition to be signalled.
 	gMutex.lock();
@@ -424,7 +420,7 @@ int main() {
 	// Clean-up
  
 	// Close window and clean up libSDL.
-	av_io.quit();
+	ffplay.quit();
 	avThread.join();
 	
 	NymphRemoteClient::shutdown();

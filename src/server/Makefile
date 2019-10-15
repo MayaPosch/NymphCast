@@ -2,39 +2,45 @@
 #
 # (c) 2019 Nyanko.ws
 
-GCC = g++
+GPP = g++
+GCC = gcc
 MAKEDIR = mkdir -p
 RM = rm
 
 OUTPUT = nymphcast_server
 INCLUDE = -I .
-LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lvlc -lSDL2 -lSDL2main
+LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main
 CFLAGS := $(INCLUDE) -g3 -std=c++17
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__
-	#LIBS += -lws2_32
+	LIB += -lws2_32
 else
 	LIB := $(LIB) -pthread
 endif
 
 SOURCES := $(wildcard *.cpp)
+C_SOURCES := $(wildcard *.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
+C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
 
-all: makedir $(OBJECTS) bin/$(OUTPUT)
+all: makedir $(OBJECTS) $(C_OBJECTS) bin/$(OUTPUT)
 
 makedir:
 	$(MAKEDIR) obj
 	$(MAKEDIR) bin
 
 obj/%.o: %.cpp
-	$(GCC) -c -o $@ $< $(CFLAGS)
+	$(GPP) -c -o $@ $< $(CFLAGS)
+
+obj/%.o: %.c
+	$(GCC) -c -o $@ $< -g3 $(INCLUDE) -std=c11
 	
 bin/$(OUTPUT):
-	$(GCC) -o $@ $(OBJECTS) $(LIB)
+	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LIB)
 
 clean:
-	$(RM) $(OBJECTS)
+	$(RM) $(OBJECTS) $(C_OBJECTS)
 	
