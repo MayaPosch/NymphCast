@@ -36,7 +36,7 @@ The client binary has to be provided with the filename of a media file that shou
 
 ## Status ##
 
-This is alpha-level code. It's only guaranteed to have lots of unresolved issues. Feel free to submit tickets for any issues you have foun.
+This is alpha-level code. It's only guaranteed to have lots of unresolved issues. Feel free to submit tickets for any issues you have found.
 
 
 
