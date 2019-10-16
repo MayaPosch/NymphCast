@@ -138,17 +138,31 @@ int main(int argc, char *argv[]) {
 	// Locate the available servers.
 	// TODO: implement something.
 	
-	// Try to open the file.
-	if (argc != 2) {
+	// Parse options.
+	// TODO: accept either a filename (media), or a URL.
+	// CLI args:
+	// * --url -u <URL>
+	// 
+	
+	// Allow the IP address of the server to be passed on the command line.	
+	// Try to open the file.	
+	std::string filename;
+	std::string serverip = "127.0.0.1";
+	if (argc == 2) {
+		filename = argv[1];
+	}
+	else if (argc == 3) {
+		serverip = argv[1];
+		filename = argv[2];
+	}
+	else {
 		std::cerr << "Usage: nymphcast_client <filename>" << std::endl;
 		return 1;
 	}
 	
-	std::string filename(argv[1]);
-	
 	std::cout << "Opening file " << filename << std::endl;
 	
-	fs::path filePath(argv[1]);
+	fs::path filePath(filename);
 	if (!fs::exists(filePath)) {
 		std::cerr << "File " << filename << " doesn't exist." << std::endl;
 		return 1;
@@ -168,8 +182,8 @@ int main(int argc, char *argv[]) {
 	
 	// Connect to the remote server.
 	std::string result;
-	if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
-	//if (!NymphRemoteServer::connect("192.168.178.26", 4004, handle, 0, result)) {
+	//if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
+	if (!NymphRemoteServer::connect(serverip, 4004, handle, 0, result)) {
 		cout << "Connecting to remote server failed: " << result << endl;
 		NymphRemoteServer::disconnect(handle, result);
 		NymphRemoteServer::shutdown();
