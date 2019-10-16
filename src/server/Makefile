@@ -19,6 +19,7 @@ ifdef OS
 	LIB += -lws2_32
 else
 	LIB := $(LIB) -pthread
+#	-lasound -ldl -lpulse-simple -lpulse -lsndio -lX11 -lXext -lva-x11 -lva -lxcb-shm -lxcb-xfixes -lxcb-render -lxcb-shape -lxcb -lXau -lXdmcp -lz -lrt -lm -lvorbis -lvorbisenc
 endif
 
 SOURCES := $(wildcard *.cpp)

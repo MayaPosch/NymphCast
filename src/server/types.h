@@ -371,60 +371,60 @@ struct Config {
 };
 
 /* options specified by the user */
-static AVInputFormat *file_iformat;
-static const char *input_filename;
-static const char *window_title;
-static int default_width  = 640;
-static int default_height = 480;
-static int screen_width  = 0;
-static int screen_height = 0;
-static int screen_left = SDL_WINDOWPOS_CENTERED;
-static int screen_top = SDL_WINDOWPOS_CENTERED;
-static int audio_disable;
-static int video_disable;
-static int subtitle_disable;
-static const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
-static int seek_by_bytes = -1;
-static float seek_interval = 10;
-static int display_disable;
-static int borderless;
-static int alwaysontop;
-static int startup_volume = 100;
-static int show_status = 1;
-static int av_sync_type = AV_SYNC_AUDIO_MASTER;
-static int64_t start_time = AV_NOPTS_VALUE;
-static int64_t duration = AV_NOPTS_VALUE;
-static int fast = 0;
-static int genpts = 0;
-static int lowres = 0;
-static int decoder_reorder_pts = -1;
-static int autoexit;
-static int exit_on_keydown;
-static int exit_on_mousedown;
-static int loop = 1;
-static int framedrop = -1;
-static int infinite_buffer = -1;
-static enum ShowMode show_mode = SHOW_MODE_NONE;
-static const char *audio_codec_name;
-static const char *subtitle_codec_name;
-static const char *video_codec_name;
-static double rdftspeed = 0.02;
-static int64_t cursor_last_shown;
-static int cursor_hidden = 0;
+extern AVInputFormat *file_iformat;
+extern const char *input_filename;
+extern const char *window_title;
+extern int default_width;
+extern int default_height;
+extern int screen_width;
+extern int screen_height;
+extern int screen_left;
+extern int screen_top;
+extern int audio_disable;
+extern int video_disable;
+extern int subtitle_disable;
+extern const char* wanted_stream_spec[AVMEDIA_TYPE_NB];
+extern int seek_by_bytes;
+extern float seek_interval;
+extern int display_disable;
+extern int borderless;
+extern int alwaysontop;
+extern int startup_volume;
+extern int show_status;
+extern int av_sync_type;
+extern int64_t start_time;
+extern int64_t duration;
+extern int fast;
+extern int genpts;
+extern int lowres;
+extern int decoder_reorder_pts;
+extern int autoexit;
+extern int exit_on_keydown;
+extern int exit_on_mousedown;
+extern int loop;
+extern int framedrop;
+extern int infinite_buffer;
+extern enum ShowMode show_mode;
+extern const char *audio_codec_name;
+extern const char *subtitle_codec_name;
+extern const char *video_codec_name;
+extern double rdftspeed;
+extern int64_t cursor_last_shown;
+extern int cursor_hidden;
 #if CONFIG_AVFILTER
-static const char **vfilters_list = NULL;
-static int nb_vfilters = 0;
-static char *afilters = NULL;
+extern const char **vfilters_list;
+extern int nb_vfilters;
+extern char *afilters;
 #endif
-static int autorotate = 1;
-static int find_stream_info = 1;
-static int filter_nbthreads = 0;
+extern int autorotate;
+extern int find_stream_info;
+extern int filter_nbthreads;
 
 /* current context */
-static int is_full_screen;
-static int64_t audio_callback_time;
+extern int is_full_screen;
+extern int64_t audio_callback_time;
 
-static AVPacket flush_pkt;
+extern AVPacket flush_pkt;
 
 #define FF_QUIT_EVENT    (SDL_USEREVENT + 2)
 
@@ -433,7 +433,7 @@ extern SDL_Renderer *renderer;
 extern SDL_RendererInfo renderer_info;
 extern SDL_AudioDeviceID audio_dev;
 
-static unsigned sws_flags = SWS_BICUBIC;
+extern unsigned sws_flags;
 
 
 #endif
