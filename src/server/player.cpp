@@ -201,6 +201,8 @@ static void seek_chapter(VideoState *is, int incr)
 void Player::event_loop(VideoState *cur_stream) {
     SDL_Event event;
     double incr, pos, frac;
+	
+	av_log(NULL, AV_LOG_DEBUG, "Entering event loop.\n");
 
 	bool run = true;
     while (run) {
@@ -210,6 +212,9 @@ void Player::event_loop(VideoState *cur_stream) {
         case SDL_KEYDOWN:
             if (exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                 //do_exit(cur_stream);
+				
+				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop...\n");
+				
 				run = false;
                 break;
             }
@@ -323,6 +328,7 @@ void Player::event_loop(VideoState *cur_stream) {
         case SDL_MOUSEBUTTONDOWN:
             if (exit_on_mousedown) {
                 //do_exit(cur_stream);
+				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop due to mouse...\n");
 				run = false;
                 break;
             }
@@ -392,6 +398,7 @@ void Player::event_loop(VideoState *cur_stream) {
         case SDL_QUIT:
         case FF_QUIT_EVENT:
             //do_exit(cur_stream);
+				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop due to quit event...\n");
 			run = false;
             break;
         default:

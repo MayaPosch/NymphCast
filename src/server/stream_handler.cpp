@@ -796,7 +796,7 @@ VideoState* StreamHandler::stream_open(const char *filename, AVInputFormat *ifor
     }
 	
 	// FIXME: Set via configuration.
-	int startup_volume = 75;
+	int startup_volume = 100;
 
     ClockC::init_clock(&is->vidclk, &is->videoq.serial);
     ClockC::init_clock(&is->audclk, &is->audioq.serial);

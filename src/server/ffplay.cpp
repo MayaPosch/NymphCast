@@ -334,8 +334,6 @@ void show_help_default(const char *opt, const char *arg)
 
 
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
-	if (buf_size == 0) { return AVERROR_EOF; }
-	
     DataBuffer* db = static_cast<DataBuffer*>(opaque); 
 	
     // Fill the buffer from the memory buffer.
@@ -348,6 +346,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		db->bufferDelayMutex.lock();
 		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
 	}
+	else if (db->buffBytesLeft == 0) { return -1; }
 
 	if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
 		bytesToCopy = buf_size;
@@ -356,7 +355,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		bytesToCopy = db->buffBytesLeft;
 	} 
 	else {
-		return AVERROR_EOF;   // No bytes left to copy
+		return -1;   // No bytes left to copy
 	}
 
 	// Each slot has a limited depth. Check that we can copy the whole requested buffer
@@ -442,7 +441,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	// Debug
 	//OUT_FILE.write((const char*) buf, bytesToCopy);
 	
-	if (bytesToCopy == 0) { return AVERROR_EOF; }
+	if (bytesToCopy == 0) { return -1; }
 	
 	return bytesToCopy;
 }
@@ -472,6 +471,7 @@ void Ffplay::run() {
 	
 	// Fake command line arguments.
 	std::vector<std::string> arguments = {"nymphcast", "-loglevel", "trace"};
+	//std::vector<std::string> arguments = {"nymphcast", "-loglevel", "info"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
 		const std::string& arg = arguments[i];
@@ -490,7 +490,7 @@ void Ffplay::run() {
 #if CONFIG_AVDEVICE
     avdevice_register_all();
 #endif
-    //avformat_network_init();
+    avformat_network_init();
 
     init_opts();
 	
@@ -500,42 +500,42 @@ void Ffplay::run() {
     show_banner(argc, argv.data(), options);
     parse_options(NULL, argc, argv.data(), options, opt_input_file);
 		
-	 
-	// Create internal Buffer for FFmpeg:
-	const int iBufSize = 16 * 1024 * 1024; // 16 MB
-	uint8_t* pBuffer = new uint8_t[iBufSize];
+		
+	// --- AVIOContext section ---
+	// Create internal buffer for FFmpeg.
+	size_t iBufSize = 16 * 1024 * 1024; // 16 MB
+	uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
 	 
 	// Allocate the AVIOContext:
 	// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
-	AVIOContext* pIOCtx = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
+	AVIOContext* ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
 											 0,                  // bWriteable (1=true,0=false) 
 											 &media_buffer,          // user data ; will be passed to our callback functions
 											 media_read, 
 											 0,                  // Write callback function (not used in this example) 
-											 media_seek); 
+											 0); 
+											 //media_seek); 
 	 
 	// Allocate the AVFormatContext.
-	AVFormatContext* pCtx = avformat_alloc_context();
-	 
-	// Set the IOContext.
-	pCtx->pb = pIOCtx;
-	
+	AVFormatContext* formatContext = avformat_alloc_context();
+	formatContext->pb = ioContext;	// Set the IOContext.
+	//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
 	
 	// Determine the input format.
-	uint64_t ulReadBytes = 0;
-
 	// Create the ProbeData structure for av_probe_input_format.
-	AVProbeData probeData;
+	/* AVProbeData probeData;
 	media_buffer.dataMutex.lock();
 	probeData.buf = (unsigned char*) media_buffer.data[0].data();
-	probeData.buf_size = media_buffer.data[0].size();
+	//probeData.buf_size = media_buffer.data[0].size();
+	probeData.buf_size = 4096;
 	probeData.filename = "";
 	 
 	// Determine the input-format:
 	pCtx->iformat = av_probe_input_format(&probeData, 1);
-	media_buffer.dataMutex.unlock();
+	media_buffer.dataMutex.unlock(); */
 	
-	pCtx->flags = AVFMT_FLAG_CUSTOM_IO;
+	
+	// --- End AVIOContext section ---
 	
 	// Start player.
 	
@@ -610,7 +610,7 @@ void Ffplay::run() {
     }
 
 	input_filename = "";
-    is = StreamHandler::stream_open(input_filename, file_iformat, pCtx);
+    is = StreamHandler::stream_open(input_filename, file_iformat, formatContext);
     if (!is) {
         av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
         do_exit(NULL);
@@ -619,10 +619,9 @@ void Ffplay::run() {
     Player::event_loop(is);	
 	
 	// Free resources
-	avformat_close_input(&pCtx);  // AVFormatContext is released by avformat_close_input
-	av_free(pIOCtx);             // AVIOContext is released by av_free
-	delete[] pBuffer; 
-	
+	avformat_close_input(&formatContext);  // AVFormatContext is released by avformat_close_input
+	av_freep(&ioContext->buffer);
+	av_freep(&ioContext);
 }
  
  

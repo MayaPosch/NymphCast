@@ -23,6 +23,8 @@
 
 //#include "av_io.h"
 #include "ffplay.h"
+#include "screensaver.h"
+
 #include <nymph/nymph.h>
 
 #include <Poco/Condition.h>
@@ -196,6 +198,9 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	media_buffer.requestCondition.signal();
 	it->second.sessionActive = true;
 	
+	// Stop screensaver.
+	//ScreenSaver::stop();
+	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
@@ -312,7 +317,8 @@ int main() {
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
@@ -412,6 +418,13 @@ int main() {
 	
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
+	
+	// TODO: start idle wallpaper & clock display.
+	// Use SDL for this.
+	//ScreenSaver::start();
+	
+	// Advertise presence via mDNS.
+		
 	
 	// Wait for the condition to be signalled.
 	gMutex.lock();

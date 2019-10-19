@@ -9,8 +9,8 @@ RM = rm
 
 OUTPUT = nymphcast_server
 INCLUDE = -I .
-LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main
-CFLAGS := $(INCLUDE) -g3 -std=c++17
+LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image
+CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
@@ -19,7 +19,6 @@ ifdef OS
 	LIB += -lws2_32
 else
 	LIB := $(LIB) -pthread
-#	-lasound -ldl -lpulse-simple -lpulse -lsndio -lX11 -lXext -lva-x11 -lva -lxcb-shm -lxcb-xfixes -lxcb-render -lxcb-shape -lxcb -lXau -lXdmcp -lz -lrt -lm -lvorbis -lvorbisenc
 endif
 
 SOURCES := $(wildcard *.cpp)
