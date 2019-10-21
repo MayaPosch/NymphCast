@@ -216,6 +216,7 @@ void Player::event_loop(VideoState *cur_stream) {
 				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop...\n");
 				
 				run = false;
+				continue;
                 break;
             }
             // If we don't yet have a window, skip all key events, because read_thread might still be initializing...
@@ -330,6 +331,7 @@ void Player::event_loop(VideoState *cur_stream) {
                 //do_exit(cur_stream);
 				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop due to mouse...\n");
 				run = false;
+				continue;
                 break;
             }
             if (event.button.button == SDL_BUTTON_LEFT) {
@@ -400,6 +402,7 @@ void Player::event_loop(VideoState *cur_stream) {
             //do_exit(cur_stream);
 				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop due to quit event...\n");
 			run = false;
+			continue;
             break;
         default:
             break;

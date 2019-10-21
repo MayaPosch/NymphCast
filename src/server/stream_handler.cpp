@@ -12,6 +12,10 @@
 #include "stream_handler.h"
 
 
+// Static initialisations.
+std::atomic_bool StreamHandler::run;
+
+
 #if CONFIG_AVFILTER
 int StreamHandler::opt_add_vfilter(void *optctx, const char *opt, const char *arg) {
     //vfilters_list = (const char**) grow_array(vfilters_list, sizeof(*vfilters_list), &nb_vfilters, nb_vfilters + 1);
@@ -421,7 +425,7 @@ static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial
 
 
 /* this thread gets the stream from the disk or the network */
-static int read_thread(void *arg) {
+int StreamHandler::read_thread(void *arg) {
     VideoState *is = (VideoState*) arg;
 	AVFormatContext* ic = is->ic;
 	
@@ -602,7 +606,9 @@ static int read_thread(void *arg) {
     if (infinite_buffer < 0 && is->realtime)
         infinite_buffer = 1;
 
-    for (;;) {
+    //for (;;) {
+	run = true;
+	while (run) {
         if (is->abort_request)
             break;
         if (is->paused != is->last_paused) {
@@ -701,6 +707,9 @@ static int read_thread(void *arg) {
                 if (is->subtitle_stream >= 0)
                     PacketQueueC::packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream);
                 is->eof = 1;
+				
+				// TODO: stop playback here?
+				//break;
             }
             if (ic->pb && ic->pb->error)
                 break;
@@ -743,6 +752,10 @@ static int read_thread(void *arg) {
         event.user.data1 = is;
         SDL_PushEvent(&event);
     }
+	
+	AudioRenderer::quit();
+	VideoRenderer::quit();
+	
     SDL_DestroyMutex(wait_mutex);
     return 0;
 }
@@ -896,4 +909,9 @@ void StreamHandler::stream_cycle_channel(VideoState *is, int codec_type) {
 
     stream_component_close(is, old_index);
     StreamHandler::stream_component_open(is, stream_index);
+}
+
+
+void StreamHandler::quit() {
+	run = false;
 }

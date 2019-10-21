@@ -7,6 +7,9 @@
 #include "decoder.h"
 
 
+// Static initialisations.
+std::atomic<bool> AudioRenderer::run;
+
 
 static inline
 int64_t get_valid_channel_layout(int64_t channel_layout, int channels)
@@ -475,7 +478,9 @@ int AudioRenderer::audio_thread(void *arg) {
     if (!frame)
         return AVERROR(ENOMEM);
 
+	run = true;
     do {
+		if (!run) { goto the_end; }
         if ((got_frame = DecoderC::decoder_decode_frame(&is->auddec, frame, NULL)) < 0)
             goto the_end;
 
@@ -545,3 +550,7 @@ int AudioRenderer::audio_thread(void *arg) {
     return ret;
 }
 
+
+void AudioRenderer::quit() {
+	run = false;
+}

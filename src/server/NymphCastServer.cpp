@@ -20,8 +20,8 @@
 #include <string>
 #include <iterator>
 #include <thread>
+#include <atomic>
 
-//#include "av_io.h"
 #include "ffplay.h"
 #include "screensaver.h"
 
@@ -60,9 +60,8 @@ struct FileMetaInfo {
 
 
 // --- Globals ---
-bool playerStarted;
+std::atomic<bool> playerStarted;
 Poco::Thread avThread;
-//AV_IO av_io;
 Ffplay ffplay;
 // ---
 
@@ -91,6 +90,25 @@ void dataRequestFunction() {
 		
 		media_buffer.requestInFlight = true;
 	}
+}
+
+
+// --- PLAYER DONE CALLBACK ---
+// Called when the player has finished with the media track and has shut down.
+
+
+void resetDataBuffer() {
+	media_buffer.currentIndex = 0;		// The current index into the vector element.
+	media_buffer.currentSlot = 0;		// The current vector slot we're using.
+	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
+	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
+	media_buffer.buffIndexLow = 0;		// File index at the buffer front.
+	media_buffer.buffIndexHigh = 0;	
+	media_buffer.freeSlots = 50;
+	media_buffer.eof = false;
+	media_buffer.requestInFlight = false;
+	
+	playerStarted = false;
 }
 
 
@@ -407,6 +425,7 @@ int main() {
 	media_buffer.buffIndexHigh = 0;	
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
+	media_buffer.requestInFlight = false;
 	
 	playerStarted = false;
 	

@@ -22,6 +22,12 @@ void ChronoTrigger::setCallback(std::function<void(int)> cb, uint32_t data) {
 }
 
 
+void ChronoTrigger::setStopCallback(std::function<void()> cb) {
+	this->stopCb = cb;
+	stopCbSet = true;
+}
+
+
 // --- START ---
 // Start the processing thread.
 bool ChronoTrigger::start(uint32_t interval, bool single) {
@@ -62,6 +68,7 @@ void ChronoTrigger::run(uint32_t interval, bool single) {
 		}
 		
 		if (stopping) { // Stop was called.
+			if (stopCbSet) { stopCb(); }			
 			break;
 		}
 		

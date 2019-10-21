@@ -27,14 +27,6 @@
 
 
 
-/* struct SDLContext {
-	SDL_Renderer *renderer;
-	SDL_Texture *texture;
-	SDL_mutex *mutex;
-	int n;
-}; */
-
-
 struct DataBuffer {
 	std::vector<std::string> data;	// The data byte, inside string instances.
 	std::atomic<uint64_t> size;				// Number of bytes in data vector.
@@ -61,24 +53,15 @@ struct DataBuffer {
 };
 
 
+
 // --- Globals ---
 extern DataBuffer media_buffer;
+extern std::atomic<bool> playerStarted;
 	
+void resetDataBuffer(); // Defined in NymphCastServer.cpp
+
 	
 class Ffplay : public Poco::Runnable {
-	/* libvlc_media_t *m;	
-	libvlc_media_player_t* mp;
-	libvlc_instance_t* libvlc;
-	static struct SDLContext context;
-	bool running; */
-	
-	/* bool init();
-	bool vlcInit(); */
-	
-	/* static void* lock(void* data, void** p_pixels);
-	static void unlock(void* data, void* id, void* const* p_pixels);
-	static void display(void* data, void* id); */
-	
 	static int media_read(void* opaque, uint8_t* buf, int buf_size);
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
 	

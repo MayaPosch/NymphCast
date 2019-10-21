@@ -10,6 +10,8 @@
 #include "decoder.h"
 
 
+// Static initialisations.
+std::atomic<bool> VideoRenderer::run;
 
 
 static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
@@ -472,7 +474,9 @@ int VideoRenderer::video_thread(void *arg) {
     if (!frame)
         return AVERROR(ENOMEM);
 
-    for (;;) {
+    //for (;;) {
+	run = true;
+	while (run) {
         ret = get_video_frame(is, frame);
         if (ret < 0)
             goto the_end;
@@ -616,4 +620,9 @@ static int synchronize_audio(VideoState *is, int nb_samples)
     }
 
     return wanted_nb_samples;
+}
+
+
+void VideoRenderer::quit() {
+	run = false;
 }

@@ -1,0 +1,12 @@
+[Unit]
+Description=NymphCast audio/video casting server
+
+[Service]
+ExecStart=/usr/local/bin/nymphcast_server
+User=pi
+WorkingDirectory=~
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

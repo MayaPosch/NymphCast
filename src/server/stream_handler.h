@@ -6,9 +6,14 @@
 
 #include "types.h"
 
+#include <atomic>
+
 
 class StreamHandler {
 	VideoState* vstate;
+	static std::atomic_bool run;
+	
+	static int read_thread(void *arg);
 	
 public:
 	static VideoState *stream_open(const char *filename, AVInputFormat *iformat, AVFormatContext* context);
@@ -21,6 +26,8 @@ public:
 	static void stream_cycle_channel(VideoState *is, int codec_type);
 #if CONFIG_AVFILTER
 	static int opt_add_vfilter(void *optctx, const char *opt, const char *arg);
+	
+	static void quit();
 #endif
 };
 

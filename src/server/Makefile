@@ -7,6 +7,8 @@ GCC = gcc
 MAKEDIR = mkdir -p
 RM = rm
 
+INSTALLDIR ?= /usr/local/bin
+
 OUTPUT = nymphcast_server
 INCLUDE = -I .
 LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image
@@ -40,6 +42,9 @@ obj/%.o: %.c
 	
 bin/$(OUTPUT):
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LIB)
+	
+install:
+	cp bin/$(OUTPUT) $(INSTALLDIR)/.
 
 clean:
 	$(RM) $(OBJECTS) $(C_OBJECTS)

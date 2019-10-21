@@ -34,6 +34,8 @@ class ChronoTrigger {
 	std::atomic_bool signaled;
 	std::atomic_bool stopping;
 	std::function<void(uint32_t)> cb;
+	bool stopCbSet = false;
+	std::function<void()> stopCb;
 	uint32_t data;
 	std::chrono::time_point<std::chrono::steady_clock> startTime;
 	std::chrono::time_point<std::chrono::steady_clock> endTime;
@@ -42,6 +44,7 @@ class ChronoTrigger {
 	
 public:
 	void setCallback(std::function<void(int)> cb, uint32_t data);
+	void setStopCallback(std::function<void()> cb);
 	bool start(uint32_t interval, bool single = false);
 	void restart();
 	void finish();

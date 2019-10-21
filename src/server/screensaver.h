@@ -16,6 +16,7 @@
 
 class ScreenSaver {
 	static std::atomic<bool> active;
+	static std::atomic<bool> firstRun;
 	static SDL_Window* window;
 	static SDL_Renderer* renderer;
 	static SDL_Texture* texture;
@@ -24,6 +25,7 @@ class ScreenSaver {
 	static int imageId;
 	
 	static void changeImage(int);
+	static void cleanUp();
 	
 public:
 	static void start(uint32_t changeSecs);

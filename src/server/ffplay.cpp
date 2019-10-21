@@ -346,7 +346,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		db->bufferDelayMutex.lock();
 		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
 	}
-	else if (db->buffBytesLeft == 0) { return -1; }
+	else if (db->buffBytesLeft == 0) { return 0; }
 
 	if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
 		bytesToCopy = buf_size;
@@ -355,7 +355,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		bytesToCopy = db->buffBytesLeft;
 	} 
 	else {
-		return -1;   // No bytes left to copy
+		return 0;   // No bytes left to copy
 	}
 
 	// Each slot has a limited depth. Check that we can copy the whole requested buffer
@@ -441,7 +441,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	// Debug
 	//OUT_FILE.write((const char*) buf, bytesToCopy);
 	
-	if (bytesToCopy == 0) { return -1; }
+	if (bytesToCopy == 0) { return 0; }
 	
 	return bytesToCopy;
 }
@@ -470,8 +470,8 @@ void Ffplay::run() {
     init_dynload();
 	
 	// Fake command line arguments.
-	std::vector<std::string> arguments = {"nymphcast", "-loglevel", "trace"};
-	//std::vector<std::string> arguments = {"nymphcast", "-loglevel", "info"};
+	//std::vector<std::string> arguments = {"nymphcast", "-loglevel", "trace"};
+	std::vector<std::string> arguments = {"nymphcast", "-loglevel", "info"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
 		const std::string& arg = arguments[i];
@@ -616,12 +616,32 @@ void Ffplay::run() {
         do_exit(NULL);
     }
 
-    Player::event_loop(is);	
+    Player::event_loop(is);
+	
+	// Shut down modules.
+	StreamHandler::quit();
+	
+	SDL_Delay(500); // wait 500 ms.
 	
 	// Free resources
-	avformat_close_input(&formatContext);  // AVFormatContext is released by avformat_close_input
+	avformat_close_input(&formatContext);
 	av_freep(&ioContext->buffer);
 	av_freep(&ioContext);
+	
+	/* fprintf(stderr, "Destroying texture...\n");
+	SDL_DestroyTexture(texture); */
+	av_log(NULL, AV_LOG_FATAL, "Destroying renderer...\n");
+	SDL_DestroyRenderer(renderer);
+	av_log(NULL, AV_LOG_FATAL, "Destroying window...\n");
+	SDL_DestroyWindow(window);
+	
+	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
+	
+	//SDL_Quit();
+	
+	// TODO: Call callback to inform the server that we're done.
+	
+	resetDataBuffer(); // Reset to allow for new player run.
 }
  
  
