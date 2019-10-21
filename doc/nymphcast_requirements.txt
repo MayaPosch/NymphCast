@@ -54,3 +54,30 @@ struct SessionParams {
 	. uint8 session_data(string buffer)
 	. uint8 session_end()
 	
+	
+---
+	
+>> MVP <<
+
+> requirements <
+
+	. Remote playback of media files.
+	. Remote playback of URLs to media.
+	. Playback of an infinite number of media files in a row.
+	. Volume adjustment.
+	. Playback controls.
+	. Server status on any client.
+
+
+> Server <
+
+	. Auto-start on system (Systemd service).
+	. Display screensaver if no media playback active.
+
+
+> Client <
+
+	. Select media file from list.
+	. Start and control playback.
+	. Control volume.
+	
