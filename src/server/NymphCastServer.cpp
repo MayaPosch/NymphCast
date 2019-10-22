@@ -217,7 +217,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	it->second.sessionActive = true;
 	
 	// Stop screensaver.
-	//ScreenSaver::stop();
+	ScreenSaver::stop();
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
@@ -438,12 +438,12 @@ int main() {
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
 	
-	// TODO: start idle wallpaper & clock display.
-	// Use SDL for this.
-	//ScreenSaver::start();
+	// Start idle wallpaper & clock display.
+	// Transition time is 5 seconds.
+	ScreenSaver::start(5);
 	
 	// Advertise presence via mDNS.
-		
+	
 	
 	// Wait for the condition to be signalled.
 	gMutex.lock();
