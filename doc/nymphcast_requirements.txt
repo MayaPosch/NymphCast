@@ -67,6 +67,8 @@ struct SessionParams {
 	. Volume adjustment.
 	. Playback controls.
 	. Server status on any client.
+	. File seeking support.
+	. mDNS support.
 
 
 > Server <
