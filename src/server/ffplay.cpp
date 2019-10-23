@@ -333,6 +333,15 @@ void show_help_default(const char *opt, const char *arg)
 }
 
 
+/**
+ * Reads from a buffer into FFmpeg.
+ *
+ * @param ptr       A pointer to the user-defined IO data structure.
+ * @param buf       A buffer to read into.
+ * @param buf_size  The size of the buffer buff.
+ *
+ * @return The number of bytes read into the buffer.
+ */
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
     DataBuffer* db = static_cast<DataBuffer*>(opaque); 
 	
@@ -447,6 +456,15 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 }
 
 
+/**
+ * Seeks to a given position in the currently open file.
+ * 
+ * @param ptr     A pointer to the user-defined IO data structure.
+ * @param pos     The position to seek to.
+ * @param origin  The relative point (origin) from which the seek is performed.
+ *
+ * @return  The new position in the file.
+ */
 int64_t Ffplay::media_seek(void* opaque, int64_t pos, int whence) {
     DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	
@@ -470,8 +488,8 @@ void Ffplay::run() {
     init_dynload();
 	
 	// Fake command line arguments.
-	//std::vector<std::string> arguments = {"nymphcast", "-loglevel", "trace"};
-	std::vector<std::string> arguments = {"nymphcast", "-loglevel", "info"};
+	//std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "trace"};
+	std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "info"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
 		const std::string& arg = arguments[i];

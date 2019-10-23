@@ -76,14 +76,12 @@ void dataRequestFunction() {
 		
 		if (media_buffer.requestInFlight) { continue; }
 		
-		int session = media_buffer.activeSession;
-		
 		// Request more data.
 		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
 		std::vector<NymphType*> values;
 		std::string result;
 		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(session, "MediaReadCallback", values, result)) {
+		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaReadCallback", values, result)) {
 			std::cerr << "Calling callback failed: " << result << std::endl;
 			return;
 		}
@@ -109,6 +107,18 @@ void resetDataBuffer() {
 	media_buffer.requestInFlight = false;
 	
 	playerStarted = false;
+	
+	// Send message to client indicating that we're done.
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphBoolean* resVal = 0;
+	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStopCallback", values, result)) {
+		std::cerr << "Calling media stop callback failed: " << result << std::endl;
+		return;
+	}
+	
+	// Start the Screensaver here for now.
+	ScreenSaver::start(5);
 }
 
 
