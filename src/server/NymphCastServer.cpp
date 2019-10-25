@@ -627,6 +627,13 @@ int main() {
 	NymphRemoteClient::registerCallback("MediaStopCallback", mediaStopCallback);
 	
 	// MediaSeekCallback
+	// Sends the desired byte position in the open file to seek to.
+	// void MediaSeekCallback(uint64)
+	parameters.clear();
+	parameters.push_back(NYMPH_UINT64);
+	NymphMethod mediaSeekCallback("MediaSeekCallback", parameters, NYMPH_NULL);
+	mediaSeekCallback.enableCallback();
+	NymphRemoteClient::registerCallback("MediaSeekCallback", mediaSeekCallback);
 	
 	// End client callback registration.
 	
