@@ -54,6 +54,23 @@ struct SessionParams {
 	. uint8 session_data(string buffer)
 	. uint8 session_end()
 	
+* Volume:
+	. uint8 volume_set(uint8 volume)
+	. uint8 volume_up()
+	. uint8 volume_down()
+	
+* Playback:
+	. uint8 playback_start()
+	. uint8 playback_stop()
+	. uint8 playback_pause()
+	. uint8 playback_rewind()
+	. uint8 playback_forward()
+	. uint8 playback_seek(uint64)
+	. uint8 playback_url(string)
+	
+* Status:
+	. 
+	
 	
 ---
 	

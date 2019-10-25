@@ -118,7 +118,7 @@ void resetDataBuffer() {
 	}
 	
 	// Start the Screensaver here for now.
-	ScreenSaver::start(5);
+	ScreenSaver::start(15);
 }
 
 
@@ -238,7 +238,11 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 // Returns: OK (0), ERROR (1).
 // int session_meta(string artist, string album, int track, string name)
 NymphMessage* session_meta(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
 	// X unused function.
+	
+	return returnMsg;
 }
 
 
@@ -335,6 +339,106 @@ NymphMessage* session_end(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- VOLUME SET ---
+// uint8 volume_set(uint8 volume)
+NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- VOLUME UP ---
+// uint8 volume_up()
+NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- VOLUME DOWN ---
+// uint8 volume_down()
+NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK START ---
+// uint8 playback_start()
+NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK STOP ---
+// uint8 playback_stop()
+NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK PAUSE ---
+// uint8 playback_pause()
+NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK REWIND ---
+// uint8 playback_rewind()
+NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK FORWARD ---
+// uint8 playback_forward()
+NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK SEEK ---
+// uint8 playback_seek(uint64)
+NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
+// --- PLAYBACK URL ---
+// uint8 playback_url(string)
+NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	//
+	return returnMsg;
+}
+
+
 // --- LOG FUNCTION ---
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -405,6 +509,107 @@ int main() {
 	sessionEndFunction.setCallback(session_end);
 	NymphRemoteClient::registerMethod("session_end", sessionEndFunction);
 	
+	// Playback control methods.
+	//
+	// VolumeSet.
+	// uint8 volume_set(uint8 volume)
+	// Set volume to between 0 - 100.
+	// Returns new volume setting or >100 if failed.
+	parameters.clear();
+	parameters.push_back(NYMPH_UINT8);
+	NymphMethod volumeSetFunction("volume_set", parameters, NYMPH_UINT8);
+	volumeSetFunction.setCallback(volume_set);
+	NymphRemoteClient::registerMethod("volume_set", volumeSetFunction);
+	
+	// VolumeUp.
+	// uint8 volume_up()
+	// Increase volume by 10 up to 100.
+	// Returns new volume setting or >100 if failed.
+	parameters.clear();
+	NymphMethod volumeUpFunction("volume_up", parameters, NYMPH_UINT8);
+	volumeUpFunction.setCallback(volume_up);
+	NymphRemoteClient::registerMethod("volume_up", volumeUpFunction);
+		
+	// VolumeDown.
+	// uint8 volume_down()
+	// Decrease volume by 10 up to 100.
+	// Returns new volume setting or >100 if failed.
+	parameters.clear();
+	NymphMethod volumeDownFunction("volume_down", parameters, NYMPH_UINT8);
+	volumeDownFunction.setCallback(volume_down);
+	NymphRemoteClient::registerMethod("volume_down", volumeDownFunction);
+	
+	// PlaybackStart.
+	// uint8 playback_start()
+	// Start playback.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod playbackStartFunction("playback_start", parameters, NYMPH_UINT8);
+	playbackStartFunction.setCallback(playback_start);
+	NymphRemoteClient::registerMethod("playback_start", playbackStartFunction);
+	
+	// PlaybackStop.
+	// uint8 playback_stop()
+	// Stop playback.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod playbackStopFunction("playback_stop", parameters, NYMPH_UINT8);
+	playbackStopFunction.setCallback(playback_stop);
+	NymphRemoteClient::registerMethod("playback_stop", playbackStopFunction);
+	
+	// PlaybackPause.
+	// uint8 playback_pause()
+	// Start playback.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod playbackPauseFunction("playback_pause", parameters, NYMPH_UINT8);
+	playbackPauseFunction.setCallback(playback_pause);
+	NymphRemoteClient::registerMethod("playback_pause", playbackPauseFunction);
+	
+	// PlaybackRewind.
+	// uint8 playback_rewind()
+	// Rewind the current file to the beginning.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod playbackRewindFunction("playback_rewind", parameters, NYMPH_UINT8);
+	playbackRewindFunction.setCallback(playback_rewind);
+	NymphRemoteClient::registerMethod("playback_rewind", playbackRewindFunction);
+	
+	// PlaybackForward
+	// uint8 playback_forward()
+	// Forward the current file to the end.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod playbackForwardFunction("playback_forward", parameters, NYMPH_UINT8);
+	playbackForwardFunction.setCallback(playback_forward);
+	NymphRemoteClient::registerMethod("playback_forward", playbackForwardFunction);
+	
+	// PlaybackSeek
+	// uint8 playback_seek(uint64)
+	// Seek to the indicated position.
+	// Returns success or error number.
+	parameters.clear();
+	parameters.push_back(NYMPH_UINT64);
+	NymphMethod playbackSeekFunction("playback_seek", parameters, NYMPH_UINT8);
+	playbackSeekFunction.setCallback(playback_seek);
+	NymphRemoteClient::registerMethod("playback_seek", playbackSeekFunction);
+	
+	// PlaybackUrl.
+	// uint8 playback_url(string)
+	// Try to the play the media file indicated by the provided URL.
+	// Returns success or error number.
+	parameters.clear();
+	parameters.push_back(NYMPH_STRING);
+	NymphMethod playbackUrlFunction("playback_url", parameters, NYMPH_UINT8);
+	playbackUrlFunction.setCallback(playback_url);
+	NymphRemoteClient::registerMethod("playback_url", playbackUrlFunction);
+	
+	
+	// ReceiverStatus.
+	// 
+	
+	
+	
 	// Register client callbacks
 	//
 	// MediaReadCallback
@@ -420,6 +625,9 @@ int main() {
 	NymphMethod mediaStopCallback("MediaStopCallback", parameters, NYMPH_NULL);
 	mediaStopCallback.enableCallback();
 	NymphRemoteClient::registerCallback("MediaStopCallback", mediaStopCallback);
+	
+	// MediaSeekCallback
+	
 	// End client callback registration.
 	
 	// Create empty buffer with N entries, initialised as empty strings.
@@ -449,8 +657,8 @@ int main() {
 	std::thread drq(dataRequestFunction);
 	
 	// Start idle wallpaper & clock display.
-	// Transition time is 5 seconds.
-	ScreenSaver::start(5);
+	// Transition time is 15 seconds.
+	ScreenSaver::start(15);
 	
 	// Advertise presence via mDNS.
 	
