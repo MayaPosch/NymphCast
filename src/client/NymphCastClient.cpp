@@ -95,6 +95,7 @@ void MediaStopCallback(NymphMessage* msg, void* data) {
 	// Remove the callbacks.
 	NymphRemoteServer::removeCallback("MediaReadCallback");
 	NymphRemoteServer::removeCallback("MediaStopCallback");
+	NymphRemoteServer::removeCallback("MediaSeekCallback");
 	
 	// End NymphCast session and disconnect from server.
 	std::vector<NymphType*> values;
@@ -131,6 +132,11 @@ void MediaStopCallback(NymphMessage* msg, void* data) {
 	
 	// Signal the condition variable to terminate the application.
 	cnd.signal();
+}
+
+
+void MediaSeekCallback(NymphMessage* msg, void* data) {
+	//
 }
 
 
@@ -182,7 +188,6 @@ int main(int argc, char *argv[]) {
 	
 	// Connect to the remote server.
 	std::string result;
-	//if (!NymphRemoteServer::connect("127.0.0.1", 4004, handle, 0, result)) {
 	if (!NymphRemoteServer::connect(serverip, 4004, handle, 0, result)) {
 		cout << "Connecting to remote server failed: " << result << endl;
 		NymphRemoteServer::disconnect(handle, result);
@@ -220,6 +225,7 @@ int main(int argc, char *argv[]) {
 	// for the callback to be called.
 	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
 	NymphRemoteServer::registerCallback("MediaStopCallback", MediaStopCallback, 0);
+	NymphRemoteServer::registerCallback("MediaSeekCallback", MediaSeekCallback, 0);
 	
 	std::cout << "Starting session with file of size: " << fs::file_size(filePath) << std::endl;
 	
