@@ -57,7 +57,9 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-LIBS += -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
+LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
+
+RESOURCES     = resources.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

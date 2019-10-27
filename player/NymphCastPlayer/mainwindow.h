@@ -3,12 +3,14 @@
 
 #include <QMainWindow>
 
+#include "nymphcast_client.h"
+
+
 namespace Ui {
-class MainWindow;
+	class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
     
 public:
@@ -18,12 +20,34 @@ public:
 private slots:
     void openFile();
     void connectServer();
+	void disconnectServer();
+	void about();
     void quit();
+	
+	void castFile();
+	void castUrl();
+	
+	void addFile();
+	void removeFile();
+	
+	void findServer();
+	
+	void play();
+	void stop();
+	void pause();
+	void forward();
+	void rewind();
+	
+	void mute();
+	void adjustVolume(int value);
     
 private:
     Ui::MainWindow *ui;
     
     bool connected = false;
+	bool muted = false;
+	uint32_t serverHandle;
+	NymphCastClient client;
 };
 
 #endif // MAINWINDOW_H
