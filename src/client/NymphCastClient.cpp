@@ -47,7 +47,7 @@ void logFunction(int level, string logStr) {
 // This callback will be called once by the server and then discarded. This is
 // useful for one-off events, but can also be used for callbacks during the 
 // life-time of the client.
-void MediaReadCallback(NymphMessage* msg, void* data) {
+void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Media Read callback function called.\n";
 	
 	// Call the 'session_data' remote function with new data buffer.
@@ -89,7 +89,7 @@ void MediaReadCallback(NymphMessage* msg, void* data) {
 }
 
 
-void MediaStopCallback(NymphMessage* msg, void* data) {
+void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Client callback function called.\n";
 	
 	// Remove the callbacks.
@@ -135,7 +135,7 @@ void MediaStopCallback(NymphMessage* msg, void* data) {
 }
 
 
-void MediaSeekCallback(NymphMessage* msg, void* data) {
+void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
 	//
 }
 
