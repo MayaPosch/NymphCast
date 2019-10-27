@@ -8,3 +8,4 @@ obj/
 bin/
 *.o
 build-*/
+lib/
