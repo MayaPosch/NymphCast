@@ -144,7 +144,7 @@ std::map<int, CastClient> clients;
 
 
 // Callback for the connect function.
-NymphMessage* connect(int session, NymphMessage* msg, void* data) {
+NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::cout << "Received message for session: " << session << ", msg ID: " << msg->getMessageId() << "\n";
 	
 	std::string clientStr = ((NymphString*) msg->parameters()[0])->getValue();
@@ -461,7 +461,7 @@ int main() {
 	// bool connect(string client_id)
 	parameters.push_back(NYMPH_STRING);
 	NymphMethod connectFunction("connect", parameters, NYMPH_BOOL);
-	connectFunction.setCallback(connect);
+	connectFunction.setCallback(connectClient);
 	NymphRemoteClient::registerMethod("connect", connectFunction);
 	
 	// Client disconnects from server.
