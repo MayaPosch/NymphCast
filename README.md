@@ -9,13 +9,20 @@ NymphCast is a server-client project that allows for video and audio to be strea
 * Casting of URLs, for streaming by the server without client interaction.
 * Casting of commands, to control volume, open NymphCast apps, etc.
 
+
 ## Quick Start ##
 
 This quick start guide assumes building the receiver (**server**) project on a system (like a Raspberry Pi) running a current version of Debian (Buster) or equivalent. The **player** application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
 
 **Server**
 
-1. Run the `setup.sh` script in the project root to install the required dependencies (requires root).
+Here two options are possible:
+
+1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
+
+Or:
+
+1. Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev` and `sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev`
 2. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 3. Copy the NymphRPC library from `NymphRPC/lib/` to `/usr/local/lib`.
 4. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
