@@ -19,6 +19,8 @@
 
 #include <nymph/nymph.h>
 
+//#include "mdns.h"
+
 
 class NymphCastClient {
 	std::string clientId = "NymphClient_21xb";
@@ -33,7 +35,7 @@ public:
 	~NymphCastClient();
 
 	void findServers();
-	bool connectServer(uint32_t &handle);
+	bool connectServer(std::string ip, uint32_t &handle);
 	bool disconnectServer(uint32_t handle);
 	
 	bool castFile(uint32_t handle, std::string filename);
