@@ -55,7 +55,7 @@ The server targets SBCs, but like the client (and SDK) should work on any platfo
 
 ## Releases ##
 
-As NymphCast is currently pre-alpha software, no releases are being made available yet. 
+As NymphCast is currently alpha software, no releases are being made available yet. 
 
 
 ## Status ##
@@ -96,6 +96,7 @@ The client binary has to be provided with the filename of a media file that shou
 
 * The client can only play one file before exiting.
 * The server is assumed to have 100 MB heap space free for caching.
+* Remote seeking support is not enabled yet, meaning MP4 files <100 MB with the header at the end do not work yet.
 
 
 
