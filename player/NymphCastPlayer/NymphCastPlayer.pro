@@ -26,33 +26,10 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
-    ../../../NymphRPC/src/nymph_listener.cpp \
-    ../../../NymphRPC/src/nymph_logger.cpp \
-    ../../../NymphRPC/src/nymph_message.cpp \
-    ../../../NymphRPC/src/nymph_method.cpp \
-    ../../../NymphRPC/src/nymph_server.cpp \
-    ../../../NymphRPC/src/nymph_session.cpp \
-    ../../../NymphRPC/src/nymph_socket_listener.cpp \
-    ../../../NymphRPC/src/nymph_types.cpp \
-    ../../../NymphRPC/src/nymph_utilities.cpp \
-    ../../../NymphRPC/src/remote_client.cpp \
-    ../../../NymphRPC/src/remote_server.cpp
+        mainwindow.cpp
 
 HEADERS += \
-        mainwindow.h \
-    ../../../NymphRPC/src/nymph.h \
-    ../../../NymphRPC/src/nymph_listener.h \
-    ../../../NymphRPC/src/nymph_logger.h \
-    ../../../NymphRPC/src/nymph_message.h \
-    ../../../NymphRPC/src/nymph_method.h \
-    ../../../NymphRPC/src/nymph_server.h \
-    ../../../NymphRPC/src/nymph_session.h \
-    ../../../NymphRPC/src/nymph_socket_listener.h \
-    ../../../NymphRPC/src/nymph_types.h \
-    ../../../NymphRPC/src/nymph_utilities.h \
-    ../../../NymphRPC/src/remote_client.h \
-    ../../../NymphRPC/src/remote_server.h
+        mainwindow.h
 
 FORMS += \
         mainwindow.ui

@@ -56,11 +56,15 @@ void MainWindow::openFile() {
 void MainWindow::connectServer() {
 	if (connected) { return; }
 	
+	// Ask for the IP address of the server.
+	QString ip = QInputDialog::getText(this, tr("NymphCast Receiver"), tr("Please provide the NymphCast receiver IP address."));
+	if (ip.isEmpty()) { return; }	
+	
     // Connect to localhost NymphRPC server, standard port.
-    client.connectServer(serverHandle);
+    client.connectServer(ip.toStdString(), serverHandle);
     
 	// TODO: update server name label.
-	
+	ui->remoteLabel->setText("Connected.");
     
     // Successful connect.
     connected = true;
@@ -72,6 +76,8 @@ void MainWindow::disconnectServer() {
 	if (!connected) { return; }
 	
 	client.disconnectServer(serverHandle);
+	
+	ui->remoteLabel->setText("Disconnected.");
 }
 
 
