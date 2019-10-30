@@ -23,9 +23,13 @@
 #include <atomic>
 
 #include "ffplay.h"
+#include "types.h"
 #include "screensaver.h"
 
 #include <nymph/nymph.h>
+
+#include "config_parser.h"
+#include "sarge.h"
 
 #include <Poco/Condition.h>
 #include <Poco/Thread.h>
@@ -445,7 +449,27 @@ void logFunction(int level, std::string logStr) {
 }
 
 
-int main() {
+int main(int argc, char** argv) {
+	// Parse the command line arguments.
+	Sarge sarge;
+	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
+	sarge.parseArguments(argc, argv);
+	
+	std::string config_file;
+	if (!sarge.getFlag("configuration", config_file)) {
+		std::cerr << "No configuration file provided in command line arguments." << std::endl;
+		return 1;
+	}
+	
+	// Read in the configuration.
+	IniParser config;
+	if (!config.load(config_file)) {
+		std::cerr << "Unable to load configuration file: " << config_file << std::endl;
+		return 1;
+	}
+	
+	is_full_screen = config.getValue<bool>("fullscreen", false);
+	
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
