@@ -431,7 +431,24 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 // --- CAST URL ---
 bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 	//
+	// uint8 playback_url(string)
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	values.push_back(new NymphString(url));
+	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		//NymphRemoteServer::shutdown();
+		return false;
+	}
 	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		//NymphRemoteServer::shutdown();
+		return false;
+	}
 	
 	return true;
 }
@@ -440,62 +457,207 @@ bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 // --- VOLUME SET ---
 uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
 	//
+	// uint8 volume_set(uint8 volume)
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	values.push_back(new NymphUint8(volume));
+	if (!NymphRemoteServer::callMethod(handle, "volume_set", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
 	
-	return 0;
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- VOLUME UP ---
 uint8_t NymphCastClient::volumeUp(uint32_t handle) {
 	//
-	return 0;
+	// uint8 volume_up()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "volume_up", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- VOLUME DOWN ---
 uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 	//
-	return 0;
+	// uint8 volume_down()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "volume_down", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK START ---
 uint8_t NymphCastClient::playbackStart(uint32_t handle) {
 	//
-	return 0;
+	// uint8 playback_start()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_start", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK STOP ---
 uint8_t NymphCastClient::playbackStop(uint32_t handle) {
 	//
-	return 0;
+	// uint8 playback_stop()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_stop", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK PAUSE ---
 uint8_t NymphCastClient::playbackPause(uint32_t handle) {
 	//
-	return 0;
+	// uint8 playback_pause()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_pause", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK REWIND ---
 uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
 	//
-	return 0;
+	// uint8 playback_rewind()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_rewind", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK FORWARD ---
 uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 	//
-	return 0;
+	// uint8 playback_forward()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_forward", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
 
 
 // --- PLAYBACK SEEK ---
 uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 	//
-	return 0;
+	// uint8 playback_seek(uint64)
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	values.push_back(new NymphUint64(location));
+	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
 }
