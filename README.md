@@ -28,7 +28,8 @@ Or:
 4. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. The server binary is found under `bin/`. Copy the *.jpg images into the bin folder for the screensaver feature.
-7. Simply execute the binary to have it start listening on port 4004.
+7. Copy the `nymphcast_config.ini` file into `bin` as well.
+7. Simply execute the binary to have it start listening on port 4004: `./nymphcast_server -c nymphcast_config.ini`.
 
 **Player**
 
