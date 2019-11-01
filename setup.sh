@@ -5,6 +5,7 @@ echo "UPDATE: $UPDATE"
 echo "PACKAGE: $PACKAGE"
 
 # Install the dependencies.
+sudo apt update
 sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
 
 if [ ! -z "${UPDATE}" ]; then
