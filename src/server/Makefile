@@ -20,7 +20,7 @@ ifdef OS
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__
 	LIB += -lws2_32
 else
-	LIB := $(LIB) -pthread
+	LIB := $(LIB) -pthread -latomic
 endif
 
 SOURCES := $(wildcard *.cpp)
