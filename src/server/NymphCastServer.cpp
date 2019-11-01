@@ -122,7 +122,9 @@ void resetDataBuffer() {
 	}
 	
 	// Start the Screensaver here for now.
-	ScreenSaver::start(15);
+	if (!video_disable) {
+		ScreenSaver::start(15);
+	}
 }
 
 
@@ -231,7 +233,9 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	it->second.sessionActive = true;
 	
 	// Stop screensaver.
-	ScreenSaver::stop();
+	if (!video_disable) {
+		ScreenSaver::stop();
+	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
@@ -348,7 +352,10 @@ NymphMessage* session_end(int session, NymphMessage* msg, void* data) {
 NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	uint8_t volume = ((NymphUint8*) msg->parameters()[0])->getValue();
+	
+	// 
+	
 	return returnMsg;
 }
 
@@ -378,7 +385,13 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_SPACE;
+	SDL_PushEvent(&event);
+	
 	//
+	
 	return returnMsg;
 }
 
@@ -388,7 +401,13 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_ESCAPE;
+	SDL_PushEvent(&event);
+	
 	//
+	
 	return returnMsg;
 }
 
@@ -398,7 +417,13 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_SPACE;
+	SDL_PushEvent(&event);
+	
 	//
+	
 	return returnMsg;
 }
 
@@ -469,6 +494,7 @@ int main(int argc, char** argv) {
 	}
 	
 	is_full_screen = config.getValue<bool>("fullscreen", false);
+	video_disable = config.getValue<bool>("disable_video", false);
 	
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
@@ -689,7 +715,9 @@ int main(int argc, char** argv) {
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
-	ScreenSaver::start(15);
+	if (!video_disable) {
+		ScreenSaver::start(15);
+	}
 	
 	// Advertise presence via mDNS.
 	
