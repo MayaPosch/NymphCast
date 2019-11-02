@@ -111,6 +111,7 @@ void resetDataBuffer() {
 	media_buffer.requestInFlight = false;
 	
 	playerStarted = false;
+	castingUrl = false;
 	
 	// Send message to client indicating that we're done.
 	std::vector<NymphType*> values;
@@ -354,8 +355,9 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	
 	uint8_t volume = ((NymphUint8*) msg->parameters()[0])->getValue();
 	
-	// 
+	// TODO: figure out a way to set volume directly. Maybe in Player?
 	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -365,7 +367,12 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_0;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -375,7 +382,12 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_9;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -390,8 +402,7 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_SPACE;
 	SDL_PushEvent(&event);
 	
-	//
-	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -406,8 +417,7 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_ESCAPE;
 	SDL_PushEvent(&event);
 	
-	//
-	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -422,8 +432,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_SPACE;
 	SDL_PushEvent(&event);
 	
-	//
-	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -433,7 +442,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -443,7 +452,7 @@ NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -453,7 +462,7 @@ NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 
@@ -463,7 +472,10 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	//
+	castingUrl = true;
+	castUrl = ((NymphString*) msg->parameters()[0])->getValue();
+	
+	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
 

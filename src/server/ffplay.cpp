@@ -69,6 +69,9 @@ int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
 
+bool castingUrl = false;
+std::string castUrl;
+
 /* current context */
 int is_full_screen;
 int64_t audio_callback_time;
@@ -97,11 +100,11 @@ AVPacket flush_pkt;
 #endif */
 
 
-static void do_exit(VideoState *is)
-{
+static void do_exit(VideoState *is) {
     if (is) {
         StreamHandler::stream_close(is);
     }
+	
     if (renderer)
         SDL_DestroyRenderer(renderer);
     if (window)
@@ -118,32 +121,27 @@ static void do_exit(VideoState *is)
     exit(0);
 }
 
-static void sigterm_handler(int sig)
-{
+static void sigterm_handler(int sig) {
     exit(123);
 }
 
 
-static int opt_frame_size(void *optctx, const char *opt, const char *arg)
-{
+static int opt_frame_size(void *optctx, const char *opt, const char *arg) {
     av_log(NULL, AV_LOG_WARNING, "Option -s is deprecated, use -video_size.\n");
     return opt_default(NULL, "video_size", arg);
 }
 
-static int opt_width(void *optctx, const char *opt, const char *arg)
-{
+static int opt_width(void *optctx, const char *opt, const char *arg) {
     screen_width = parse_number_or_die(opt, arg, OPT_INT64, 1, INT_MAX);
     return 0;
 }
 
-static int opt_height(void *optctx, const char *opt, const char *arg)
-{
+static int opt_height(void *optctx, const char *opt, const char *arg) {
     screen_height = parse_number_or_die(opt, arg, OPT_INT64, 1, INT_MAX);
     return 0;
 }
 
-static int opt_format(void *optctx, const char *opt, const char *arg)
-{
+static int opt_format(void *optctx, const char *opt, const char *arg) {
     file_iformat = av_find_input_format(arg);
     if (!file_iformat) {
         av_log(NULL, AV_LOG_FATAL, "Unknown input format: %s\n", arg);
@@ -152,14 +150,12 @@ static int opt_format(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-static int opt_frame_pix_fmt(void *optctx, const char *opt, const char *arg)
-{
+static int opt_frame_pix_fmt(void *optctx, const char *opt, const char *arg) {
     av_log(NULL, AV_LOG_WARNING, "Option -pix_fmt is deprecated, use -pixel_format.\n");
     return opt_default(NULL, "pixel_format", arg);
 }
 
-static int opt_sync(void *optctx, const char *opt, const char *arg)
-{
+static int opt_sync(void *optctx, const char *opt, const char *arg) {
     if (!strcmp(arg, "audio"))
         av_sync_type = AV_SYNC_AUDIO_MASTER;
     else if (!strcmp(arg, "video"))
@@ -173,20 +169,17 @@ static int opt_sync(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-static int opt_seek(void *optctx, const char *opt, const char *arg)
-{
+static int opt_seek(void *optctx, const char *opt, const char *arg) {
     start_time = parse_time_or_die(opt, arg, 1);
     return 0;
 }
 
-static int opt_duration(void *optctx, const char *opt, const char *arg)
-{
+static int opt_duration(void *optctx, const char *opt, const char *arg) {
     duration = parse_time_or_die(opt, arg, 1);
     return 0;
 }
 
-static int opt_show_mode(void *optctx, const char *opt, const char *arg)
-{
+static int opt_show_mode(void *optctx, const char *opt, const char *arg) {
     show_mode = (ShowMode) !strcmp(arg, "video") ? SHOW_MODE_VIDEO :
                 !strcmp(arg, "waves") ? SHOW_MODE_WAVES :
                 !strcmp(arg, "rdft" ) ? SHOW_MODE_RDFT  :
@@ -194,21 +187,19 @@ static int opt_show_mode(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-static void opt_input_file(void *optctx, const char *filename)
-{
+static void opt_input_file(void *optctx, const char *filename) {
     if (input_filename) {
         av_log(NULL, AV_LOG_FATAL,
                "Argument '%s' provided as input filename, but '%s' was already specified.\n",
                 filename, input_filename);
         exit(1);
     }
-    if (!strcmp(filename, "-"))
-        filename = "pipe:";
+	
+    if (!strcmp(filename, "-")) { filename = "pipe:"; }
     input_filename = filename;
 }
 
-static int opt_codec(void *optctx, const char *opt, const char *arg)
-{
+static int opt_codec(void *optctx, const char *opt, const char *arg) {
    const char *spec = strchr(opt, ':');
    if (!spec) {
        av_log(NULL, AV_LOG_ERROR,
@@ -240,9 +231,9 @@ static const OptionDef options[] = {
     { "y", HAS_ARG, { .func_arg = opt_height }, "force displayed height", "height" },
     { "s", HAS_ARG | OPT_VIDEO, { .func_arg = opt_frame_size }, "set frame size (WxH or abbreviation)", "size" },
     { "fs", OPT_BOOL, { &is_full_screen }, "force full screen" },
-    { "an", OPT_BOOL, { &audio_disable }, "disable audio" },
-    { "vn", OPT_BOOL, { &video_disable }, "disable video" },
-    { "sn", OPT_BOOL, { &subtitle_disable }, "disable subtitling" },
+    //{ "an", OPT_BOOL, { &audio_disable }, "disable audio" },
+    //{ "vn", OPT_BOOL, { &video_disable }, "disable video" },
+    //{ "sn", OPT_BOOL, { &subtitle_disable }, "disable subtitling" },
     { "ast", OPT_STRING | HAS_ARG | OPT_EXPERT, { &wanted_stream_spec[AVMEDIA_TYPE_AUDIO] }, "select desired audio stream", "stream_specifier" },
     { "vst", OPT_STRING | HAS_ARG | OPT_EXPERT, { &wanted_stream_spec[AVMEDIA_TYPE_VIDEO] }, "select desired video stream", "stream_specifier" },
     { "sst", OPT_STRING | HAS_ARG | OPT_EXPERT, { &wanted_stream_spec[AVMEDIA_TYPE_SUBTITLE] }, "select desired subtitle stream", "stream_specifier" },
@@ -250,7 +241,7 @@ static const OptionDef options[] = {
     { "t", HAS_ARG, { .func_arg = opt_duration }, "play  \"duration\" seconds of audio/video", "duration" },
     { "bytes", OPT_INT | HAS_ARG, { &seek_by_bytes }, "seek by bytes 0=off 1=on -1=auto", "val" },
     { "seek_interval", OPT_FLOAT | HAS_ARG, { &seek_interval }, "set seek interval for left/right keys, in seconds", "seconds" },
-    { "nodisp", OPT_BOOL, { &display_disable }, "disable graphical display" },
+    //{ "nodisp", OPT_BOOL, { &display_disable }, "disable graphical display" },
     { "noborder", OPT_BOOL, { &borderless }, "borderless window" },
     { "alwaysontop", OPT_BOOL, { &alwaysontop }, "window always on top" },
     { "volume", OPT_INT | HAS_ARG, { &startup_volume}, "set startup volume 0=min 100=max", "volume" },
@@ -520,40 +511,49 @@ void Ffplay::run() {
 		
 		
 	// --- AVIOContext section ---
-	// Create internal buffer for FFmpeg.
-	size_t iBufSize = 16 * 1024 * 1024; // 16 MB
-	uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
-	 
-	// Allocate the AVIOContext:
-	// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
-	AVIOContext* ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
-											 0,                  // bWriteable (1=true,0=false) 
-											 &media_buffer,          // user data ; will be passed to our callback functions
-											 media_read, 
-											 0,                  // Write callback function (not used in this example) 
-											 0); 
-											 //media_seek); 
-	 
-	// Allocate the AVFormatContext.
-	AVFormatContext* formatContext = avformat_alloc_context();
-	formatContext->pb = ioContext;	// Set the IOContext.
-	//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
+	AVFormatContext* formatContext = 0;
+	AVIOContext* ioContext = 0;
+	if (!castingUrl) {
+		input_filename = "";
 	
-	// Determine the input format.
-	// Create the ProbeData structure for av_probe_input_format.
-	/* AVProbeData probeData;
-	media_buffer.dataMutex.lock();
-	probeData.buf = (unsigned char*) media_buffer.data[0].data();
-	//probeData.buf_size = media_buffer.data[0].size();
-	probeData.buf_size = 4096;
-	probeData.filename = "";
-	 
-	// Determine the input-format:
-	pCtx->iformat = av_probe_input_format(&probeData, 1);
-	media_buffer.dataMutex.unlock(); */
-	
-	
+		// Create internal buffer for FFmpeg.
+		size_t iBufSize = 16 * 1024 * 1024; // 16 MB
+		uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
+		 
+		// Allocate the AVIOContext:
+		// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
+		ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
+												 0,                  // bWriteable (1=true,0=false) 
+												 &media_buffer,          // user data ; will be passed to our callback functions
+												 media_read, 
+												 0,                  // Write callback function (not used in this example) 
+												 0); 
+												 //media_seek); 
+		 
+		// Allocate the AVFormatContext.
+		formatContext = avformat_alloc_context();
+		formatContext->pb = ioContext;	// Set the IOContext.
+		//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
+		
+		// Determine the input format.
+		// Create the ProbeData structure for av_probe_input_format.
+		/* AVProbeData probeData;
+		media_buffer.dataMutex.lock();
+		probeData.buf = (unsigned char*) media_buffer.data[0].data();
+		//probeData.buf_size = media_buffer.data[0].size();
+		probeData.buf_size = 4096;
+		probeData.filename = "";
+		 
+		// Determine the input-format:
+		pCtx->iformat = av_probe_input_format(&probeData, 1);
+		media_buffer.dataMutex.unlock(); */
+		
+		
 	// --- End AVIOContext section ---
+	}
+	else {
+		input_filename = castUrl.c_str();
+	}
 	
 	// Start player.
 	
@@ -627,7 +627,6 @@ void Ffplay::run() {
         }
     }
 
-	input_filename = "";
     is = StreamHandler::stream_open(input_filename, file_iformat, formatContext);
     if (!is) {
         av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
@@ -642,12 +641,15 @@ void Ffplay::run() {
 	SDL_Delay(500); // wait 500 ms.
 	
 	// Free resources
-	avformat_close_input(&formatContext);
-	av_freep(&ioContext->buffer);
-	av_freep(&ioContext);
+	if (formatContext) {
+		avformat_close_input(&formatContext);
+	}
 	
-	/* fprintf(stderr, "Destroying texture...\n");
-	SDL_DestroyTexture(texture); */
+	if (ioContext) {
+		av_freep(&ioContext->buffer);
+		av_freep(&ioContext);
+	}
+	
 	av_log(NULL, AV_LOG_FATAL, "Destroying renderer...\n");
 	SDL_DestroyRenderer(renderer);
 	av_log(NULL, AV_LOG_FATAL, "Destroying window...\n");

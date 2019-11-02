@@ -8,6 +8,9 @@
 #include <SDL2/SDL_thread.h>
 
 
+#include <string>
+
+
 extern "C" { 
 #include "libavutil/avstring.h"
 #include "libavutil/eval.h"
@@ -419,6 +422,9 @@ extern char *afilters;
 extern int autorotate;
 extern int find_stream_info;
 extern int filter_nbthreads;
+
+extern bool castingUrl;
+extern std::string castUrl;
 
 /* current context */
 extern int is_full_screen;
