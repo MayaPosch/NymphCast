@@ -652,8 +652,10 @@ void Ffplay::run() {
 	
 	av_log(NULL, AV_LOG_FATAL, "Destroying renderer...\n");
 	SDL_DestroyRenderer(renderer);
-	av_log(NULL, AV_LOG_FATAL, "Destroying window...\n");
-	SDL_DestroyWindow(window);
+	if (!display_disable) {
+		av_log(NULL, AV_LOG_FATAL, "Destroying window...\n");
+		SDL_DestroyWindow(window);
+	}
 	
 	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
 	
