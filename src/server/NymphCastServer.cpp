@@ -506,7 +506,7 @@ int main(int argc, char** argv) {
 	}
 	
 	is_full_screen = config.getValue<bool>("fullscreen", false);
-	video_disable = config.getValue<bool>("disable_video", false);
+	display_disable = config.getValue<bool>("disable_video", false);
 	
 	// Initialise the server.
 	std::cout << "Initialising server...\n";

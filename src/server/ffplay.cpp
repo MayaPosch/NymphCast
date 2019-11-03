@@ -346,7 +346,8 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		db->bufferDelayMutex.lock();
 		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
 	}
-	else if (db->buffBytesLeft == 0) { return 0; }
+	else if (db->buffBytesLeft == 0) { return AVERROR_EOF; }
+	//else if (db->buffBytesLeft == 0) { return 0; }
 
 	if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
 		bytesToCopy = buf_size;
@@ -441,7 +442,8 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	// Debug
 	//OUT_FILE.write((const char*) buf, bytesToCopy);
 	
-	if (bytesToCopy == 0) { return 0; }
+	//if (bytesToCopy == 0) { return 0; }
+	if (bytesToCopy == 0) { return AVERROR_EOF; }
 	
 	return bytesToCopy;
 }
