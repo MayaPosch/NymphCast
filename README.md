@@ -1,13 +1,20 @@
 # NymphCast #
 
-NymphCast is a server-client project that allows for video and audio to be streamed over the network. It also supports generic commands between both sides, allowing for the construction of additional functionality ('apps') on top of this foundation. 
+NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the casting of streaming media URLs from client devices to a NymphCast server.
+
+In addition it supports powerful apps (NymphCast apps) written in AngelScript to extend the functionality of NymphCast with a variety of online services. 
+
+![NymphCast diagram](doc/nymphcast.png)
 
 ## Goals ##
 
-* Server (receiver) should be usable on any Single-Board Computer (SBC), including Raspberry Pi and derivatives.
-* Casting of local media to a NymphCast server.
-* Casting of URLs, for streaming by the server without client interaction.
-* Casting of commands, to control volume, open NymphCast apps, etc.
+- [x] Server (receiver) should be usable on mainstream Linux-capable Single-Board Computer (SBC), including Raspberry Pi and derivatives.
+
+- [x] Casting of local media to a NymphCast server.
+
+- [x] Casting of URLs, for streaming by the server without client interaction.
+
+- [ ] Casting of commands, to control volume, open and control NymphCast apps.
 
 
 ## Quick Start ##
@@ -28,8 +35,9 @@ Or:
 4. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. The server binary is found under `bin/`. Copy the *.jpg images into the bin folder for the screensaver feature.
-7. Copy the `nymphcast_config.ini` file into `bin` as well.
-7. Simply execute the binary to have it start listening on port 4004: `./nymphcast_server -c nymphcast_config.ini`.
+7. Copy the `nymphcast_config.ini` file into `bin/` as well.
+8. Copy the `apps/` folder into the `bin/`' folder.
+9. Simply execute the binary to have it start listening on port 4004: `./nymphcast_server -c nymphcast_config.ini`.
 
 **Player**
 
