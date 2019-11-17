@@ -109,7 +109,7 @@ string command_processor(string input) {
 			playAlbum(parseInt(bits[2]));
 		}
 		else if (bits[1] == "track") {
-			playTrack(parseInt(bits[2]));
+			return playTrack(parseInt(bits[2]));
 		}
 		else {
 			// Error.
