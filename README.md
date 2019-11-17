@@ -74,11 +74,6 @@ The server targets SBCs, but like the client (and SDK) should work on any platfo
 As NymphCast is currently alpha software, no releases are being made available yet. 
 
 
-## Status ##
-
-* Casting of audio & video to a NymphCast server works.
-* API is being extended to support URLs and commands/apps.
-
 ## Building ##
 
 To build NymphCast, one needs the following dependencies in addition to a C++ toolchain with C++17 support.
