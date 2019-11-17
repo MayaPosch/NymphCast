@@ -1,20 +1,20 @@
 # NymphCast #
 
-NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the casting of streaming media URLs from client devices to a NymphCast server.
+NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device.
 
-In addition it supports powerful apps (NymphCast apps) written in AngelScript to extend the functionality of NymphCast with a variety of online services. 
+In addition, it supports powerful apps (NymphCast apps) written in AngelScript to extend the functionality of NymphCast with a variety of online services. 
 
 ![NymphCast diagram](doc/nymphcast.png)
 
 ## Goals ##
 
-- [x] Server (receiver) should be usable on mainstream Linux-capable Single-Board Computer (SBC), including Raspberry Pi and derivatives.
+- [x] Server (receiver) works on mainstream Linux-capable Single-Board Computers (SBCs), tested on Raspberry Pi 2 (v1.1).
 
-- [x] Casting of local media to a NymphCast server.
+- [x] Streaming of local media to a NymphCast server.
 
-- [x] Casting of URLs, for streaming by the server without client interaction.
+- [x] Sending of URLs, for streaming by the server without client interaction.
 
-- [ ] Casting of commands, to control volume, open and control NymphCast apps.
+- [ ] Sending of commands, to control volume, open and control NymphCast apps.
 
 
 ## Quick Start ##
