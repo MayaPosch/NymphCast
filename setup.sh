@@ -48,6 +48,9 @@ cp src/server/*.jpg src/server/bin/.
 # Copy the configuration file into the bin folder.
 cp src/server/*.ini src/server/bin/.
 
+# Copy the NymphCast apps into the bin folder.
+cp -r src/server/apps src/server/bin/.
+
 if [ ! -z "${PACKAGE}" ]; then
 	# Package into a tar.gz
 	echo "Packaging into tar.gz file."
