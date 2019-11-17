@@ -40,6 +40,8 @@ private slots:
 	
 	void mute();
 	void adjustVolume(int value);
+	
+	void sendCommand();
     
 private:
     Ui::MainWindow *ui;

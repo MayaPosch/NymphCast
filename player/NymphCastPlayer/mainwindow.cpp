@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
 	
+	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
+	
 }
 
 MainWindow::~MainWindow()
@@ -191,6 +193,30 @@ void MainWindow::adjustVolume(int value) {
 	if (value < 0 || value < 100) { return; }
 	
 	client.volumeSet(serverHandle, value);
+}
+
+
+// --- SEND COMMAND ---
+void MainWindow::sendCommand() {
+	if (!connected) { return; }
+	
+	// Read the data in the line edit and send it to the remote app.
+	// FIXME: hardcode the soundcloud app here for prototype purposes.
+	std::string appId = "soundcloud";
+	std::string message = ui->remoteAppLineEdit->text().toStdString();
+	
+	// Append the command to the output field.
+	ui->remoteAppTextEdit->appendPlainText(ui->remoteAppLineEdit->text());
+	ui->remoteAppTextEdit->appendPlainText("\n");
+	
+	// Clear the input field.
+	ui->remoteAppLineEdit->clear();
+	
+	std::string response = client.sendApplicationMessage(serverHandle, appId, message);
+	
+	// Append the response to the output field.
+	ui->remoteAppTextEdit->appendPlainText(QString::fromStdString(response));
+	ui->remoteAppTextEdit->appendPlainText("\n");
 }
 
 

@@ -6,21 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>421</width>
-    <height>529</height>
+    <width>420</width>
+    <height>860</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>420</width>
-    <height>520</height>
+    <height>600</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>NymphCast Player</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -56,24 +56,6 @@
          </spacer>
         </item>
        </layout>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QSlider" name="horizontalSlider">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="durationLabel">
-        <property name="text">
-         <string>1:00 / 23:05</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </item>
@@ -197,6 +179,24 @@
      </layout>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QSlider" name="horizontalSlider">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="durationLabel">
+        <property name="text">
+         <string>1:00 / 23:05</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
        <string>Remote</string>
@@ -240,6 +240,50 @@
       </layout>
      </widget>
     </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Remote apps</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="updateRemoteAppsButton">
+           <property name="text">
+            <string>Refresh</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="remoteAppsComboBox"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="startAppButton">
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QPlainTextEdit" name="remoteAppTextEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="remoteAppLineEdit"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -247,7 +291,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>421</width>
+     <width>420</width>
      <height>21</height>
     </rect>
    </property>
