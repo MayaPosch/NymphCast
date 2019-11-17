@@ -123,6 +123,16 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 }
 
 
+void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data) {
+	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
+	
+	if (appMessageFunction) {
+		appMessageFunction(appId, message);
+	}
+}
+
+
 // --- CONSTRUCTOR ---
 NymphCastClient::NymphCastClient() {
 	//
@@ -130,6 +140,8 @@ NymphCastClient::NymphCastClient() {
 	// Initialise the remote client instance.
 	long timeout = 60000; // 60 seconds.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	
+	appMessageFunction = 0;
 }
 
 
@@ -138,6 +150,61 @@ NymphCastClient::~NymphCastClient() {
 	//
 	NymphRemoteServer::shutdown();
 }
+
+
+// --- SET APPLICATION CALLBACK ---
+void NymphCastClient::setApplicationCallback(AppMessageFunction function) {
+	appMessageFunction = function;
+}
+
+
+// --- GET APPLICATION LIST ---
+std::string NymphCastClient::getApplicationList(uint32_t handle) {
+	// Request the application list from the remote receiver.
+	// string app_list()
+	std::vector<NymphType*> values;
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(handle, "app_list", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		//NymphRemoteServer::disconnect(handle, result);
+		return std::string();
+	}
+	
+	if (returnValue->type() != NYMPH_STRING) {
+		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+		//NymphRemoteServer::disconnect(handle, result);
+		return std::string();
+	}
+	
+	return ((NymphString*) returnValue)->getValue();
+}
+
+
+// --- SEND APPLICATION MESSAGE ---
+std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string appId, 
+																		std::string message) {
+	// string app_send(uint32 appId, string data)
+	std::vector<NymphType*> values;
+	values.push_back(new NymphString(appId));
+	values.push_back(new NymphString(message));
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(handle, "app_send", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		//NymphRemoteServer::disconnect(handle, result);
+		return std::string();
+	}
+	
+	if (returnValue->type() != NYMPH_STRING) {
+		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+		//NymphRemoteServer::disconnect(handle, result);
+		return std::string();
+	}
+	
+	return ((NymphString*) returnValue)->getValue();
+}
+
 
 // --- mDNS disaster zone start ---
 /* #include <stdio.h>
@@ -315,10 +382,10 @@ void NymphCastClient::findServers() {
 
 // --- CONNECT SERVER ---
 bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
-	// TODO: accept servers.
 	std::string serverip = "127.0.0.1";
-	
-	// TODO: don't shutdown entire remote server on an error.
+	if (!ip.empty()) {
+		serverip = ip;
+	}
 		
 	// Connect to the remote server.
 	std::string result;

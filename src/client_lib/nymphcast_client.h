@@ -16,23 +16,34 @@
 
 #include <string>
 #include <fstream>
+#include <functional>
 
 #include <nymph/nymph.h>
 
 //#include "mdns.h"
 
 
+typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
+
+
 class NymphCastClient {
 	std::string clientId = "NymphClient_21xb";
 	std::ifstream source;
 	
+	AppMessageFunction appMessageFunction;
+	
 	void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data);
+	void ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data);
 	
 public:
 	NymphCastClient();
 	~NymphCastClient();
+	
+	void setApplicationCallback(AppMessageFunction function);
+	std::string getApplicationList(uint32_t handle);
+	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);
 
 	void findServers();
 	bool connectServer(std::string ip, uint32_t &handle);
