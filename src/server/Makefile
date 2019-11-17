@@ -10,8 +10,8 @@ RM = rm
 INSTALLDIR ?= /usr/local/bin
 
 OUTPUT = nymphcast_server
-INCLUDE = -I .
-LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image
+INCLUDE = -I . -I angelscript/angelscript/include -I angelscript/add_on
+LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 
 # Check for MinGW and patch up POCO
@@ -23,16 +23,23 @@ else
 	LIB := $(LIB) -pthread -latomic
 endif
 
-SOURCES := $(wildcard *.cpp)
+SOURCES := $(wildcard *.cpp) $(wildcard angelscript/add_on/scriptstdstring/*.cpp) \
+			$(wildcard angelscript/add_on/scriptbuilder/*.cpp) \
+			$(wildcard angelscript/add_on/scriptarray/*.cpp) 
 C_SOURCES := $(wildcard *.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
 
-all: makedir $(OBJECTS) $(C_OBJECTS) bin/$(OUTPUT)
+all: makedir angelscript $(OBJECTS) $(C_OBJECTS) bin/$(OUTPUT)
 
 makedir:
-	$(MAKEDIR) obj
+	$(MAKEDIR) obj/angelscript/add_on/scriptstdstring
+	$(MAKEDIR) obj/angelscript/add_on/scriptbuilder
+	$(MAKEDIR) obj/angelscript/add_on/scriptarray
 	$(MAKEDIR) bin
+	
+angelscript:
+	make -C angelscript/angelscript/projects/gnuc/ static
 
 obj/%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CFLAGS)
@@ -48,4 +55,7 @@ install:
 
 clean:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
+	make -C angelscript/angelscript/projects/gnuc/ clean
+	
+.PHONY: all clean angelscript makedir
 	

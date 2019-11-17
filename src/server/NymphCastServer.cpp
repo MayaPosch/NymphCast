@@ -21,6 +21,10 @@
 #include <iterator>
 #include <thread>
 #include <atomic>
+#include <chrono>
+#include <filesystem> 		// C++17
+
+namespace fs = std::filesystem;
 
 #include "ffplay.h"
 #include "types.h"
@@ -33,8 +37,18 @@
 
 #include <Poco/Condition.h>
 #include <Poco/Thread.h>
+#include <Poco/URI.h>
+#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/StreamCopier.h>
 
 using namespace Poco;
+
+#include <angelscript.h>
+#include <scriptstdstring/scriptstdstring.h>
+#include <scriptbuilder/scriptbuilder.h>
+#include <scriptarray/scriptarray.h>
 
 
 // Global objects.
@@ -126,6 +140,214 @@ void resetDataBuffer() {
 	if (!video_disable) {
 		ScreenSaver::start(15);
 	}
+}
+
+
+// --- ANGEL SCRIPT SECTION ---
+
+// AngelScript globals
+asIScriptEngine* engine = 0;
+asIScriptContext* soundcloudContext = 0;
+asIScriptFunction* soundcloudFunction = 0;
+std::chrono::time_point<std::chrono::steady_clock> timeOut;
+
+//typedef unsigned int DWORD;
+
+
+// --- MESSAGE CALLBACK ---
+// Angel Script runtime callback for messages.
+void MessageCallback(const asSMessageInfo *msg, void *param) {
+	const char *type = "ERR ";
+	if( msg->type == asMSGTYPE_WARNING )
+		type = "WARN";
+	else if( msg->type == asMSGTYPE_INFORMATION )
+		type = "INFO";
+
+	std::cout << msg->section << " (" << msg->row << ", " << msg->col << ") : " << type << " : " 
+				<< msg->message << std::endl;
+}
+
+
+std::chrono::time_point<std::chrono::steady_clock> timeGetTime() {
+	/* timeval time;
+	gettimeofday(&time, NULL);
+	return time.tv_sec*1000 + time.tv_usec/1000; */
+	std::chrono::time_point<std::chrono::steady_clock> now;
+	now = std::chrono::steady_clock::now();
+	return now;
+}
+
+
+void LineCallback(asIScriptContext *ctx, std::chrono::time_point<std::chrono::steady_clock> *timeOut) {
+	// If the time out is reached we abort the script
+	if (*timeOut < timeGetTime()) {
+		ctx->Abort();
+	}
+
+	// It would also be possible to only suspend the script,
+	// instead of aborting it. That would allow the application
+	// to resume the execution where it left of at a later 
+	// time, by simply calling Execute() again.
+}
+
+
+// --- CLIENT SEND ---
+// Send a message to a client by a NymphCast app.
+void clientSend(uint32_t id, std::string message) {
+	// Send a message to a client for an app, if the cliend ID exists.
+	
+	
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphBoolean* resVal = 0;
+	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "ReceiveFromAppCallback", 
+																				values, result)) {
+		std::cerr << "Calling callback failed: " << result << std::endl;
+		return;
+	}
+}
+
+
+/* struct HttpQuery {
+	std::string url;
+	std::string body;
+};
+
+
+struct HttpResponse {
+	std::string body;
+}; */
+
+
+// --- PERFORM HTTP QUERY ---
+bool performHttpQuery(std::string query, std::string &response) {
+	// Create Poco HTTP query, send it off, wait for response.
+	Poco::URI uri(query);
+	std::string path(uri.getPathAndQuery());
+	if (path.empty()) { path = "/"; }
+	
+	Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
+	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
+											Poco::Net::HTTPMessage::HTTP_1_1);
+	session.sendRequest(req);
+	Poco::Net::HTTPResponse httpResponse;
+    std::istream& rs = session.receiveResponse(httpResponse);
+    std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
+    if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
+        Poco::StreamCopier::copyToString(rs, response);
+        return true;
+    }
+    else {
+        //it went wrong ?
+        return false;
+    }
+	
+	// Put response into its struct.
+	// TODO: implement.
+	
+	
+	return true;
+}
+
+
+// --- STREAM TRACK ---
+// Attempt to stream from the indicated URL.
+bool streamTrack(std::string url) {
+	castUrl = url;
+	castingUrl = true;
+	
+	if (!playerStarted) {
+		playerStarted = true;
+		avThread.start(ffplay);
+	}
+	
+	return true;
+}
+
+
+// --- ANGEL SCRIPT INIT ---
+// Set up AngelScript runtime to allow installed NymphCast applications to be used.
+void angelScriptInit() {
+	//
+	
+	// Create the script engine
+	engine = asCreateScriptEngine();
+	if (engine == 0) {
+		std::cout << "Failed to create script engine." << std::endl;
+		return;
+	}
+	
+	// The script compiler will write any compiler messages to the callback.
+	engine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL);
+	
+	// Register the script string type
+	RegisterStdString(engine);
+	RegisterScriptArray(engine, false);
+	RegisterStdStringUtils(engine);
+	
+	// Register functions.
+	int r;
+	r = engine->RegisterGlobalFunction(
+								"bool performHttpQuery(string, string &out)", 
+								asFUNCTION(performHttpQuery), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
+								"void clientSend(int, string)", 
+								asFUNCTION(clientSend), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
+								"bool streamTrack(string)", 
+								asFUNCTION(streamTrack), asCALL_CDECL);
+								
+								
+	// For the prototype, set up just the SoundCloud app module.
+	
+	
+	// We will load the script from a file on the disk.
+	/* FILE *f = fopen("script.as", "rb");
+	if( f == 0 ) 	{
+		std::cout << "Failed to open the script file 'script.as'." << std::endl;
+		return -1;
+	}
+
+	// Determine the size of the file	
+	fseek(f, 0, SEEK_END);
+	int len = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	// On Win32 it is possible to do the following instead
+	// int len = _filelength(_fileno(f));
+
+	// Read the entire file
+	string script;
+	script.resize(len);
+	size_t c = fread(&script[0], len, 1, f);
+	fclose(f);
+
+	if (c == 0) {
+		std::cout << "Failed to load script file." << endl;
+		return -1;
+	}
+
+	// Add the script sections that will be compiled into executable code.
+	// If we want to combine more than one file into the same script, then 
+	// we can call AddScriptSection() several times for the same module and
+	// the script engine will treat them all as if they were one. The script
+	// section name, will allow us to localize any errors in the script code.
+	asIScriptModule *mod = engine->GetModule(0, asGM_ALWAYS_CREATE);
+	r = mod->AddScriptSection("script", &script[0], len);
+	if (r < 0) {
+		std::cout << "AddScriptSection() failed" << endl;
+		return -1;
+	}
+	
+	// Compile the script. If there are any compiler messages they will
+	// be written to the message stream that we set right after creating the 
+	// script engine. If there are no errors, and no warnings, nothing will
+	// be written to the stream.
+	r = mod->Build();
+	if (r < 0) {
+		std::cout << "Build() failed" << endl;
+		return -1;
+	} */
 }
 
 
@@ -480,6 +702,217 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- APP LIST ---
+// string app_list()
+NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// We obtain and return the list of available apps here.
+	// For now we use the list of folders in the apps/ folder. Each folder name is taken to be
+	// the app name.
+	fs::directory_iterator it = fs::directory_iterator("apps/");
+	//std::vector<std::string> appnames;
+	std::string names;
+	while (it != fs::directory_iterator()) {
+		if (fs::is_directory(it->path())) {
+			//appnames.push_back(i->path().string());
+			names.append(it->path().string());
+			names.append("\n");
+		}
+	}
+	
+	// Serialise the appnames vector.
+	
+	returnMsg->setResultValue(new NymphString(names));
+	return returnMsg;
+}
+
+
+// --- APP SEND ---
+// string app_send(string appId, string data)
+NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Validate the application ID, try to find running instance, else launch new app instance.
+	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
+	
+	// FIXME: hardcoding the SoundCloud app for prototype purposes.
+	std::string result = "";
+	if (appId == "soundcloud") {
+		std::cout << "Found SoundCloud app." << std::endl;
+		if (soundcloudFunction == 0) {
+			// Initialise new instance of the SoundCloud app.
+			int r;
+			
+			std::cout << "Loading SoundCloud app..." << std::endl;
+
+			// We will load the script from a file on the disk.
+			FILE *f = fopen("apps/soundcloud/soundcloud.as", "rb");
+			if (f == 0) {
+				std::cout << "Failed to open the script file 'apps/soundcloud/soundcloud.as'." << std::endl;
+				//result = ;
+			}
+
+			// Determine the size of the file	
+			fseek(f, 0, SEEK_END);
+			int len = ftell(f);
+			fseek(f, 0, SEEK_SET);
+
+			// On Win32 it is possible to do the following instead
+			// int len = _filelength(_fileno(f));
+
+			// Read the entire file
+			std::string script;
+			script.resize(len);
+			size_t c = fread(&script[0], len, 1, f);
+			fclose(f);
+
+			if (c == 0) {
+				std::cout << "Failed to load script file." << std::endl;
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+			
+			std::cout << "Creating module." << std::endl;
+
+			// Add the script sections that will be compiled into executable code.
+			// If we want to combine more than one file into the same script, then 
+			// we can call AddScriptSection() several times for the same module and
+			// the script engine will treat them all as if they were one. The script
+			// section name, will allow us to localize any errors in the script code.
+			asIScriptModule *mod = engine->GetModule(0, asGM_ALWAYS_CREATE);
+			r = mod->AddScriptSection("script", &script[0], len);
+			if (r < 0) {
+				std::cout << "AddScriptSection() failed" << std::endl;
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+			
+			std::cout << "Compile script." << std::endl;
+			
+			// Compile the script. If there are any compiler messages they will
+			// be written to the message stream that we set right after creating the 
+			// script engine. If there are no errors, and no warnings, nothing will
+			// be written to the stream.
+			r = mod->Build();
+			if (r < 0) {
+				std::cout << "Build() failed" << std::endl;
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+
+			// The engine doesn't keep a copy of the script sections after Build() has
+			// returned. So if the script needs to be recompiled, then all the script
+			// sections must be added again.
+
+			// If we want to have several scripts executing at different times but 
+			// that have no direct relation with each other, then we can compile them
+			// into separate script modules. Each module use their own namespace and 
+			// scope, so function names, and global variables will not conflict with
+			// each other.
+			
+			std::cout << "Creating context." << std::endl;
+			
+			// Create a context that will execute the script.
+			soundcloudContext = engine->CreateContext();
+			if (soundcloudContext == 0) {
+				std::cout << "Failed to create the context." << std::endl;
+				engine->Release();
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+			
+			std::cout << "Setting line callback." << std::endl;
+
+			// We don't want to allow the script to hang the application, e.g. with an
+			// infinite loop, so we'll use the line callback function to set a timeout
+			// that will abort the script after a certain time. Before executing the 
+			// script the timeOut variable will be set to the time when the script must 
+			// stop executing. 
+			r = soundcloudContext->SetLineCallback(asFUNCTION(LineCallback), &timeOut, asCALL_CDECL);
+			if (r < 0) {
+				std::cout << "Failed to set the line callback function." << std::endl;
+				soundcloudContext->Release();
+				engine->Release();
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+			
+			std::cout << "Find function." << std::endl;
+
+			// Find the function for the function we want to execute.
+			soundcloudFunction = engine->GetModule(0)->GetFunctionByDecl("string command_processor(string input)");
+			if (soundcloudFunction == 0) {
+				std::cout << "The function 'string command_processor(string input)' was not found." << std::endl;
+				soundcloudContext->Release();
+				engine->Release();
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+			
+			// Prepare the script context with the function we wish to execute. Prepare()
+			// must be called on the context before each new script function that will be
+			// executed. Note, that if you intend to execute the same function several 
+			// times, it might be a good idea to store the function returned by 
+			// GetFunctionByDecl(), so that this relatively slow call can be skipped.
+			r = soundcloudContext->Prepare(soundcloudFunction);
+			if (r < 0) {
+				std::cout << "Failed to prepare the context." << std::endl;
+				soundcloudContext->Release();
+				engine->Release();
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+		}
+		
+		std::cout << "Setting app arguments." << std::endl;
+		
+		// Pass string to app.
+		soundcloudContext->SetArgObject(0, (void*) &message);
+		
+		// Set the timeout before executing the function. Give the function 3 seconds
+		// to return before we'll abort it.
+		timeOut = timeGetTime() + std::chrono::seconds(3);
+
+		// Execute the function.
+		std::cout << "Executing the script." << std::endl;
+		std::cout << "---" << std::endl;
+		int r = soundcloudContext->Execute();
+		std::cout << "---" << std::endl;
+		if (r != asEXECUTION_FINISHED) {
+			// The execution didn't finish as we had planned. Determine why.
+			if (r == asEXECUTION_ABORTED) {
+				std::cout << "The script was aborted before it could finish. Probably it timed out." 
+							<< std::endl;
+			}
+			else if (r == asEXECUTION_EXCEPTION) {
+				std::cout << "The script ended with an exception." << std::endl;
+
+				// Write some information about the script exception
+				asIScriptFunction* func = soundcloudContext->GetExceptionFunction();
+				std::cout << "func: " << func->GetDeclaration() << std::endl;
+				std::cout << "modl: " << func->GetModuleName() << std::endl;
+				std::cout << "sect: " << func->GetScriptSectionName() << std::endl;
+				std::cout << "line: " << soundcloudContext->GetExceptionLineNumber() << std::endl;
+				std::cout << "desc: " << soundcloudContext->GetExceptionString() << std::endl;
+			}
+			else
+				std::cout << "The script ended for some unforeseen reason (" << r << ")." 
+							<< std::endl;
+		}
+		else {
+			// Retrieve the return value from the context
+			result = *(std::string*) soundcloudContext->GetReturnObject();
+			std::cout << "The script function returned: " << result << std::endl;
+		}
+	}
+	
+	returnMsg->setResultValue(new NymphString(result));
+	return returnMsg;
+}
+
+
 // --- LOG FUNCTION ---
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -671,6 +1104,24 @@ int main(int argc, char** argv) {
 	// 
 	
 	
+	// AppList
+	// string app_list()
+	// Returns a list of installed applications.
+	parameters.clear();
+	NymphMethod appListFunction("app_list", parameters, NYMPH_STRING);
+	appListFunction.setCallback(app_list);
+	NymphRemoteClient::registerMethod("app_list", appListFunction);	
+	
+	// AppSend
+	// string app_send(uint32 appId, string data)
+	// Allows a client to send data to a NymphCast application.
+	parameters.clear();
+	parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_STRING);
+	NymphMethod appSendFunction("app_send", parameters, NYMPH_STRING);
+	appSendFunction.setCallback(app_send);
+	NymphRemoteClient::registerMethod("app_send", appSendFunction);	
+	
 	
 	// Register client callbacks
 	//
@@ -696,6 +1147,16 @@ int main(int argc, char** argv) {
 	NymphMethod mediaSeekCallback("MediaSeekCallback", parameters, NYMPH_NULL);
 	mediaSeekCallback.enableCallback();
 	NymphRemoteClient::registerCallback("MediaSeekCallback", mediaSeekCallback);
+	
+	// ReceiveFromAppCallback
+	// Sends message from a NymphCast app to the client.
+	// void ReceiveFromAppCallback(string appId, string message)
+	parameters.clear();
+	parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_STRING);
+	NymphMethod receiveFromAppCallback("ReceiveFromAppCallback", parameters, NYMPH_NULL);
+	receiveFromAppCallback.enableCallback();
+	NymphRemoteClient::registerCallback("ReceiveFromAppCallback", receiveFromAppCallback);
 	
 	// End client callback registration.
 	
@@ -731,7 +1192,8 @@ int main(int argc, char** argv) {
 		ScreenSaver::start(15);
 	}
 	
-	// Advertise presence via mDNS.
+	// Initialise AngelScript runtime.
+	angelScriptInit();
 	
 	
 	// Wait for the condition to be signalled.
