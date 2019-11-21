@@ -14,9 +14,12 @@
 
 #include <iostream>
 #include <vector>
-#include <filesystem> 		// C++17
+//#include <filesystem> 		// C++17
 
-namespace fs = std::filesystem;
+//namespace fs = std::filesystem;
+
+#include <Poco/Path.h>
+#include <Poco/File.h>
 
 
 void logFunction(int level, std::string logStr) {
@@ -454,8 +457,10 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	//
 	
-	fs::path filePath(filename);
-	if (!fs::exists(filePath)) {
+	/* fs::path filePath(filename);
+	if (!fs::exists(filePath)) { */
+	Poco::File file(filename);
+	if (!file.exists()) {
 		std::cerr << "File " << filename << " doesn't exist." << std::endl;
 		return 1;
 	}
@@ -474,7 +479,8 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	std::string result;
 	NymphType* returnValue = 0;
 	NymphStruct* ms = new NymphStruct;
-	ms->addPair("filesize", new NymphUint32(fs::file_size(filePath)));
+	//ms->addPair("filesize", new NymphUint32(fs::file_size(filePath)));
+	ms->addPair("filesize", new NymphUint32((uint32_t) file.getSize()));
 	values.clear();
 	values.push_back(ms);
 	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
