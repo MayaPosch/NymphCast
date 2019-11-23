@@ -33,7 +33,7 @@ using namespace Poco;
 Condition cnd;
 Mutex mtx;
 
-int handle;		// NymphRPC handle.
+uint32_t handle;		// NymphRPC handle.
 std::ifstream source;
 // ---
 
