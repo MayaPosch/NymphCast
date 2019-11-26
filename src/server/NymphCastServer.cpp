@@ -39,6 +39,7 @@ namespace fs = std::filesystem;
 #include <Poco/Thread.h>
 #include <Poco/URI.h>
 #include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/StreamCopier.h>
@@ -49,6 +50,8 @@ using namespace Poco;
 #include <scriptstdstring/scriptstdstring.h>
 #include <scriptbuilder/scriptbuilder.h>
 #include <scriptarray/scriptarray.h>
+
+#include <angelscript/json/json.h>
 
 
 // Global objects.
@@ -208,17 +211,6 @@ void clientSend(uint32_t id, std::string message) {
 }
 
 
-/* struct HttpQuery {
-	std::string url;
-	std::string body;
-};
-
-
-struct HttpResponse {
-	std::string body;
-}; */
-
-
 // --- PERFORM HTTP QUERY ---
 bool performHttpQuery(std::string query, std::string &response) {
 	// Create Poco HTTP query, send it off, wait for response.
@@ -248,6 +240,50 @@ bool performHttpQuery(std::string query, std::string &response) {
 	
 	return true;
 }
+
+
+// --- PERFORM HTTPS QUERY ---
+bool performHttpsQuery(std::string query, std::string &response) {
+	// Create Poco HTTP query, send it off, wait for response.
+	Poco::URI uri(query);
+	std::string path(uri.getPathAndQuery());
+	if (path.empty()) { path = "/"; }
+	
+	const Poco::Net::Context::Ptr context = new Poco::Net::Context(
+        Poco::Net::Context::CLIENT_USE, "", "", "",
+        Poco::Net::Context::VERIFY_NONE, 9, false,
+        "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+	
+	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
+											Poco::Net::HTTPMessage::HTTP_1_1);
+	session.sendRequest(req);
+	Poco::Net::HTTPResponse httpResponse;
+    std::istream& rs = session.receiveResponse(httpResponse);
+    std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
+    if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
+        Poco::StreamCopier::copyToString(rs, response);
+        return true;
+    }
+    else {
+        //it went wrong ?
+        return false;
+    }
+	
+	// Put response into its struct.
+	// TODO: implement.
+	
+	
+	return true;
+}
+
+
+// --- PARSE JSON STRING ---
+/* bool parseJsonString(std::string json, std::string dictionary) {
+	//
+	
+	return true;
+} */
 
 
 // --- STREAM TRACK ---
@@ -291,11 +327,17 @@ void angelScriptInit() {
 								"bool performHttpQuery(string, string &out)", 
 								asFUNCTION(performHttpQuery), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
+								"bool performHttpsQuery(string, string &out)", 
+								asFUNCTION(performHttpsQuery), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
 								"void clientSend(int, string)", 
 								asFUNCTION(clientSend), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
 								"bool streamTrack(string)", 
 								asFUNCTION(streamTrack), asCALL_CDECL);
+								
+	// Register further modules.
+	initJson(engine);
 								
 								
 	// For the prototype, set up just the SoundCloud app module.
