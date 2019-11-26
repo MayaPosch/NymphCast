@@ -1,6 +1,7 @@
 
 
 const string clientId = "iHwMAYPsv39tFIqaL5hR3Un41wI7JhXO";
+const string baseUrl = "https://api.soundcloud.com";
 
 
 string start() {
@@ -11,26 +12,47 @@ string start() {
 
 
 string findAlbum(string name) {
-	// Send query for albums (/albums)
-	string query = "";
+	// Send query for albums (/playlists)
+	string query = baseUrl + "/playlists?client_id=" + clientId + "&q=" + name;
 	string response;
 
-	if (!performHttpQuery(query, response)) {
+	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
 		return "HTTP error.";
 	}
 	
-	// Parse results, return them.
-	return response;
+	// Parse results, get the 
+	JSONFile json; // = JSONFile();
+	if (!json.fromString(response)) {
+		return "Failed to parse JSON response.";
+	}
+	
+	JSONValue root = json.getRoot();
+	
+	string output = "";
+	for (int i = 0; i < root.get_size(); ++i) {
+		JSONValue jv = root[i];
+		
+		// Get the ID, artist and album name from the Object.
+		string id = formatUInt(jv.get("id").getUInt());
+		string title = jv.get("title").getString();
+		JSONValue user = jv.get("user");
+		string user_id = formatUInt(user.get("id").getUInt());
+		string username = user.get("username").getString();
+		
+		output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+	}
+	
+	return output;
 }
 
 
 string findTrack(string name) {
 	// Send query for tracks (/tracks)
-	string query = "";
+	string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
 	string response;
 
-	if (!performHttpQuery(query, response)) {
+	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
 		return "HTTP error.";
 	}
@@ -41,10 +63,10 @@ string findTrack(string name) {
 
 
 string findArtist(string name) {
-	string query = "";
+	string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
 	string response;
 
-	if (!performHttpQuery(query, response)) {
+	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
 		return "HTTP error.";
 	}
@@ -107,9 +129,15 @@ string command_processor(string input) {
 	else if (bits[0] == "play") {
 		if (bits[1] == "album") {
 			playAlbum(parseInt(bits[2]));
+			
+			return "Playing album...";
 		}
 		else if (bits[1] == "track") {
-			return playTrack(parseInt(bits[2]));
+			if (playTrack(parseInt(bits[2]))) {
+				return "Streaming failed.";
+			}
+			
+			return "Streaming track...";
 		}
 		else {
 			// Error.
