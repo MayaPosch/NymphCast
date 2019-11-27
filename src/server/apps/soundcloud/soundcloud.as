@@ -34,7 +34,8 @@ string findAlbum(string name) {
 		JSONValue jv = root[i];
 		
 		// Get the ID, artist and album name from the Object.
-		string id = formatUInt(jv.get("id").getUInt());
+		JSONValue idVal = jv.get("id");
+		string id = formatUInt(idVal.getUInt());
 		string title = jv.get("title").getString();
 		JSONValue user = jv.get("user");
 		string user_id = formatUInt(user.get("id").getUInt());
