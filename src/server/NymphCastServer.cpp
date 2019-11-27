@@ -263,6 +263,12 @@ bool performHttpsQuery(std::string query, std::string &response) {
     std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
     if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
         Poco::StreamCopier::copyToString(rs, response);
+		
+		// Debug
+		std::cout << "HTTP response:\n---------------\n";
+		std::cout << response;
+		std::cout << "\n---------------\n";
+		
         return true;
     }
     else {
