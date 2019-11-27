@@ -30,6 +30,7 @@
 //#include <vector>
 //#include <map>
 #include <string>
+#include <iostream>
 
 
 #include <Poco/Dynamic/Var.h>
@@ -145,15 +146,13 @@ public:
         *this = value;
     }
     /// Copy-construct from another JSON value.
-    JSONValue(const JSONValue& value) :
-        type_(0)
-    {
+    JSONValue(const JSONValue& value) : type_(0) {
         *this = value;
     }
     /// Destruct.
     ~JSONValue()
     {
-        SetType(JSON_NULL);
+        //SetType(JSON_NULL);
     }
 
     /// Assign from a boolean.
@@ -195,22 +194,35 @@ public:
     /// Check is string.
     bool IsString() const { return GetValueType() == JSON_STRING; }
     /// Check is array.
-    bool IsArray() const { return GetValueType() == JSON_ARRAY; }
+    //bool IsArray() const { return GetValueType() == JSON_ARRAY; }
+    bool IsArray() const { return isArrayType; }
     /// Check is object.
-    bool IsObject() const { return GetValueType() == JSON_OBJECT; }
+    //bool IsObject() const { return GetValueType() == JSON_OBJECT; }
+    bool IsObject() const { return isObjectType; }
 
     /// Return boolean value.
-    bool GetBool(bool defaultValue = false) const { return IsBool() ? boolValue_ : defaultValue;}
+    bool GetBool(bool defaultValue = false) const { return value.isBoolean() ? value.convert<bool>() : defaultValue;}
     /// Return integer value.
-    int GetInt(int defaultValue = 0) const { return IsNumber() ? (int)numberValue_ : defaultValue; }
+    //int GetInt(int defaultValue = 0) const { return IsNumber() ? (int)numberValue_ : defaultValue; }
+	int GetInt(int defaultValue = 0) const { return value.isNumeric() ? value.convert<int>() : defaultValue; }
     /// Return unsigned integer value.
-    unsigned GetUInt(unsigned defaultValue = 0) const { return IsNumber() ? (unsigned)numberValue_ : defaultValue; }
+    unsigned GetUInt(unsigned defaultValue = 0) const {
+		std::cout << "getUInt() called." << std::endl;
+		if (value.isNumeric()) { std::cout << "Is numberic." << std::endl; }
+		else { std::cout << "NaN." << std::endl; }
+		return value.isNumeric() ? value.convert<unsigned int>() : defaultValue;
+	}
     /// Return float value.
     float GetFloat(float defaultValue = 0.0f) const { return IsNumber() ? (float)numberValue_ : defaultValue; }
     /// Return double value.
     double GetDouble(double defaultValue = 0.0) const { return IsNumber() ? numberValue_ : defaultValue; }
     /// Return string value. The 'defaultValue' may potentially be returned as is, so it is the responsibility of the caller to ensure the 'defaultValue' remains valid while the return value is being referenced.
-    const std::string& GetString(const std::string& defaultValue = std::string()) const { return IsString() ? *stringValue_ : defaultValue;}
+    const std::string GetString(const std::string& defaultValue = std::string()) const { 
+		std::cout << "getString() called." << std::endl;
+		if (value.isString()) { std::cout << "Is string." << std::endl; }
+		else { std::cout << "NaS." << std::endl; }
+		return value.isString() ? value.convert<std::string>() : defaultValue;
+	}
     /// Return C string value. Default to empty string literal.
     const char* GetCString(const char* defaultValue = "") const { return IsString() ? stringValue_->c_str() : defaultValue;}
     /// Return JSON array value.
@@ -220,7 +232,7 @@ public:
 
     // JSON array functions
     /// Return JSON value at index.
-    JSONValue& operator [](unsigned index);
+    JSONValue operator [](unsigned index);
     /// Return JSON value at index.
     const JSONValue& operator [](unsigned index) const;
     /// Add JSON value at end.
@@ -244,7 +256,7 @@ public:
     /// Set JSON value with key.
     void Set(const std::string& key, const JSONValue& value);
     /// Return JSON value with key.
-    const JSONValue get(const std::string& key) const;
+    JSONValue get(std::string& key);
     /// Erase a pair by key.
     bool Erase(const std::string& key);
     /// Return whether contains a pair with key.
@@ -262,7 +274,7 @@ public:
     void Clear();
 
     /// Set value type and number type, internal function.
-    void SetType(JSONValueType valueType, JSONNumberType numberType = JSONNT_NAN);
+    void SetType(JSONValueType valueType); //, JSONNumberType numberType = JSONNT_NAN);
 
     /// Set variant, context must provide for resource ref.
    /*  void SetVariant(const Variant& variant, Context* context = nullptr);
@@ -301,8 +313,16 @@ public:
     static JSONNumberType GetNumberTypeFromName(const std::string& typeName);
     /// Return a value type from name; NaN if unrecognized.
     //static JSONNumberType GetNumberTypeFromName(const char* typeName);
+	
+	void setVariant(Poco::Dynamic::Var var);
 
 private:
+	Poco::Dynamic::Var value;
+	bool isArrayType;
+	bool isObjectType;
+	Poco::JSON::Object::Ptr objectPtr;
+	Poco::JSON::Array::Ptr arrayPtr;
+	
     /// type.
     unsigned type_;
     union {

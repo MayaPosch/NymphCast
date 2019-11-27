@@ -33,6 +33,9 @@
 #include "jsonvalue.h"
 
 
+#include <iostream>
+
+
 static void ConstructJSONValue(JSONValue* ptr) {
     new(ptr) JSONValue();
 }
@@ -69,7 +72,7 @@ static void DestructJSONValue(JSONValue* ptr) {
     ptr->~JSONValue();
 }
 
-static JSONValue& JSONValueAtPosition(unsigned position, JSONValue& jsonValue) {
+static JSONValue JSONValueAtPosition(unsigned position, JSONValue& jsonValue) {
     return jsonValue[position];
 }
 
@@ -141,11 +144,11 @@ void RegisterJSONValue(asIScriptEngine* engine) {
     engine->RegisterObjectMethod("JSONValue", "uint getUInt(uint defaultValue = 0) const", asMETHOD(JSONValue, GetUInt), asCALL_THISCALL);
     engine->RegisterObjectMethod("JSONValue", "float getFloat(float defaultValue = 0) const", asMETHOD(JSONValue, GetFloat), asCALL_THISCALL);
     engine->RegisterObjectMethod("JSONValue", "double getDouble(double defaultValue = 0) const", asMETHOD(JSONValue, GetDouble), asCALL_THISCALL);
-    engine->RegisterObjectMethod("JSONValue", "const string& getString(const string&in defaultValue = string()) const", asMETHOD(JSONValue, GetString), asCALL_THISCALL);
+    engine->RegisterObjectMethod("JSONValue", "const string getString(const string&in defaultValue = string()) const", asMETHOD(JSONValue, GetString), asCALL_THISCALL);
     //engine->RegisterObjectMethod("JSONValue", "Variant GetVariant(Variant defaultValue = Variant()) const", asMETHOD(JSONValue, GetVariant), asCALL_THISCALL);
     //engine->RegisterObjectMethod("JSONValue", "VariantMap GetVariantMap(VariantMap defaultValue = VariantMap()) const", asMETHOD(JSONValue, GetVariantMap), asCALL_THISCALL);
 
-    engine->RegisterObjectMethod("JSONValue", "JSONValue& opIndex(uint)", asFUNCTION(JSONValueAtPosition), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod("JSONValue", "JSONValue opIndex(uint)", asFUNCTION(JSONValueAtPosition), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("JSONValue", "const JSONValue& opIndex(uint) const", asFUNCTION(JSONValueAtPosition), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("JSONValue", "void Push(const JSONValue&in)", asMETHOD(JSONValue, Push), asCALL_THISCALL);
     engine->RegisterObjectMethod("JSONValue", "void Pop()", asMETHOD(JSONValue, Pop), asCALL_THISCALL);
@@ -157,7 +160,7 @@ void RegisterJSONValue(asIScriptEngine* engine) {
     engine->RegisterObjectMethod("JSONValue", "JSONValue& opIndex(const string&in)", asFUNCTION(JSONValueAtKey), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("JSONValue", "const JSONValue& opIndex(const string&in) const", asFUNCTION(JSONValueAtKey), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("JSONValue", "void Set(const string&in, const JSONValue&in)", asMETHOD(JSONValue, Set), asCALL_THISCALL);
-    engine->RegisterObjectMethod("JSONValue", "const JSONValue& get(const string&in) const", asMETHOD(JSONValue, get), asCALL_THISCALL);
+    engine->RegisterObjectMethod("JSONValue", "JSONValue get(string&in)", asMETHOD(JSONValue, get), asCALL_THISCALL);
     engine->RegisterObjectMethod("JSONValue", "void Erase(const string&in)", asMETHODPR(JSONValue, Erase, (const std::string&), bool), asCALL_THISCALL);
     engine->RegisterObjectMethod("JSONValue", "bool Contains(const string&in) const", asMETHOD(JSONValue, Contains), asCALL_THISCALL);
 
@@ -201,28 +204,36 @@ JSONValue& JSONValue::operator =(bool rhs) {
 }
 
 JSONValue& JSONValue::operator =(int rhs) {
-    SetType(JSON_NUMBER, JSONNT_INT);
+    //SetType(JSON_NUMBER, JSONNT_INT);
+    SetType(JSON_NUMBER);
     numberValue_ = rhs;
+	
+	std::cout << "New JSON int: " << rhs << std::endl;
 
     return *this;
 }
 
 JSONValue& JSONValue::operator =(unsigned rhs) {
-    SetType(JSON_NUMBER, JSONNT_UINT);
+    //SetType(JSON_NUMBER, JSONNT_UINT);
+    SetType(JSON_NUMBER);
     numberValue_ = rhs;
+	
+	std::cout << "New JSON uint: " << rhs << std::endl;
 
     return *this;
 }
 
 JSONValue& JSONValue::operator =(float rhs) {
-    SetType(JSON_NUMBER, JSONNT_FLOAT_DOUBLE);
+    //SetType(JSON_NUMBER, JSONNT_FLOAT_DOUBLE);
+    SetType(JSON_NUMBER);
     numberValue_ = rhs;
 
     return *this;
 }
 
 JSONValue& JSONValue::operator =(double rhs) {
-    SetType(JSON_NUMBER, JSONNT_FLOAT_DOUBLE);
+    //SetType(JSON_NUMBER, JSONNT_FLOAT_DOUBLE);
+    SetType(JSON_NUMBER);
     numberValue_ = rhs;
 
     return *this;
@@ -231,6 +242,8 @@ JSONValue& JSONValue::operator =(double rhs) {
 JSONValue& JSONValue::operator =(const std::string& rhs) {
     SetType(JSON_STRING);
     *stringValue_ = rhs;
+	
+	std::cout << "New JSONString: " << rhs << std::endl;
 
     return *this;
 }
@@ -245,6 +258,8 @@ JSONValue& JSONValue::operator =(const char* rhs) {
 JSONValue& JSONValue::operator =(const JSONArray& rhs) {
     SetType(JSON_ARRAY);
     *arrayValue_ = rhs;
+	
+	std::cout << "New JSON array." << std::endl;
 
     return *this;
 }
@@ -252,16 +267,25 @@ JSONValue& JSONValue::operator =(const JSONArray& rhs) {
 JSONValue& JSONValue::operator =(const JSONObject& rhs) {
     SetType(JSON_OBJECT);
     *objectValue_ = rhs;
+	
+	std::cout << "New JSON object." << std::endl;
 
     return *this;
 }
 
 JSONValue& JSONValue::operator =(const JSONValue& rhs) {
     if (this == &rhs) { return *this; }
+	
+	value = rhs.value;
+	isArrayType = rhs.isArrayType;
+	isObjectType = rhs.isObjectType;
+	objectPtr = rhs.objectPtr;
+	arrayPtr = rhs.arrayPtr;
 
-    SetType(rhs.GetValueType(), rhs.GetNumberType());
+    //SetType(rhs.GetValueType(), rhs.GetNumberType());
+    //SetType(rhs.GetValueType());
 
-    switch (GetValueType()) {
+    /* switch (GetValueType()) {
     case JSON_BOOL:
         boolValue_ = rhs.boolValue_;
         break;
@@ -283,17 +307,19 @@ JSONValue& JSONValue::operator =(const JSONValue& rhs) {
 
     default:
         break;
-    }
+    } */
 
     return *this;
 }
 
 JSONValueType JSONValue::GetValueType() const {
-    return (JSONValueType)(type_ >> 16u);
+    //return (JSONValueType)(type_ >> 16u);
+	return (JSONValueType) type_;
 }
 
 JSONNumberType JSONValue::GetNumberType() const {
-    return (JSONNumberType)(type_ & 0xffffu);
+    //return (JSONNumberType)(type_ & 0xffffu);
+	return (JSONNumberType) type_;
 }
 
 std::string JSONValue::GetValueTypeName() const {
@@ -304,22 +330,73 @@ std::string JSONValue::GetNumberTypeName() const {
     return GetNumberTypeName(GetNumberType());
 }
 
-JSONValue& JSONValue::operator [](unsigned index) {
-    // Convert to array type
-    SetType(JSON_ARRAY);
+JSONValue JSONValue::operator [](unsigned index) {
+	if (!isArrayType) { return emptyValue; }
+	
+	std::cout << "Retrieving array index " << index << std::endl;
 
     //return (*arrayValue_)[index];
 	// TODO: implement
+	Poco::Dynamic::Var value = arrayPtr->get(index);
+	if (value.isEmpty()) { 
+		std::cerr << "Failed to find index." << std::endl;
+		return emptyValue; 
+	}
+	
+	JSONValue val;
+	val.setVariant(value);
+	return val;
+	/* if (value.isNull()) {
+		val.SetType(JSON_NULL);
+	}
+	else *//*  if (value.isBoolean()) {
+		//val.SetType(JSON_BOOL);
+		val = value.convert<bool>();
+	}
+	else if (value.isNumeric()) {
+		//val.SetType(JSON_NUMBER);
+		val = value.convert<double>();
+		
+		std::cout << "Found double." << std::endl;
+	}
+	else if (value.isString()) {
+		//val.SetType(JSON_STRING);
+		val = value.convert<std::string>();
+		
+		std::cout << "Found string." << std::endl;
+	}
+	else if (value.type() == typeid(Poco::JSON::Object::Ptr)) {
+		val.SetType(JSON_OBJECT);
+		val = (JSONObject) value.extract<Poco::JSON::Object::Ptr>();
+		
+		std::cout << "Found object." << std::endl;
+	}
+	else if (value.type() == typeid(Poco::JSON::Array::Ptr)) {
+		val.SetType(JSON_ARRAY);
+		val = (JSONArray) value.extract<Poco::JSON::Array::Ptr>();
+		
+		std::cout << "Found double." << std::endl;
+	}
+	else {
+		return EMPTY;
+	} */
 	
 	return emptyValue;
 }
 
 const JSONValue& JSONValue::operator [](unsigned index) const {
-    if (GetValueType() != JSON_ARRAY)
-        return EMPTY;
+    if (!isArrayType) { return emptyValue; }
+	
+	std::cout << "Retrieving const array index " << index << std::endl;
 
     //return (*arrayValue_)[index];
 	// TODO: implement
+	Poco::Dynamic::Var value = arrayPtr->get(index);
+	if (value.isEmpty()) { return emptyValue; }
+	
+	JSONValue val;
+	val.setVariant(value);
+	return val;
 	
 	return emptyValue;
 }
@@ -360,8 +437,17 @@ void JSONValue::Resize(unsigned newSize) {
 }
 
 unsigned JSONValue::size() const {
-    if (GetValueType() == JSON_ARRAY) { return (*arrayValue_)->size(); }
-    else if (GetValueType() == JSON_OBJECT) { return (*objectValue_)->size(); }
+	if (isArrayType) { 
+		std::cout << "Array size: " << arrayPtr->size() << std::endl;
+		return arrayPtr->size(); 
+	}
+	if (isObjectType) { 
+		std::cout << "Object size: " << objectPtr->size() << std::endl;
+		return objectPtr->size(); 
+	}
+	
+    /* if (GetValueType() == JSON_ARRAY) { return (*arrayValue_)->size(); }
+    else if (GetValueType() == JSON_OBJECT) { return (*objectValue_)->size(); } */
 
     return 0;
 }
@@ -389,39 +475,59 @@ void JSONValue::Set(const std::string& key, const JSONValue& value) {
     //(*objectValue_)[key] = value;
 }
 
-const JSONValue JSONValue::get(const std::string& key) const {
-    if (GetValueType() != JSON_OBJECT) { return EMPTY; }
+JSONValue JSONValue::get(std::string& key) {
+	std::cout << "Checking for object... " << isObjectType << "/" << isArrayType << std::endl;
+	std::cout << "Searching for key: " << key << std::endl;
+	
+    //if (GetValueType() != JSON_OBJECT) { return EMPTY; }
+	if (!isObjectType) { return EMPTY; }
+	
+	std::cout << "Retrieving value from object. Key: " << key << std::endl;
 
-    Poco::Dynamic::Var value = (*objectValue_)->get(key);
-	if (value.isEmpty()) { return EMPTY; }
+    Poco::Dynamic::Var value = objectPtr->get(key);
+	if (value.isEmpty()) {
+		std::cerr << "Key wasn't found." << std::endl;
+		return EMPTY; 
+	}
 	
 	JSONValue val;
+	val.setVariant(value);
+	
 	/* if (value.isNull()) {
 		val.SetType(JSON_NULL);
 	}
-	else */ if (value.isBoolean()) {
+	else */ /* if (value.isBoolean()) {
 		val.SetType(JSON_BOOL);
 		val = value.convert<bool>();
 	}
 	else if (value.isNumeric()) {
 		val.SetType(JSON_NUMBER);
 		val = value.convert<double>();
+		
+		std::cout << "Retrieved double." << std::endl;
 	}
 	else if (value.isString()) {
 		val.SetType(JSON_STRING);
 		val = value.convert<std::string>();
+		
+		std::cout << "Retrieved string." << std::endl;
 	}
 	else if (value.type() == typeid(Poco::JSON::Object::Ptr)) {
 		val.SetType(JSON_OBJECT);
 		val = (JSONObject) value.extract<Poco::JSON::Object::Ptr>();
+		
+		std::cout << "Retrieved object." << std::endl;
 	}
 	else if (value.type() == typeid(Poco::JSON::Array::Ptr)) {
 		val.SetType(JSON_ARRAY);
 		val = (JSONArray) value.extract<Poco::JSON::Array::Ptr>();
+		
+		std::cout << "Retrieved array." << std::endl;
 	}
 	else {
-		return EMPTY;
-	}
+		std::cout << "Default: empty value." << std::endl;
+		return EMPTY;*/
+	//}
 
     return val;
 }
@@ -476,10 +582,14 @@ void JSONValue::Clear() {
         (*objectValue_)->clear();
 }
 
-void JSONValue::SetType(JSONValueType valueType, JSONNumberType numberType) {
-    int type = valueType << 16u | numberType;
+void JSONValue::SetType(JSONValueType valueType) { //, JSONNumberType numberType) {
+	std::cout << "SetType called." << std::endl;
+	
+    int type = valueType; // << 16u | numberType;
     if (type == type_)
         return;
+
+	std::cout << "Deleting existing values..." << std::endl;
 
     switch (GetValueType()) {
     case JSON_STRING:
@@ -499,18 +609,29 @@ void JSONValue::SetType(JSONValueType valueType, JSONNumberType numberType) {
     }
 
     type_ = type;
+	
+	std::cout << "Type is now set to: " << type_ << std::endl;
 
     switch (GetValueType()) {
     case JSON_STRING:
         stringValue_ = new std::string();
+		
+		std::cout << "New string created." << std::endl;
+		
         break;
 
     case JSON_ARRAY:
         arrayValue_ = new JSONArray();
+		
+		std::cout << "New array created." << std::endl;
+		
         break;
 
     case JSON_OBJECT:
         objectValue_ = new JSONObject();
+		
+		std::cout << "New object created." << std::endl;
+		
         break;
 
     default:
@@ -774,3 +895,25 @@ JSONNumberType JSONValue::GetNumberTypeFromName(const std::string& typeName) {
 /* JSONNumberType JSONValue::GetNumberTypeFromName(const char* typeName) {
     return (JSONNumberType)GetStringListIndex(typeName, numberTypeNames, JSONNT_NAN);
 } */
+
+
+void JSONValue::setVariant(Poco::Dynamic::Var var) {
+	std::cout << "setVariant called." << std::endl;
+	
+	value = var;
+	isObjectType = false;
+	isArrayType = false;
+	
+	if (var.type() == typeid(Poco::JSON::Object::Ptr)) {
+		std::cout << "Setting Object." << std::endl;
+		objectPtr = value.extract<Poco::JSON::Object::Ptr>();
+		isObjectType = true;
+		isArrayType = false;
+	}
+	else if (var.type() == typeid(Poco::JSON::Array::Ptr)) {
+		std::cout << "Setting Array." << std::endl;
+		arrayPtr = value.extract<Poco::JSON::Array::Ptr>();
+		isArrayType = true;
+		isObjectType = false;
+	}
+}

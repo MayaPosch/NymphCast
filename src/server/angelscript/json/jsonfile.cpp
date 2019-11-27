@@ -262,9 +262,12 @@ bool JSONFile::fromString(const std::string &json) {
     if (json.empty()) { return false; }
 	
 	Poco::JSON::Parser parser;
+	//Poco::Dynamic::Var result = parser.parse(json);
 	Poco::Dynamic::Var result = parser.parse(json);
 	
-	if (result.type() == typeid(Poco::JSON::Object::Ptr)) {
+	root_.setVariant(result);
+	
+	/* if (result.type() == typeid(Poco::JSON::Object::Ptr)) {
 		Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 		root_.SetType(JSON_OBJECT);
 		root_ = object;
@@ -277,7 +280,7 @@ bool JSONFile::fromString(const std::string &json) {
 	}
 	else {
 		return false;
-	}
+	} */
 
     /* MemoryBuffer buffer(source.CString(), source.Length());
     return Load(buffer); */
