@@ -898,20 +898,22 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 				returnMsg->setResultValue(new NymphString(result));
 				return returnMsg;
 			}
-			
-			// Prepare the script context with the function we wish to execute. Prepare()
-			// must be called on the context before each new script function that will be
-			// executed. Note, that if you intend to execute the same function several 
-			// times, it might be a good idea to store the function returned by 
-			// GetFunctionByDecl(), so that this relatively slow call can be skipped.
-			r = soundcloudContext->Prepare(soundcloudFunction);
-			if (r < 0) {
-				std::cout << "Failed to prepare the context." << std::endl;
-				soundcloudContext->Release();
-				engine->Release();
-				returnMsg->setResultValue(new NymphString(result));
-				return returnMsg;
-			}
+		}
+		
+		std::cout << "Preparing script context." << std::endl;
+					
+		// Prepare the script context with the function we wish to execute. Prepare()
+		// must be called on the context before each new script function that will be
+		// executed. Note, that if you intend to execute the same function several 
+		// times, it might be a good idea to store the function returned by 
+		// GetFunctionByDecl(), so that this relatively slow call can be skipped.
+		int r = soundcloudContext->Prepare(soundcloudFunction);
+		if (r < 0) {
+			std::cout << "Failed to prepare the context." << std::endl;
+			soundcloudContext->Release();
+			engine->Release();
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
 		}
 		
 		std::cout << "Setting app arguments." << std::endl;
@@ -926,7 +928,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 		// Execute the function.
 		std::cout << "Executing the script." << std::endl;
 		std::cout << "---" << std::endl;
-		int r = soundcloudContext->Execute();
+		r = soundcloudContext->Execute();
 		std::cout << "---" << std::endl;
 		if (r != asEXECUTION_FINISHED) {
 			// The execution didn't finish as we had planned. Determine why.
