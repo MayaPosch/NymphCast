@@ -51,7 +51,7 @@ obj/%.o: %.cpp
 obj/%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(INCLUDE) -std=c11
 	
-bin/$(OUTPUT):
+bin/$(OUTPUT): $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LIB)
 	
 install:
