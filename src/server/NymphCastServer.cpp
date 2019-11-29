@@ -284,14 +284,6 @@ bool performHttpsQuery(std::string query, std::string &response) {
 }
 
 
-// --- PARSE JSON STRING ---
-/* bool parseJsonString(std::string json, std::string dictionary) {
-	//
-	
-	return true;
-} */
-
-
 // --- STREAM TRACK ---
 // Attempt to stream from the indicated URL.
 bool streamTrack(std::string url) {
