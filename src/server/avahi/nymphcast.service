@@ -6,7 +6,7 @@
   <name replace-wildcards="yes">NymphCast on %h</name>
 
   <service>
-    <type>_http._tcp</type>
+    <type>_nymphcast._tcp</type>
     <port>4004</port>
   </service>
 
