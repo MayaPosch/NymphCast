@@ -7,14 +7,22 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 
 MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 	
+	// Set application options.
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setApplicationName("NymphCastPlayer");
+	QCoreApplication::setApplicationVersion("v0.1-alpha");
+	QCoreApplication::setOrganizationName("Nyanko");
+	
 	// Set up UI connections.
 	// Menu
 	connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(connectServer()));
+	connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(disconnectServer()));
 	connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 	connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 	connect(ui->actionFile, SIGNAL(triggered()), this, SLOT(castFile()));
@@ -80,6 +88,40 @@ void MainWindow::disconnectServer() {
 	client.disconnectServer(serverHandle);
 	
 	ui->remoteLabel->setText("Disconnected.");
+}
+
+
+// --- REMOTE LIST REFRESH ---
+// Refresh the list of remote servers on the network.
+void MainWindow::remoteListRefresh() {
+	// Get the current list.
+	std::vector<NymphCastRemote> remotes = client.findServers();
+	
+	// Update the list with any changed items.
+	// Target the 'remotesListWidget' widget.
+	ui->remotesListWidget->clear(); // FIXME: just resetting the whole thing for now.
+	for (int i = 0; i < remotes.size(); ++i) {
+		//new QListWidgetItem(remotes[i].ipv4 + " (" + remotes[i].name + ")", ui->remotesListWidget);
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(QString::fromStdString(remotes[i].ipv4 + " (" + remotes[i].name + ")"));
+		ui->remotesListWidget->insertItem(i, newItem);
+	}
+	
+}
+
+
+// --- REMOTE CONNECT SELECTED ---
+// Connect to the selected remote server.
+void MainWindow::remoteConnectSelected() {
+	// Check that the selected server hasn't already been connected to.
+	
+	// Connect to the server.
+}
+
+
+// --- REMOTE DISCONNECT SELECTED ---
+void MainWindow::remoteDisconnectSelected() {
+	//
 }
 
 

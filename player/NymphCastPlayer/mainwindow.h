@@ -41,6 +41,10 @@ private slots:
 	void mute();
 	void adjustVolume(int value);
 	
+	void remoteListRefresh();
+	void remoteConnectSelected();
+	void remoteDisconnectSelected();
+	
 	void sendCommand();
     
 private:

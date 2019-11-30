@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="playerTab">
        <attribute name="title">
@@ -248,11 +248,7 @@
             </layout>
            </item>
            <item>
-            <widget class="QPlainTextEdit" name="logTextEdit">
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
+            <widget class="QListWidget" name="remotesListWidget"/>
            </item>
           </layout>
          </widget>
@@ -303,14 +299,17 @@
              <item>
               <widget class="QLineEdit" name="remoteAppLineEdit"/>
              </item>
+             <item>
+              <widget class="QTextBrowser" name="textBrowser">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="openLinks">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QQuickWidget" name="quickWidget">
-             <property name="resizeMode">
-              <enum>QQuickWidget::SizeRootObjectToView</enum>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
@@ -421,13 +420,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>QQuickWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">QQuickWidget</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

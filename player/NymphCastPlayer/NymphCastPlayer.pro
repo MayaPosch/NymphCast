@@ -22,7 +22,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++17
+#CONFIG += c++14
 
 SOURCES += \
         main.cpp \
@@ -35,6 +35,8 @@ FORMS += \
         mainwindow.ui
 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
+
+win32:LIBS += -lws2_32
 
 RESOURCES     = resources.qrc
 
