@@ -21,6 +21,8 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
+#include "zeroconf.hpp"
+
 
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -136,6 +138,18 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 }
 
 
+void PrintLog(Zeroconf::LogLevel level, const std::string& message) {
+    switch (level) {
+        case Zeroconf::LogLevel::Error:
+            std::cout << "E: " << message << std::endl;
+            break;
+        case Zeroconf::LogLevel::Warning:
+            std::cout << "W: " << message << std::endl;
+            break;
+    }
+}
+
+
 // --- CONSTRUCTOR ---
 NymphCastClient::NymphCastClient() {
 	//
@@ -145,6 +159,16 @@ NymphCastClient::NymphCastClient() {
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
 	
 	appMessageFunction = 0;
+	
+	Zeroconf::SetLogCallback(PrintLog);
+	
+/* #ifdef WIN32
+    WSADATA wsa = {0};
+    if (WSAStartup(0x202, &wsa) != 0) {
+        std::cout << "E: Unable to initialize WinSock" << std::endl;
+        return 1;
+    }
+#endif */
 }
 
 
@@ -209,177 +233,42 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 }
 
 
-// --- mDNS disaster zone start ---
-/* #include <stdio.h>
-#include <errno.h>
-
-#ifdef _WIN32
-#  define sleep(x) Sleep(x * 1000)
-#else
-#  include <netdb.h>
-#endif
-
-static char addrbuffer[64];
-static char namebuffer[256];
-static mdns_record_txt_t txtbuffer[128];
-
-static mdns_string_t ipv4_address_to_string(char* buffer, size_t capacity, 
-												const struct sockaddr_in* addr) {
-	char host[NI_MAXHOST] = {0};
-	char service[NI_MAXSERV] = {0};
-	int ret = getnameinfo((const struct sockaddr*)addr, sizeof(struct sockaddr_in),
-	                      host, NI_MAXHOST, service, NI_MAXSERV,
-	                      NI_NUMERICSERV | NI_NUMERICHOST);
-	int len = 0;
-	if (ret == 0) {
-		if (addr->sin_port != 0)
-			len = snprintf(buffer, capacity, "%s:%s", host, service);
-		else
-			len = snprintf(buffer, capacity, "%s", host);
+void* get_in_addr(sockaddr_storage* sa) {
+	if (sa->ss_family == AF_INET) {
+		return &reinterpret_cast<sockaddr_in*>(sa)->sin_addr;
 	}
-	if (len >= (int)capacity)
-		len = (int)capacity - 1;
-	mdns_string_t str = {buffer, len};
-	return str;
+
+	if (sa->ss_family == AF_INET6) {
+		return &reinterpret_cast<sockaddr_in6*>(sa)->sin6_addr;
+	}
+
+	return nullptr;
 }
-
-static mdns_string_t ipv6_address_to_string(char* buffer, size_t capacity, 
-													const struct sockaddr_in6* addr) {
-	char host[NI_MAXHOST] = {0};
-	char service[NI_MAXSERV] = {0};
-	int ret = getnameinfo((const struct sockaddr*)addr, sizeof(struct sockaddr_in6),
-	                      host, NI_MAXHOST, service, NI_MAXSERV,
-	                      NI_NUMERICSERV | NI_NUMERICHOST);
-	int len = 0;
-	if (ret == 0) {
-		if (addr->sin6_port != 0)
-			len = snprintf(buffer, capacity, "[%s]:%s", host, service);
-		else
-			len = snprintf(buffer, capacity, "%s", host);
-	}
-	if (len >= (int)capacity)
-		len = (int)capacity - 1;
-	mdns_string_t str = {buffer, len};
-	return str;
-}
-
-static mdns_string_t ip_address_to_string(char* buffer, size_t capacity, 
-												const struct sockaddr* addr) {
-	if (addr->sa_family == AF_INET6)
-		return ipv6_address_to_string(buffer, capacity, (const struct sockaddr_in6*)addr);
-	return ipv4_address_to_string(buffer, capacity, (const struct sockaddr_in*)addr);
-}
-
-static int callback(const struct sockaddr* from, 
-						mdns_entry_type_t entry, uint16_t type,
-						uint16_t rclass, uint32_t ttl,
-						const void* data, size_t size, size_t offset, size_t length,
-						void* user_data) {
-	mdns_string_t fromaddrstr = ip_address_to_string(addrbuffer, sizeof(addrbuffer), from);
-	const char* entrytype = (entry == MDNS_ENTRYTYPE_ANSWER) ? "answer" :
-	                        ((entry == MDNS_ENTRYTYPE_AUTHORITY) ? "authority" : "additional");
-	if (type == MDNS_RECORDTYPE_PTR) {
-		mdns_string_t namestr = mdns_record_parse_ptr(data, size, offset, length,
-		                                              namebuffer, sizeof(namebuffer));
-		printf("%.*s : %s PTR %.*s type %u rclass 0x%x ttl %u length %d\n",
-		       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-		       MDNS_STRING_FORMAT(namestr), type, rclass, ttl, (int)length);
-	}
-	else if (type == MDNS_RECORDTYPE_SRV) {
-		mdns_record_srv_t srv = mdns_record_parse_srv(data, size, offset, length,
-		                                              namebuffer, sizeof(namebuffer));
-		printf("%.*s : %s SRV %.*s priority %d weight %d port %d\n",
-		       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-		       MDNS_STRING_FORMAT(srv.name), srv.priority, srv.weight, srv.port);
-	}
-	else if (type == MDNS_RECORDTYPE_A) {
-		struct sockaddr_in addr;
-		mdns_record_parse_a(data, size, offset, length, &addr);
-		mdns_string_t addrstr = ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr);
-		printf("%.*s : %s A %.*s\n",
-		       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-		       MDNS_STRING_FORMAT(addrstr));
-	}
-	else if (type == MDNS_RECORDTYPE_AAAA) {
-		struct sockaddr_in6 addr;
-		mdns_record_parse_aaaa(data, size, offset, length, &addr);
-		mdns_string_t addrstr = ipv6_address_to_string(namebuffer, sizeof(namebuffer), &addr);
-		printf("%.*s : %s AAAA %.*s\n",
-		       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-		       MDNS_STRING_FORMAT(addrstr));
-	}
-	else if (type == MDNS_RECORDTYPE_TXT) {
-		size_t parsed = mdns_record_parse_txt(data, size, offset, length,
-		                                      txtbuffer, sizeof(txtbuffer) / sizeof(mdns_record_txt_t));
-		for (size_t itxt = 0; itxt < parsed; ++itxt) {
-			if (txtbuffer[itxt].value.length) {
-				printf("%.*s : %s TXT %.*s = %.*s\n",
-				       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-				       MDNS_STRING_FORMAT(txtbuffer[itxt].key),
-				       MDNS_STRING_FORMAT(txtbuffer[itxt].value));
-			}
-			else {
-				printf("%.*s : %s TXT %.*s\n",
-				       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-				       MDNS_STRING_FORMAT(txtbuffer[itxt].key));
-			}
-		}
-	}
-	else {
-		printf("%.*s : %s type %u rclass 0x%x ttl %u length %d\n",
-		       MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-		       type, rclass, ttl, (int)length);
-	}
-	return 0;
-} */
-
-// --- mDNS disaster zone end ---
 
 
 // --- FIND SERVERS ---
-void NymphCastClient::findServers() {
+std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform an mDNS/DNS-SD service discovery run for NymphCast receivers.
+	std::vector<Zeroconf::mdns_responce> items;
+	bool res = Zeroconf::Resolve("_nymphcast._tcp", 3, &items);
 	
-	// Open socket.
-	/* int sock = mdns_socket_open_ipv4();
-	if (sock < 0) {
-		printf("Failed to open socket: %s\n", strerror(errno));
-		return -1;
+	// Extract the server name, IP address and port.
+	std::vector<NymphCastRemote> remotes;
+	if (items.empty()) { return remotes; }
+	for (int i = 0; i < items.size(); ++i) {
+		NymphCastRemote rm;
+		
+		char buffer[INET6_ADDRSTRLEN + 1] = {0};
+        inet_ntop(items[i].peer.ss_family, get_in_addr(&(items[i].peer)), buffer, INET6_ADDRSTRLEN);
+		
+		std::cout << "Peer: " << buffer << std::endl;
+		rm.ipv4 = std::string(buffer);
+		rm.ipv6 = "";
+		
+		rm.name = items[i].records[0].name;
+		rm.port = 4004;
+		remotes.push_back(rm);
 	}
-	
-	// Send DNS-SD query.
-	if (mdns_discovery_send(sock)) {
-		printf("Failed to send DNS-DS discovery: %s\n", strerror(errno));
-		goto quit;
-	}
-	
-	// Read DNS-SD replies.
-	size_t capacity = 2048;
-	void* buffer = 0;
-	void* user_data = 0;
-	buffer = malloc(capacity);
-	for (int i = 0; i < 10; ++i) {
-		records = mdns_discovery_recv(sock, buffer, capacity, callback, user_data);
-		sleep(1);
-	}
-	
-	// Get details for specific record.
-	if (mdns_query_send(sock, MDNS_RECORDTYPE_PTR,
-	                    MDNS_STRING_CONST("_ssh._tcp.local."),
-	                    buffer, capacity)) {
-		printf("Failed to send mDNS query: %s\n", strerror(errno));
-		goto quit;
-	}
-	
-	// Read the mDNS replies.
-	for (int i = 0; i < 10; ++i) {
-		records = mdns_query_recv(sock, buffer, capacity, callback, user_data, 1);
-		sleep(1);
-	}
-	
-	// Close the socket.
-	free(buffer);
-	mdns_socket_close(sock); */
 }
 
 

@@ -25,7 +25,8 @@ endif
 OUTPUT = libnymphcast.a
 INCLUDE = -I src
 #-DPOCO_WIN32_UTF8
-LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs
+LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
+#-lstdc++fs
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 
 ifdef ANDROID

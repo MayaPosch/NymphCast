@@ -17,10 +17,17 @@
 #include <string>
 #include <fstream>
 #include <functional>
+#include <vector>
 
 #include <nymph/nymph.h>
 
-//#include "mdns.h"
+
+struct NymphCastRemote {
+	std::string name;
+	std::string ipv4;
+	std::string ipv6;
+	uint16_t port;
+};
 
 
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
@@ -45,7 +52,7 @@ public:
 	std::string getApplicationList(uint32_t handle);
 	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);
 
-	void findServers();
+	std::vector<NymphCastRemote> findServers();
 	bool connectServer(std::string ip, uint32_t &handle);
 	bool disconnectServer(uint32_t handle);
 	
