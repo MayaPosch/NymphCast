@@ -250,10 +250,17 @@ void* get_in_addr(sockaddr_storage* sa) {
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform an mDNS/DNS-SD service discovery run for NymphCast receivers.
 	std::vector<Zeroconf::mdns_responce> items;
-	bool res = Zeroconf::Resolve("_nymphcast._tcp", 3, &items);
+	bool res = Zeroconf::Resolve("_nymphcast._tcp.local", 3, &items);
+	
+	std::vector<NymphCastRemote> remotes;
+	if (!res) {
+		std::cout << "Error resolving DNS-SD request." << std::endl;
+		return remotes;
+	}
+	
+	std::cout << "Found " << items.size() << " remotes matching _nymphcast._tcp.local" << std::endl;
 	
 	// Extract the server name, IP address and port.
-	std::vector<NymphCastRemote> remotes;
 	if (items.empty()) { return remotes; }
 	for (int i = 0; i < items.size(); ++i) {
 		NymphCastRemote rm;
@@ -269,6 +276,8 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 		rm.port = 4004;
 		remotes.push_back(rm);
 	}
+	
+	return remotes;
 }
 
 
@@ -339,6 +348,8 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 	std::string result;
 	NymphRemoteServer::disconnect(handle, result);
 	NymphRemoteServer::shutdown();
+	
+	return true;
 }
 
 
