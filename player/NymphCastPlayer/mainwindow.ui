@@ -230,12 +230,15 @@
              </item>
              <item>
               <widget class="QToolButton" name="connectToolButton">
+               <property name="toolTip">
+                <string>Refresh remotes</string>
+               </property>
                <property name="text">
-                <string>...</string>
+                <string>Refresh</string>
                </property>
                <property name="icon">
                 <iconset resource="resources.qrc">
-                 <normaloff>:/icons/icons/eject.png</normaloff>:/icons/icons/eject.png</iconset>
+                 <normaloff>:/icons/icons/replay.png</normaloff>:/icons/icons/replay.png</iconset>
                </property>
                <property name="iconSize">
                 <size>

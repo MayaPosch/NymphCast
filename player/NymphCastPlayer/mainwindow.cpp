@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
     ui->setupUi(this);
 	
 	// Set application options.
-	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setApplicationName("NymphCastPlayer");
 	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	QCoreApplication::setOrganizationName("Nyanko");
@@ -31,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	// UI
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
-	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(connectServer())); // TODO: change to findserver()
+	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh())); // TODO: change to findserver()
 	
 	connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
 	connect(ui->endToolButton, SIGNAL(clicked()), this, SLOT(forward()));
