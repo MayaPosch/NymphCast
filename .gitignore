@@ -8,6 +8,7 @@ obj/
 bin/
 *.o
 build-*/
+linux-build/
 lib/
 src/server/wallpapers/*.jpg
 src/server/wallpapers/*.png
