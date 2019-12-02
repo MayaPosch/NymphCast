@@ -30,7 +30,9 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	// UI
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
-	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh())); // TODO: change to findserver()
+	connect(ui->refreshRemotesToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
+	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteConnectSelected()));
+	connect(ui->disconnectToolButton, SIGNAL(clicked()), this, SLOT(remoteDisconnectSelected()));
 	
 	connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
 	connect(ui->endToolButton, SIGNAL(clicked()), this, SLOT(forward()));
@@ -73,7 +75,20 @@ void MainWindow::connectServer() {
     client.connectServer(ip.toStdString(), serverHandle);
     
 	// TODO: update server name label.
-	ui->remoteLabel->setText("Connected.");
+	ui->remoteLabel->setText("Connected to " + ip);
+    
+    // Successful connect.
+    connected = true;
+}
+
+
+// --- CONNECT SERVER IP ---
+void MainWindow::connectServerIP(std::string ip) {
+	// Connect to localhost NymphRPC server, standard port.
+    client.connectServer(ip, serverHandle);
+    
+	// TODO: update server name label.
+	ui->remoteLabel->setText("Connected to " + QString::fromStdString(ip));
     
     // Successful connect.
     connected = true;
@@ -103,6 +118,7 @@ void MainWindow::remoteListRefresh() {
 		//new QListWidgetItem(remotes[i].ipv4 + " (" + remotes[i].name + ")", ui->remotesListWidget);
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(remotes[i].ipv4 + " (" + remotes[i].name + ")"));
+		newItem->setData(Qt::UserRole, QVariant(QString::fromStdString(remotes[i].ipv4)));
 		ui->remotesListWidget->insertItem(i, newItem);
 	}
 	
@@ -112,9 +128,12 @@ void MainWindow::remoteListRefresh() {
 // --- REMOTE CONNECT SELECTED ---
 // Connect to the selected remote server.
 void MainWindow::remoteConnectSelected() {
-	// Check that the selected server hasn't already been connected to.
+	// TODO: Check that the selected server hasn't already been connected to.
+	QListWidgetItem* item = ui->remotesListWidget->currentItem();
+	QString ip = item->data(Qt::UserRole).toString();
 	
 	// Connect to the server.
+	connectServerIP(ip.toStdString());
 }
 
 

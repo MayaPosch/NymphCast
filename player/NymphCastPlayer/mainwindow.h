@@ -20,6 +20,7 @@ public:
 private slots:
     void openFile();
     void connectServer();
+	void connectServerIP(std::string ip);
 	void disconnectServer();
 	void about();
     void quit();
