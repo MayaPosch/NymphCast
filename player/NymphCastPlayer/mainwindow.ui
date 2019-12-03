@@ -34,7 +34,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QListView" name="listView"/>
+           <widget class="QListWidget" name="mediaListWidget"/>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">

@@ -53,6 +53,7 @@ private:
     
     bool connected = false;
 	bool muted = false;
+	bool playingTrack = false;
 	uint32_t serverHandle;
 	NymphCastClient client;
 };

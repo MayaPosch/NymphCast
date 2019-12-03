@@ -170,18 +170,32 @@ void MainWindow::castUrl() {
 // --- ADD FILE ---
 void MainWindow::addFile() {
 	// Select file from filesystem, add to playlist.
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
+	if (filename.isEmpty()) { return; }
 	
+	// Check file.
+	QFileInfo finf(filename);
+	if (!finf.isFile()) { return; }
+	
+	// Add it.
+	QListWidgetItem *newItem = new QListWidgetItem;
+	newItem->setText(finf.fileName());
+	newItem->setData(Qt::UserRole, QVariant(filename));
+	ui->mediaListWidget->addItem(newItem);
 }
 
 
 // --- REMOVE FILE ---
 void MainWindow::removeFile() {
 	// Remove currently selected filename(s) from the playlist.
-	
+	QListWidgetItem* item = ui->mediaListWidget->currentItem();
+	ui->mediaListWidget->removeItemWidget(item);
+	delete item;
 }
 
 
 // --- FIND SERVER ---
+// X obsolete?
 void MainWindow::findServer() {
 	// Open the mDNS dialogue to select a NymphCast receiver.
 	
@@ -192,7 +206,18 @@ void MainWindow::findServer() {
 void MainWindow::play() {
 	if (!connected) { return; }
 	
-	client.playbackStart(serverHandle);
+	// Start playing the currently selected track if it isn't already playing. 
+	// Else pause or unpause playback.
+	if (playingTrack) {
+		client.playbackStart(serverHandle);
+	}
+	else {
+		QListWidgetItem* item = ui->mediaListWidget->currentItem();
+		QString filename = item->data(Qt::UserRole).toString();
+		
+		client.castFile(serverHandle, filename.toStdString());
+	}
+	
 }
 
 
