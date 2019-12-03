@@ -145,7 +145,7 @@ all: shared static
 
 shared: $(LIBDIR)/$(SHLIB) $(LIBDIR)/$(LIBNAME).so
 
-static: $(LIBDIR)/$(ARLIB)
+static: $(LIBDIR) $(OBJDIR) $(LIBDIR)/$(ARLIB)
 
 $(OBJDIR):
 	mkdir -p "$(OBJDIR)"

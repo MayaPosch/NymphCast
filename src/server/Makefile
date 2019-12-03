@@ -32,7 +32,7 @@ C_SOURCES := $(wildcard *.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
 
-all: makedir angelscript $(OBJECTS) $(C_OBJECTS) bin/$(OUTPUT)
+all: bin/$(OUTPUT)
 
 makedir:
 	$(MAKEDIR) obj/angelscript/add_on/scriptstdstring
@@ -51,10 +51,10 @@ obj/%.o: %.cpp
 obj/%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(INCLUDE) -std=c11
 	
-bin/$(OUTPUT): $(OBJECTS) $(C_OBJECTS)
+bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LIB)
 	
-install:
+install: bin/$(OUTPUT)
 	cp bin/$(OUTPUT) $(INSTALLDIR)/.
 
 clean:
