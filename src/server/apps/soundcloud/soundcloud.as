@@ -13,6 +13,7 @@ string start() {
 
 string findAlbum(string name) {
 	// Send query for albums (/playlists)
+	// TODO: HTML encode the query string (spaces, etc.).
 	string query = baseUrl + "/playlists?client_id=" + clientId + "&q=" + name;
 	string response;
 
@@ -21,8 +22,8 @@ string findAlbum(string name) {
 		return "HTTP error.";
 	}
 	
-	// Parse results, get the 
-	JSONFile json; // = JSONFile();
+	// Parse results.
+	JSONFile json;
 	if (!json.fromString(response)) {
 		return "Failed to parse JSON response.";
 	}
@@ -50,6 +51,7 @@ string findAlbum(string name) {
 
 string findTrack(string name) {
 	// Send query for tracks (/tracks)
+	// TODO: HTML encode the query string (spaces, etc.).
 	string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
 	string response;
 
@@ -58,13 +60,39 @@ string findTrack(string name) {
 		return "HTTP error.";
 	}
 	
+	// Parse results, get the 
+	JSONFile json;
+	if (!json.fromString(response)) {
+		return "Failed to parse JSON response.";
+	}
+	
+	JSONValue root = json.getRoot();
+	
+	string output = "";
+	for (int i = 0; i < root.get_size(); ++i) {
+		JSONValue jv = root[i];
+		
+		// Get the ID, artist and album name from the Object.
+		JSONValue idVal = jv.get("id");
+		string id = formatUInt(idVal.getUInt());
+		string title = jv.get("title").getString();
+		JSONValue user = jv.get("user");
+		string user_id = formatUInt(user.get("id").getUInt());
+		string username = user.get("username").getString();
+		
+		output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+	}
+	
+	
 	// Parse results, return them.
-	return response;
+	return output;
 }
 
 
 string findArtist(string name) {
-	string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
+	// Send query for artists (/users).
+	// TODO: HTML encode the query string (spaces, etc.).
+	string query = baseUrl + "/users?client_id=" + clientId + "&q=" + name;
 	string response;
 
 	if (!performHttpsQuery(query, response)) {
@@ -72,8 +100,27 @@ string findArtist(string name) {
 		return "HTTP error.";
 	}
 	
+	// Parse results, get the 
+	JSONFile json;
+	if (!json.fromString(response)) {
+		return "Failed to parse JSON response.";
+	}
+	
+	JSONValue root = json.getRoot();
+	
+	string output = "";
+	for (int i = 0; i < root.get_size(); ++i) {
+		JSONValue user = root[i];
+		
+		// Get the ID, artist name from the Object.
+		string user_id = formatUInt(user.get("id").getUInt());
+		string username = user.get("username").getString();
+		
+		output += user_id + "\t" + username + "\n";
+	}
+	
 	// Parse results, return them.
-	return response;
+	return output;
 }
 
 
