@@ -10,7 +10,7 @@ RM = rm
 INSTALLDIR ?= /usr/local/bin
 
 OUTPUT = nymphcast_server
-INCLUDE = -I . -I angelscript/angelscript/include -I angelscript/add_on -I angelscript/json
+INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on -I angelscript/json
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 
@@ -23,18 +23,21 @@ else
 	LIB := $(LIB) -pthread -latomic
 endif
 
-SOURCES := $(wildcard *.cpp) $(wildcard angelscript/add_on/scriptstdstring/*.cpp) \
+SOURCES := $(wildcard *.cpp) \
+			$(wildcard ffplay/*.cpp) \
+			$(wildcard angelscript/add_on/scriptstdstring/*.cpp) \
 			$(wildcard angelscript/add_on/scriptbuilder/*.cpp) \
 			$(wildcard angelscript/add_on/scriptarray/*.cpp) \
 			$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
 			$(wildcard angelscript/json/*.cpp) 
-C_SOURCES := $(wildcard *.c)
+C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
 
 all: bin/$(OUTPUT)
 
 makedir:
+	$(MAKEDIR) obj/ffplay
 	$(MAKEDIR) obj/angelscript/add_on/scriptstdstring
 	$(MAKEDIR) obj/angelscript/add_on/scriptbuilder
 	$(MAKEDIR) obj/angelscript/add_on/scriptarray

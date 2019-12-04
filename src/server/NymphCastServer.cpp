@@ -26,8 +26,8 @@
 
 namespace fs = std::filesystem;
 
-#include "ffplay.h"
-#include "types.h"
+#include "ffplay/ffplay.h"
+#include "ffplay/types.h"
 #include "screensaver.h"
 
 #include <nymph/nymph.h>
@@ -234,9 +234,6 @@ bool performHttpQuery(std::string query, std::string &response) {
         return false;
     }
 	
-	// Put response into its struct.
-	// TODO: implement.
-	
 	
 	return true;
 }
@@ -275,9 +272,6 @@ bool performHttpsQuery(std::string query, std::string &response) {
         //it went wrong ?
         return false;
     }
-	
-	// Put response into its struct.
-	// TODO: implement.
 	
 	
 	return true;
@@ -1140,6 +1134,9 @@ int main(int argc, char** argv) {
 	NymphMethod playbackUrlFunction("playback_url", parameters, NYMPH_UINT8);
 	playbackUrlFunction.setCallback(playback_url);
 	NymphRemoteClient::registerMethod("playback_url", playbackUrlFunction);
+	
+	// PlaybackStatus
+	// The current 
 	
 	
 	// ReceiverStatus.
