@@ -126,17 +126,42 @@ string findArtist(string name) {
 
 bool playAlbum(int id) {
 	// Obtain the data for the album, then play each individual track.
+	string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId + "&q=" + name;
+	string response;
+
+	if (!performHttpsQuery(query, response)) {
+		// Something went wrong.
+		return "HTTP error.";
+	}
 	
+	// Parse results, get the 
+	JSONFile json;
+	if (!json.fromString(response)) {
+		return "Failed to parse JSON response.";
+	}
 	
-	// Use the provided ID to start streaming the track.
-	string url = "";
-	return streamTrack(url);
+	JSONValue root = json.getRoot();
+	
+	// TODO: Parse the list of track IDs, send them to the queue.
+	JSONValue tracks = root.get("tracks");
+	for (int i = 0; i < tracks.get_size(); ++i) {
+		JSONValue track = tracks[i];
+		int track_id = track.get("id").getUInt();
+		
+		// Add track ID to queue.
+		if (!playTrack(track_id)) {
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 
 bool playTrack(int id) {
 	// Use the provided ID to retrieve the album, then stream each individual track on it.
-	string url = "https://api.soundcloud.com/tracks/547239669/stream?client_id=" + clientId;
+	//string url = "https://api.soundcloud.com/tracks/547239669/stream?client_id=" + clientId;
+	string url = "https://api.soundcloud.com/tracks/" + id + "/stream?client_id=" + clientId;
 	return streamTrack(url);
 }
 
@@ -153,6 +178,7 @@ string command_processor(string input) {
 		return "Commands:\n. help\n.find (album|track|artist) <query>\n.play (album|track) <query>";
 	}
 	
+	// FIXME: handle spaces in search strings.
 	array<string> bits = input.split(" ");
 	if (bits.length() < 3) {
 		// Cannot be a valid command. Return error.
