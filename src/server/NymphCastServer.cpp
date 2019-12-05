@@ -130,6 +130,22 @@ void resetDataBuffer() {
 	playerStarted = false;
 	castingUrl = false;
 	
+	// Check whether we have any queued URLs to stream next.
+	media_buffer.streamTrackQueueMutex.lock();
+	if (!media_buffer.streamTrackQueue.empty() && !playerStarted) {
+		playerStarted = true;
+		castUrl = media_buffer.streamTrackQueue.front();
+		media_buffer.streamTrackQueue.pop();
+		castingUrl = true;
+		media_buffer.streamTrackQueueMutex.unlock();
+		
+		avThread.start(ffplay);
+				
+		return;
+	}
+	
+	media_buffer.streamTrackQueueMutex.unlock();
+	
 	// Send message to client indicating that we're done.
 	std::vector<NymphType*> values;
 	std::string result;
@@ -281,6 +297,17 @@ bool performHttpsQuery(std::string query, std::string &response) {
 // --- STREAM TRACK ---
 // Attempt to stream from the indicated URL.
 bool streamTrack(std::string url) {
+	// TODO: Check that we're not still streaming, otherwise queue the URL.
+	// TODO: allow to cancel any currently playing track/empty queue?
+	if (playerStarted) {
+		// Add to queue.
+		media_buffer.streamTrackQueueMutex.lock();
+		media_buffer.streamTrackQueue.push(url);
+		media_buffer.streamTrackQueueMutex.unlock();
+		
+		return true;
+	}
+	
 	castUrl = url;
 	castingUrl = true;
 	
@@ -641,6 +668,21 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_9;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
+	return returnMsg;
+}
+
+
+// --- VOLUME MUTE ---
+// uint8 volume_mute()
+NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_m;
 	SDL_PushEvent(&event);
 	
 	returnMsg->setResultValue(new NymphUint8(0));

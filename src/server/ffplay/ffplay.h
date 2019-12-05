@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <atomic>
+#include <queue>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mutex.h>
@@ -50,6 +51,9 @@ struct DataBuffer {
 	Poco::Condition requestCondition;
 	Poco::Mutex requestMutex;
 	std::atomic<bool> requestInFlight;
+	
+	Poco::Mutex streamTrackQueueMutex;
+	std::queue<std::string> streamTrackQueue;
 };
 
 

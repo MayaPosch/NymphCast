@@ -490,9 +490,6 @@ void Ffplay::run() {
 	}
 	
 	int argc = argv.size() - 1;
-	/* char* argv[argc] = { "nymphcast",
-						"-loglevel",
-						"trace" }; */
 
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv.data(), options);
@@ -528,7 +525,7 @@ void Ffplay::run() {
 												 0,                  // bWriteable (1=true,0=false) 
 												 &media_buffer,          // user data ; will be passed to our callback functions
 												 media_read, 
-												 0,                  // Write callback function (not used in this example) 
+												 0,                  // Write callback function. 
 												 0); 
 												 //media_seek); 
 		 
@@ -545,8 +542,7 @@ void Ffplay::run() {
 		//probeData.buf_size = media_buffer.data[0].size();
 		probeData.buf_size = 4096;
 		probeData.filename = "";
-		 
-		// Determine the input-format:
+		
 		pCtx->iformat = av_probe_input_format(&probeData, 1);
 		media_buffer.dataMutex.unlock(); */
 		
@@ -558,13 +554,6 @@ void Ffplay::run() {
 	}
 	
 	// Start player.
-	
-	// Debug
-	//CoInitializeEx(NULL, COINIT_MULTITHREADED);
-	//CoInitialize(NULL);
-/* #ifdef _WIN32
-	CoInitialize(NULL);
-#endif */
 	
 	if (display_disable) {
         video_disable = 1;
