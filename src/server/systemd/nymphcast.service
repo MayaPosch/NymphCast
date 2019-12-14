@@ -2,9 +2,9 @@
 Description=NymphCast audio/video casting server
 
 [Service]
-ExecStart=/usr/local/bin/nymphcast_server
+ExecStart=/opt/nymphcast/nymphcast_server -c nymphcast_video_config.ini
 User=pi
-WorkingDirectory=~
+WorkingDirectory=/opt/nymphcast
 Restart=always
 RestartSec=5
 

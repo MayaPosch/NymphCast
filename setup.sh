@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-# Installer script for the NymphCast server
+# Compilation script for the NymphCast server
 echo "UPDATE: $UPDATE"
 echo "PACKAGE: $PACKAGE"
 

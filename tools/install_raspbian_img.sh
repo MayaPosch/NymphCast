@@ -16,5 +16,5 @@ sudo mount -o loop /dev/mapper/loop0p2 /mnt/
 
 
 # Clean-up
-sudo umount /mnt/loop0p2
+sudo umount /mnt
 sudo kpartx -d $IMG_FILE
