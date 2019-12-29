@@ -6,8 +6,8 @@
 
 
 // Static variables.
-std::atomic<bool> ScreenSaver::active = false;
-std::atomic<bool> ScreenSaver::firstRun = true;
+std::atomic<bool> ScreenSaver::active = {false};
+std::atomic<bool> ScreenSaver::firstRun = {true};
 SDL_Window* ScreenSaver::window = 0;
 SDL_Renderer* ScreenSaver::renderer = 0;
 SDL_Texture* ScreenSaver::texture = 0;
