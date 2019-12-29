@@ -1,0 +1,5 @@
+
+TARGET_ARCH = armv6
+TARGET_SOC = bcm2835
+
+PLATFORM_FLAGS = -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp -mtune=arm1176jzf-s

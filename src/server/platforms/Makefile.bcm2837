@@ -1,0 +1,5 @@
+
+TARGET_ARCH = armv8
+TARGET_SOC = bcm2837
+
+PLATFORM_FLAGS = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53

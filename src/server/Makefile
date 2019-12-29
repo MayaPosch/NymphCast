@@ -2,25 +2,36 @@
 #
 # (c) 2019 Nyanko.ws
 
+ifdef TARGET
+include Makefile.$(TARGET)
+else
 GPP = g++
 GCC = gcc
 MAKEDIR = mkdir -p
 RM = rm
+endif
 
-INSTALLDIR ?= /usr/local/bin
+ifdef PLATFORM
+include platforms/Makefile.$(PLATFORM)
+endif
+
+INSTALLDIR ?= /opt/nymphcast
 
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on -I angelscript/json
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2 -lSDL2main -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs
-CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
+FLAGS := -ffunction-sections -fdata-sections -g3 -Og
+CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
+CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS)
+LDFLAGS := -Wl,--gc-sections $(LIB)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
-	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
-	LIB += -lws2_32
+	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
+	LDFLAGS += -lws2_32
 else
-	LIB := $(LIB) -pthread -latomic
+	LDFLAGS += -pthread -latomic
 endif
 
 SOURCES := $(wildcard *.cpp) \
@@ -49,13 +60,13 @@ angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
 
 obj/%.o: %.cpp
-	$(GPP) -c -o $@ $< $(CFLAGS)
+	$(GPP) -c -o $@ $< $(CPPFLAGS)
 
 obj/%.o: %.c
-	$(GCC) -c -o $@ $< -g3 $(INCLUDE) -std=c11
+	$(GCC) -c -o $@ $< -g3 $(CFLAGS)
 	
 bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
-	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LIB)
+	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	
 install: bin/$(OUTPUT)
 	cp bin/$(OUTPUT) $(INSTALLDIR)/.
