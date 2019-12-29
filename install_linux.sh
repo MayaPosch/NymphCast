@@ -27,6 +27,7 @@ sudo cp -r src/server/bin/* "${TARGET_FOLDER}"
 # Install Avahi service.
 #if [ ! -f "/etc/systemd/system/nymphcast.service" ]; then
 	sudo cp src/server/avahi/nymphcast.service /etc/avahi/services/.
+	sudo chmod 666 /etc/avahi/services/nymphcast.service
 	#sudo systemctl restart avahi-daemon
 # else
 	# echo "Avahi service was already installed. Skipping..."
