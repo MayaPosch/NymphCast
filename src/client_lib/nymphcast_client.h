@@ -42,6 +42,7 @@ class NymphCastClient {
 	void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data);
+	void MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data);
 	void ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data);
 	
 public:

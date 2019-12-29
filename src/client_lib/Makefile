@@ -1,4 +1,4 @@
-# Makefile for the NymphRC library.
+# Makefile for the NymphCast client library.
 #
 # Allows one to build the library as a .a file
 #
@@ -15,6 +15,11 @@ GCC = $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
+else ifdef WASM
+GCC = emc++
+MAKEDIR = mkdir -p
+RM = rm
+AR = ar 
 else
 GCC = g++
 MAKEDIR = mkdir -p
@@ -45,7 +50,7 @@ OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 
 all: lib
 
-lib: makedir $(OBJECTS) lib/$(OUTPUT)
+lib: makedir lib/$(OUTPUT)
 	
 obj/%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(LIBS)

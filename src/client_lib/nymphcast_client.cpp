@@ -128,6 +128,13 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 }
 
 
+// --- MEDIA STATUS CALLBACK ---
+// Gets called every time the active remote media changes status.
+void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data) {
+	// TODO: implement.
+}
+
+
 void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
 	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
@@ -366,6 +373,10 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	}
 	
 	std::cout << "Opening file " << filename << std::endl;
+	
+	if (source.is_open()) {
+		source.close();
+	}
 	
 	source.open(filename, std::ios::binary);
 	if (!source.good()) {
