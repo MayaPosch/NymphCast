@@ -1,6 +1,6 @@
 
 
-const string clientId = "iHwMAYPsv39tFIqaL5hR3Un41wI7JhXO";
+const string clientId = "RhcucnLXC0AmjivrTd0WM5UmndHB2ToL";
 const string baseUrl = "https://api.soundcloud.com";
 
 
@@ -126,18 +126,18 @@ string findArtist(string name) {
 
 bool playAlbum(int id) {
 	// Obtain the data for the album, then play each individual track.
-	string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId + "&q=" + name;
+	string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId;
 	string response;
 
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
-		return "HTTP error.";
+		return false; //"HTTP error.";
 	}
 	
 	// Parse results, get the 
 	JSONFile json;
 	if (!json.fromString(response)) {
-		return "Failed to parse JSON response.";
+		return false; //"Failed to parse JSON response.";
 	}
 	
 	JSONValue root = json.getRoot();
