@@ -22,7 +22,7 @@ The layout of relevant folders in the project is as follows:
 
 	/
 	|- player 	(the NymphCast demonstration client)
-	|- src
+	|- src/
 	|	|- client 		(basic NymphCast client, for testing)
 	|	|- client_lib 	(NymphCast SDK files)
 	|	|- server		(the NymphCast server and NymphCast app files)
@@ -33,7 +33,7 @@ The layout of relevant folders in the project is as follows:
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), allowing one to make use of the basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-An APK has been made available for installation on Android in the 'releases' section. Desktop releases will be made available soon.
+An APK has been made available for installation on Android in the 'releases' section. Desktop releases will be made available in due time.
 
 
 ## Quick Start ##
