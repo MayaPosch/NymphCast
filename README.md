@@ -33,7 +33,7 @@ The layout of relevant folders in the project is as follows:
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), allowing one to make use of the basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-An APK has been made available for installation on Android in the 'releases' section. Desktop releases will be made available in due time.
+An APK has been made available for installation on Android in the 'releases' section. A desktop release for Windows (x64) is available as well.
 
 
 ## Quick Start ##
@@ -52,6 +52,12 @@ Or:
 1. Follow the instructions in the 'Building' section.
 
 **Player**
+
+For Windows (x64):
+
+1. Download and extract the binary release.
+
+Or (Windows & other platforms):
 
 1. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
 2. Install the newly created library under `lib/` into `/usr/local/lib` or equivalent.
