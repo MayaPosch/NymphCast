@@ -30,6 +30,12 @@ struct NymphCastRemote {
 };
 
 
+struct NymphPlaybackStatus {
+	bool error;
+	bool playing;
+};
+
+
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
 
 
@@ -70,6 +76,7 @@ public:
 	uint8_t playbackRewind(uint32_t handle);
 	uint8_t playbackForward(uint32_t handle);
 	uint8_t playbackSeek(uint32_t handle, uint64_t location);
+	NymphPlaybackStatus playbackStatus(uint32_t handle);
 };
 
 

@@ -645,3 +645,36 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 	
 	return ((NymphUint8*) returnValue)->getValue();
 }
+
+
+// --- PLAYBACK STATUS ---
+NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
+	NymphPlaybackStatus status;
+	status.error = true;
+	
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_status", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return status;
+	}
+	
+	if (returnValue->type() != NYMPH_STRUCT) {
+		std::cout << "Return value wasn't a struct. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return status;
+	}
+	
+	NymphStruct* nstruct = ((NymphStruct*) returnValue);
+	NymphType* splay;
+	if (!nstruct->getValue("playing", splay)) {
+		return status;
+	}
+	
+	status.error = false;
+	status.playing = ((NymphBoolean*) splay)->getValue();
+	
+	return status;
+}
