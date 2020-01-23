@@ -156,7 +156,7 @@ void resetDataBuffer() {
 	}
 	
 	// Start the Screensaver here for now.
-	if (!video_disable) {
+	if (!display_disable) {
 		ScreenSaver::start(15);
 	}
 }
@@ -778,6 +778,20 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- PLAYBACK STATUS ---
+// struct playback_status()
+NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Set the playback status.
+	NymphStruct* response = new NymphStruct;
+	response->addPair("playing", new NymphBoolean(playerStarted));
+	
+	returnMsg->setResultValue(response);
+	return returnMsg;
+}
+
+
 // --- APP LIST ---
 // string app_list()
 NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
@@ -1178,7 +1192,15 @@ int main(int argc, char** argv) {
 	NymphRemoteClient::registerMethod("playback_url", playbackUrlFunction);
 	
 	// PlaybackStatus
-	// The current 
+	// struct playback_status()
+	// The current state of the NymphCast server.
+	// Return struct with information:
+	// ["playing"] => boolean (true/false)
+	// 
+	parameters.clear();
+	NymphMethod playbackStatusFunction("playback_status", parameters, NYMPH_STRUCT);
+	playbackStatusFunction.setCallback(playback_status);
+	NymphRemoteClient::registerMethod("playback_status", playbackStatusFunction);
 	
 	
 	// ReceiverStatus.
@@ -1269,7 +1291,7 @@ int main(int argc, char** argv) {
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
-	if (!video_disable) {
+	if (!display_disable) {
 		ScreenSaver::start(15);
 	}
 	
