@@ -78,13 +78,8 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Client callback function called.\n";
 	
-	// Remove the callbacks.
-	NymphRemoteServer::removeCallback("MediaReadCallback");
-	NymphRemoteServer::removeCallback("MediaStopCallback");
-	NymphRemoteServer::removeCallback("MediaSeekCallback");
-	
 	// End NymphCast session and disconnect from server.
-	std::vector<NymphType*> values;
+	/* std::vector<NymphType*> values;
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(session, "session_end", values, returnValue, result)) {
@@ -114,7 +109,7 @@ void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, voi
 		NymphRemoteServer::disconnect(session, result);
 		//NymphRemoteServer::shutdown();
 		exit(1);
-	}
+	} */
 	
 	// Signal the condition variable to terminate the application.
 	//cnd.signal();
@@ -351,10 +346,14 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 bool NymphCastClient::disconnectServer(uint32_t handle) {
 	// TODO: don't shutdown entire remote server.
 	
+	// Remove the callbacks.
+	NymphRemoteServer::removeCallback("MediaReadCallback");
+	NymphRemoteServer::removeCallback("MediaStopCallback");
+	NymphRemoteServer::removeCallback("MediaSeekCallback");
+	
 	// Shutdown.
 	std::string result;
 	NymphRemoteServer::disconnect(handle, result);
-	NymphRemoteServer::shutdown();
 	
 	return true;
 }
