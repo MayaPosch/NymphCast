@@ -242,7 +242,7 @@ namespace Zeroconf
                         item.data.size(), 
                         0, 
                         reinterpret_cast<sockaddr*>(&item.peer), 
-                        &salen);
+                        (socklen_t*) &salen);
 
                     if (cb < 0)
                     {
