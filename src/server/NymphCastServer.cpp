@@ -23,6 +23,7 @@
 #include <atomic>
 #include <chrono>
 #include <filesystem> 		// C++17
+#include <set>
 
 namespace fs = std::filesystem;
 
@@ -53,6 +54,8 @@ using namespace Poco;
 
 #include <angelscript/json/json.h>
 
+#include "INIReader.h"
+
 
 // Global objects.
 Condition gCon;
@@ -77,6 +80,18 @@ struct FileMetaInfo {
 	std::string title;
 	std::string artist;
 	std::string album;
+};
+
+
+enum NymphCastAppLocation {
+	NYMPHCAST_APP_LOCATION_LOCAL = 1,
+	NYMPHCAST_APP_LOCATION_HTTP = 2
+};
+
+
+struct NymphCastApp {
+	std::string id;
+	
 };
 
 
@@ -794,13 +809,23 @@ NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
 
 // --- APP LIST ---
 // string app_list()
+// Returns a list of registered apps, separated by a newline and ending with a newline.
 NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Open the 'apps/apps.ini' file and parse it.
+	INIReader apps("apps/apps.ini");
+	if (apps.ParseError() != 1) {
+		returnMsg->setResultValue(new NymphString());
+		return returnMsg;
+	}
+	
+	std::set<std::string> sections = apps.Sections();
 	
 	// We obtain and return the list of available apps here.
 	// For now we use the list of folders in the apps/ folder. Each folder name is taken to be
 	// the app name.
-	fs::directory_iterator it = fs::directory_iterator("apps/");
+	/* fs::directory_iterator it = fs::directory_iterator("apps/");
 	//std::vector<std::string> appnames;
 	std::string names;
 	while (it != fs::directory_iterator()) {
@@ -809,9 +834,16 @@ NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 			names.append(it->path().string());
 			names.append("\n");
 		}
-	}
+	} */
 	
-	// Serialise the appnames vector.
+	// Serialise the sections vector.
+	std::string names;
+	std::set<std::string>::const_iterator it = sections.cbegin();
+	while (it != sections.cend()) {
+		names.append(*it);
+		names.append("\n");
+		it++;
+	}
 	
 	returnMsg->setResultValue(new NymphString(names));
 	return returnMsg;
