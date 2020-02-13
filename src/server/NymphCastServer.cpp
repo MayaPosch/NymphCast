@@ -934,30 +934,7 @@ NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
 NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	// Open the 'apps/apps.ini' file and parse it.
-	/* INIReader apps("apps/apps.ini");
-	if (apps.ParseError() != 1) {
-		returnMsg->setResultValue(new NymphString());
-		return returnMsg;
-	}
-	
-	std::set<std::string> sections = apps.Sections(); */
-	
-	// We obtain and return the list of available apps here.
-	// For now we use the list of folders in the apps/ folder. Each folder name is taken to be
-	// the app name.
-	/* fs::directory_iterator it = fs::directory_iterator("apps/");
-	//std::vector<std::string> appnames;
-	std::string names;
-	while (it != fs::directory_iterator()) {
-		if (fs::is_directory(it->path())) {
-			//appnames.push_back(i->path().string());
-			names.append(it->path().string());
-			names.append("\n");
-		}
-	} */
-	
-	// Serialise the sections vector.
+	// Obtain and serialise the app names list.
 	std::vector<std::string> appNames = NymphCastApps::appNames();
 	std::string names;
 	std::vector<std::string>::const_iterator it = appNames.cbegin();
@@ -1031,9 +1008,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 			}
 		}
 		else if (app.location == NYMPHCAST_APP_LOCATION_HTTP) {
-			// Load the script file from a remote location (HTTP or HTTPS).
-			// bool performHttpsQuery(std::string query, std::string &response) 
-			
+			// Load the script file from a remote location (HTTP or HTTPS).			
 			// Determine whether to call the HTTP or HTTPS function.
 			std::string response;
 			if (app.url.substr(0, 5) == "https") {
