@@ -91,8 +91,129 @@ enum NymphCastAppLocation {
 
 struct NymphCastApp {
 	std::string id;
+	NymphCastAppLocation location;
+	std::string url;
 	
+	asIScriptContext* asContext = 0;
+	asIScriptFunction* asFunction = 0;
 };
+
+
+class NymphCastApps {
+	static std::map<std::string, NymphCastApp> apps;
+	static std::vector<std::string> names;
+	static std::mutex mutex;
+	static NymphCastApp defaultApp;
+	
+public:
+	static bool addApp(std::string name, NymphCastApp app) {
+		mutex.lock();
+		if (apps.find(name) != apps.end()) { 
+			mutex.unlock(); 
+			return false;  // Return if name exists.
+		}
+		
+		apps.insert(std::pair<std::string, NymphCastApp>(name, app));
+		names.push_back(name);
+		mutex.unlock();
+		
+		return true;
+	}
+	
+	static bool removeApp(std::string name) {
+		std::map<std::string, NymphCastApp>::iterator it;
+		mutex.lock();
+		it = apps.find(name);
+		if (it == apps.end()) { 
+			mutex.unlock();
+			return false; 	// Return if app name not found.
+		}
+		
+		apps.erase(it);
+		
+		for (int i = 0; i < names.size(); ++i) {
+			if (names[i] == name) {
+				names.erase(names.begin() + i);
+			}
+		}
+		
+		mutex.unlock();
+		
+		return true;
+	}
+	
+	static NymphCastApp& findApp(std::string name) {
+		std::map<std::string, NymphCastApp>::iterator it;
+		mutex.lock();
+		it = apps.find(name);
+		if (it == apps.end()) { 
+			mutex.unlock();
+			return defaultApp; 	// Return if app name not found.
+		}
+		
+		NymphCastApp& app = it->second;
+		mutex.unlock();
+		
+		return app;
+	}
+	
+	static bool readAppList(std::string path) {
+		INIReader appList("apps/apps.ini");
+		if (appList.ParseError() != 1) {
+			std::cerr << "Failed to parse the '" << path << "' file." << std::endl;
+			return 1;
+		}
+		
+		std::set<std::string> sections = appList.Sections();
+		
+		// Read out the information per app section.
+		NymphCastApp app;
+		std::set<std::string>::const_iterator it;
+		for (it = sections.cbegin(); it != sections.cend(); ++it) {
+			app.id = appList.Get(*it, "id", "");
+			if (app.id.empty()) {
+				std::cerr << "App ID was empty. Skipping..." << std::endl;
+				continue;
+			}
+			
+			std::string loc = appList.Get(*it, "location", "");
+			if (loc == "local") {
+				app.location = NYMPHCAST_APP_LOCATION_LOCAL;
+			}
+			else if (loc == "remote") {
+				app.location = NYMPHCAST_APP_LOCATION_HTTP;
+			}
+			else {
+				// Default is to ignore this app.
+				std::cerr << "Invalid location for app " << app.id << ". Ignoring..." << std::endl;
+				continue;
+			}
+			
+			app.url = appList.Get(*it, "url", "");
+			if (app.url.empty()) {
+				std::cerr << "Invalid URL for app " << app.id << std::endl;
+				continue; 
+			}
+			
+			std::cout << "Adding app: " << app.id << std::endl;
+			
+			if (!NymphCastApps::addApp(app.id, app)) { return false; }
+		}
+		
+		return true;
+	}
+	
+	static std::vector<std::string> appNames() {
+		return names;
+	}
+};
+
+
+// -- Static initialisations.
+std::map<std::string, NymphCastApp> NymphCastApps::apps;
+std::vector<std::string> NymphCastApps::names;
+std::mutex NymphCastApps::mutex;
+NymphCastApp NymphCastApps::defaultApp;
 
 
 // --- Globals ---
@@ -814,13 +935,13 @@ NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Open the 'apps/apps.ini' file and parse it.
-	INIReader apps("apps/apps.ini");
+	/* INIReader apps("apps/apps.ini");
 	if (apps.ParseError() != 1) {
 		returnMsg->setResultValue(new NymphString());
 		return returnMsg;
 	}
 	
-	std::set<std::string> sections = apps.Sections();
+	std::set<std::string> sections = apps.Sections(); */
 	
 	// We obtain and return the list of available apps here.
 	// For now we use the list of folders in the apps/ folder. Each folder name is taken to be
@@ -837,9 +958,10 @@ NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 	} */
 	
 	// Serialise the sections vector.
+	std::vector<std::string> appNames = NymphCastApps::appNames();
 	std::string names;
-	std::set<std::string>::const_iterator it = sections.cbegin();
-	while (it != sections.cend()) {
+	std::vector<std::string>::const_iterator it = appNames.cbegin();
+	while (it != appNames.cend()) {
 		names.append(*it);
 		names.append("\n");
 		it++;
@@ -859,9 +981,167 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
 	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
 	
-	// FIXME: hardcoding the SoundCloud app for prototype purposes.
+	// Find the application details.
 	std::string result = "";
-	if (appId == "soundcloud") {
+	NymphCastApp app = NymphCastApps::findApp(appId);
+	if (app.id.empty()) {
+		std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
+		returnMsg->setResultValue(new NymphString(result));
+		return returnMsg;
+	}
+	
+	std::cout << "Found " << appId << " app." << std::endl;
+	
+	if (app.asFunction == 0) {
+		// Initialise new instance of the app.
+		int r;
+		
+		std::cout << "Loading " << app.id << " app..." << std::endl;
+
+		std::string script;
+		int len;
+		if (app.location == NYMPHCAST_APP_LOCATION_LOCAL) {
+			// We will load the script from a file on the disk.
+			FILE *f = fopen(app.url.c_str(), "rb");
+			if (f == 0) {
+				std::cout << "Failed to open the script file '" << app.url << "'." << std::endl;
+				result = "Failed to open the script file.";
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+
+			// Determine the size of the file	
+			fseek(f, 0, SEEK_END);
+			len = ftell(f);
+			fseek(f, 0, SEEK_SET);
+
+			// On Win32 it is possible to do the following instead
+			// int len = _filelength(_fileno(f));
+
+			// Read the entire file
+			script.resize(len);
+			size_t c = fread(&script[0], len, 1, f);
+			fclose(f);
+
+			if (c == 0) {
+				std::cerr << "Failed to load script file." << std::endl;
+				result = "Failed to load script file.";
+				returnMsg->setResultValue(new NymphString(result));
+				return returnMsg;
+			}
+		}
+		else if (app.location == NYMPHCAST_APP_LOCATION_HTTP) {
+			// Load the script file from a remote location (HTTP or HTTPS).
+			// bool performHttpsQuery(std::string query, std::string &response) 
+			
+			// Determine whether to call the HTTP or HTTPS function.
+			std::string response;
+			if (app.url.substr(0, 5) == "https") {
+				std::string query = "";
+				if (!performHttpsQuery(query, response)) {
+					std::cerr << "Error while performing HTTPS query: " << query << std::endl;
+					result = "Error while performing HTTPS query.";
+					returnMsg->setResultValue(new NymphString(result));
+					return returnMsg;
+				}
+			}
+			else if (app.url.substr(0, 5) == "http:") {
+				std::string query = "";
+				if (!performHttpQuery(query, response)) {
+					std::cerr << "Error while performing HTTP query: " << query << std::endl;
+					result = "Error while performing HTTP query.";
+					returnMsg->setResultValue(new NymphString(result));
+					return returnMsg;
+				}
+			}
+			
+			// Response string should contain the script.
+			script = response;
+			len = script.length();
+		}
+		
+		std::cout << "Creating module." << std::endl;
+
+		// Add the script sections that will be compiled into executable code.
+		// If we want to combine more than one file into the same script, then 
+		// we can call AddScriptSection() several times for the same module and
+		// the script engine will treat them all as if they were one. The script
+		// section name, will allow us to localize any errors in the script code.
+		asIScriptModule *mod = engine->GetModule(0, asGM_ALWAYS_CREATE);
+		r = mod->AddScriptSection("script", &script[0], len);
+		if (r < 0) {
+			std::cout << "AddScriptSection() failed" << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		std::cout << "Compile script." << std::endl;
+		
+		// Compile the script. If there are any compiler messages they will
+		// be written to the message stream that we set right after creating the 
+		// script engine. If there are no errors, and no warnings, nothing will
+		// be written to the stream.
+		r = mod->Build();
+		if (r < 0) {
+			std::cout << "Build() failed" << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+
+		// The engine doesn't keep a copy of the script sections after Build() has
+		// returned. So if the script needs to be recompiled, then all the script
+		// sections must be added again.
+
+		// If we want to have several scripts executing at different times but 
+		// that have no direct relation with each other, then we can compile them
+		// into separate script modules. Each module use their own namespace and 
+		// scope, so function names, and global variables will not conflict with
+		// each other.
+		
+		std::cout << "Creating context." << std::endl;
+		
+		// Create a context that will execute the script.
+		app.asContext = engine->CreateContext();
+		if (app.asContext == 0) {
+			std::cout << "Failed to create the context." << std::endl;
+			engine->Release();
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		std::cout << "Setting line callback." << std::endl;
+
+		// We don't want to allow the script to hang the application, e.g. with an
+		// infinite loop, so we'll use the line callback function to set a timeout
+		// that will abort the script after a certain time. Before executing the 
+		// script the timeOut variable will be set to the time when the script must 
+		// stop executing. 
+		r = app.asContext->SetLineCallback(asFUNCTION(LineCallback), &timeOut, asCALL_CDECL);
+		if (r < 0) {
+			std::cout << "Failed to set the line callback function." << std::endl;
+			app.asContext->Release();
+			engine->Release();
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		std::cout << "Find function." << std::endl;
+
+		// Find the function for the function we want to execute.
+		app.asFunction = engine->GetModule(0)->GetFunctionByDecl("string command_processor(string input)");
+		if (app.asFunction == 0) {
+			std::cout << "The function 'string command_processor(string input)' was not found." << std::endl;
+			app.asContext->Release();
+			engine->Release();
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+	}
+	
+	
+	
+	// FIXME: hardcoding the SoundCloud app for prototype purposes.
+	/* if (appId == "soundcloud") {
 		std::cout << "Found SoundCloud app." << std::endl;
 		if (soundcloudFunction == 0) {
 			// Initialise new instance of the SoundCloud app.
@@ -972,64 +1252,63 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 				returnMsg->setResultValue(new NymphString(result));
 				return returnMsg;
 			}
-		}
+		} */
 		
-		std::cout << "Preparing script context." << std::endl;
-					
-		// Prepare the script context with the function we wish to execute. Prepare()
-		// must be called on the context before each new script function that will be
-		// executed. Note, that if you intend to execute the same function several 
-		// times, it might be a good idea to store the function returned by 
-		// GetFunctionByDecl(), so that this relatively slow call can be skipped.
-		int r = soundcloudContext->Prepare(soundcloudFunction);
-		if (r < 0) {
-			std::cout << "Failed to prepare the context." << std::endl;
-			soundcloudContext->Release();
-			engine->Release();
-			returnMsg->setResultValue(new NymphString(result));
-			return returnMsg;
-		}
-		
-		std::cout << "Setting app arguments." << std::endl;
-		
-		// Pass string to app.
-		soundcloudContext->SetArgObject(0, (void*) &message);
-		
-		// Set the timeout before executing the function. Give the function 3 seconds
-		// to return before we'll abort it.
-		timeOut = timeGetTime() + std::chrono::seconds(3);
+	std::cout << "Preparing script context." << std::endl;
+				
+	// Prepare the script context with the function we wish to execute. Prepare()
+	// must be called on the context before each new script function that will be
+	// executed. Note, that if you intend to execute the same function several 
+	// times, it might be a good idea to store the function returned by 
+	// GetFunctionByDecl(), so that this relatively slow call can be skipped.
+	int r = app.asContext->Prepare(app.asFunction);
+	if (r < 0) {
+		std::cout << "Failed to prepare the context." << std::endl;
+		app.asContext->Release();
+		engine->Release();
+		returnMsg->setResultValue(new NymphString(result));
+		return returnMsg;
+	}
+	
+	std::cout << "Setting app arguments." << std::endl;
+	
+	// Pass string to app.
+	app.asContext->SetArgObject(0, (void*) &message);
+	
+	// Set the timeout before executing the function. Give the function 3 seconds
+	// to return before we'll abort it.
+	timeOut = timeGetTime() + std::chrono::seconds(3);
 
-		// Execute the function.
-		std::cout << "Executing the script." << std::endl;
-		std::cout << "---" << std::endl;
-		r = soundcloudContext->Execute();
-		std::cout << "---" << std::endl;
-		if (r != asEXECUTION_FINISHED) {
-			// The execution didn't finish as we had planned. Determine why.
-			if (r == asEXECUTION_ABORTED) {
-				std::cout << "The script was aborted before it could finish. Probably it timed out." 
-							<< std::endl;
-			}
-			else if (r == asEXECUTION_EXCEPTION) {
-				std::cout << "The script ended with an exception." << std::endl;
+	// Execute the function.
+	std::cout << "Executing the script." << std::endl;
+	std::cout << "---" << std::endl;
+	r = app.asContext->Execute();
+	std::cout << "---" << std::endl;
+	if (r != asEXECUTION_FINISHED) {
+		// The execution didn't finish as we had planned. Determine why.
+		if (r == asEXECUTION_ABORTED) {
+			std::cout << "The script was aborted before it could finish. Probably it timed out." 
+						<< std::endl;
+		}
+		else if (r == asEXECUTION_EXCEPTION) {
+			std::cout << "The script ended with an exception." << std::endl;
 
-				// Write some information about the script exception
-				asIScriptFunction* func = soundcloudContext->GetExceptionFunction();
-				std::cout << "func: " << func->GetDeclaration() << std::endl;
-				std::cout << "modl: " << func->GetModuleName() << std::endl;
-				std::cout << "sect: " << func->GetScriptSectionName() << std::endl;
-				std::cout << "line: " << soundcloudContext->GetExceptionLineNumber() << std::endl;
-				std::cout << "desc: " << soundcloudContext->GetExceptionString() << std::endl;
-			}
-			else
-				std::cout << "The script ended for some unforeseen reason (" << r << ")." 
-							<< std::endl;
+			// Write some information about the script exception
+			asIScriptFunction* func = app.asContext->GetExceptionFunction();
+			std::cout << "func: " << func->GetDeclaration() << std::endl;
+			std::cout << "modl: " << func->GetModuleName() << std::endl;
+			std::cout << "sect: " << func->GetScriptSectionName() << std::endl;
+			std::cout << "line: " << app.asContext->GetExceptionLineNumber() << std::endl;
+			std::cout << "desc: " << app.asContext->GetExceptionString() << std::endl;
 		}
-		else {
-			// Retrieve the return value from the context
-			result = *(std::string*) soundcloudContext->GetReturnObject();
-			std::cout << "The script function returned: " << result << std::endl;
-		}
+		else
+			std::cout << "The script ended for some unforeseen reason (" << r << ")." 
+						<< std::endl;
+	}
+	else {
+		// Retrieve the return value from the context
+		result = *(std::string*) app.asContext->GetReturnObject();
+		std::cout << "The script function returned: " << result << std::endl;
 	}
 	
 	returnMsg->setResultValue(new NymphString(result));
@@ -1064,6 +1343,13 @@ int main(int argc, char** argv) {
 	
 	is_full_screen = config.getValue<bool>("fullscreen", false);
 	display_disable = config.getValue<bool>("disable_video", false);
+	
+	
+	// Open the 'apps/apps.ini' file and parse it.
+	if (!NymphCastApps::readAppList("apps/apps.ini")) {
+		std::cerr << "Failed to read in app list." << std::endl;
+		return 1;
+	}
 	
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
