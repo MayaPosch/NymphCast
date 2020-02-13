@@ -46,6 +46,8 @@ private slots:
 	void remoteConnectSelected();
 	void remoteDisconnectSelected();
 	
+	void appsListRefresh();
+	
 	void sendCommand();
     
 private:

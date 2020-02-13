@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
     ui->setupUi(this);
 	
 	// Set application options.
-	QCoreApplication::setApplicationName("NymphCastPlayer");
+	QCoreApplication::setApplicationName("NymphCast Player");
 	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	QCoreApplication::setOrganizationName("Nyanko");
 	
@@ -42,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	
 	connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
+	
+	connect(ui->updateRemoteAppsButton, SIGNAL(clicked()), this, SLOT(appsListRefresh()));
 	
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
 	
@@ -281,13 +283,29 @@ void MainWindow::adjustVolume(int value) {
 }
 
 
+// --- APPS LIST REFRESH ---
+void MainWindow::appsListRefresh() {
+	if (!connected) { return; }
+	
+	// Get list of apps from the remote server.
+	std::string appList = client.getApplicationList(serverHandle);
+	
+	// Update local list.
+	ui->remoteAppsComboBox->clear();
+	QStringList appItems = (QString::fromStdString(appList)).split("\n", QString::SkipEmptyParts);
+	ui->remoteAppsComboBox->addItems(appItems);
+}
+
+
 // --- SEND COMMAND ---
 void MainWindow::sendCommand() {
 	if (!connected) { return; }
 	
 	// Read the data in the line edit and send it to the remote app.
-	// FIXME: hardcode the soundcloud app here for prototype purposes.
-	std::string appId = "soundcloud";
+	// Get the appID from the currently selected item in the app list combobox.
+	QString currentItem = ui->remoteAppsComboBox->currentText();
+	
+	std::string appId = currentItem.toStdString();
 	std::string message = ui->remoteAppLineEdit->text().toStdString();
 	
 	// Append the command to the output field.
