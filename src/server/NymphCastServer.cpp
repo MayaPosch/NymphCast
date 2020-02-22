@@ -159,9 +159,9 @@ public:
 	
 	static bool readAppList(std::string path) {
 		INIReader appList("apps/apps.ini");
-		if (appList.ParseError() != 1) {
+		if (appList.ParseError() != 0) {
 			std::cerr << "Failed to parse the '" << path << "' file." << std::endl;
-			return 1;
+			return false;
 		}
 		
 		std::set<std::string> sections = appList.Sections();
@@ -170,9 +170,9 @@ public:
 		NymphCastApp app;
 		std::set<std::string>::const_iterator it;
 		for (it = sections.cbegin(); it != sections.cend(); ++it) {
-			app.id = appList.Get(*it, "id", "");
+			app.id = appList.Get(*it, "name", "");
 			if (app.id.empty()) {
-				std::cerr << "App ID was empty. Skipping..." << std::endl;
+				std::cerr << "App name was empty. Skipping..." << std::endl;
 				continue;
 			}
 			
@@ -979,7 +979,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 		int len;
 		if (app.location == NYMPHCAST_APP_LOCATION_LOCAL) {
 			// We will load the script from a file on the disk.
-			FILE *f = fopen(app.url.c_str(), "rb");
+			FILE *f = fopen(("apps/" + app.url).c_str(), "rb");
 			if (f == 0) {
 				std::cout << "Failed to open the script file '" << app.url << "'." << std::endl;
 				result = "Failed to open the script file.";
