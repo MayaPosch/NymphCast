@@ -104,6 +104,8 @@ void MainWindow::disconnectServer() {
 	client.disconnectServer(serverHandle);
 	
 	ui->remoteLabel->setText("Disconnected.");
+	
+	connected = false;
 }
 
 
