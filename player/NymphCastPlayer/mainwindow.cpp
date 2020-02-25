@@ -143,7 +143,8 @@ void MainWindow::remoteConnectSelected() {
 
 // --- REMOTE DISCONNECT SELECTED ---
 void MainWindow::remoteDisconnectSelected() {
-	//
+	// FIXME: Redirect to the plain disconnectServer() function for now.
+	disconnectServer();
 }
 
 
