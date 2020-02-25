@@ -585,6 +585,8 @@ void Ffplay::run() {
     flush_pkt.data = (uint8_t *) &flush_pkt;
 
 	// Init SDL.
+	renderer = 0;
+	window = 0;
 	if (!display_disable) {
         int flags = SDL_WINDOW_HIDDEN;
         if (alwaysontop)
@@ -599,7 +601,6 @@ void Ffplay::run() {
             flags |= SDL_WINDOW_RESIZABLE;
         window = SDL_CreateWindow(program_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, default_width, default_height, flags);
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-		renderer = 0;
         if (window) {
             renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if (!renderer) {
@@ -641,11 +642,13 @@ void Ffplay::run() {
 		av_freep(&ioContext);
 	}
 	
-	av_log(NULL, AV_LOG_FATAL, "Destroying renderer...\n");
-	SDL_DestroyRenderer(renderer);
 	if (!display_disable) {
+		av_log(NULL, AV_LOG_FATAL, "Destroying renderer...\n");
+		SDL_DestroyRenderer(renderer);
+		renderer = 0;
 		av_log(NULL, AV_LOG_FATAL, "Destroying window...\n");
 		SDL_DestroyWindow(window);
+		window = 0;
 	}
 	
 	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
