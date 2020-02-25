@@ -57,7 +57,7 @@ void ScreenSaver::changeImage(int) {
 
 void ScreenSaver::cleanUp() {
 	// Clean up SDL.
-	/* fprintf(stderr, "Destroying texture...\n");
+	fprintf(stderr, "Destroying texture...\n");
 	SDL_DestroyTexture(texture);
 	fprintf(stderr, "Destroying renderer...\n");
 	SDL_DestroyRenderer(renderer);
@@ -67,7 +67,7 @@ void ScreenSaver::cleanUp() {
 	fprintf(stderr, "Quitting...\n");
 	
 	IMG_Quit();
-	SDL_Quit() */;
+	/*SDL_Quit() */;
 }
 
 
