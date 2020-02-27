@@ -250,6 +250,7 @@ void dataRequestFunction() {
 
 // --- PLAYER DONE CALLBACK ---
 // Called when the player has finished with the media track and has shut down.
+// TODO:
 
 
 void resetDataBuffer() {
@@ -324,9 +325,6 @@ void MessageCallback(const asSMessageInfo *msg, void *param) {
 
 
 std::chrono::time_point<std::chrono::steady_clock> timeGetTime() {
-	/* timeval time;
-	gettimeofday(&time, NULL);
-	return time.tv_sec*1000 + time.tv_usec/1000; */
 	std::chrono::time_point<std::chrono::steady_clock> now;
 	now = std::chrono::steady_clock::now();
 	return now;
@@ -382,7 +380,7 @@ bool performHttpQuery(std::string query, std::string &response) {
         return true;
     }
     else {
-        //it went wrong ?
+        // Something went wrong.
         return false;
     }
 	
@@ -421,7 +419,7 @@ bool performHttpsQuery(std::string query, std::string &response) {
         return true;
     }
     else {
-        //it went wrong ?
+        // Something went wrong.
         return false;
     }
 	
@@ -493,58 +491,6 @@ void angelScriptInit() {
 								
 	// Register further modules.
 	initJson(engine);
-								
-								
-	// For the prototype, set up just the SoundCloud app module.
-	
-	
-	// We will load the script from a file on the disk.
-	/* FILE *f = fopen("script.as", "rb");
-	if( f == 0 ) 	{
-		std::cout << "Failed to open the script file 'script.as'." << std::endl;
-		return -1;
-	}
-
-	// Determine the size of the file	
-	fseek(f, 0, SEEK_END);
-	int len = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	// On Win32 it is possible to do the following instead
-	// int len = _filelength(_fileno(f));
-
-	// Read the entire file
-	string script;
-	script.resize(len);
-	size_t c = fread(&script[0], len, 1, f);
-	fclose(f);
-
-	if (c == 0) {
-		std::cout << "Failed to load script file." << endl;
-		return -1;
-	}
-
-	// Add the script sections that will be compiled into executable code.
-	// If we want to combine more than one file into the same script, then 
-	// we can call AddScriptSection() several times for the same module and
-	// the script engine will treat them all as if they were one. The script
-	// section name, will allow us to localize any errors in the script code.
-	asIScriptModule *mod = engine->GetModule(0, asGM_ALWAYS_CREATE);
-	r = mod->AddScriptSection("script", &script[0], len);
-	if (r < 0) {
-		std::cout << "AddScriptSection() failed" << endl;
-		return -1;
-	}
-	
-	// Compile the script. If there are any compiler messages they will
-	// be written to the message stream that we set right after creating the 
-	// script engine. If there are no errors, and no warnings, nothing will
-	// be written to the stream.
-	r = mod->Build();
-	if (r < 0) {
-		std::cout << "Build() failed" << endl;
-		return -1;
-	} */
 }
 
 
