@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	
 	connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
+	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
 	
 	connect(ui->updateRemoteAppsButton, SIGNAL(clicked()), this, SLOT(appsListRefresh()));
 	
@@ -259,6 +260,17 @@ void MainWindow::rewind() {
 	if (!connected) { return; }
 	
 	client.playbackRewind(serverHandle);
+}
+
+
+// --- SEEK ---
+void MainWindow::seek() {
+	if (!connected) { return; }
+	
+	// Read out location on seek bar.
+	uint8_t location = ui->positionSlider->value();
+	
+	client.playbackSeek(serverHandle, location);
 }
 
 

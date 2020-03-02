@@ -191,7 +191,10 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QSlider" name="horizontalSlider">
+           <widget class="QSlider" name="positionSlider">
+            <property name="maximum">
+             <number>100</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>

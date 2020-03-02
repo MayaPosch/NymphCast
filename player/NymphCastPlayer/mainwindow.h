@@ -38,6 +38,7 @@ private slots:
 	void pause();
 	void forward();
 	void rewind();
+	void seek();
 	
 	void mute();
 	void adjustVolume(int value);
