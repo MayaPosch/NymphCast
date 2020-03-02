@@ -349,40 +349,43 @@ void Player::event_loop(VideoState *cur_stream) {
                 SDL_ShowCursor(1);
                 cursor_hidden = 0;
             }
+			
             cursor_last_shown = av_gettime_relative();
             if (event.type == SDL_MOUSEBUTTONDOWN) {
-                if (event.button.button != SDL_BUTTON_RIGHT)
-                    break;
+                if (event.button.button != SDL_BUTTON_RIGHT) { break; }
                 x = event.button.x;
-            } else {
-                if (!(event.motion.state & SDL_BUTTON_RMASK))
-                    break;
+            } 
+			else {
+                if (!(event.motion.state & SDL_BUTTON_RMASK)) { break; }
                 x = event.motion.x;
             }
-                if (seek_by_bytes || cur_stream->ic->duration <= 0) {
-                    uint64_t size =  avio_size(cur_stream->ic->pb);
-                    StreamHandler::stream_seek(cur_stream, size*x/cur_stream->width, 0, 1);
-                } else {
-                    int64_t ts;
-                    int ns, hh, mm, ss;
-                    int tns, thh, tmm, tss;
-                    tns  = cur_stream->ic->duration / 1000000LL;
-                    thh  = tns / 3600;
-                    tmm  = (tns % 3600) / 60;
-                    tss  = (tns % 60);
-                    frac = x / cur_stream->width;
-                    ns   = frac * tns;
-                    hh   = ns / 3600;
-                    mm   = (ns % 3600) / 60;
-                    ss   = (ns % 60);
-                    av_log(NULL, AV_LOG_INFO,
-                           "Seek to %2.0f%% (%2d:%02d:%02d) of total duration (%2d:%02d:%02d)       \n", frac*100,
-                            hh, mm, ss, thh, tmm, tss);
-                    ts = frac * cur_stream->ic->duration;
-                    if (cur_stream->ic->start_time != AV_NOPTS_VALUE)
-                        ts += cur_stream->ic->start_time;
-                    StreamHandler::stream_seek(cur_stream, ts, 0, 0);
-                }
+			
+			if (seek_by_bytes || cur_stream->ic->duration <= 0) {
+				uint64_t size =  avio_size(cur_stream->ic->pb);
+				StreamHandler::stream_seek(cur_stream, size*x/cur_stream->width, 0, 1);
+			} 
+			else {
+				int64_t ts;
+				int ns, hh, mm, ss;
+				int tns, thh, tmm, tss;
+				tns  = cur_stream->ic->duration / 1000000LL;
+				thh  = tns / 3600;
+				tmm  = (tns % 3600) / 60;
+				tss  = (tns % 60);
+				frac = x / cur_stream->width;
+				ns   = frac * tns;
+				hh   = ns / 3600;
+				mm   = (ns % 3600) / 60;
+				ss   = (ns % 60);
+				av_log(NULL, AV_LOG_INFO,
+					   "Seek to %2.0f%% (%2d:%02d:%02d) of total duration (%2d:%02d:%02d)       \n", frac*100,
+						hh, mm, ss, thh, tmm, tss);
+				ts = frac * cur_stream->ic->duration;
+				if (cur_stream->ic->start_time != AV_NOPTS_VALUE)
+					ts += cur_stream->ic->start_time;
+				StreamHandler::stream_seek(cur_stream, ts, 0, 0);
+			}
+			
             break;
         case SDL_WINDOWEVENT:
             switch (event.window.event) {
@@ -397,6 +400,7 @@ void Player::event_loop(VideoState *cur_stream) {
                     cur_stream->force_refresh = 1;
             }
             break;
+		
         case SDL_QUIT:
         case FF_QUIT_EVENT:
             //do_exit(cur_stream);
@@ -407,6 +411,29 @@ void Player::event_loop(VideoState *cur_stream) {
         default:
             break;
         }
+		
+		if (event.type == nymph_seek_event) {
+			// Seek to the desired location.
+			int64_t ts;
+			int ns, hh, mm, ss;
+			int tns, thh, tmm, tss;
+			tns  = cur_stream->ic->duration / 1000000LL;
+			thh  = tns / 3600;
+			tmm  = (tns % 3600) / 60;
+			tss  = (tns % 60);
+			frac = event.user.code / 100.0;
+			ns   = frac * tns;
+			hh   = ns / 3600;
+			mm   = (ns % 3600) / 60;
+			ss   = (ns % 60);
+			av_log(NULL, AV_LOG_INFO,
+				   "Seek to %2.0f%% (%2d:%02d:%02d) of total duration (%2d:%02d:%02d)       \n", frac*100,
+					hh, mm, ss, thh, tmm, tss);
+			ts = frac * cur_stream->ic->duration;
+			if (cur_stream->ic->start_time != AV_NOPTS_VALUE)
+				ts += cur_stream->ic->start_time;
+			StreamHandler::stream_seek(cur_stream, ts, 0, 0);
+		}			
     }
 }
 

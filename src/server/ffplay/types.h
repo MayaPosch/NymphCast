@@ -441,5 +441,12 @@ extern SDL_AudioDeviceID audio_dev;
 
 extern unsigned sws_flags;
 
+// NymphCast-specific SDL event types.
+enum NymphEvents {
+	NYMPH_SEEK_EVENT = 1
+};
+
+extern uint32_t nymph_seek_event;
+
 
 #endif

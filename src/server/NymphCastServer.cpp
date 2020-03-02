@@ -220,6 +220,7 @@ NymphCastApp NymphCastApps::defaultApp;
 std::atomic<bool> playerStarted;
 Poco::Thread avThread;
 Ffplay ffplay;
+const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
 // ---
 
 
@@ -264,6 +265,27 @@ void resetDataBuffer() {
 	media_buffer.eof = false;
 	media_buffer.requestInFlight = false;
 	
+	// If we're in the midst of a seeking operation, we are done here.
+	if (media_buffer.seeking) {		
+		// Set high/low indices for the buffer in preparation for new data.
+		media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
+		media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
+		
+		// Send message to client indicating that we're seeking in the file.
+		std::vector<NymphType*> values;
+		values.push_back(new NymphUint64(media_buffer.seekingPosition));
+		std::string result;
+		NymphBoolean* resVal = 0;
+		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaSeekCallback", values, result)) {
+			std::cerr << "Calling media stop callback failed: " << result << std::endl;
+			media_buffer.seeking = false;
+			return;
+		}
+		media_buffer.seeking = false;
+		return; 
+	}
+	
+	media_buffer.seeking = false;
 	playerStarted = false;
 	castingUrl = false;
 	
@@ -643,10 +665,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	
 	// Copy pointer into free slot of vector, delete data if not empty.
 	// Reset the next slot value if the end of the vector has been reached.
-	// 
-	// TODO: optimise.
-	// TODO: prevent accidental overwriting.
-	// TODO: update front/back index counters.
 	if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
 		media_buffer.mutex.lock();
@@ -664,6 +682,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		
 		media_buffer.freeSlots--;
 		media_buffer.buffBytesLeft += mediaData.length();
+		media_buffer.buffIndexHigh += media_buffer.slotSize;
 	}
 	
 	// Signal the condition variable in the VLC read callback in case we're waiting there.
@@ -672,7 +691,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
 	if (!playerStarted && done) {
 		playerStarted = true;
-		//ffplay.setBuffer(&media_buffer);
 		avThread.start(ffplay);
 	}
 	
@@ -837,10 +855,39 @@ NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 }
 
 
+enum {
+	NYMPH_SEEK_TYPE_BYTES = 1,
+	NYMPH_SEEK_TYPE_PERCENTAGE = 2
+};
+
+
 // --- PLAYBACK SEEK ---
 // uint8 playback_seek(uint64)
 NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	uint8_t type = ((NymphUint8*) msg->parameters()[0])->getValue();
+	if (type == NYMPH_SEEK_TYPE_PERCENTAGE) {
+		uint8_t percentage = ((NymphUint8*) msg->parameters()[1])->getValue();
+		
+		// Sanity check.
+		// We accept a value from 0 - 100.
+		if (percentage > 100) { percentage = 100; }
+	
+		// Create mouse event structure.
+		SDL_Event event;
+		event.type = nymph_seek_event;
+		event.user.code = NYMPH_SEEK_EVENT;
+		event.user.code = percentage;
+		SDL_PushEvent(&event);
+	}
+	else if (type == NYMPH_SEEK_TYPE_BYTES) {
+		// TODO: implement.
+	}
+	else {
+		returnMsg->setResultValue(new NymphUint8(1));
+		return returnMsg;
+	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
@@ -1299,7 +1346,7 @@ int main(int argc, char** argv) {
 	// Seek to the indicated position.
 	// Returns success or error number.
 	parameters.clear();
-	parameters.push_back(NYMPH_UINT64);
+	parameters.push_back(NYMPH_ARRAY);
 	NymphMethod playbackSeekFunction("playback_seek", parameters, NYMPH_UINT8);
 	playbackSeekFunction.setCallback(playback_seek);
 	NymphRemoteClient::registerMethod("playback_seek", playbackSeekFunction);
@@ -1395,10 +1442,11 @@ int main(int argc, char** argv) {
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
 	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
-	media_buffer.buffIndexLow = 0;		// File index at the buffer front.
-	media_buffer.buffIndexHigh = 0;	
+	media_buffer.buffIndexLow = 0;		// File index at the buffer start (low).
+	media_buffer.buffIndexHigh = 0;		// File index at the buffer end (high).
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
+	media_buffer.seeking = false;
 	media_buffer.requestInFlight = false;
 	
 	playerStarted = false;

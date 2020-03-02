@@ -347,7 +347,6 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
 	}
 	else if (db->buffBytesLeft == 0) { return AVERROR_EOF; }
-	//else if (db->buffBytesLeft == 0) { return 0; }
 
 	if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
 		bytesToCopy = buf_size;
@@ -410,6 +409,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 				db->currentIndex = 0;
 				db->slotBytesLeft = db->slotSize.load();
 				db->freeSlots++; // The used buffer slot just became available for more data.
+				db->buffIndexLow += db->slotSize;
 			}
 			else {
 				db->currentIndex += byteCount;
@@ -452,22 +452,38 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 /**
  * Seeks to a given position in the currently open file.
  * 
- * @param ptr     A pointer to the user-defined IO data structure.
- * @param pos     The position to seek to.
+ * @param opaque  A pointer to the user-defined IO data structure.
+ * @param offset  The position to seek to.
  * @param origin  The relative point (origin) from which the seek is performed.
  *
  * @return  The new position in the file.
  */
-int64_t Ffplay::media_seek(void* opaque, int64_t pos, int whence) {
+int64_t Ffplay::media_seek(void* opaque, int64_t offset, int origin) {
     DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	
-	// Try to find the index in the buffered data. If unavailable, read from file.
-	//db->index = offset;
-	
-	// TODO: implement.
+	// Try to find the index in the buffered data. If unavailable, request new data from client.
+	if (offset < db->buffIndexLow || offset > db->buffIndexHigh) {
+		// Reset the buffer and send request to client.
+		db->seeking = true;
+		db->seekingPosition = offset;
+		resetDataBuffer();
+	}
+	else {
+		// Set the new position of the index in the appropriate buffer.
+		uint64_t adjusted_offset = offset - db->buffIndexLow;
+		uint32_t oldSlot = db->currentSlot;
+		uint32_t wholeSlots = adjusted_offset / db->slotSize;
+		uint32_t newSlot = (adjusted_offset / db->slotSize) + db->currentSlot;
+		if ((newSlot + 1) > db->numSlots) {
+			newSlot -= (db->numSlots - 1);
+		}
+		
+		db->currentSlot = newSlot;
+		db->currentIndex = adjusted_offset - (db->slotSize * wholeSlots);
+	}
  
     // Return the new position:
-    return 0;
+    return offset;
 }
 
 
@@ -523,11 +539,10 @@ void Ffplay::run() {
 		// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
 		ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
 												 0,                  // bWriteable (1=true,0=false) 
-												 &media_buffer,          // user data ; will be passed to our callback functions
+												 &media_buffer,      // user data
 												 media_read, 
 												 0,                  // Write callback function. 
-												 0); 
-												 //media_seek); 
+												 media_seek);
 		 
 		// Allocate the AVFormatContext.
 		formatContext = avformat_alloc_context();
