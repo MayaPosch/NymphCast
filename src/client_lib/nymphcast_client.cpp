@@ -24,6 +24,12 @@
 #include "zeroconf.hpp"
 
 
+enum {
+	NYMPH_SEEK_TYPE_BYTES = 1,
+	NYMPH_SEEK_TYPE_PERCENTAGE = 2
+};
+
+
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
 }
@@ -78,41 +84,7 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Client callback function called.\n";
 	
-	// End NymphCast session and disconnect from server.
-	/* std::vector<NymphType*> values;
-	NymphType* returnValue = 0;
-	std::string result;
-	if (!NymphRemoteServer::callMethod(session, "session_end", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	returnValue = 0;
-	if (!NymphRemoteServer::callMethod(session, "disconnect", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	if (returnValue->type() != NYMPH_BOOL) {
-		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
-		exit(1);
-	} */
-	
-	// Signal the condition variable to terminate the application.
-	//cnd.signal();
+	// End NymphCast session?
 	
 	// TODO: signal the application that playback was ended?
 }
@@ -623,13 +595,47 @@ uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 
 
 // --- PLAYBACK SEEK ---
+// Seek to specific byte offset in the file.
 uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
-	//
-	// uint8 playback_seek(uint64)
+	// uint8 playback_seek(array)
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	values.push_back(new NymphUint64(location));
+	
+	NymphArray* valArray = new NymphArray();
+	valArray.addValue(new NymphUint8(NYMPH_SEEK_TYPE_BYTES));
+	valArray.addValue(new NymphUint64(location));	
+	values.push_back(valArray);
+	
+	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
+}
+
+
+// --- PLAYBACK SEEK ---
+// Seek to percentage of the media file length.
+uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
+	// uint8 playback_seek(array)
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	
+	NymphArray* valArray = new NymphArray();
+	valArray.addValue(new NymphUint8(NYMPH_SEEK_TYPE_PERCENTAGE));
+	valArray.addValue(new NymphUint8(percentage));	
+	values.push_back(valArray);
+	
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);

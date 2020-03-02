@@ -76,6 +76,7 @@ public:
 	uint8_t playbackRewind(uint32_t handle);
 	uint8_t playbackForward(uint32_t handle);
 	uint8_t playbackSeek(uint32_t handle, uint64_t location);
+	uint8_t playbackSeek(uint32_t handle, uint8_t percentage);
 	NymphPlaybackStatus playbackStatus(uint32_t handle);
 };
 
