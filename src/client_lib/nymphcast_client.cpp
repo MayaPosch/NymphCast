@@ -82,7 +82,7 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 
 
 void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Client callback function called.\n";
+	std::cout << "Media Stop callback function called.\n";
 	
 	// End NymphCast session?
 	
@@ -91,7 +91,51 @@ void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, voi
 
 
 void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
-	// TODO: implement.
+	std::cout << "Media Seek callback called." << std::endl;
+	
+	// Seek to the indicated position in the file.
+	uint64_t position = ((NymphUint64*) msg->parameters()[0])->getValue();
+	source.seekg(position);
+	
+	// Read in first segment.
+	// Call the 'session_data' remote function with new data buffer.
+	// Read N bytes from the file.
+	// TODO: receive desired block size here from remote?
+	
+	// FIXME: we're using 2M blocks for now. This should be made adjustable by the remote.
+	uint32_t bufLen = 2048 * 1024;
+	char* buffer = new char[bufLen];
+	source.read(buffer, bufLen);
+	if (!source.good()) {
+		std::cerr << "Error while seeking. Stream bad." << std::endl;
+		return;
+	}
+	
+	// Check characters read, set EOF if at the end.
+	NymphBoolean* fileEof = new NymphBoolean(false);
+	if (source.gcount() < bufLen) { fileEof->setValue(true); }
+	
+	std::string block(buffer, source.gcount());
+	
+	// Debug
+	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
+	
+	std::vector<NymphType*> values;
+	values.push_back(new NymphBlob(block));
+	values.push_back(fileEof);
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(session, result);
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(session, result);
+		exit(1);
+	}
 }
 
 
@@ -603,8 +647,8 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 	NymphType* returnValue = 0;
 	
 	NymphArray* valArray = new NymphArray();
-	valArray.addValue(new NymphUint8(NYMPH_SEEK_TYPE_BYTES));
-	valArray.addValue(new NymphUint64(location));	
+	valArray->addValue(new NymphUint8(NYMPH_SEEK_TYPE_BYTES));
+	valArray->addValue(new NymphUint64(location));	
 	values.push_back(valArray);
 	
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
@@ -632,8 +676,8 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
 	NymphType* returnValue = 0;
 	
 	NymphArray* valArray = new NymphArray();
-	valArray.addValue(new NymphUint8(NYMPH_SEEK_TYPE_PERCENTAGE));
-	valArray.addValue(new NymphUint8(percentage));	
+	valArray->addValue(new NymphUint8(NYMPH_SEEK_TYPE_PERCENTAGE));
+	valArray->addValue(new NymphUint8(percentage));	
 	values.push_back(valArray);
 	
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
