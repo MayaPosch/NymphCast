@@ -446,7 +446,7 @@ enum NymphEvents {
 	NYMPH_SEEK_EVENT = 1
 };
 
-extern uint32_t nymph_seek_event;
+extern const uint32_t nymph_seek_event;
 
 
 #endif
