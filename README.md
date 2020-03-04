@@ -4,6 +4,8 @@ NymphCast is a software solution which turns your choice of Linux-capable hardwa
 
 In addition, it supports powerful apps (NymphCast apps) written in AngelScript to extend the functionality of NymphCast with a variety of online services. 
 
+The main NymphCast website [can be found here](http://nyanko.ws/product_nymphcast.php "NymphCast site") at the Nyanko.ws website.
+
 ![NymphCast diagram](doc/nymphcast.png)
 
 ## Goals ##
