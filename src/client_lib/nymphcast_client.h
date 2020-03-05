@@ -55,6 +55,7 @@ public:
 	NymphCastClient();
 	~NymphCastClient();
 	
+	void setClientId(std::string id);
 	void setApplicationCallback(AppMessageFunction function);
 	std::string getApplicationList(uint32_t handle);
 	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);

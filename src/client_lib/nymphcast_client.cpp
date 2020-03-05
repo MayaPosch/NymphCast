@@ -197,6 +197,12 @@ NymphCastClient::~NymphCastClient() {
 }
 
 
+// --- SET CLIENT ID ---
+void NymphCastClient::setClientId(std::string id) {
+	clientId = id;
+}
+
+
 // --- SET APPLICATION CALLBACK ---
 void NymphCastClient::setApplicationCallback(AppMessageFunction function) {
 	appMessageFunction = function;
