@@ -37,6 +37,7 @@ struct NymphPlaybackStatus {
 
 
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
+typedef std::function<void(uint32_t handle, NymphPlaybackStatus status)> StatusUpdateFunction;
 
 
 class NymphCastClient {
@@ -44,6 +45,7 @@ class NymphCastClient {
 	std::ifstream source;
 	
 	AppMessageFunction appMessageFunction;
+	StatusUpdateFunction statusUpdateFunction;
 	
 	void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data);
@@ -57,6 +59,7 @@ public:
 	
 	void setClientId(std::string id);
 	void setApplicationCallback(AppMessageFunction function);
+	void setStatusUpdateCallback(StatusUpdateFunction function);
 	std::string getApplicationList(uint32_t handle);
 	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);
 

@@ -81,10 +81,8 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 
 void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Media Stop callback function called.\n";
-	
-	// End NymphCast session?
-	
-	// TODO: signal the application that playback was ended?
+		
+	// TODO: signal the application that playback was ended.
 }
 
 
@@ -140,7 +138,23 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 // --- MEDIA STATUS CALLBACK ---
 // Gets called every time the active remote media changes status.
 void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data) {
-	// TODO: implement.
+	// Send received data to registered callback.
+	NymphPlaybackStatus status;
+	status.error = true;
+	
+	NymphStruct* nstruct = ((NymphStruct*) msg->parameters()[0]);
+	NymphType* splay;
+	if (!nstruct->getValue("playing", splay)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'playing' in struct." << std::endl;
+		return;
+	}
+	
+	status.error = false;
+	status.playing = ((NymphBoolean*) splay)->getValue();
+	
+	if (statusUpdateFunction) {
+		statusUpdateFunction(session, status);
+	}
 }
 
 
@@ -173,6 +187,7 @@ NymphCastClient::NymphCastClient() {
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
 	
 	appMessageFunction = 0;
+	statusUpdateFunction = 0;
 	
 	Zeroconf::SetLogCallback(PrintLog);
 }
@@ -193,6 +208,12 @@ void NymphCastClient::setClientId(std::string id) {
 // --- SET APPLICATION CALLBACK ---
 void NymphCastClient::setApplicationCallback(AppMessageFunction function) {
 	appMessageFunction = function;
+}
+
+
+// --- SET STATUS UPDATE FUNCTION ---
+void NymphCastClient::setStatusUpdateCallback(StatusUpdateFunction function) {
+	statusUpdateFunction = function;
 }
 
 
@@ -338,6 +359,9 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 																	this, _1, _2, _3), 0);
 	NymphRemoteServer::registerCallback("MediaSeekCallback", 
 										std::bind(&NymphCastClient::MediaSeekCallback,
+																	this, _1, _2, _3), 0);
+	NymphRemoteServer::registerCallback("MediaStatusCallback", 
+										std::bind(&NymphCastClient::MediaStatusCallback,
 																	this, _1, _2, _3), 0);
 	
 	return true;
