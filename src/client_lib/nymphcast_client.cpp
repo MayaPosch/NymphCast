@@ -68,14 +68,12 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
 		exit(1);
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
 		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		//NymphRemoteServer::shutdown();
 		exit(1);
 	}
 }
@@ -170,8 +168,6 @@ void PrintLog(Zeroconf::LogLevel level, const std::string& message) {
 
 // --- CONSTRUCTOR ---
 NymphCastClient::NymphCastClient() {
-	//
-	
 	// Initialise the remote client instance.
 	long timeout = 60000; // 60 seconds.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
@@ -179,20 +175,11 @@ NymphCastClient::NymphCastClient() {
 	appMessageFunction = 0;
 	
 	Zeroconf::SetLogCallback(PrintLog);
-	
-/* #ifdef WIN32
-    WSADATA wsa = {0};
-    if (WSAStartup(0x202, &wsa) != 0) {
-        std::cout << "E: Unable to initialize WinSock" << std::endl;
-        return 1;
-    }
-#endif */
 }
 
 
 // --- DESTRUCTOR ---
 NymphCastClient::~NymphCastClient() {
-	//
 	NymphRemoteServer::shutdown();
 }
 
@@ -218,13 +205,11 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_list", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
-		//NymphRemoteServer::disconnect(handle, result);
 		return std::string();
 	}
 	
 	if (returnValue->type() != NYMPH_STRING) {
 		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		//NymphRemoteServer::disconnect(handle, result);
 		return std::string();
 	}
 	
@@ -243,13 +228,11 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_send", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
-		//NymphRemoteServer::disconnect(handle, result);
 		return std::string();
 	}
 	
 	if (returnValue->type() != NYMPH_STRING) {
 		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		//NymphRemoteServer::disconnect(handle, result);
 		return std::string();
 	}
 	
@@ -317,7 +300,6 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 	if (!NymphRemoteServer::connect(serverip, 4004, handle, 0, result)) {
 		std::cout << "Connecting to remote server failed: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
@@ -328,14 +310,12 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 	if (!NymphRemoteServer::callMethod(handle, "connect", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
 	if (returnValue->type() != NYMPH_BOOL) {
 		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
@@ -418,14 +398,12 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
 		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
@@ -444,14 +422,12 @@ bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
 		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		//NymphRemoteServer::shutdown();
 		return false;
 	}
 	
