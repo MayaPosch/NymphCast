@@ -142,7 +142,6 @@ The client binary has to be provided with the filename of a media file that shou
 ## Limitations ##
 
 * The server is assumed to have 100 MB heap space free for caching.
-* Remote seeking support is not enabled yet, meaning MP4 files <100 MB with the header at the end do not work yet.
 
 ## SDK ##
 
