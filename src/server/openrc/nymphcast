@@ -2,4 +2,4 @@
 
 supervisor=supervise-daemon
 command="/opt/nymphcast/nymphcast_server"
-command_args="-c /opt/nymphcast/nymphcast_config.ini"
+command_args="-c /opt/nymphcast/nymphcast_config.ini -a /opt/nymphcast/apps/ -w /opt/nymphcast/"
