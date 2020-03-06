@@ -15,7 +15,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #else
-#include <error.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
