@@ -1187,6 +1187,7 @@ void logFunction(int level, std::string logStr) {
 int main(int argc, char** argv) {
 	// Parse the command line arguments.
 	Sarge sarge;
+	sarge.setArgument("h", "help", "Get this help message.", false);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
 	sarge.parseArguments(argc, argv);
 	
