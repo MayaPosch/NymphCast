@@ -14,6 +14,7 @@ SDL_Texture* ScreenSaver::texture = 0;
 ChronoTrigger ScreenSaver::ct;
 std::vector<std::string> ScreenSaver::images = { "green.jpg", "forest_brook.jpg" };
 int ScreenSaver::imageId = 0;
+std::string ScreenSaver::dataPath;
 
 
 
@@ -68,6 +69,11 @@ void ScreenSaver::cleanUp() {
 	
 	IMG_Quit();
 	/*SDL_Quit() */;
+}
+
+
+void ScreenSaver::setDataPath(std::string path) {
+	dataPath = path;
 }
 
 

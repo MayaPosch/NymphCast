@@ -144,7 +144,7 @@ public:
 	}
 	
 	static bool readAppList(std::string path) {
-		INIReader appList("apps/apps.ini");
+		INIReader appList(path);
 		if (appList.ParseError() != 0) {
 			std::cerr << "Failed to parse the '" << path << "' file." << std::endl;
 			return false;
@@ -1188,6 +1188,8 @@ int main(int argc, char** argv) {
 	// Parse the command line arguments.
 	Sarge sarge;
 	sarge.setArgument("h", "help", "Get this help message.", false);
+	sarge.setArgument("a", "apps", "Custom NymphCast apps location.", true);
+	sarge.setArgument("w", "wallpaper", "Custom NymphCast wallpaper location.", true);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
 	sarge.parseArguments(argc, argv);
 	
@@ -1195,6 +1197,16 @@ int main(int argc, char** argv) {
 	if (!sarge.getFlag("configuration", config_file)) {
 		std::cerr << "No configuration file provided in command line arguments." << std::endl;
 		return 1;
+	}
+	
+	std::string appsFolder = "apps/";
+	if (!sarge.getFlag("apps", appsFolder)) {
+		std::cout << "Setting app folder to default location." << std::endl;
+	}
+	
+	std::string wallpapersFolder = "wallpapers/";
+	if (!sarge.getFlag("wallpaper", wallpapersFolder)) {
+		std::cout << "Setting wallpapers folder to default location." << std::endl;
 	}
 	
 	// Read in the configuration.
@@ -1208,8 +1220,8 @@ int main(int argc, char** argv) {
 	display_disable = config.getValue<bool>("disable_video", false);
 	
 	
-	// Open the 'apps/apps.ini' file and parse it.
-	if (!NymphCastApps::readAppList("apps/apps.ini")) {
+	// Open the 'apps.ini' file and parse it.
+	if (!NymphCastApps::readAppList(appsFolder + "apps.ini")) {
 		std::cerr << "Failed to read in app list." << std::endl;
 		return 1;
 	}
@@ -1474,6 +1486,7 @@ int main(int argc, char** argv) {
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
 	if (!display_disable) {
+		ScreenSaver::setDataPath(wallpapersFolder);
 		ScreenSaver::start(15);
 	}
 	
