@@ -8,6 +8,18 @@ The main NymphCast website [can be found here](http://nyanko.ws/product_nymphcas
 
 ![NymphCast diagram](doc/nymphcast.png)
 
+## Releases ##
+
+NymphCast is currently in Alpha stage, with experimental releases being made available on Github (see the '[releases](https://github.com/MayaPosch/NymphCast/releases "Releases")' section).
+
+For **pacman** based distros (ArchLinux, Manjaro), some packages exist for:
+
+* the server: [nymphcast-server-git](https://aur.archlinux.org/packages/nymphcast-server-git/)
+* the sdk: [nymphcast-sdk-git](https://aur.archlinux.org/packages/nymphcast-sdk-git/)
+* the player: [nymphcast-player-git](https://aur.archlinux.org/packages/nymphcast-player-git/)
+
+
+
 ## Goals ##
 
 - [x] Server (receiver) works on mainstream Linux-capable Single-Board Computers (SBCs), tested on Raspberry Pi 2 (v1.1).
@@ -36,7 +48,6 @@ The layout of relevant folders in the project is as follows:
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), allowing one to make use of the basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
 An APK has been made available for installation on Android in the 'releases' section. A desktop release for Windows (x64) is available as well.
-
 
 ## Quick Start ##
 
@@ -90,10 +101,6 @@ The server targets SBCs, but like the client (and SDK) should work on any platfo
 * Windows Embedded
 
 The server relies on the FFmpeg library, which is supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
-
-## Releases ##
-
-NymphCast is currently in Alpha stage, with experimental releases being made available on Github (see the '[releases](https://github.com/MayaPosch/NymphCast/releases "Releases")' section).
 
 
 ## Building ##
