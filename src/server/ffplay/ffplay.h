@@ -59,15 +59,32 @@ struct DataBuffer {
 };
 
 
+struct FileMetaInfo {
+	//std::atomic<uint32_t> filesize;		// bytes.
+	std::atomic<uint64_t> duration;		// milliseconds
+	std::atomic<double> position;		// seconds with remainder.
+	std::atomic<uint32_t> width;		// pixels
+	std::atomic<uint32_t> height;		// pixels
+	std::atomic<uint32_t> video_rate;	// kilobits per second
+	std::atomic<uint32_t> audio_rate;	// kilobits per second
+	std::atomic<uint32_t> framrate;
+	std::atomic<uint8_t> audio_channels;
+	std::string title;
+	std::string artist;
+	std::string album;
+	Poco::Mutex mutex;	// Use only with non-atomic entries.
+};
+
 
 // --- Globals ---
 extern DataBuffer media_buffer;
+extern FileMetaInfo file_meta;
 extern std::atomic<bool> playerStarted;
 	
 void resetDataBuffer(); // Defined in NymphCastServer.cpp
 
 	
-class Ffplay : public Poco::Runnable {
+class Ffplay : public Poco::Runnable {	
 	static int media_read(void* opaque, uint8_t* buf, int buf_size);
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
 	

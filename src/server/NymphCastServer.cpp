@@ -29,6 +29,7 @@ namespace fs = std::filesystem;
 
 #include "ffplay/ffplay.h"
 #include "ffplay/types.h"
+
 #include "screensaver.h"
 
 #include <nymph/nymph.h>
@@ -66,21 +67,6 @@ Mutex gMutex;
 #ifdef main
 #undef main
 #endif
-
-
-struct FileMetaInfo {
-	uint32_t filesize;	// bytes.
-	uint32_t duration;	// milliseconds
-	uint32_t width;		// pixels
-	uint32_t height;	// pixels
-	uint32_t video_rate;	// kilobits per second
-	uint32_t audio_rate;	// kilobits per second
-	uint32_t framrate;
-	uint8_t audio_channels;
-	std::string title;
-	std::string artist;
-	std::string album;
-};
 
 
 enum NymphCastAppLocation {
@@ -907,14 +893,38 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 }
 
 
+enum {
+	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
+	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
+	NYMPH_PLAYBACK_STATUS_PAUSED = 3
+};
+	
+
+
 // --- PLAYBACK STATUS ---
 // struct playback_status()
 NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Set the playback status.
+	// We're sending back whether we are playing something currently. If so, also includes:
+	// * duration of media in seconds.
+	// * position in the media, in microseconds.
+	// * title of the media, if available.
+	// * artist of the media, if available.
 	NymphStruct* response = new NymphStruct;
-	response->addPair("playing", new NymphBoolean(playerStarted));
+	if (playerStarted) {
+		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+		response->addPair("playing", new NymphBoolean(true));
+		response->addPair("duration", new NymphUint64(file_meta.duration));
+		response->addPair("position", new NymphDouble(file_meta.position));
+		response->addPair("title", new NymphString());
+		response->addPair("artist", new NymphString());
+	}
+	else {
+		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
+		response->addPair("playing", new NymphBoolean(false));
+	}
 	
 	returnMsg->setResultValue(response);
 	return returnMsg;

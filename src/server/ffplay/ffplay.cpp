@@ -16,6 +16,7 @@
 
 // Globals
 DataBuffer media_buffer;
+FileMetaInfo file_meta;
 
 #include "types.h"
 
@@ -490,14 +491,12 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int origin) {
 
 // --- RUN ---
 void Ffplay::run() {
-	// 
 	int flags;
     VideoState *is;
-
+	
     init_dynload();
 	
 	// Fake command line arguments.
-	//std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "trace"};
 	std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "info"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
@@ -639,6 +638,10 @@ void Ffplay::run() {
         av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
         do_exit(NULL);
     }
+	
+	// Extract meta data from VideoState instance and copy to FileMetaInfo instance.
+	//av_dict_get(ic->metadata, "title", NULL, 0);
+	file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
 
     Player::event_loop(is);
 	

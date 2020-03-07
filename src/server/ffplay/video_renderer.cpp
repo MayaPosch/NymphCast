@@ -9,6 +9,8 @@
 #include "sdl_renderer.h"
 #include "decoder.h"
 
+#include "ffplay.h"
+
 
 // Static initialisations.
 std::atomic<bool> VideoRenderer::run;
@@ -211,9 +213,12 @@ display:
                 av_diff = ClockC::get_master_clock(is) - ClockC::get_clock(&is->vidclk);
             else if (is->audio_st)
                 av_diff = ClockC::get_master_clock(is) - ClockC::get_clock(&is->audclk);
+			
+			double master_clock = ClockC::get_master_clock(is);
+			file_meta.position = master_clock;	// Copy to FleMetaInfo structure for the current file.
             av_log(NULL, AV_LOG_INFO,
                    "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%"PRId64"/%"PRId64"   \r",
-                   ClockC::get_master_clock(is),
+                   master_clock,
                    (is->audio_st && is->video_st) ? "A-V" : (is->video_st ? "M-V" : (is->audio_st ? "M-A" : "   ")),
                    av_diff,
                    is->frame_drops_early + is->frame_drops_late,
