@@ -1,8 +1,8 @@
 
 
 
-CPPFLAGS := -std=c++17 -g3 -O0
-SDL_LIBS := -lSDL2 -lSDL2main -lSDL2_image
+CPPFLAGS := -std=c++17 -g3 -O0 `sdl2-config --cflags`
+SDL_LIBS := `sdl2-config --libs` -lSDL2_image
 
 all: makedirs test_screensaver
 
