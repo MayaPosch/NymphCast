@@ -1191,7 +1191,15 @@ int main(int argc, char** argv) {
 	sarge.setArgument("a", "apps", "Custom NymphCast apps location.", true);
 	sarge.setArgument("w", "wallpaper", "Custom NymphCast wallpaper location.", true);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
+	sarge.setDescription("NymphCast receiver application. For use with NymphCast clients. More details: http://nyanko.ws/product_nymphcast.php.");
+	sarge.setUsage("nymphcast_server <options>");
+	
 	sarge.parseArguments(argc, argv);
+	
+	if (sarge.exists("help")) {
+		sarge.printHelp();
+		return 0;
+	}
 	
 	std::string config_file;
 	if (!sarge.getFlag("configuration", config_file)) {
