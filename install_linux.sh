@@ -15,7 +15,7 @@ fi
 # Copy the files to the target folder.
 sudo cp -r src/server/bin/* "${TARGET_FOLDER}"
 
-# Install systemd service.
+# Install systemd or openrc service.
 if [ -d "/run/systemd/system" ]; then
 	sudo cp src/server/systemd/nymphcast.service /etc/systemd/system/.
 	sudo ln -s /etc/systemd/system/nymphcast.service /etc/systemd/system/multi-user.target.wants/nymphcast.service

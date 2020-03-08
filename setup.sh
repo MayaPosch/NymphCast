@@ -48,7 +48,8 @@ make -C src/server/ clean
 make -C src/server/
 
 # Copy the wallpaper files into the bin folder.
-cp src/server/*.jpg src/server/bin/.
+mkdir -p src/server/bin/wallpapers
+cp src/server/*.jpg src/server/bin/wallpapers/.
 
 # Copy the configuration file into the bin folder.
 cp src/server/*.ini src/server/bin/.
