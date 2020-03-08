@@ -2,7 +2,6 @@ vlc/
 *.exe
 build/
 *.user
-*.txt
 *.log
 obj/
 bin/
