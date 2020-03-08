@@ -5,8 +5,13 @@ echo "UPDATE: $UPDATE"
 echo "PACKAGE: $PACKAGE"
 
 # Install the dependencies.
-sudo apt update
-sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
+if [ -x "$(command -v apt)" ]; then
+	sudo apt update
+	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
+elif [ -x "$(command -v apk)" ]; then
+	sudo apk update
+	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
+fi
 
 if [ ! -z "${UPDATE}" ]; then
 	if [ -f "/usr/local/lib/libnymphrpc.a" ]; then

@@ -16,19 +16,12 @@ fi
 sudo cp -r src/server/bin/* "${TARGET_FOLDER}"
 
 # Install systemd service.
-#if [ ! -f "/etc/systemd/system/nymphcast.service" ]; then
+if [ -d "/run/systemd/system" ]; then
 	sudo cp src/server/systemd/nymphcast.service /etc/systemd/system/.
 	sudo ln -s /etc/systemd/system/nymphcast.service /etc/systemd/system/multi-user.target.wants/nymphcast.service
-	# sudo systemctl start nymphcast.service
-# else
-	# echo "SystemD service was already installed. Skipping..."
-# fi
+else
+	sudo cp src/server/openrc/nymphcast /etc/init.d/nymphcast
+fi
 
 # Install Avahi service.
-#if [ ! -f "/etc/systemd/system/nymphcast.service" ]; then
-	sudo cp src/server/avahi/nymphcast.service /etc/avahi/services/.
-	sudo chmod 666 /etc/avahi/services/nymphcast.service
-	#sudo systemctl restart avahi-daemon
-# else
-	# echo "Avahi service was already installed. Skipping..."
-# fi
+sudo install -m666 src/server/avahi/nymphcast.service /etc/avahi/services/.
