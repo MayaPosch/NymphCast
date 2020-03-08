@@ -126,10 +126,10 @@ On Debian & derivatives:
 3. Copy the NymphRPC library from `NymphRPC/lib/` to `/usr/local/lib`.
 4. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
 5. Change to `NymphCast/src/server` and execute `make` command.
-6. The server binary is found under `bin/`. Copy the *.jpg images into the bin folder for the screensaver feature.
+6. The server binary is found under `bin/`. Copy the *.jpg images into a `bin/wallpapers/` folder for the screensaver feature.
 7. Copy the `nymphcast_config.ini` file into `bin/` as well.
 8. Copy the `apps/` folder into the `bin/`' folder.
-9. Simply execute the binary to have it start listening on port 4004: `./nymphcast_server -c nymphcast_config.ini`.
+9. Execute the binary from the `bin/` folder to have it start listening on port 4004: `./nymphcast_server -c nymphcast_config.ini`.
 
 ### Client dependencies ###
 
@@ -139,12 +139,19 @@ On Debian & derivatives:
 
 ## Running ##
 
-The server binary can be started as-is, and will listen on all network interfaces for incoming connections.
+The **server binary** can be started with just a configuration file, and will listen on all network interfaces for incoming connections. It supports the following options:
 
-The client binary has to be provided with the filename of a media file that should be sent to the remote server, with an optional IP address of the remote server:
+* `-h`	`--help`			Get this help message.
+* `-c`	`--configuration`	Path to the configuration file.
+* `-a`	`--apps`			Path to the NymphCast apps folder.
+* `-s`	`--wallpaper`		Path to the wallpapers folder.
+
+The **client binary** has to be provided with the filename of a media file that should be sent to the remote server, with an optional IP address of the remote server:
 
 	$ nymphcast_client <filename>
 	$ nymphcast_client <IP> <filename>
+
+The **NymphCast Player** is a GUI-based application and accepts no command line options.
 
 ## Limitations ##
 
