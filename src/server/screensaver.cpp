@@ -3,6 +3,9 @@
 #include "screensaver.h"
 
 #include <thread>
+#include <filesystem> 		// C++17
+
+namespace fs = std::filesystem;
 
 
 // Static variables.
@@ -12,7 +15,9 @@ SDL_Window* ScreenSaver::window = 0;
 SDL_Renderer* ScreenSaver::renderer = 0;
 SDL_Texture* ScreenSaver::texture = 0;
 ChronoTrigger ScreenSaver::ct;
-std::vector<std::string> ScreenSaver::images = { "green.jpg", "forest_brook.jpg" };
+ChronoTrigger ScreenSaver::sdl_ct;
+//std::vector<std::string> ScreenSaver::images = { "green.jpg", "forest_brook.jpg" };
+std::vector<std::string> ScreenSaver::images;
 int ScreenSaver::imageId = 0;
 std::string ScreenSaver::dataPath;
 
@@ -50,9 +55,17 @@ void ScreenSaver::changeImage(int) {
 	SDL_RenderCopy(renderer, texture, 0, 0);
 	SDL_RenderPresent(renderer);
 	
-	// Keep the SDL event queue happy.
 	SDL_Event event;
 	SDL_PollEvent(&event);
+}
+
+
+void ScreenSaver::sdlLoop(int) {
+	// Keep the SDL event queue happy.
+	if (!firstRun) {
+		SDL_Event event;
+		SDL_PollEvent(&event);
+	}
 }
 
 
@@ -80,12 +93,30 @@ void ScreenSaver::setDataPath(std::string path) {
 void ScreenSaver::start(uint32_t changeSecs) {
 	if (active) { return; }
 	
+	// Read in image names.
+	for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
+        images.push_back(entry.path());
+	}
+	
+	fprintf(stdout, "Found %d wallpapers.", images.size());
+	
+	// Display initial image.
+	changeImage(0);
+	
 	// Cycle through the wallpapers until stopped.
 	ct.setCallback(ScreenSaver::changeImage, 0);
 	ct.setStopCallback(ScreenSaver::cleanUp);
 	ct.start(changeSecs * 1000);	// Convert to milliseconds.
 	
+	/* sdl_ct.setCallback(ScreenSaver::sdlLoop, 0);
+	ct.start(500); */
+	
 	active = true;
+	
+	/* while (active) {
+		SDL_Event event;
+		SDL_PollEvent(&event);
+	} */
 }
 
 
@@ -96,6 +127,7 @@ void ScreenSaver::stop() {
 	
 	// Stop timer.
 	ct.stop();
+	//sdl_ct.stop();
 	
 	active = false;
 	firstRun = true;

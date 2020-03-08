@@ -21,11 +21,13 @@ class ScreenSaver {
 	static SDL_Renderer* renderer;
 	static SDL_Texture* texture;
 	static ChronoTrigger ct;
+	static ChronoTrigger sdl_ct;
 	static std::vector<std::string> images;
 	static int imageId;
 	static std::string dataPath;
 	
 	static void changeImage(int);
+	static void sdlLoop(int);
 	static void cleanUp();
 	
 public:
