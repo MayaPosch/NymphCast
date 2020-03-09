@@ -27,12 +27,13 @@ RM = rm
 AR = ar
 endif
 
-OUTPUT = libnymphcast.a
-INCLUDE = -I src
-#-DPOCO_WIN32_UTF8
+OUTPUT := libnymphcast
+VERSION := 0.1
+INCLUDE := -I src
 LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
 #-lstdc++fs
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
+SHARED_FLAGS := -fPIC -shared -Wl,-soname,$(OUTPUT).so.$(VERSION)
 
 ifdef ANDROID
 CFLAGS += -fPIC
@@ -46,22 +47,30 @@ ifdef OS
 endif
 
 SOURCES := $(wildcard *.cpp)
-OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
+OBJECTS := $(addprefix obj/static/,$(notdir) $(SOURCES:.cpp=.o))
+SHARED_OBJECTS := $(addprefix obj/shared/,$(notdir) $(SOURCES:.cpp=.o))
 
 all: lib
 
-lib: makedir lib/$(OUTPUT)
+lib: makedir lib/$(OUTPUT).a lib/$(OUTPUT).so
 	
-obj/%.o: %.cpp
+obj/static/%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(LIBS)
 	
-lib/$(OUTPUT): $(OBJECTS)
+obj/shared/%.o: %.cpp
+	$(GCC) -c -o $@ $< $(CFLAGS) $(SHARED_FLAGS) $(LIBS)
+	
+lib/$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
+lib/$(OUTPUT).so: $(SHARED_OBJECTS)
+	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
+	
 makedir:
 	$(MAKEDIR) lib
-	$(MAKEDIR) obj
+	$(MAKEDIR) obj/shared
+	$(MAKEDIR) obj/static
 	
 test: test-client test-server
 	
