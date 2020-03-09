@@ -123,7 +123,7 @@ On Debian & derivatives:
 
 1. Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev` and `sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev`
 2. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
-3. Copy the NymphRPC library from `NymphRPC/lib/` to `/usr/local/lib`.
+3. Copy the NymphRPC library from `NymphRPC/lib/` to `/usr/local/lib` (or on Linux: shared library to `usr/lib`).
 4. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. The server binary is found under `bin/`. Copy the *.jpg images into a `bin/wallpapers/` folder for the screensaver feature.
