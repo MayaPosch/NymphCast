@@ -30,6 +30,7 @@ LDFLAGS := -Wl,--gc-sections $(LIB)
 ifdef OS
 	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
 	LDFLAGS += -lws2_32
+	OUTPUT := $(OUTPUT).exe
 else
 	LDFLAGS += -pthread -latomic
 endif
@@ -67,6 +68,8 @@ obj/%.o: %.c
 	
 bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
+	cp $@ $@.debug
+	strip -S --strip-unneeded $@
 	
 install: bin/$(OUTPUT)
 	cp bin/$(OUTPUT) $(INSTALLDIR)/.
