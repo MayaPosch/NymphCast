@@ -59,6 +59,8 @@ private:
 	bool playingTrack = false;
 	uint32_t serverHandle;
 	NymphCastClient client;
+	
+	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
 };
 
 #endif // MAINWINDOW_H

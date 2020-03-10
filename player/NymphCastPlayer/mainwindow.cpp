@@ -8,6 +8,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QTime>
 
 
 MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -48,11 +49,44 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
 	
+	// NymphCast client SDK callbacks.
+	using namespace std::placeholders;
+	client.setStatusUpdateCallback(std::bind(&MainWindow::statusUpdateCallback,	this, _1, _2));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+// --- STATUS UPDATE CALLBACK ---
+void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
+	// Use the data from the remote to update the local UI.
+	
+	if (status.playing) {
+		// Remote player is active. Read out 'status.status' to get the full status.
+		ui->playToolButton->setEnabled(false);
+		ui->stopToolButton->setEnabled(true);
+		
+		// Set position & duration.
+		QTime position(0, 0);
+		position.addSecs((int64_t) status.position);
+		QTime duration(0, 0);
+		duration.addSecs(status.duration);
+		ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
+														duration.toString("hh:mm:ss"));
+														
+		ui->positionSlider->setValue((status.position / status.duration) * 100);
+	}
+	else {
+		// Remote player is not active.
+		ui->playToolButton->setEnabled(true);
+		ui->stopToolButton->setEnabled(false);
+		
+		ui->durationLabel->setText("0:00 / 0:00");
+		ui->positionSlider->setValue(0);
+	}
 }
 
 
