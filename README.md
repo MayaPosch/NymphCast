@@ -18,7 +18,11 @@ For **pacman** based distros (ArchLinux, Manjaro), some packages exist for:
 * the sdk: [nymphcast-sdk-git](https://aur.archlinux.org/packages/nymphcast-sdk-git/)
 * the player: [nymphcast-player-git](https://aur.archlinux.org/packages/nymphcast-player-git/)
 
+For Alpine Linux and postmarketOS, packages are available in the **testing** repository:
 
+* the server: [nymphcast-server](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast)
+* the sdk: [nymphcast-sdk](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-sdk)
+* the player: [nymphcast-client](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-client)
 
 ## Goals ##
 
