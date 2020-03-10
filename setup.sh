@@ -33,7 +33,9 @@ else
 	sudo cp NymphRPC/src/*.h /usr/local/include/nymph/.
 	sudo chmod 766 /usr/local/include/nymph/*
 	sudo cp NymphRPC/lib/libnymphrpc.a /usr/local/lib/.
+	sudo cp NymphRPC/lib/libnymphrpc.so.* /usr/lib/.
 	sudo chmod 766 /usr/local/lib/libnymphrpc.a
+	sudo chmod 766 /usr/lib/libnymphrpc.so*
 fi
 
 # Remove NymphRPC folder.
