@@ -66,7 +66,7 @@ lib/$(OUTPUT).a: $(OBJECTS)
 	
 lib/$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
 	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
-	@ln -s $@ $(OUTPUT).so
+	chdir lib; ln -s $@ $(OUTPUT).so
 	
 makedir:
 	$(MAKEDIR) lib
