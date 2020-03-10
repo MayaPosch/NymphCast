@@ -30,9 +30,21 @@ struct NymphCastRemote {
 };
 
 
+enum NymphRemoteStatus {
+	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
+	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
+	NYMPH_PLAYBACK_STATUS_PAUSED = 3
+};
+
+
 struct NymphPlaybackStatus {
+	NymphRemoteStatus status;
 	bool error;
 	bool playing;
+	uint64_t duration;
+	double position;
+	std::string title;
+	std::string artist;
 };
 
 

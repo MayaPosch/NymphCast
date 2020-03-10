@@ -151,6 +151,22 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	
 	status.error = false;
 	status.playing = ((NymphBoolean*) splay)->getValue();
+	NymphType* duration;
+	NymphType* position;
+	if (status.playing) {
+		if (!nstruct->getValue("duration", duration)) {
+			std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+			return;
+		}
+		
+		if (!nstruct->getValue("position", position)) {
+			std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+			return;
+		}
+		
+		status.duration = ((NymphUint64*) duration)->getValue();
+		status.position = ((NymphDouble*) position)->getValue();
+	}
 	
 	if (statusUpdateFunction) {
 		statusUpdateFunction(session, status);
@@ -728,8 +744,25 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 		return status;
 	}
 	
-	status.error = false;
 	status.playing = ((NymphBoolean*) splay)->getValue();
+	NymphType* duration;
+	NymphType* position;
+	if (status.playing) {
+		if (!nstruct->getValue("duration", duration)) {
+			std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+			return status;
+		}
+		
+		if (!nstruct->getValue("position", position)) {
+			std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+			return status;
+		}
+		
+		status.duration = ((NymphUint64*) duration)->getValue();
+		status.position = ((NymphDouble*) position)->getValue();
+	}
+	
+	status.error = false;
 	
 	return status;
 }
