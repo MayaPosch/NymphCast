@@ -61,7 +61,7 @@ struct DataBuffer {
 
 struct FileMetaInfo {
 	//std::atomic<uint32_t> filesize;		// bytes.
-	std::atomic<uint64_t> duration;		// milliseconds
+	std::atomic<uint64_t> duration;		// seconds
 	std::atomic<double> position;		// seconds with remainder.
 	std::atomic<uint32_t> width;		// pixels
 	std::atomic<uint32_t> height;		// pixels

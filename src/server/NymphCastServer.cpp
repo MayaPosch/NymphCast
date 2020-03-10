@@ -85,6 +85,13 @@ struct NymphCastApp {
 };
 
 
+enum NymphRemoteStatus {
+	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
+	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
+	NYMPH_PLAYBACK_STATUS_PAUSED = 3
+};
+
+
 class NymphCastApps {
 	static std::map<std::string, NymphCastApp> apps;
 	static std::vector<std::string> names;
@@ -235,9 +242,31 @@ void dataRequestFunction() {
 }
 
 
-// --- PLAYER DONE CALLBACK ---
-// Called when the player has finished with the media track and has shut down.
-// TODO:
+// --- GET PLAYBACK STATUS ---
+NymphStruct* getPlaybackStatus() {
+	// Set the playback status.
+	// We're sending back whether we are playing something currently. If so, also includes:
+	// * duration of media in seconds.
+	// * position in the media, in seconds with remainder.
+	// * title of the media, if available.
+	// * artist of the media, if available.
+	NymphStruct* response = new NymphStruct;
+	if (playerStarted) {
+		// TODO: distinguish between playing and paused for the player.
+		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+		response->addPair("playing", new NymphBoolean(true));
+		response->addPair("duration", new NymphUint64(file_meta.duration));
+		response->addPair("position", new NymphDouble(file_meta.position));
+		response->addPair("title", new NymphString());
+		response->addPair("artist", new NymphString());
+	}
+	else {
+		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
+		response->addPair("playing", new NymphBoolean(false));
+	}
+	
+	return response;
+}
 
 
 void resetDataBuffer() {
@@ -297,6 +326,15 @@ void resetDataBuffer() {
 	NymphBoolean* resVal = 0;
 	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStopCallback", values, result)) {
 		std::cerr << "Calling media stop callback failed: " << result << std::endl;
+		return;
+	}
+	
+	// Call the status update callback to indicate to the client that playback stopped.
+	values.clear();
+	values.push_back(getPlaybackStatus());
+	resVal = 0;
+	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+		std::cerr << "Calling media status callback failed: " << result << std::endl;
 		return;
 	}
 	
@@ -548,6 +586,15 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 		retVal = new NymphBoolean(true);
 	}
 	
+	// Send the client the current playback status.
+	std::vector<NymphType*> values;
+	values.push_back(getPlaybackStatus());
+	std::string result;
+	NymphBoolean* resVal = 0;
+	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+		std::cerr << "Calling media status callback failed: " << result << std::endl;
+	}
+	
 	returnMsg->setResultValue(retVal);
 	return returnMsg;
 }
@@ -678,6 +725,16 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	if (!playerStarted && done) {
 		playerStarted = true;
 		avThread.start(ffplay);
+		
+		// Signal the client that we're playing now.
+		// TODO: is it okay to call this right after starting the player thread?
+		std::vector<NymphType*> values;
+		values.push_back(getPlaybackStatus());
+		std::string result;
+		NymphBoolean* resVal = 0;
+		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+			std::cerr << "Calling media status callback failed: " << result << std::endl;
+		}
 	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
@@ -891,13 +948,6 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
-
-
-enum {
-	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
-	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
-	NYMPH_PLAYBACK_STATUS_PAUSED = 3
-};
 	
 
 
@@ -905,28 +955,8 @@ enum {
 // struct playback_status()
 NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
-	
-	// Set the playback status.
-	// We're sending back whether we are playing something currently. If so, also includes:
-	// * duration of media in seconds.
-	// * position in the media, in microseconds.
-	// * title of the media, if available.
-	// * artist of the media, if available.
-	NymphStruct* response = new NymphStruct;
-	if (playerStarted) {
-		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
-		response->addPair("playing", new NymphBoolean(true));
-		response->addPair("duration", new NymphUint64(file_meta.duration));
-		response->addPair("position", new NymphDouble(file_meta.position));
-		response->addPair("title", new NymphString());
-		response->addPair("artist", new NymphString());
-	}
-	else {
-		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
-		response->addPair("playing", new NymphBoolean(false));
-	}
-	
-	returnMsg->setResultValue(response);
+		
+	returnMsg->setResultValue(getPlaybackStatus());
 	return returnMsg;
 }
 
