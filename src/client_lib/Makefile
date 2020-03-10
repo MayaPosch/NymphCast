@@ -52,7 +52,7 @@ SHARED_OBJECTS := $(addprefix obj/shared/,$(notdir) $(SOURCES:.cpp=.o))
 
 all: lib
 
-lib: makedir lib/$(OUTPUT).a lib/$(OUTPUT).so
+lib: makedir lib/$(OUTPUT).a lib/$(OUTPUT).so.$(VERSION)
 	
 obj/static/%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(LIBS)
@@ -64,7 +64,7 @@ lib/$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
-lib/$(OUTPUT).so: $(SHARED_OBJECTS)
+lib/$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
 	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
 	
 makedir:
