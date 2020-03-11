@@ -75,29 +75,33 @@ clean:
 	
 .PHONY: all clean angelscript makedir
 	
-ifeq ($(PREFIX),)
-	PREFIX := /usr/local
+PREFIX ?= /usr/local
+
+ifeq ($(PREFIX),/usr/local)
+	CONFDIR := $(PREFIX)/etc
+else
+	CONFDIR := /etc
 endif
 
 .PHONY: install
 install:
 	install -d $(DESTDIR)$(PREFIX)/bin/
 	install -m 755 bin/$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
-	install -d $(DESTDIR)$(PREFIX)/etc/nymphcast/
-	install -m 644 *.ini $(DESTDIR)$(PREFIX)/etc/nymphcast/
+	install -d $(DESTDIR)$(CONFDIR)/nymphcast/
+	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
 	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
 	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
-	install -d $(DESTDIR)$(PREFIX)/etc/avahi/services/
-	install -m 644 avahi/nymphcast.service $(DESTDIR)$(PREFIX)/etc/avahi/services/
+	install -d $(DESTDIR)$(CONFDIR)/avahi/services/
+	install -m 644 avahi/nymphcast.service $(DESTDIR)$(CONFDIR)/avahi/services/
 
 .PHONY: install-systemd
 install-systemd:
-	install -d $(DESTDIR)/etc/systemd/system/ 
-	install -m 644 systemd/nymphcast.service $(DESTDIR)/etc/systemd/system/
+	install -d $(DESTDIR)$(CONFDIR)/systemd/system/ 
+	install -m 644 systemd/nymphcast.service $(DESTDIR)$(CONFDIR)/systemd/system/
 
 .PHONY: install-openrc
 install-openrc:
-	install -d $(DESTDIR)/etc/init.d/
-	install -m 755 openrc/nymphcast $(DESTDIR)$(PREFIX)/etc/init.d/
+	install -d $(DESTDIR)$(CONFDIR)/init.d/
+	install -m 755 openrc/nymphcast $(DESTDIR)$(CONFDIR)/init.d/
