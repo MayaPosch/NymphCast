@@ -15,8 +15,6 @@ ifdef PLATFORM
 include platforms/Makefile.$(PLATFORM)
 endif
 
-INSTALLDIR ?= /opt/nymphcast
-
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on -I angelscript/json `sdl2-config --cflags`
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs `sdl2-config --libs`
@@ -71,12 +69,35 @@ bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
 	cp $@ $@.debug
 	strip -S --strip-unneeded $@
 	
-install: bin/$(OUTPUT)
-	cp bin/$(OUTPUT) $(INSTALLDIR)/.
-
 clean:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
 	make -C angelscript/angelscript/projects/gnuc/ clean
 	
 .PHONY: all clean angelscript makedir
 	
+ifeq ($(PREFIX),)
+	PREFIX := /usr/local
+endif
+
+.PHONY: install
+install:
+	install -d $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 bin/$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
+	install -d $(DESTDIR)$(PREFIX)/etc/nymphcast/
+	install -m 644 *.ini $(DESTDIR)$(PREFIX)/etc/nymphcast/
+	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
+	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
+	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
+	install -d $(DESTDIR)$(PREFIX)/etc/avahi/services/
+	install -m 644 avahi/nymphcast.service $(DESTDIR)$(PREFIX)/etc/avahi/services/
+
+.PHONY: install-systemd
+install-systemd:
+	install -d $(DESTDIR)/etc/systemd/system/ 
+	install -m 644 systemd/nymphcast.service $(DESTDIR)/etc/systemd/system/
+
+.PHONY: install-openrc
+install-openrc:
+	install -d $(DESTDIR)/etc/init.d/
+	install -m 755 openrc/nymphcast $(DESTDIR)$(PREFIX)/etc/init.d/
