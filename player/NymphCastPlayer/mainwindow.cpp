@@ -78,6 +78,8 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 														duration.toString("hh:mm:ss"));
 														
 		ui->positionSlider->setValue((status.position / status.duration) * 100);
+		
+		ui->volumeSlider->setValue(status.volume);
 	}
 	else {
 		// Remote player is not active.
@@ -86,6 +88,7 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
+		ui->volumeSlider->setValue(0);
 	}
 }
 
@@ -326,7 +329,7 @@ void MainWindow::mute() {
 
 // --- ADJUST VOLUME ---
 void MainWindow::adjustVolume(int value) {
-	if (value < 0 || value < 100) { return; }
+	if (value < 0 || value > 128) { return; }
 	
 	client.volumeSet(serverHandle, value);
 }
