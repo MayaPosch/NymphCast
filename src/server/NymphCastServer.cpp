@@ -259,6 +259,7 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("position", new NymphDouble(file_meta.position));
 		response->addPair("title", new NymphString());
 		response->addPair("artist", new NymphString());
+		response->addPair("volume", new NymphUint8(ffplay.getVolume()));
 	}
 	else {
 		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
@@ -781,7 +782,7 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	
 	uint8_t volume = ((NymphUint8*) msg->parameters()[0])->getValue();
 	
-	// TODO: figure out a way to set volume directly. Maybe in Player?
+	ffplay.setVolume(volume);
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;

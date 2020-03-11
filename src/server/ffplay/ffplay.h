@@ -26,6 +26,8 @@
 #include <Poco/Thread.h>
 #include <Poco/Runnable.h>
 
+#include "types.h"
+
 
 
 struct DataBuffer {
@@ -84,13 +86,17 @@ extern std::atomic<bool> playerStarted;
 void resetDataBuffer(); // Defined in NymphCastServer.cpp
 
 	
-class Ffplay : public Poco::Runnable {	
+class Ffplay : public Poco::Runnable {
+    VideoState* is = 0;
+	
 	static int media_read(void* opaque, uint8_t* buf, int buf_size);
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
 	
 public:
 	//void setBuffer(DataBuffer* buffer);
 	virtual void run();
+	uint8_t getVolume();
+	void setVolume(uint8_t volume);
 	void quit();
 };
 

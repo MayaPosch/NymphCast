@@ -18,8 +18,6 @@
 DataBuffer media_buffer;
 FileMetaInfo file_meta;
 
-#include "types.h"
-
 /* options specified by the user */
 AVInputFormat *file_iformat;
 const char *input_filename;
@@ -488,11 +486,31 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int origin) {
 }
 
 
+// --- GET VOLUME ---
+uint8_t Ffplay::getVolume() {
+	if (!is) { return 0; }
+	
+	return is->audio_volume;
+}
+
+
+// --- SET VOLUME ---
+void Ffplay::setVolume(uint8_t volume) {
+	if (!is) { return; }
+	
+	if (volume > SDL_MIX_MAXVOLUME) {
+		is->audio_volume = SDL_MIX_MAXVOLUME;
+	}
+	else {
+		is->audio_volume = volume;
+	}
+}
+
+
 
 // --- RUN ---
 void Ffplay::run() {
 	int flags;
-    VideoState *is;
 	
     init_dynload();
 	
