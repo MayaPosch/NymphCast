@@ -43,6 +43,7 @@ struct NymphPlaybackStatus {
 	bool playing;
 	uint64_t duration;
 	double position;
+	uint8_t volume;
 	std::string title;
 	std::string artist;
 };

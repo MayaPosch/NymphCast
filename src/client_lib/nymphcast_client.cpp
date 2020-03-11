@@ -153,6 +153,7 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	status.playing = ((NymphBoolean*) splay)->getValue();
 	NymphType* duration;
 	NymphType* position;
+	NymphType* volume;
 	if (status.playing) {
 		if (!nstruct->getValue("duration", duration)) {
 			std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
@@ -164,8 +165,14 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 			return;
 		}
 		
+		if (!nstruct->getValue("volume", position)) {
+			std::cerr << "MediaStatusCallback: Failed to find value 'volume' in struct." << std::endl;
+			return;
+		}
+		
 		status.duration = ((NymphUint64*) duration)->getValue();
 		status.position = ((NymphDouble*) position)->getValue();
+		status.volume = ((NymphUint8*) volume)->getValue();
 	}
 	
 	if (statusUpdateFunction) {
@@ -403,8 +410,6 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 
 // --- CAST FILE ---
 bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
-	//
-	
 	/* fs::path filePath(filename);
 	if (!fs::exists(filePath)) { */
 	Poco::File file(filename);
@@ -453,7 +458,6 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 
 // --- CAST URL ---
 bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
-	//
 	// uint8 playback_url(string)
 	std::vector<NymphType*> values;
 	std::string result;
@@ -476,8 +480,8 @@ bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 
 
 // --- VOLUME SET ---
+// Volume is set within a range of 0 - 128.
 uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
-	//
 	// uint8 volume_set(uint8 volume)
 	std::vector<NymphType*> values;
 	std::string result;
@@ -501,7 +505,6 @@ uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
 
 // --- VOLUME UP ---
 uint8_t NymphCastClient::volumeUp(uint32_t handle) {
-	//
 	// uint8 volume_up()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -524,7 +527,6 @@ uint8_t NymphCastClient::volumeUp(uint32_t handle) {
 
 // --- VOLUME DOWN ---
 uint8_t NymphCastClient::volumeDown(uint32_t handle) {
-	//
 	// uint8 volume_down()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -547,7 +549,6 @@ uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 
 // --- PLAYBACK START ---
 uint8_t NymphCastClient::playbackStart(uint32_t handle) {
-	//
 	// uint8 playback_start()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -570,7 +571,6 @@ uint8_t NymphCastClient::playbackStart(uint32_t handle) {
 
 // --- PLAYBACK STOP ---
 uint8_t NymphCastClient::playbackStop(uint32_t handle) {
-	//
 	// uint8 playback_stop()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -593,7 +593,6 @@ uint8_t NymphCastClient::playbackStop(uint32_t handle) {
 
 // --- PLAYBACK PAUSE ---
 uint8_t NymphCastClient::playbackPause(uint32_t handle) {
-	//
 	// uint8 playback_pause()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -616,7 +615,6 @@ uint8_t NymphCastClient::playbackPause(uint32_t handle) {
 
 // --- PLAYBACK REWIND ---
 uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
-	//
 	// uint8 playback_rewind()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -639,7 +637,6 @@ uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
 
 // --- PLAYBACK FORWARD ---
 uint8_t NymphCastClient::playbackForward(uint32_t handle) {
-	//
 	// uint8 playback_forward()
 	std::vector<NymphType*> values;
 	std::string result;
@@ -747,19 +744,27 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	status.playing = ((NymphBoolean*) splay)->getValue();
 	NymphType* duration;
 	NymphType* position;
+	NymphType* volume;
 	if (status.playing) {
 		if (!nstruct->getValue("duration", duration)) {
-			std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+			std::cerr << "playbackStatus: Failed to find value 'duration' in struct." << std::endl;
 			return status;
 		}
 		
 		if (!nstruct->getValue("position", position)) {
-			std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+			std::cerr << "playbackStatus: Failed to find value 'position' in struct." << std::endl;
+			return status;
+		}
+		
+		
+		if (!nstruct->getValue("volume", position)) {
+			std::cerr << "playbackStatus: Failed to find value 'volume' in struct." << std::endl;
 			return status;
 		}
 		
 		status.duration = ((NymphUint64*) duration)->getValue();
 		status.position = ((NymphDouble*) position)->getValue();
+		status.volume = ((NymphDouble*) volume)->getValue();
 	}
 	
 	status.error = false;
