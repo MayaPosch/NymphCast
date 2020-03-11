@@ -66,7 +66,6 @@ lib/$(OUTPUT).a: $(OBJECTS)
 	
 lib/$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
 	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
-	cd lib && ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
 	
 makedir:
 	$(MAKEDIR) lib
@@ -95,3 +94,19 @@ clean-test-client:
 clean-test-server:
 	$(MAKE) -C ./test/nymph_test_server clean
 	
+ifeq ($(PREFIX),)
+	PREFIX := /usr/local
+endif
+
+.PHONY: install
+install:
+	install -d $(DESTDIR)$(PREFIX)/lib
+	install -m 644 lib/$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 lib/$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
+	install -d $(DESTDIR)$(PREFIX)/include
+	install -m 644 nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
+	cd $(DESTDIR)$(PREFIX)/lib && \
+		if [ -f $(OUTPUT).so ]; then \
+			rm $(OUTPUT).so; \
+		fi && \
+		ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
