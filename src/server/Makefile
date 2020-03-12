@@ -44,6 +44,19 @@ C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
 
+PREFIX ?= /usr/local
+
+ifeq ($(PREFIX),/usr/local)
+	CONFDIR := $(PREFIX)/etc
+else
+	CONFDIR := /etc
+endif
+
+SED_REPLACE := -e 's:@BIN@:$(DESTDIR)$(PREFIX)/bin/$(OUTPUT):g' \
+	-e 's:@CONFIG@:$(DESTDIR)$(CONFDIR)/nymphcast/nymphcast_config.ini:g' \
+	-e 's:@APPS@:$(DESTDIR)$(PREFIX)/share/nymphcast/apps/:g' \
+	-e 's:@WALLPAPERS@:$(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/:g'
+
 all: bin/$(OUTPUT)
 
 makedir:
@@ -68,40 +81,32 @@ bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	cp $@ $@.debug
 	strip -S --strip-unneeded $@
-	
+
 clean:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
 	make -C angelscript/angelscript/projects/gnuc/ clean
 	
 .PHONY: all clean angelscript makedir
 	
-PREFIX ?= /usr/local
-
-ifeq ($(PREFIX),/usr/local)
-	CONFDIR := $(PREFIX)/etc
-else
-	CONFDIR := /etc
-endif
-
 .PHONY: install
 install:
-	install -d $(DESTDIR)$(PREFIX)/bin/
+	install -d $(DESTDIR)$(PREFIX)/bin/ \
+		-d $(DESTDIR)$(CONFDIR)/nymphcast/ \
+		-d $(DESTDIR)$(PREFIX)/share/nymphcast/apps/ \
+		-d $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/ \
+		-d $(DESTDIR)$(CONFDIR)/avahi/services/
 	install -m 755 bin/$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
-	install -d $(DESTDIR)$(CONFDIR)/nymphcast/
 	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
-	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
-	install -d $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
 	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
-	install -d $(DESTDIR)$(CONFDIR)/avahi/services/
 	install -m 644 avahi/nymphcast.service $(DESTDIR)$(CONFDIR)/avahi/services/
 
 .PHONY: install-systemd
 install-systemd:
 	install -d $(DESTDIR)$(CONFDIR)/systemd/system/ 
-	install -m 644 systemd/nymphcast.service $(DESTDIR)$(CONFDIR)/systemd/system/
+	sed ${SED_REPLACE} systemd/nymphcast.service > $(DESTDIR)$(CONFDIR)/systemd/system/nymphcast.service
 
 .PHONY: install-openrc
 install-openrc:
-	install -d $(DESTDIR)$(CONFDIR)/init.d/
-	install -m 755 openrc/nymphcast $(DESTDIR)$(CONFDIR)/init.d/
+	install -d $(DESTDIR)$(CONFDIR)/init.d/	
+	sed ${SED_REPLACE} openrc/nymphcast > $(DESTDIR)$(CONFDIR)/init.d/nymphcast
