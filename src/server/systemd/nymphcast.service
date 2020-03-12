@@ -2,9 +2,8 @@
 Description=NymphCast audio/video casting server
 
 [Service]
-ExecStart=/opt/nymphcast/nymphcast_server -c /opt/nymphcast/nymphcast_config.ini
+ExecStart=@BIN@ -c @CONFIG@ -a @APPS@ -w @WALLPAPERS@
 User=pi
-WorkingDirectory=/opt/nymphcast
 Restart=always
 RestartSec=5
 
