@@ -9,6 +9,8 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QTime>
+#include <QFile>
+#include <QSettings>
 
 
 MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -18,6 +20,24 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	QCoreApplication::setApplicationName("NymphCast Player");
 	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	QCoreApplication::setOrganizationName("Nyanko");
+	
+	// Set configured or default stylesheet. Read out current value.
+	// Skip stylesheet if file isn't found.
+	QSettings settings;
+	if (!settings.contains("stylesheet")) {
+		settings.setValue("stylesheet", "default.css");
+	}
+	
+	QString sFile = settings.value("stylesheet", "default.css").toString();
+	QFile file(sFile);
+	if (file.exists()) {
+		file.open(QIODevice::ReadOnly);
+		QString ssheet = QString::fromLocal8Bit(file.readAll());
+		setStyleSheet(ssheet);
+	}
+	else {
+		std::cerr << "Stylesheet file " << sFile.toStdString() << " not found." << std::endl;
+	}
 	
 	// Set up UI connections.
 	// Menu
