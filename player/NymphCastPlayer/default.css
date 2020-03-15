@@ -1,0 +1,23 @@
+/*
+	default.css - Default theme for the NymphCast Player application.
+	
+	2020/03/14, Maya Posch
+*/
+
+
+QMainWindow {
+	background-color: white;
+}
+
+
+QTabBar::tab {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+
+QPushButton, QToolButton {
+	
+}
