@@ -94,9 +94,7 @@ clean-test-client:
 clean-test-server:
 	$(MAKE) -C ./test/nymph_test_server clean
 	
-ifeq ($(PREFIX),)
-	PREFIX := /usr/local
-endif
+PREFIX ?= /usr/local
 
 .PHONY: install
 install:
