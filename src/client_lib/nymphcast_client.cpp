@@ -165,7 +165,7 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 			return;
 		}
 		
-		if (!nstruct->getValue("volume", position)) {
+		if (!nstruct->getValue("volume", volume)) {
 			std::cerr << "MediaStatusCallback: Failed to find value 'volume' in struct." << std::endl;
 			return;
 		}
@@ -757,7 +757,7 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 		}
 		
 		
-		if (!nstruct->getValue("volume", position)) {
+		if (!nstruct->getValue("volume", volume)) {
 			std::cerr << "playbackStatus: Failed to find value 'volume' in struct." << std::endl;
 			return status;
 		}
