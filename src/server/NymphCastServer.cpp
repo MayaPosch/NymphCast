@@ -1488,9 +1488,9 @@ int main(int argc, char** argv) {
 	// void MediaStatusCallback(struct)
 	parameters.clear();
 	parameters.push_back(NYMPH_STRUCT);
-	NymphMethod mediaStatusCallback("mediaStatusCallback", parameters, NYMPH_NULL);
+	NymphMethod mediaStatusCallback("MediaStatusCallback", parameters, NYMPH_NULL);
 	mediaStatusCallback.enableCallback();
-	NymphRemoteClient::registerCallback("mediaStatusCallback", mediaStatusCallback);
+	NymphRemoteClient::registerCallback("MediaStatusCallback", mediaStatusCallback);
 	
 	// ReceiveFromAppCallback
 	// Sends message from a NymphCast app to the client.
