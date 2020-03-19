@@ -341,6 +341,22 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 		serverip = ip;
 	}
 		
+	// Register callback and send message with its ID to the server. Then wait
+	// for the callback to be called.
+	using namespace std::placeholders; 
+	NymphRemoteServer::registerCallback("MediaReadCallback", 
+										std::bind(&NymphCastClient::MediaReadCallback,
+																	this, _1, _2, _3), 0);
+	NymphRemoteServer::registerCallback("MediaStopCallback", 
+										std::bind(&NymphCastClient::MediaStopCallback,
+																	this, _1, _2, _3), 0);
+	NymphRemoteServer::registerCallback("MediaSeekCallback", 
+										std::bind(&NymphCastClient::MediaSeekCallback,
+																	this, _1, _2, _3), 0);
+	NymphRemoteServer::registerCallback("MediaStatusCallback", 
+										std::bind(&NymphCastClient::MediaStatusCallback,
+																	this, _1, _2, _3), 0);
+		
 	// Connect to the remote server.
 	std::string result;
 	if (!NymphRemoteServer::connect(serverip, 4004, handle, 0, result)) {
@@ -372,22 +388,6 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 	// The remote NymphCast server works in a pull fashion, which means that we have to register
 	// a callback with the server. This callback will be called whenever the server needs more
 	// data from the file which we are streaming.
-		
-	// Register callback and send message with its ID to the server. Then wait
-	// for the callback to be called.
-	using namespace std::placeholders; 
-	NymphRemoteServer::registerCallback("MediaReadCallback", 
-										std::bind(&NymphCastClient::MediaReadCallback,
-																	this, _1, _2, _3), 0);
-	NymphRemoteServer::registerCallback("MediaStopCallback", 
-										std::bind(&NymphCastClient::MediaStopCallback,
-																	this, _1, _2, _3), 0);
-	NymphRemoteServer::registerCallback("MediaSeekCallback", 
-										std::bind(&NymphCastClient::MediaSeekCallback,
-																	this, _1, _2, _3), 0);
-	NymphRemoteServer::registerCallback("MediaStatusCallback", 
-										std::bind(&NymphCastClient::MediaStatusCallback,
-																	this, _1, _2, _3), 0);
 	
 	return true;
 }
