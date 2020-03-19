@@ -68,13 +68,11 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		exit(1);
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
 		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		exit(1);
 	}
 }
 
@@ -91,6 +89,12 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	
 	// Seek to the indicated position in the file.
 	uint64_t position = ((NymphUint64*) msg->parameters()[0])->getValue();
+	std::cout << "Seeking to position: " << position << std::endl;
+	if (source.eof()) {
+		std::cout << "Clearing EOF flag..." << std::endl;
+		source.clear();
+	}
+	
 	source.seekg(position);
 	
 	// Read in first segment.
@@ -124,13 +128,11 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		exit(1);
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
 		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(session, result);
-		exit(1);
 	}
 }
 
