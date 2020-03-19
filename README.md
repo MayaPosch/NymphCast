@@ -148,7 +148,7 @@ The **server binary** can be started with just a configuration file, and will li
 * `-h`	`--help`			Get this help message.
 * `-c`	`--configuration`	Path to the configuration file.
 * `-a`	`--apps`			Path to the NymphCast apps folder.
-* `-s`	`--wallpaper`		Path to the wallpapers folder.
+* `-w`	`--wallpaper`		Path to the wallpapers folder.
 
 The **client binary** has to be provided with the filename of a media file that should be sent to the remote server, with an optional IP address of the remote server:
 
