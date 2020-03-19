@@ -43,6 +43,7 @@ struct DataBuffer {
 	std::atomic<uint32_t> buffBytesLeft;	// Number of bytes available for reading in the buffer.
 	std::atomic<bool> eof;					// Whether End of File for the source file has been reached.
 	
+	std::atomic<uint32_t> buffSlotLow;		// Current slot containing the low index.
 	std::atomic<uint64_t> buffIndexLow;		// File index at the buffer front (low index).
 	std::atomic<uint64_t> buffIndexHigh;	// File index at the buffer back (high index).
 	Poco::Mutex mutex;
@@ -55,6 +56,8 @@ struct DataBuffer {
 	std::atomic<bool> requestInFlight;
 	std::atomic<bool> seeking;				// Are we performing a seeking operation?
 	std::atomic<uint64_t> seekingPosition;	// Position to seek to.
+	Poco::Condition seekingCondition;
+	Poco::Mutex seekingMutex;
 	
 	Poco::Mutex streamTrackQueueMutex;
 	std::queue<std::string> streamTrackQueue;

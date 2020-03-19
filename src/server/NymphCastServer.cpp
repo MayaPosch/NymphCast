@@ -275,6 +275,7 @@ void resetDataBuffer() {
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
 	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
+	media_buffer.buffSlotLow = 0;
 	media_buffer.buffIndexLow = 0;		// File index at the buffer front.
 	media_buffer.buffIndexHigh = 0;	
 	media_buffer.freeSlots = 50;
@@ -284,8 +285,8 @@ void resetDataBuffer() {
 	// If we're in the midst of a seeking operation, we are done here.
 	if (media_buffer.seeking) {		
 		// Set high/low indices for the buffer in preparation for new data.
-		media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
-		media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
+		//media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
+		//media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
 		
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;
@@ -293,11 +294,20 @@ void resetDataBuffer() {
 		std::string result;
 		NymphBoolean* resVal = 0;
 		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaSeekCallback", values, result)) {
-			std::cerr << "Calling media stop callback failed: " << result << std::endl;
+			std::cerr << "Calling media seek callback failed: " << result << std::endl;
 			media_buffer.seeking = false;
 			return;
 		}
-		media_buffer.seeking = false;
+		
+		// Wait for the seeking condition variable to be called or time out.
+		media_buffer.seekingMutex.lock();
+		if (!media_buffer.seekingCondition.tryWait(media_buffer.seekingMutex, 500)) {
+			// Condition variable wasn't signalled before time-out. Return.
+			// Signal seeking operation failure by not resetting the 'seeking' boolean condition.
+			return;
+		}
+		
+		media_buffer.seeking = false;		
 		return; 
 	}
 	
@@ -592,7 +602,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	values.push_back(getPlaybackStatus());
 	std::string result;
 	NymphBoolean* resVal = 0;
-	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+	if (!NymphRemoteClient::callCallback(session, "MediaStatusCallback", values, result)) {
 		std::cerr << "Calling media status callback failed: " << result << std::endl;
 	}
 	
@@ -685,6 +695,11 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// TODO: if this boolean is false already, dismiss message?
 	media_buffer.requestInFlight = false;
 	
+	if (media_buffer.seeking) {
+		// Signal condition variable to indicate seeking operation succeeded.
+		media_buffer.seekingCondition.signal();
+	}
+	
 	// Get iterator to the session instance for the client.
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
@@ -707,6 +722,14 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		if (media_buffer.nextSlot == media_buffer.currentSlot) {
 			media_buffer.slotSize = mediaData.length();
 			media_buffer.slotBytesLeft = mediaData.length();
+		}
+		
+		// Update buffer lower bound slot if necessary.
+		if (media_buffer.nextSlot == media_buffer.buffSlotLow) {
+			media_buffer.buffIndexLow += media_buffer.slotSize;
+			if (!(++media_buffer.buffSlotLow < media_buffer.numSlots)) { 
+				media_buffer.buffSlotLow = 0; 
+			}
 		}
 		
 		media_buffer.nextSlot++;
@@ -1513,6 +1536,7 @@ int main(int argc, char** argv) {
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
 	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
+	media_buffer.buffSlotLow = 0;
 	media_buffer.buffIndexLow = 0;		// File index at the buffer start (low).
 	media_buffer.buffIndexHigh = 0;		// File index at the buffer end (high).
 	media_buffer.freeSlots = 50;

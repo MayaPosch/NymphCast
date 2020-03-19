@@ -408,7 +408,6 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 				db->currentIndex = 0;
 				db->slotBytesLeft = db->slotSize.load();
 				db->freeSlots++; // The used buffer slot just became available for more data.
-				db->buffIndexLow += db->slotSize;
 			}
 			else {
 				db->currentIndex += byteCount;
@@ -453,26 +452,40 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
  * 
  * @param opaque  A pointer to the user-defined IO data structure.
  * @param offset  The position to seek to.
- * @param origin  The relative point (origin) from which the seek is performed.
+ * @param whence  .
  *
- * @return  The new position in the file.
+ * @return  The new byte position in the file or -1 in case of failure.
  */
-int64_t Ffplay::media_seek(void* opaque, int64_t offset, int origin) {
+int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
+	std::cout << "media_seek: offset " << offset << ", origin " << whence << std::endl;
+	if (whence == AVSEEK_SIZE) {
+		std::cout << "media_seek: received AVSEEK_SIZE, returning unknown file size." << std::endl;
+		return -1; // FIXME: we don't know the file handle size.
+	}
+	
     DataBuffer* db = static_cast<DataBuffer*>(opaque);
+	std::cout << "IdxLow: " << db->buffIndexLow << ", IdxHigh: " << db->buffIndexHigh << std::endl;
 	
 	// Try to find the index in the buffered data. If unavailable, request new data from client.
 	if (offset < db->buffIndexLow || offset > db->buffIndexHigh) {
 		// Reset the buffer and send request to client.
 		db->seeking = true;
 		db->seekingPosition = offset;
+		std::cout << "Resetting data buffer..." << std::endl;
 		resetDataBuffer();
+		if (db->seeking) {
+			// Seeking operation failed.
+			std::cerr << "Seeking failed." << std::endl;
+			return -1;
+		}
+		
+		db->seeking = false;
 	}
 	else {
 		// Set the new position of the index in the appropriate buffer.
 		uint64_t adjusted_offset = offset - db->buffIndexLow;
-		uint32_t oldSlot = db->currentSlot;
 		uint32_t wholeSlots = adjusted_offset / db->slotSize;
-		uint32_t newSlot = (adjusted_offset / db->slotSize) + db->currentSlot;
+		uint32_t newSlot = (adjusted_offset / db->slotSize) + db->buffSlotLow;
 		if ((newSlot + 1) > db->numSlots) {
 			newSlot -= (db->numSlots - 1);
 		}
