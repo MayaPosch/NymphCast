@@ -26,7 +26,7 @@ For Alpine Linux and postmarketOS, packages are available in the **testing** rep
 
 ## Goals ##
 
-- [x] Server (receiver) works on mainstream Linux-capable Single-Board Computers (SBCs), tested on Raspberry Pi 2 (v1.1).
+- [x] Server (receiver) works on mainstream Linux-capable Single-Board Computers (SBCs), tested on Raspberry Pi 2 (v1.1) and Raspberry Pi Zero (W).
 
 - [x] Streaming of local media to a NymphCast server.
 
@@ -53,13 +53,15 @@ The NymphCast Player is provided as a demonstration of the NymphCast SDK (see de
 
 An APK has been made available for installation on Android in the 'releases' section. A desktop release for Windows (x64) is available as well.
 
-## Quick Start ##
+## Getting Started ##
 
-This quick start guide assumes building the receiver (**server**) project on a system (like a Raspberry Pi) running a current version of Debian (Buster) or equivalent. The **player** application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
+**Note:** This section is for building the project from source. Look under the 'Releases' section for binary builds.
+
+This getting started guide assumes building the receiver (**server**) project on a system (like a Raspberry Pi) running a current version of Debian (Buster) or equivalent. The **player** application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
 
 **Server**
 
-Here two options are possible:
+After cloning the project to one's system, two options are possible:
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
 2. Run the `install_linux.sh` script in the project root to install Avahi & Systemd services on Linux systems which support both.
