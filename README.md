@@ -2,15 +2,17 @@
 
 NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device.
 
-In addition, it supports powerful apps (NymphCast apps) written in AngelScript to extend the functionality of NymphCast with a variety of online services. 
+In addition, the server supports powerful NymphCast apps written in AngelScript to extend the overall NymphCast functionality with e.g. 3rd party audio / video streaming protocol support on the server side, and cross-platform control panels served to the client application that integrate with the overall client experience.  
 
-The main NymphCast website [can be found here](http://nyanko.ws/product_nymphcast.php "NymphCast site") at the Nyanko.ws website.
-
+NymphCast requires at least the server application to run on a target device, while the full functionality is provided in conjunction with a  remote control device: 
 ![NymphCast diagram](doc/nymphcast.png)
+Client-side core functionality is hereby provided through the NymphCast library.
+
 
 ## Releases ##
 
-NymphCast is currently in Alpha stage, with experimental releases being made available on Github (see the '[releases](https://github.com/MayaPosch/NymphCast/releases "Releases")' section).
+NymphCast is currently in Alpha stage, with experimental releases being made available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
+
 
 For **pacman** based distros (ArchLinux, Manjaro), some packages exist for:
 
@@ -47,47 +49,49 @@ The layout of relevant folders in the project is as follows:
 	|- tools	(shell scripts for creating releases, in progress)
 
 
-## Player ##
+## NymphCast Player Client ##
 
-The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), allowing one to make use of the basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
+The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-An APK has been made available for installation on Android in the 'releases' section. A desktop release for Windows (x64) is available as well.
+An APK for installation on Android and a desktop release for Windows (x64)are available in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder. 
 
 ## Getting Started ##
 
-**Note:** This section is for building the project from source. Look under the 'Releases' section for binary builds.
+**Note:** This section is for building the project from source. Pre-built binaries are provided in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder.
 
-This getting started guide assumes building the receiver (**server**) project on a system (like a Raspberry Pi) running a current version of Debian (Buster) or equivalent. The **player** application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
+The 'Getting Started' guide below assumes building the server part (receiver) on a system - like a Raspberry Pi - running a current version of Debian (Buster) or equivalent. The player client demo application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
 
 **Server**
 
-After cloning the project to one's system, two options are possible:
+After downloading or cloning the project repository to system the server will be running on, two setup options are available:
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
 2. Run the `install_linux.sh` script in the project root to install Avahi & Systemd services on Linux systems which support both.
 
 Or:
 
-1. Follow the instructions in the 'Building' section.
+1. Follow the instructions in the ['Building'](https://github.com/MayaPosch/NymphCast#Building) section.
 
-**Player**
+**NymphCast Player Client**
+
+This demonstration client uses Qt5 to provide user interface functionality. The binary release comes with the necessary dependencies, but when building it from source, make sure Qt5.x is installed or get it from [www.qt.io](https://www.qt.io/download).
 
 For Windows (x64):
 
 1. Download and extract the binary release.
 
-Or (Windows & other platforms):
+Or (building and running on Windows & other platforms):
 
-1. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
-2. Install the newly created library under `lib/` into `/usr/local/lib` or equivalent.
-3. Copy the `nymphcast_client.h` header to `/usr/local/include` or equivalent.
-4. Ensure the Qt5 dependency is installed.
-5. Create `player/NymphCastPlayer/build` folder and change into it.
-6. Execute `qmake ..` followed by `make`.
-7. Binary is created either in the same build folder or in a `debug/` sub-folder.
-8. Execute the binary to open the player.
-9. Connect to the server instance using its IP address.
-10. Cast a media file or URL.
+1. Download or clone the project repository (unclear: to the target system or the development system. Native or cross-compiling?)
+2. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
+3. Install the newly created library under `lib/` into `/usr/local/lib` or equivalent.
+4. Copy the `nymphcast_client.h` header to `/usr/local/include` or equivalent.
+5. Ensure the Qt5 SDK is installed.
+6. Create `player/NymphCastPlayer/build` folder and change into it.
+7. Execute `qmake ..` followed by `make`.
+8. The player binary is created either in the same build folder or in a `debug/` sub-folder.
+
+Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
 
 ## Platforms ##
 
@@ -163,6 +167,10 @@ The **NymphCast Player** is a GUI-based application and accepts no command line 
 
 * The server is assumed to have 100 MB heap space free for caching.
 
+## Developer's Guide
+
+The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/product_nymphcast.php).
+
 ## SDK ##
 
 An SDK has been made available in the `src/client_lib/` folder. The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
@@ -174,5 +182,9 @@ To use the SDK, the Makefile in the SDK folder can be executed with a simple `ma
 After this the only files needed by a client project are this library file and the `nymphcast_client.h` header file. 
 
 
+## License ##
 
+NymphCast is a fully open source project. The full, BSD-licensed source code can be found at its project page on Github, along with binary releases.
+
+This also means that NymphCast is fully free. Its development therefore relies on your support. If you appreciate the project, your contribution or [donation](http://nyanko.ws/product_nymphcast.php) can support the continued development.
 
