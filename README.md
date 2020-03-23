@@ -53,7 +53,7 @@ The layout of relevant folders in the project is as follows:
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-An APK for installation on Android and a desktop release for Windows (x64)are available in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder. 
+An APK for installation on Android and a desktop release for Windows (x64) are available in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder. 
 
 ## Getting Started ##
 
