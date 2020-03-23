@@ -285,8 +285,8 @@ void resetDataBuffer() {
 	// If we're in the midst of a seeking operation, we are done here.
 	if (media_buffer.seeking) {		
 		// Set high/low indices for the buffer in preparation for new data.
-		//media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
-		//media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
+		media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
+		media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
 		
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;

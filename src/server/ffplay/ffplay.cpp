@@ -672,7 +672,9 @@ void Ffplay::run() {
 	
 	// Extract meta data from VideoState instance and copy to FileMetaInfo instance.
 	//av_dict_get(ic->metadata, "title", NULL, 0);
-	file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	if (!castingUrl) {
+		file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	}
 
     Player::event_loop(is);
 	
