@@ -43,6 +43,8 @@ private slots:
 	void mute();
 	void adjustVolume(int value);
 	
+	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
+	
 	void remoteListRefresh();
 	void remoteConnectSelected();
 	void remoteDisconnectSelected();
@@ -50,6 +52,9 @@ private slots:
 	void appsListRefresh();
 	
 	void sendCommand();
+	
+signals:
+	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
     
 private:
     Ui::MainWindow *ui;

@@ -12,9 +12,15 @@
 #include <QFile>
 #include <QSettings>
 
+	
+Q_DECLARE_METATYPE(NymphPlaybackStatus);
+
 
 MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+	
+	// Register custom types.
+	qRegisterMetaType<NymphPlaybackStatus>();
 	
 	// Set application options.
 	QCoreApplication::setApplicationName("NymphCast Player");
@@ -69,6 +75,9 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
 	
+	connect(this, SIGNAL(playbackStatusChanged(uint32_t, NymphPlaybackStatus)), 
+			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
+	
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
 	client.setStatusUpdateCallback(std::bind(&MainWindow::statusUpdateCallback,	this, _1, _2));
@@ -84,6 +93,12 @@ MainWindow::~MainWindow()
 void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
 	// Use the data from the remote to update the local UI.
 	
+	emit playbackStatusChange(handle, status);
+}
+
+
+// --- SET PLAYING ---
+void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	if (status.playing) {
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
