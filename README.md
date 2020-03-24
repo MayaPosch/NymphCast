@@ -9,11 +9,11 @@ NymphCast requires at least the server application to run on a target device, wh
 Client-side core functionality is hereby provided through the NymphCast library.
 
 
-###NymphCast Player Client###
+## NymphCast Player Client ##
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-### Server Platforms ###
+## Server Platforms ##
 
 The server targets SBCs, but like the client (and SDK) should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency:
 
@@ -22,7 +22,7 @@ The server targets SBCs, but like the client (and SDK) should work on any platfo
 
 The server relies on the FFmpeg and SDL2 libraries, which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
 
-### Limitations ###
+## Limitations ##
 
 The server is assumed to have 100 MB heap space free for caching.
 
@@ -43,7 +43,7 @@ The repository currently contains the NymphCast server, NymphCast Player client 
 
 To start using NymphCast, you need a device on which the server will be running (most likely a SBC or other Linux system). NymphCast is offered as binaries for selected distros, and as source code for use and development on a variety of platforms.
 
-### Releases ###
+### **Releases** ###
 
 NymphCast is currently in Alpha stage. Experimental releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
 
@@ -69,7 +69,7 @@ Player client releases for **Android** and **Windows**:
 If pre-compiled releases for your target device or operating system are currently not listed above, you may need to build the server and client applications from source.
 
   
-### Running NymphCast ###
+### **Running NymphCast** ###
 
 The **server binary** can be started with just a configuration file.
 To start the server, execute the binary (from the `bin/` folder) to have it start listening on port 4004: 
@@ -100,7 +100,7 @@ The steps below assume building the server part on a system like a Raspberry Pi,
 Once the project files are downloaded and the dependencies are satisfied, run the Makefile in the `client` and `server` folders, which should output a binary into the newly created `bin/` folder.
 To build the corresponding parts of NymphCast, in addition to a C++ toolchain with C++17 support, one needs the dependencies as listed below.
 
-### Server Dependencies ###
+### **Server Dependencies** ###
 
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 * [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
@@ -111,13 +111,13 @@ On **Debian** & derivatives:
 
 Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev` and `sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev`
 
-### Client Library Dependencies ###
+### **Client Library Dependencie**s ###
 
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 * LibPOCO (1.5+)
 
 
-### Building The Server ###
+### **Building The Server** ###
 
 If using a compatible OS (e.g. **Debian** Buster), one can use the setup script: 
 
@@ -135,7 +135,7 @@ Else, use the manual procedure:
 7. Copy the `apps/` folder into the `bin/`' folder.
 
 
-### Building The NymphCast Player Client ###
+### **Building The NymphCast Player Client** ###
 
 This demonstration client uses Qt5 to provide user interface functionality. The binary release comes with the necessary dependencies, but when building it from source, make sure Qt5.x is installed or get it from [www.qt.io](https://www.qt.io/download).
 
@@ -158,7 +158,7 @@ Now you should be able to execute the player binary, connect to the server insta
 
 
 
-## Developer's Guide
+## Developer's Guide ##
 
 The focus of the project is currently on the development of the NymphCast server and the protocol parts. We're encouraging third parties to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
 
