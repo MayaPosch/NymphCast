@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
 	
-	connect(this, SIGNAL(playbackStatusChanged(uint32_t, NymphPlaybackStatus)), 
+	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
 	
 	// NymphCast client SDK callbacks.
