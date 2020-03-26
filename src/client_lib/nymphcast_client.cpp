@@ -68,6 +68,7 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(session, result);
+		return;
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
@@ -128,6 +129,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(session, result);
+		return;
 	}
 	
 	if (returnValue->type() != NYMPH_UINT8) {
@@ -303,18 +305,21 @@ void* get_in_addr(sockaddr_storage* sa) {
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform an mDNS/DNS-SD service discovery run for NymphCast receivers.
 	std::vector<Zeroconf::mdns_responce> items;
+	std::vector<Zeroconf::mdns_responce> items1;
 	bool res = Zeroconf::Resolve("_nymphcast._tcp.local", 3, &items);
+	bool res1 = Zeroconf::Resolve("_nymphcast._tcp", 3, &items1);
 	
 	std::vector<NymphCastRemote> remotes;
-	if (!res) {
+	if (!res && !res1) {
 		std::cout << "Error resolving DNS-SD request." << std::endl;
 		return remotes;
 	}
 	
 	std::cout << "Found " << items.size() << " remotes matching _nymphcast._tcp.local" << std::endl;
+	std::cout << "Found " << items1.size() << " remotes matching _nymphcast._tcp" << std::endl;
 	
 	// Extract the server name, IP address and port.
-	if (items.empty()) { return remotes; }
+	if (items.empty() && items1.empty()) { return remotes; }
 	for (int i = 0; i < items.size(); ++i) {
 		NymphCastRemote rm;
 		
@@ -326,6 +331,21 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 		rm.ipv6 = "";
 		
 		rm.name = items[i].records[0].name;
+		rm.port = 4004;
+		remotes.push_back(rm);
+	}
+	
+	for (int i = 0; i < items1.size(); ++i) {
+		NymphCastRemote rm;
+		
+		char buffer[INET6_ADDRSTRLEN + 1] = {0};
+        inet_ntop(items1[i].peer.ss_family, get_in_addr(&(items1[i].peer)), buffer, INET6_ADDRSTRLEN);
+		
+		std::cout << "Peer: " << buffer << std::endl;
+		rm.ipv4 = std::string(buffer);
+		rm.ipv6 = "";
+		
+		rm.name = items1[i].records[0].name;
 		rm.port = 4004;
 		remotes.push_back(rm);
 	}
