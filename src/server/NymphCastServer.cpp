@@ -210,6 +210,8 @@ NymphCastApp NymphCastApps::defaultApp;
 
 
 // --- Globals ---
+DataBuffer media_buffer;
+FileMetaInfo file_meta;
 std::atomic<bool> playerStarted;
 Poco::Thread avThread;
 Ffplay ffplay;
@@ -272,6 +274,7 @@ NymphStruct* getPlaybackStatus() {
 
 void resetDataBuffer() {
 	media_buffer.currentIndex = 0;		// The current index into the vector element.
+	media_buffer.currentByte = 0;
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
 	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
@@ -312,6 +315,7 @@ void resetDataBuffer() {
 	}
 	
 	media_buffer.seeking = false;
+	media_buffer.fileSize = 0;
 	playerStarted = false;
 	castingUrl = false;
 	
@@ -654,7 +658,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
-    media_buffer.size = it->second.filesize; // Set to stream size.
+    media_buffer.fileSize = it->second.filesize; // Set to stream size.
 	media_buffer.activeSession = session;
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
@@ -709,19 +713,27 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Safely write the data for this session to the buffer.
-	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
+	std::string* mediaData = new std::string(((NymphBlob*) msg->parameters()[0])->getValue());
 	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
 	
 	// Copy pointer into free slot of vector, delete data if not empty.
 	// Reset the next slot value if the end of the vector has been reached.
+	std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
+				<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
 	if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
 		media_buffer.mutex.lock();
+		if (media_buffer.data[media_buffer.nextSlot] != 0) {
+			delete media_buffer.data[media_buffer.nextSlot];
+		}
+		
 		media_buffer.data[media_buffer.nextSlot] = mediaData;
+		std::cout << "Wrote " << (media_buffer.data[media_buffer.nextSlot])->size() << " bytes."
+					<< std::endl;
 		media_buffer.mutex.unlock();
 		if (media_buffer.nextSlot == media_buffer.currentSlot) {
-			media_buffer.slotSize = mediaData.length();
-			media_buffer.slotBytesLeft = mediaData.length();
+			media_buffer.slotSize = mediaData->length();
+			media_buffer.slotBytesLeft = mediaData->length();
 		}
 		
 		// Update buffer lower bound slot if necessary.
@@ -738,7 +750,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		std::cout << "Next buffer slot: " << media_buffer.nextSlot << std::endl;
 		
 		media_buffer.freeSlots--;
-		media_buffer.buffBytesLeft += mediaData.length();
+		media_buffer.buffBytesLeft += mediaData->length();
 		media_buffer.buffIndexHigh += media_buffer.slotSize;
 	}
 	
@@ -1529,10 +1541,14 @@ int main(int argc, char** argv) {
 	
 	// Create empty buffer with N entries, initialised as empty strings.
 	media_buffer.mutex.lock();
-	media_buffer.data.assign(50, std::string());
-	media_buffer.size = media_buffer.data.size();
+	media_buffer.data.assign(50, 0);
+	//media_buffer.data.assign(50, std::string());
+	//media_buffer.slotSize = media_buffer.data.size();
 	media_buffer.mutex.unlock();
+	
+	media_buffer.fileSize = 0;
 	media_buffer.currentIndex = 0;		// The current index into the vector element.
+	media_buffer.currentByte = 0;
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
 	media_buffer.numSlots = 50;			// Total number of slots in the data vector.
 	media_buffer.nextSlot = 0;			// Next slot to fill in the buffer vector.
@@ -1543,6 +1559,10 @@ int main(int argc, char** argv) {
 	media_buffer.eof = false;
 	media_buffer.seeking = false;
 	media_buffer.requestInFlight = false;
+	
+	std::cout << "Set up new buffer." << std::endl;
+	std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
+				<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
 	
 	playerStarted = false;
 	
@@ -1571,6 +1591,9 @@ int main(int argc, char** argv) {
 	gCon.wait(gMutex);
 	
 	// Clean-up
+	for (int i = 0 ; i < media_buffer.data.size(); ++i) {
+		delete media_buffer.data[i];
+	}
  
 	// Close window and clean up libSDL.
 	ffplay.quit();

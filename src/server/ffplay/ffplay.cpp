@@ -14,10 +14,6 @@
 #include "ffplay.h"
 
 
-// Globals
-DataBuffer media_buffer;
-FileMetaInfo file_meta;
-
 /* options specified by the user */
 AVInputFormat *file_iformat;
 const char *input_filename;
@@ -347,7 +343,10 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	}
 	else if (db->buffBytesLeft == 0) { return AVERROR_EOF; }
 
-	if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
+	if (db->eof && db->buffBytesLeft > 0) {
+		bytesToCopy = db->buffBytesLeft;
+	}
+	else if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
 		bytesToCopy = buf_size;
 	} 
 	else if (db->buffBytesLeft < buf_size) {	// Fewer than requested number of bytes remaining
@@ -382,7 +381,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 				byteCount = nextBytes;
 				nextBytes = 0;
 				if (db->slotBytesLeft == byteCount) {
-					nextSlot = true;
+					nextSlot = false;
 				}
 			}
 			
@@ -393,8 +392,8 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 			
 			
 			db->mutex.lock();
-			std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
-					(db->data[db->currentSlot].begin() + db->currentIndex) + byteCount, 
+			std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
+					(db->data[db->currentSlot]->begin() + db->currentIndex) + byteCount, 
 					(buf + bytesWritten));
 			db->mutex.unlock();
 							
@@ -403,8 +402,9 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 			if (nextSlot) {
 				nextSlot = false;
 				db->currentSlot++;
-				if (!(db->currentSlot < db->numSlots)) { db->currentSlot = 0; }
-				db->slotSize = db->data[db->currentSlot].length();
+				if (!(db->currentSlot < db->numSlots)) { db->currentSlot = 0; }				
+				db->slotSize = db->data[db->currentSlot]->length();
+				std::cout << "New slot size: " << db->slotSize << std::endl;
 				db->currentIndex = 0;
 				db->slotBytesLeft = db->slotSize.load();
 				db->freeSlots++; // The used buffer slot just became available for more data.
@@ -422,8 +422,8 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 		
 		// Just copy the bytes from the slot, adjusting the index and bytes left count.
 		db->mutex.lock();
-		std::copy(db->data[db->currentSlot].begin() + db->currentIndex, 
-				(db->data[db->currentSlot].begin() + db->currentIndex) + bytesToCopy, 
+		std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
+				(db->data[db->currentSlot]->begin() + db->currentIndex) + bytesToCopy, 
 				buf);
 		db->mutex.unlock();
 		db->currentIndex += bytesToCopy;    // Increment bytes read count
@@ -431,6 +431,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	}
 	
 	db->buffBytesLeft -= bytesToCopy;
+	db->currentByte += bytesToCopy;
 	
 	// If there are free slots in the buffer, request more data from the client.
 	if (!db->requestInFlight && !(db->eof) && db->freeSlots > 0) {
@@ -452,22 +453,54 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
  * 
  * @param opaque  A pointer to the user-defined IO data structure.
  * @param offset  The position to seek to.
- * @param whence  .
+ * @param whence  SEEK_SET, SEEK_CUR, SEEK_END (like fseek) and AVSEEK_SIZE.
  *
  * @return  The new byte position in the file or -1 in case of failure.
  */
 int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	std::cout << "media_seek: offset " << offset << ", origin " << whence << std::endl;
-	if (whence == AVSEEK_SIZE) {
-		std::cout << "media_seek: received AVSEEK_SIZE, returning unknown file size." << std::endl;
-		return -1; // FIXME: we don't know the file handle size.
-	}
 	
     DataBuffer* db = static_cast<DataBuffer*>(opaque);
+	int64_t new_offset = AVERROR(EIO);
+	switch (whence) {
+		case SEEK_SET:	// Seek from the beginning of the file.
+			std::cout << "media_seek: SEEK_SET" << std::endl;
+			new_offset = offset;
+			break;
+		case SEEK_CUR:	// Seek from the current position.
+			std::cout << "media_seek: SEEK_CUR" << std::endl;
+			new_offset = db->currentByte + offset;
+			break;
+		case SEEK_END:	// Seek from the end of the file.
+			std::cout << "media_seek: SEEK_END" << std::endl;
+			new_offset = db->fileSize + offset;
+			break;
+		case AVSEEK_SIZE:
+			std::cout << "media_seek: received AVSEEK_SIZE, returning file size." << std::endl;
+			new_offset = db->fileSize;
+			return new_offset;
+			break;
+		default:
+			new_offset = -1;
+			return new_offset;
+	}
+
+	/* if (whence == AVSEEK_SIZE) {
+		std::cout << "media_seek: received AVSEEK_SIZE, returning unknown file size." << std::endl;
+		return db->size; 	// Return file size.
+	} */
+	
+	// FIXME: Shouldn't happen.
+	if (new_offset < 0) {
+		std::cerr << "media_seek: negative offset." << std::endl;
+		return -1;
+	}
+	
+	std::cout << "media_seek: new offset: " << new_offset << std::endl;
 	std::cout << "IdxLow: " << db->buffIndexLow << ", IdxHigh: " << db->buffIndexHigh << std::endl;
 	
 	// Try to find the index in the buffered data. If unavailable, request new data from client.
-	if (offset < db->buffIndexLow || offset > db->buffIndexHigh) {
+	if (new_offset < db->buffIndexLow || new_offset > db->buffIndexHigh) {
 		// Reset the buffer and send request to client.
 		db->seeking = true;
 		db->seekingPosition = offset;
@@ -480,10 +513,11 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 		}
 		
 		db->seeking = false;
+		db->currentByte = new_offset;
 	}
 	else {
 		// Set the new position of the index in the appropriate buffer.
-		uint64_t adjusted_offset = offset - db->buffIndexLow;
+		uint64_t adjusted_offset = new_offset - db->buffIndexLow;
 		uint32_t wholeSlots = adjusted_offset / db->slotSize;
 		uint32_t newSlot = (adjusted_offset / db->slotSize) + db->buffSlotLow;
 		if ((newSlot + 1) > db->numSlots) {
@@ -495,7 +529,7 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	}
  
     // Return the new position:
-    return offset;
+	return new_offset;
 }
 
 

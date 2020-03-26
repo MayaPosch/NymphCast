@@ -31,9 +31,10 @@
 
 
 struct DataBuffer {
-	std::vector<std::string> data;			// The data byte, inside string instances.
-	std::atomic<uint64_t> size;				// Number of bytes in data vector.
+	std::vector<std::string*> data;			// The data byte, inside string instances.
+	std::atomic<uint64_t> fileSize;			// Number of bytes in file being streamed.
 	std::atomic<uint64_t> currentIndex;		// The current index into the vector element.
+	std::atomic<uint64_t> currentByte;		// Current file position in bytes (0 - size).
 	std::atomic<uint32_t> currentSlot;		// The current vector slot we're using.
 	std::atomic<uint32_t> slotSize;			// Slot size in bytes.
 	std::atomic<uint32_t> slotBytesLeft;	// Bytes left in the current slot.
