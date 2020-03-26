@@ -6,7 +6,8 @@ In addition, the server supports powerful NymphCast apps written in AngelScript 
 
 NymphCast requires at least the server application to run on a target device, while the full functionality is provided in conjunction with a  remote control device: 
 ![NymphCast diagram](doc/nymphcast.png)
-Client-side core functionality is hereby provided through the NymphCast library.
+
+Client-side core functionality is provided through the NymphCast library.
 
 
 ### **NymphCast Player Client** ###
