@@ -9,11 +9,11 @@ NymphCast requires at least the server application to run on a target device, wh
 Client-side core functionality is hereby provided through the NymphCast library.
 
 
-## NymphCast Player Client ##
+### **NymphCast Player Client** ###
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
-## Server Platforms ##
+### **Server Platforms** ###
 
 The server targets SBCs, but like the client (and SDK) should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency:
 
@@ -22,7 +22,7 @@ The server targets SBCs, but like the client (and SDK) should work on any platfo
 
 The server relies on the FFmpeg and SDL2 libraries, which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
 
-## Limitations ##
+### **Limitations** ###
 
 The server is assumed to have 100 MB heap space free for caching.
 
