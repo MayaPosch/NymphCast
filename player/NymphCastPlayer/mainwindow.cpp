@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
     ui->setupUi(this);
 	
 	// Register custom types.
-	qRegisterMetaType<NymphPlaybackStatus>();
+	qRegisterMetaType<NymphPlaybackStatus>("NymphPlaybackStatus");
+	qRegisterMetaType<uint32_t>("uint32_t");
 	
 	// Set application options.
 	QCoreApplication::setApplicationName("NymphCast Player");
