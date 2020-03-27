@@ -80,16 +80,23 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
     int ret = 0;
     int stream_lowres = lowres;
 
-    if (stream_index < 0 || stream_index >= ic->nb_streams)
+    if (stream_index < 0 || stream_index >= ic->nb_streams) {
+		av_log(NULL, AV_LOG_ERROR, "stream_index: %d, ic->nb_streams: %d.\n", stream_index, ic->nb_streams);
         return -1;
+	}
 
     avctx = avcodec_alloc_context3(NULL);
-    if (!avctx)
+    if (!avctx) {
+		av_log(NULL, AV_LOG_ERROR, "avcodec_alloc_context3() failed.\n");
         return AVERROR(ENOMEM);
+	}
 
     ret = avcodec_parameters_to_context(avctx, ic->streams[stream_index]->codecpar);
-    if (ret < 0)
+    if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "avcodec_parameters_to_context() failed.\n");
         goto fail;
+	}
+	
     avctx->pkt_timebase = ic->streams[stream_index]->time_base;
 
     codec = avcodec_find_decoder(avctx->codec_id);
@@ -99,8 +106,10 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
         case AVMEDIA_TYPE_SUBTITLE: is->last_subtitle_stream = stream_index; forced_codec_name = subtitle_codec_name; break;
         case AVMEDIA_TYPE_VIDEO   : is->last_video_stream    = stream_index; forced_codec_name =    video_codec_name; break;
     }
+	
     if (forced_codec_name)
         codec = avcodec_find_decoder_by_name(forced_codec_name);
+	
     if (!codec) {
         if (forced_codec_name) av_log(NULL, AV_LOG_WARNING,
                                       "No codec could be found with name '%s'\n", forced_codec_name);
@@ -116,6 +125,7 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
                 codec->max_lowres);
         stream_lowres = codec->max_lowres;
     }
+	
     avctx->lowres = stream_lowres;
 
     if (fast)
@@ -124,13 +134,18 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
     opts = filter_codec_opts(codec_opts, avctx->codec_id, ic, ic->streams[stream_index], codec);
     if (!av_dict_get(opts, "threads", NULL, 0))
         av_dict_set(&opts, "threads", "auto", 0);
+	
     if (stream_lowres)
         av_dict_set_int(&opts, "lowres", stream_lowres, 0);
+	
     if (avctx->codec_type == AVMEDIA_TYPE_VIDEO || avctx->codec_type == AVMEDIA_TYPE_AUDIO)
         av_dict_set(&opts, "refcounted_frames", "1", 0);
+	
     if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
+		av_log(NULL, AV_LOG_ERROR, "avcodec_open2() failed.\n");
         goto fail;
     }
+	
     if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
         av_log(NULL, AV_LOG_ERROR, "Option %s not found.\n", t->key);
         ret =  AVERROR_OPTION_NOT_FOUND;
@@ -149,8 +164,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
             is->audio_filter_src.channels       = avctx->channels;
             is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
             is->audio_filter_src.fmt            = avctx->sample_fmt;
-            if ((ret = AudioRenderer::configure_audio_filters(is, afilters, 0)) < 0)
+            if ((ret = AudioRenderer::configure_audio_filters(is, afilters, 0)) < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Failed to configure audio filters: %d.\n", ret);
                 goto fail;
+			}
+			
             sink = is->out_audio_filter;
             sample_rate    = av_buffersink_get_sample_rate(sink);
             nb_channels    = av_buffersink_get_channels(sink);
@@ -163,8 +181,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
 #endif
 
         /* prepare audio output */
-        if ((ret = AudioRenderer::audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0)
+        if ((ret = AudioRenderer::audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0) {
+			av_log(NULL, AV_LOG_ERROR, "Failed to open audio output.\n");
             goto fail;
+		}
+		
         is->audio_hw_buf_size = ret;
         is->audio_src = is->audio_tgt;
         is->audio_buf_size  = 0;
@@ -556,12 +577,31 @@ int StreamHandler::read_thread(void *arg) {
         st_index[AVMEDIA_TYPE_VIDEO] =
             av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
                                 st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
-    if (!audio_disable)
+								
+    if (!audio_disable) {
+		av_log(NULL, AV_LOG_WARNING, "Finding audio stream...\n");
         st_index[AVMEDIA_TYPE_AUDIO] =
             av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
                                 st_index[AVMEDIA_TYPE_AUDIO],
                                 st_index[AVMEDIA_TYPE_VIDEO],
                                 NULL, 0);
+		if (st_index[AVMEDIA_TYPE_AUDIO] == AVERROR_STREAM_NOT_FOUND) {
+			// No stream found with this type.
+			av_log(NULL, AV_LOG_WARNING, "No stream found with type 'audio'.\n");
+		}
+		else if (st_index[AVMEDIA_TYPE_AUDIO] == AVERROR_DECODER_NOT_FOUND) {
+			// Streams were found, but no decoder.
+			av_log(NULL, AV_LOG_WARNING, "No decoder was found for the found audio stream.\n");
+		}
+		else if (st_index[AVMEDIA_TYPE_AUDIO] < 0) {
+			// General error.
+			av_log(NULL, AV_LOG_WARNING, "av_find_best_stream() general error.\n");
+		}
+		else {
+			av_log(NULL, AV_LOG_WARNING, "Found audio stream: %d.\n", st_index[AVMEDIA_TYPE_AUDIO]);
+		}
+	}
+	
     if (!video_disable && !subtitle_disable)
         st_index[AVMEDIA_TYPE_SUBTITLE] =
             av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,
@@ -581,8 +621,13 @@ int StreamHandler::read_thread(void *arg) {
     }
 
     /* open the streams */
+	av_log(NULL, AV_LOG_WARNING, "A: %d, V: %d, S: %d\n", st_index[AVMEDIA_TYPE_AUDIO],
+													st_index[AVMEDIA_TYPE_VIDEO],
+													st_index[AVMEDIA_TYPE_SUBTITLE]);
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
-        StreamHandler::stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
+        if (StreamHandler::stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]) != 0) {
+			av_log(NULL, AV_LOG_ERROR, "Failed to open audio stream.");
+		}
     }
 
     ret = -1;
