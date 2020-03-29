@@ -163,7 +163,7 @@ Now you should be able to execute the player binary, connect to the server insta
 
 The focus of the project is currently on the development of the NymphCast server and the protocol parts. We're encouraging third parties to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
 
-The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/product_nymphcast.php).
+The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/nymphcast.php).
 
 ## SDK ##
 
@@ -180,5 +180,5 @@ After this the only files needed by a client project are this library file and t
 
 NymphCast is a fully open source project. The full, BSD-licensed source code can be found at its project page on Github, along with binary releases.
 
-This also means that NymphCast is fully free. Its development therefore relies on your support. If you appreciate the project, your contribution or [donation](http://nyanko.ws/product_nymphcast.php) can support the continued development.
+This also means that NymphCast is fully free. Its development therefore relies on your support. If you appreciate the project, your contribution or [donation](http://nyanko.ws/nymphcast.php) can support the continued development.
 
