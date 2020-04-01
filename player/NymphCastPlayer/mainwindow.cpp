@@ -254,7 +254,10 @@ void MainWindow::addFile() {
 	
 	// Check file.
 	QFileInfo finf(filename);
-	if (!finf.isFile()) { return; }
+	if (!finf.isFile()) { 
+		QMessageBox::warning(this, tr("Failed to open file"), tr("The selected file could not be opened."));
+		return;
+	}
 	
 	// Add it.
 	QListWidgetItem *newItem = new QListWidgetItem;
