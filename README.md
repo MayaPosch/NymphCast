@@ -1,3 +1,5 @@
+[Repository Structure](#id-rs) &middot; [Getting Started](#id-gs) &middot; [Building From Source](#id-bfs) &middot; [Developer's Guide](#id-dg) &middot; [SDK](#id-sdk) &middot; [License](#id-lic)
+
 # What is NymphCast? #
 
 NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device.
@@ -27,6 +29,7 @@ The server relies on the FFmpeg and SDL2 libraries, which are supported on a wid
 
 The server is assumed to have 100 MB heap space free for caching.
 
+<a id="id-rs"></a>
 ## Repository Structure ##
 
 The repository currently contains the NymphCast server, NymphCast Player client sources. Some developer tools are also provided but are of no concern for the first-time user.
@@ -40,6 +43,7 @@ The repository currently contains the NymphCast server, NymphCast Player client 
 	|- tools	(shell scripts for creating releases, in progress)
 
 
+<a id="id-gs"></a>
 ## Getting Started ##
 
 To start using NymphCast, you need a device on which the server will be running (most likely a SBC or other Linux system). NymphCast is offered as binaries for selected distros, and as source code for use and development on a variety of platforms.
@@ -92,6 +96,7 @@ The **client binary** has to be provided with the filename of a media file that 
 The **NymphCast Player** is a GUI-based application and accepts no command line options.
 
 
+<a id="id-bfs"></a>
 ## Building From Source ##
 
 **Note:** This section is for building the project from source. Pre-built binaries are provided in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder.
@@ -158,13 +163,14 @@ Or (building and running on Windows & other platforms):
 Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
 
 
-
+<a id="id-dg"></a>
 ## Developer's Guide ##
 
 The focus of the project is currently on the development of the NymphCast server and the protocol parts. We're encouraging third parties to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
 
 The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/nymphcast.php).
 
+<a id="id-sdk"></a>
 ## SDK ##
 
 An SDK has been made available in the `src/client_lib/` folder. The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
@@ -176,6 +182,7 @@ To use the SDK, the Makefile in the SDK folder can be executed with a simple `ma
 After this the only files needed by a client project are this library file and the `nymphcast_client.h` header file. 
 
 
+<a id="id-lic"></a>
 ## License ##
 
 NymphCast is a fully open source project. The full, BSD-licensed source code can be found at its project page on Github, along with binary releases.
