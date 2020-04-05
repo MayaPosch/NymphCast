@@ -203,7 +203,7 @@
           <item>
            <widget class="QLabel" name="durationLabel">
             <property name="text">
-             <string>1:00 / 23:05</string>
+             <string>0:00 / 0:00</string>
             </property>
            </widget>
           </item>
