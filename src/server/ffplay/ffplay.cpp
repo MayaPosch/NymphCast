@@ -29,6 +29,7 @@ AVPacket flush_pkt;
 #include <signal.h>
 #include <stdint.h>
 #include <string>
+#include <cstring>
 #include <vector>
 
 #include "types.h"
@@ -302,6 +303,13 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	else {
 		return 0;   // No bytes left to copy
 	}
+	
+	// FIXME: Ensure we're not copying beyond the assigned buffer. 
+	// Presumably concurrency issues can lead to 'bytesToCopy' being set to a higher value than
+	// what 'db->buffBytesLeft' was originally set to.
+	if (bytesToCopy > buf_size) {
+		bytesToCopy = buf_size;
+	}
 
 	// Each slot has a limited depth. Check that we can copy the whole requested buffer
 	// from a single slot, only updating the index into that slot.
@@ -339,9 +347,10 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 			
 			
 			db->mutex.lock();
-			std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
+			/* std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
 					(db->data[db->currentSlot]->begin() + db->currentIndex) + byteCount, 
-					(buf + bytesWritten));
+					(buf + bytesWritten)); */
+			memcpy((buf + bytesWritten), (db->data[db->currentSlot]->data() + db->currentIndex), byteCount);
 			db->mutex.unlock();
 							
 			db->slotBytesLeft -= byteCount;
