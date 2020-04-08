@@ -785,13 +785,15 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		std::cout << "Wrote " << (media_buffer.data[media_buffer.nextSlot])->size() << " bytes."
 					<< std::endl;
 		media_buffer.mutex.unlock();
+		
+		// Check whether we're starting a new buffer (current & next slot both 0).
+		// In this case we have to set the initial slot's values.
 		if (media_buffer.nextSlot == media_buffer.currentSlot) {
 			media_buffer.slotSize = mediaData->length();
 			media_buffer.slotBytesLeft = mediaData->length();
 		}
-		
-		// Update buffer lower bound slot if necessary.
-		if (media_buffer.nextSlot == media_buffer.buffSlotLow) {
+		else if (media_buffer.nextSlot == media_buffer.buffSlotLow) {
+			// Update buffer lower bound slot if necessary.
 			media_buffer.buffIndexLow += media_buffer.slotSize;
 			if (!(++media_buffer.buffSlotLow < media_buffer.numSlots)) { 
 				media_buffer.buffSlotLow = 0; 
@@ -805,7 +807,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		
 		media_buffer.freeSlots--;
 		media_buffer.buffBytesLeft += mediaData->length();
-		media_buffer.buffIndexHigh += media_buffer.slotSize;
+		media_buffer.buffIndexHigh += mediaData->length();
 	}
 	
 	// Signal the condition variable in the VLC read callback in case we're waiting there.

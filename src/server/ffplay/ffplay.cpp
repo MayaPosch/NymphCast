@@ -285,6 +285,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	
 	// Check if we're headed for a buffer underrun.
 	if (db->buffBytesLeft < buf_size && !db->eof) {
+		std::cout << "Requesting more data..." << std::endl;
 		db->requestCondition.signal(); // Ask for more data.
 		db->bufferDelayMutex.lock();
 		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
@@ -308,6 +309,8 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	// Presumably concurrency issues can lead to 'bytesToCopy' being set to a higher value than
 	// what 'db->buffBytesLeft' was originally set to.
 	if (bytesToCopy > buf_size) {
+		std::cout << "Resetting bytesToCopy: was " << bytesToCopy << ", with buffer size: " 
+					<< buf_size << std::endl;
 		bytesToCopy = buf_size;
 	}
 
@@ -414,7 +417,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
  * @return  The new byte position in the file or -1 in case of failure.
  */
 int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
-	std::cout << "media_seek: offset " << offset << ", origin " << whence << std::endl;
+	std::cout << "media_seek: offset " << offset << ", whence " << whence << std::endl;
 	
     DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	int64_t new_offset = AVERROR(EIO);
@@ -480,8 +483,12 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 			newSlot -= (db->numSlots - 1);
 		}
 		
-		db->currentSlot = newSlot;
 		db->currentIndex = adjusted_offset - (db->slotSize * wholeSlots);
+		db->currentByte = new_offset;
+		db->currentSlot = newSlot;
+		db->slotSize = db->data[newSlot]->length();
+		db->slotBytesLeft = db->data[db->currentSlot]->length() - db->currentIndex;
+		db->buffBytesLeft = db->buffIndexHigh - db->currentByte;
 	}
  
     // Return the new position:
