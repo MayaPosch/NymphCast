@@ -87,11 +87,6 @@ else
 	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing
 endif
 
-#UNAME_M := $(shell uname -m)
-#ifeq ($(UNAME_M), armv7l)
-#	CXXFLAGS += -Wa,-mimplicit-it=thumb
-#endif
-
 GCC_ARCH := $(shell $(CXX) -dumpmachine)
 ifneq (,$(findstring arm-,$(GCC_ARCH)))
 	CXXFLAGS += -Wa,-mimplicit-it=thumb
