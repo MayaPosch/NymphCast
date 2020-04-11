@@ -87,6 +87,12 @@ else
 	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing
 endif
 
+UNAME_M := $(shell uname -m)
+$(info UNAME: $(UNAME_M))
+ifeq ($(UNAME_M), armv7l)
+	CXXFLAGS += -Wa,-mimplicit-it=thumb
+endif
+
 ## toolchain
 AR ?= ar
 RANLIB ?= ranlib
