@@ -88,7 +88,6 @@ else
 endif
 
 UNAME_M := $(shell uname -m)
-$(info UNAME: $(UNAME_M))
 ifeq ($(UNAME_M), armv7l)
 	CXXFLAGS += -Wa,-mimplicit-it=thumb
 endif
