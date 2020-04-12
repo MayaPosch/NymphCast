@@ -88,6 +88,7 @@ else
 endif
 
 GCC_ARCH := $(shell $(CXX) -dumpmachine)
+$(info GCC ARCH: $(GCC_ARCH))
 ifneq (,$(findstring arm-,$(GCC_ARCH)))
 	CXXFLAGS += -Wa,-mimplicit-it=thumb
 endif
