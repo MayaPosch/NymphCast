@@ -91,6 +91,8 @@ GCC_ARCH := $(shell $(CXX) -dumpmachine)
 $(info GCC ARCH: $(GCC_ARCH))
 ifneq (,$(findstring arm-,$(GCC_ARCH)))
 	CXXFLAGS += -Wa,-mimplicit-it=thumb
+else ifneq (,$(findstring armv7-, $(GCC_ARCH)))
+	CXXFLAGS += -Wa,-mimplicit-it=thumb
 endif
 
 ## toolchain
