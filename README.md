@@ -111,6 +111,7 @@ To build the corresponding parts of NymphCast, in addition to a C++ toolchain wi
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 * [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
 * LibSDL2
+* LibSDL2_Image
 * LibPOCO (1.5+)
 
 On **Debian** & derivatives:
@@ -125,7 +126,7 @@ Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-
 
 ### **Building The Server** ###
 
-If using a compatible OS (e.g. **Debian** Buster), one can use the setup script: 
+If using a compatible OS (e.g. **Debian** Buster, Alpine Linux or Arch Linux), one can use the setup script: 
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
 2. Run the `install_linux.sh` script in the project root to install Avahi & Systemd services on Linux systems which support both.
