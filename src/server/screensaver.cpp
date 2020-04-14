@@ -32,6 +32,10 @@ void ScreenSaver::changeImage(int) {
 		// Create window.
 		window = SDL_CreateWindow("SDL2 Displaying Image",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1920, 1080, 0);
+		if (!window) {
+			fprintf(stderr, "Could not create window: %s\n", SDL_GetError());
+			return;
+		}
 		
 		// Create renderer.
 		renderer = SDL_CreateRenderer(window, -1, 0);
