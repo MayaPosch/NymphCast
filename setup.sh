@@ -11,6 +11,9 @@ if [ -x "$(command -v apt)" ]; then
 elif [ -x "$(command -v apk)" ]; then
 	sudo apk update
 	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
+elif [ -x "$(command -v pacman)" ]; then
+	sudo pacman -Syy 
+	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg
 fi
 
 if [ ! -z "${UPDATE}" ]; then
@@ -20,8 +23,8 @@ if [ ! -z "${UPDATE}" ]; then
 	fi
 fi
 
-if [ -f "/usr/local/lib/libnymphrpc.a" ]; then
-	echo "NymphRPC library found in /usr/local/lib. Skipping installation."
+if [ -f "/usr/lib/libnymphrpc.so" ]; then
+	echo "NymphRPC dynamic library found in /usr/lib. Skipping installation."
 else
 	# Obtain current version of NymphRPC
 	git clone --depth 1 https://github.com/MayaPosch/NymphRPC.git
@@ -29,13 +32,7 @@ else
 	# Build NymphRPC and install it.
 	echo "Installing NymphRPC..."
 	make -C NymphRPC/ lib
-	sudo mkdir -p /usr/local/include/nymph
-	sudo cp NymphRPC/src/*.h /usr/local/include/nymph/.
-	sudo chmod 766 /usr/local/include/nymph/*
-	sudo cp NymphRPC/lib/libnymphrpc.a /usr/local/lib/.
-	sudo cp NymphRPC/lib/libnymphrpc.so.* /usr/lib/.
-	sudo chmod 766 /usr/local/lib/libnymphrpc.a
-	sudo chmod 766 /usr/lib/libnymphrpc.so*
+	sudo make -C NymphRPC/ install
 fi
 
 # Remove NymphRPC folder.
