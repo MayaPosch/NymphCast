@@ -148,7 +148,10 @@ void MainWindow::connectServer() {
 	if (ip.isEmpty()) { return; }	
 	
     // Connect to localhost NymphRPC server, standard port.
-    client.connectServer(ip.toStdString(), serverHandle);
+    if (!client.connectServer(ip.toStdString(), serverHandle)) {
+		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
+		return;
+	}
     
 	// TODO: update server name label.
 	ui->remoteLabel->setText("Connected to " + ip);
@@ -161,7 +164,10 @@ void MainWindow::connectServer() {
 // --- CONNECT SERVER IP ---
 void MainWindow::connectServerIP(std::string ip) {
 	// Connect to localhost NymphRPC server, standard port.
-    client.connectServer(ip, serverHandle);
+    if (!client.connectServer(ip, serverHandle)) {
+		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
+		return;
+	}
     
 	// TODO: update server name label.
 	ui->remoteLabel->setText("Connected to " + QString::fromStdString(ip));
