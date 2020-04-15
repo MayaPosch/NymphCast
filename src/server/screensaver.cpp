@@ -76,7 +76,8 @@ void ScreenSaver::sdlLoop(int) {
 void ScreenSaver::cleanUp() {
 	// Clean up SDL.
 	fprintf(stderr, "Destroying texture...\n");
-	SDL_DestroyTexture(texture);
+	//SDL_DestroyTexture(texture);
+	texture = 0;
 	fprintf(stderr, "Destroying renderer...\n");
 	SDL_DestroyRenderer(renderer);
 	fprintf(stderr, "Destroying window...\n");
