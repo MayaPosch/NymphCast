@@ -814,7 +814,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	media_buffer.bufferDelayCondition.signal();
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
-	if (!playerStarted && done) {
+	if (!playerStarted) {
 		playerStarted = true;
 		avThread.start(ffplay);
 		
@@ -832,12 +832,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
 	if (done) {
 		media_buffer.eof = true;
-	}
-	else {
-		// If there are free slots in the buffer, request more data from the client.
-		if (!media_buffer.requestInFlight && !(media_buffer.eof) && media_buffer.freeSlots > 0) {
-			media_buffer.requestCondition.signal();
-		}
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
