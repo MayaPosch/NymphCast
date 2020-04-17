@@ -82,11 +82,13 @@ To start the server, execute the binary (from the `bin/` folder) to have it star
 `./nymphcast_server -c nymphcast_config.ini`.
  
 The server will listen on all network interfaces for incoming connections. It supports the following options:
-
-* `-h`	`--help`			Get this help message.
-* `-c`	`--configuration`	Path to the configuration file.
-* `-a`	`--apps`			Path to the NymphCast apps folder.
-* `-w`	`--wallpaper`		Path to the wallpapers folder.
+<pre>
+-h	--help				Get this help message.
+-c	--configuration		Path to the configuration file.
+-a	--apps				Path to the NymphCast apps folder.
+-w	--wallpaper			Path to the wallpapers folder.
+-v	--version			Output NymphCast server version and exit.
+</pre>
 
 The **client binary** has to be provided with the filename of a media file that should be sent to the remote server, with an optional IP address of the remote server:
 
