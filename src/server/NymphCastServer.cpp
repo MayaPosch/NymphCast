@@ -1308,7 +1308,7 @@ int main(int argc, char** argv) {
 	sarge.setArgument("w", "wallpaper", "Custom NymphCast wallpaper location.", true);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
 	sarge.setArgument("v", "version", "Output the NymphCast version and exit.", false);
-	sarge.setDescription("NymphCast receiver application. For use with NymphCast clients. More details: http://nyanko.ws/product_nymphcast.php.");
+	sarge.setDescription("NymphCast receiver application. For use with NymphCast clients. More details: http://nyanko.ws/nymphcast.php.");
 	sarge.setUsage("nymphcast_server <options>");
 	
 	sarge.parseArguments(argc, argv);
