@@ -129,17 +129,6 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 }
 
 
-
-void MainWindow::openFile() {
-    // Start session.
-    
-    // Parse session parameters.
-    
-    // Start sending data.
-    
-}
-
-
 void MainWindow::connectServer() {
 	if (connected) { return; }
 	
@@ -153,7 +142,7 @@ void MainWindow::connectServer() {
 		return;
 	}
     
-	// TODO: update server name label.
+	// Update server name label.
 	ui->remoteLabel->setText("Connected to " + ip);
     
     // Successful connect.
@@ -163,6 +152,8 @@ void MainWindow::connectServer() {
 
 // --- CONNECT SERVER IP ---
 void MainWindow::connectServerIP(std::string ip) {
+	if (connected) { return; }
+	
 	// Connect to localhost NymphRPC server, standard port.
     if (!client.connectServer(ip, serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
@@ -224,6 +215,7 @@ void MainWindow::remoteConnectSelected() {
 // --- REMOTE DISCONNECT SELECTED ---
 void MainWindow::remoteDisconnectSelected() {
 	// FIXME: Redirect to the plain disconnectServer() function for now.
+	// With the multi-server functionality implemented, this should disconnect the selected remote.
 	disconnectServer();
 }
 
@@ -279,14 +271,6 @@ void MainWindow::removeFile() {
 	QListWidgetItem* item = ui->mediaListWidget->currentItem();
 	ui->mediaListWidget->removeItemWidget(item);
 	delete item;
-}
-
-
-// --- FIND SERVER ---
-// X obsolete?
-void MainWindow::findServer() {
-	// Open the mDNS dialogue to select a NymphCast receiver.
-	
 }
 
 

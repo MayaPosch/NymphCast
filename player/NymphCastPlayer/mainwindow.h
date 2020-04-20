@@ -18,7 +18,6 @@ public:
     ~MainWindow();
     
 private slots:
-    void openFile();
     void connectServer();
 	void connectServerIP(std::string ip);
 	void disconnectServer();
@@ -30,8 +29,6 @@ private slots:
 	
 	void addFile();
 	void removeFile();
-	
-	void findServer();
 	
 	void play();
 	void stop();
