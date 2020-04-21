@@ -1,0 +1,30 @@
+# Configuration file for EditorConfig, see https://EditorConfig.org
+
+# Ignore any other files further up in the file system
+root = true
+
+# All files:
+[*]
+# Let git determine line ending: end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown files: keep trailing space-pair as line-break
+[*.md]
+trim_trailing_whitespace = false
+
+# Shell scripts:
+[*.sh]
+
+# INI configuration files:
+[*.ini]
+
+# Makefiles: Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+# C, C++, AngelScript source files: Tab indentation (shown as 4 positions)
+[*.{h,hpp,c,cpp,as}]
+indent_style = tab
+indent_size = 4
