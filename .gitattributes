@@ -1,0 +1,14 @@
+# Git line endings
+
+# Automatically normalize line endings:
+* text=auto
+
+# Always use LF for bash scripts to enable access via Windows file share:
+*.sh text eol=lf
+
+# Mark as binary (when required):
+#*.xxx binary
+
+# Exclude files from exporting:
+.gitattributes  export-ignore
+.gitignore      export-ignore
