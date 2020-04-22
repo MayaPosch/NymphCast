@@ -29,6 +29,7 @@ namespace fs = std::filesystem;
 
 #include "ffplay/ffplay.h"
 #include "ffplay/types.h"
+#include "sdl_renderer.h"
 
 #include "screensaver.h"
 
@@ -422,8 +423,6 @@ asIScriptContext* soundcloudContext = 0;
 asIScriptFunction* soundcloudFunction = 0;
 std::chrono::time_point<std::chrono::steady_clock> timeOut;
 
-//typedef unsigned int DWORD;
-
 
 // --- MESSAGE CALLBACK ---
 // Angel Script runtime callback for messages.
@@ -488,16 +487,16 @@ bool performHttpQuery(std::string query, std::string &response) {
 											Poco::Net::HTTPMessage::HTTP_1_1);
 	session.sendRequest(req);
 	Poco::Net::HTTPResponse httpResponse;
-    std::istream& rs = session.receiveResponse(httpResponse);
-    std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
-    if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
-        Poco::StreamCopier::copyToString(rs, response);
-        return true;
-    }
-    else {
-        // Something went wrong.
-        return false;
-    }
+	std::istream& rs = session.receiveResponse(httpResponse);
+	std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
+	if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
+		Poco::StreamCopier::copyToString(rs, response);
+		return true;
+	}
+	else {
+		// Something went wrong.
+		return false;
+	}
 	
 	
 	return true;
@@ -512,31 +511,31 @@ bool performHttpsQuery(std::string query, std::string &response) {
 	if (path.empty()) { path = "/"; }
 	
 	const Poco::Net::Context::Ptr context = new Poco::Net::Context(
-        Poco::Net::Context::CLIENT_USE, "", "", "",
-        Poco::Net::Context::VERIFY_NONE, 9, false,
-        "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+		Poco::Net::Context::CLIENT_USE, "", "", "",
+		Poco::Net::Context::VERIFY_NONE, 9, false,
+		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
 	
 	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
 											Poco::Net::HTTPMessage::HTTP_1_1);
 	session.sendRequest(req);
 	Poco::Net::HTTPResponse httpResponse;
-    std::istream& rs = session.receiveResponse(httpResponse);
-    std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
-    if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
-        Poco::StreamCopier::copyToString(rs, response);
+	std::istream& rs = session.receiveResponse(httpResponse);
+	std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
+	if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
+		Poco::StreamCopier::copyToString(rs, response);
 		
 		// Debug
 		std::cout << "HTTP response:\n---------------\n";
 		std::cout << response;
 		std::cout << "\n---------------\n";
 		
-        return true;
-    }
-    else {
-        // Something went wrong.
-        return false;
-    }
+		return true;
+	}
+	else {
+		// Something went wrong.
+		return false;
+	}
 	
 	
 	return true;
@@ -712,7 +711,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
-    media_buffer.fileSize = it->second.filesize; // Set to stream size.
+	media_buffer.fileSize = it->second.filesize; // Set to stream size.
 	media_buffer.activeSession = session;
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
@@ -1598,8 +1597,6 @@ int main(int argc, char** argv) {
 	// Create empty buffer with N entries, initialised as empty strings.
 	media_buffer.mutex.lock();
 	media_buffer.data.assign(50, 0);
-	//media_buffer.data.assign(50, std::string());
-	//media_buffer.slotSize = media_buffer.data.size();
 	media_buffer.mutex.unlock();
 	
 	media_buffer.fileSize = 0;
@@ -1631,6 +1628,15 @@ int main(int argc, char** argv) {
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
 	
+	// Set further global variables.
+	// FIXME: refactor.
+	if (display_disable) {
+		video_disable = 1;
+	}
+	
+	// Initialise SDL.
+	SdlRenderer::init();
+	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
 	if (!display_disable) {
@@ -1654,6 +1660,7 @@ int main(int argc, char** argv) {
 	// Close window and clean up libSDL.
 	ffplay.quit();
 	avThread.join();
+	SdlRenderer::quit();
 	
 	NymphRemoteClient::shutdown();
 	

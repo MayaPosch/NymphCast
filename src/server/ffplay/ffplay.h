@@ -97,7 +97,6 @@ class Ffplay : public Poco::Runnable {
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
 	
 public:
-	//void setBuffer(DataBuffer* buffer);
 	virtual void run();
 	uint8_t getVolume();
 	void setVolume(uint8_t volume);

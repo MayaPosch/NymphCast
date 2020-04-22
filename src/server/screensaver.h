@@ -10,16 +10,10 @@
 
 #include "chronotrigger.h"
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
 
 class ScreenSaver {
 	static std::atomic<bool> active;
 	static std::atomic<bool> firstRun;
-	static SDL_Window* window;
-	static SDL_Renderer* renderer;
-	static SDL_Texture* texture;
 	static ChronoTrigger ct;
 	static ChronoTrigger sdl_ct;
 	static std::vector<std::string> images;
@@ -27,7 +21,6 @@ class ScreenSaver {
 	static std::string dataPath;
 	
 	static void changeImage(int);
-	static void sdlLoop(int);
 	static void cleanUp();
 	
 public:

@@ -34,22 +34,15 @@ static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial
     ClockC::sync_clock_to_slave(&is->extclk, &is->vidclk);
 }
 
-static int video_open(VideoState *is)
-{
+
+// --- VIDEO OPEN ---
+static int video_open(VideoState *is) {
     int w,h;
 
     w = screen_width ? screen_width : default_width;
     h = screen_height ? screen_height : default_height;
 
-    if (!window_title)
-        window_title = input_filename;
-    SDL_SetWindowTitle(window, window_title);
-
-    SDL_SetWindowSize(window, w, h);
-    SDL_SetWindowPosition(window, screen_left, screen_top);
-    if (is_full_screen)
-        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    SDL_ShowWindow(window);
+	SdlRenderer::resizeWindow(w, h);
 
     is->width  = w;
     is->height = h;
@@ -57,19 +50,11 @@ static int video_open(VideoState *is)
     return 0;
 }
 
-/* display the current picture, if any */
-static void video_display(VideoState *is)
-{
-    if (!is->width)
-        video_open(is);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
-        SdlRenderer::video_audio_display(is);
-    else if (is->video_st)
-        SdlRenderer::video_image_display(is);
-    SDL_RenderPresent(renderer);
+/* display the current picture, if any */
+static void video_display(VideoState *is) {
+    if (!is->width) { video_open(is); }
+    SdlRenderer::video_display(is);
 }
 
 /* called to display each frame */

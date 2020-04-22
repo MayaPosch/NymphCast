@@ -6,6 +6,7 @@
 #include "clock.h"
 #include "video_renderer.h"
 #include "frame_queue.h"
+#include "sdl_renderer.h"
 
 
 // Static initialisations.
@@ -127,10 +128,9 @@ static void toggle_mute(VideoState *is)
 }
 
 
-static void toggle_full_screen(VideoState *is)
-{
+static void toggle_full_screen(VideoState *is) {
     is_full_screen = !is_full_screen;
-    SDL_SetWindowFullscreen(window, is_full_screen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    SdlRenderer::set_fullscreen(is_full_screen);
 }
 
 static void toggle_audio_display(VideoState *is)
