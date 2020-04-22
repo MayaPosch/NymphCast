@@ -11,13 +11,15 @@
 #include <QTime>
 #include <QFile>
 #include <QSettings>
+#include <QStringList>
+#include <QStandardPaths>
 
 	
 Q_DECLARE_METATYPE(NymphPlaybackStatus);
 
 
-MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::MainWindow) {
-    ui->setupUi(this);
+MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainWindow) {
+	ui->setupUi(this);
 	
 	// Register custom types.
 	qRegisterMetaType<NymphPlaybackStatus>("NymphPlaybackStatus");
@@ -82,18 +84,47 @@ MainWindow::MainWindow(QWidget *parent) :     QMainWindow(parent), ui(new Ui::Ma
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
 	client.setStatusUpdateCallback(std::bind(&MainWindow::statusUpdateCallback,	this, _1, _2));
+	
+#if defined(Q_OS_ANDROID)
+	// On Android platforms we read in the media files into the playlist as they are in standard
+	// locations. This is also a work-around for QTBUG-83372: 
+	// https://bugreports.qt.io/browse/QTBUG-83372
+	
+	// First, disable the 'add' and 'remove' buttons as these won't be used on Android.
+	ui->addButton->setEnabled(false);
+	ui->removeButton->setEnabled(false);
+	
+	// Next, read the local media files and add them to the list, sorting music and videos.
+	QStringList audio = QStandardPaths::locateAll(QStandardPaths::MusicLocation, QString());
+	QStringList video = QStandardPaths::locateAll(QStandardPaths::MoviesLocation, QString());
+	
+	for (int i = 0; i < audio.size(); ++i) {
+		// Add item to the list.
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(audio[i]);
+		newItem->setData(Qt::UserRole, QVariant(audio[i]));
+		ui->mediaListWidget->addItem(newItem);
+	}
+	
+	for (int i = 0; i < video.size(); ++i) {
+		// Add item to the list.
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(video[i]);
+		newItem->setData(Qt::UserRole, QVariant(video[i]));
+		ui->mediaListWidget->addItem(newItem);
+	}	
+	
+#endif
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
+MainWindow::~MainWindow() {
+	delete ui;
 }
 
 
 // --- STATUS UPDATE CALLBACK ---
 void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
-	// Use the data from the remote to update the local UI.
-	
+	// Send the data along to the slot on the GUI thread.
 	emit playbackStatusChange(handle, status);
 }
 
@@ -136,17 +167,17 @@ void MainWindow::connectServer() {
 	QString ip = QInputDialog::getText(this, tr("NymphCast Receiver"), tr("Please provide the NymphCast receiver IP address."));
 	if (ip.isEmpty()) { return; }	
 	
-    // Connect to localhost NymphRPC server, standard port.
-    if (!client.connectServer(ip.toStdString(), serverHandle)) {
+	// Connect to localhost NymphRPC server, standard port.
+	if (!client.connectServer(ip.toStdString(), serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return;
 	}
-    
+	
 	// Update server name label.
 	ui->remoteLabel->setText("Connected to " + ip);
-    
-    // Successful connect.
-    connected = true;
+	
+	// Successful connect.
+	connected = true;
 }
 
 
@@ -155,16 +186,16 @@ void MainWindow::connectServerIP(std::string ip) {
 	if (connected) { return; }
 	
 	// Connect to localhost NymphRPC server, standard port.
-    if (!client.connectServer(ip, serverHandle)) {
+	if (!client.connectServer(ip, serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return;
 	}
-    
+	
 	// TODO: update server name label.
 	ui->remoteLabel->setText("Connected to " + QString::fromStdString(ip));
-    
-    // Successful connect.
-    connected = true;
+	
+	// Successful connect.
+	connected = true;
 }
 
 
@@ -286,6 +317,10 @@ void MainWindow::play() {
 	else {
 		QListWidgetItem* item = ui->mediaListWidget->currentItem();
 		QString filename = item->data(Qt::UserRole).toString();
+
+#if defined(Q_OS_ANDROID)
+		// Ensure we convert the path to 
+#endif
 		
 		client.castFile(serverHandle, filename.toStdString());
 	}
@@ -412,5 +447,5 @@ void MainWindow::about() {
 
 // --- QUIT ---
 void MainWindow::quit() {
-    exit(0);
+	exit(0);
 }

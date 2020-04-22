@@ -11,18 +11,18 @@ namespace Ui {
 }
 
 class MainWindow : public QMainWindow {
-    Q_OBJECT
-    
+	Q_OBJECT
+	
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-    
+	explicit MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
+	
 private slots:
-    void connectServer();
+	void connectServer();
 	void connectServerIP(std::string ip);
 	void disconnectServer();
 	void about();
-    void quit();
+	void quit();
 	
 	void castFile();
 	void castUrl();
@@ -52,11 +52,11 @@ private slots:
 	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
-    
+	
 private:
-    Ui::MainWindow *ui;
-    
-    bool connected = false;
+	Ui::MainWindow *ui;
+	
+	bool connected = false;
 	bool muted = false;
 	bool playingTrack = false;
 	uint32_t serverHandle;
