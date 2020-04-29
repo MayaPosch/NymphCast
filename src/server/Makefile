@@ -20,7 +20,8 @@ include version
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_server
-INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on -I angelscript/json `sdl2-config --cflags`
+INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on \
+			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags`
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs `sdl2-config --libs`
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
@@ -43,7 +44,8 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard angelscript/add_on/scriptbuilder/*.cpp) \
 			$(wildcard angelscript/add_on/scriptarray/*.cpp) \
 			$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
-			$(wildcard angelscript/json/*.cpp) 
+			$(wildcard angelscript/json/*.cpp) \
+			$(wildcard angelscript/regexp/*.cpp)
 C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
@@ -70,6 +72,7 @@ makedir:
 	$(MAKEDIR) obj/angelscript/add_on/scriptarray
 	$(MAKEDIR) obj/angelscript/add_on/scriptdictionary
 	$(MAKEDIR) obj/angelscript/json
+	$(MAKEDIR) obj/angelscript/regexp
 	$(MAKEDIR) bin
 	
 angelscript:

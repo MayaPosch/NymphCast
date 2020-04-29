@@ -31,11 +31,13 @@ void initRegExp(asIScriptEngine* engine) {
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
 								"int extract(string &subject, string &str, int options = 0))", 
-								asMETHOD(RegExp, extract), 
+								asMETHODPR(RegExp, extract, 
+								(const std::string &, std::string &, int), int), 
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
 								"int extract(string &subject, int offset, string &str, int options = 0))", 
-								asMETHOD(RegExp, extract), 
+								asMETHODPR(RegExp, extract, 
+								(const std::string &, int, std::string &, int), int),
 								asCALL_THISCALL);
 }
 
@@ -65,14 +67,14 @@ void RegExp::createRegExp(std::string re) {
 
 
 // --- EXTRACT ---
-int RegExp::extract(const std::string &subject, std::string &str, int options = 0) {
+int RegExp::extract(const std::string &subject, std::string &str, int options) {
 	if (!regexp) { return 0; }
-	return regexp.extract(subject, str, options);
+	return regexp->extract(subject, str, options);
 }
 
 
 // --- EXTRACT ---
-int RegExp::extract(const std::string &subject, int offset, std::string &str, int options = 0) {
+int RegExp::extract(const std::string &subject, int offset, std::string &str, int options) {
 	if (!regexp) { return 0; }
-	return regexp.extract(subject, offset, str, options);
+	return regexp->extract(subject, offset, str, options);
 }

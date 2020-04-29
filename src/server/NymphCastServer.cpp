@@ -55,6 +55,7 @@ using namespace Poco;
 #include <scriptarray/scriptarray.h>
 
 #include <angelscript/json/json.h>
+#include <angelscript/regexp/regexp.h>
 
 #include "INIReader.h"
 
@@ -526,9 +527,9 @@ bool performHttpsQuery(std::string query, std::string &response) {
 		Poco::StreamCopier::copyToString(rs, response);
 		
 		// Debug
-		std::cout << "HTTP response:\n---------------\n";
-		std::cout << response;
-		std::cout << "\n---------------\n";
+		//std::cout << "HTTP response:\n---------------\n";
+		//std::cout << response;
+		//std::cout << "\n---------------\n";
 		
 		return true;
 	}
@@ -571,8 +572,6 @@ bool streamTrack(std::string url) {
 // --- ANGEL SCRIPT INIT ---
 // Set up AngelScript runtime to allow installed NymphCast applications to be used.
 void angelScriptInit() {
-	//
-	
 	// Create the script engine
 	engine = asCreateScriptEngine();
 	if (engine == 0) {
@@ -605,6 +604,7 @@ void angelScriptInit() {
 								
 	// Register further modules.
 	initJson(engine);
+	initRegExp(engine);
 }
 
 
