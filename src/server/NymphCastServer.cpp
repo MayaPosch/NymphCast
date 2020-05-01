@@ -20,6 +20,7 @@
 #include <string>
 #include <iterator>
 #include <thread>
+#include <mutex>
 #include <atomic>
 #include <chrono>
 #include <filesystem> 		// C++17
@@ -46,6 +47,8 @@ namespace fs = std::filesystem;
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/Data/Session.h>
+#include <Poco/Data/SQLite/Connector.h>
 
 using namespace Poco;
 
@@ -272,6 +275,9 @@ std::atomic<bool> playerStarted;
 Poco::Thread avThread;
 Ffplay ffplay;
 const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
+std::string activeAppId;
+std::mutex activeAppMutex;
+std::string appsFolder;
 // ---
 
 
@@ -569,6 +575,46 @@ bool streamTrack(std::string url) {
 }
 
 
+// --- STORE VALUE ---
+// App-level storage: store a single key/value pair for an NC app.
+bool storeValue(std::string key, std::string &value) {
+	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
+	
+	// Create table if it doesn't exist yet.
+	db << "CREATE TABLE IF NOT EXISTS values (key TEXT UNIQUE PRIMARY KEY, value TEXT)", 
+		Poco::Data::Keywords::now;
+	
+	// Write or update the key/value pair in the table.
+	db << "INSERT OR REPLACE INTO values (key, value) VALUES (:key, :value)",
+		Poco::Data::Keywords::use(key),
+		Poco::Data::Keywords::use(value),
+		Poco::Data::Keywords::now;
+		
+	return true;
+}
+
+
+// --- READ VALUE ---
+// App-level storage: read a single value given a key for an NC app.
+bool readValue(std::string key, std::string &value) {
+	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
+	
+	// Return false if the table doesn't exist.
+	Poco::Data::Statement statement = db << 
+							"SELECT name FROM sqlite_master WHERE type='table' AND name='values'";
+	while (!statement.done()) { statement.execute(); }
+	if (statement.rowsExtracted() < 1) { return false; }
+	
+	// Read out value and return true.
+	db << "SELECT value FROM values WHERE key=:key", 
+		Poco::Data::Keywords::use(key), 
+		Poco::Data::Keywords::into(value), 
+		Poco::Data::Keywords::now;
+	
+	return true;
+}
+
+
 // --- ANGEL SCRIPT INIT ---
 // Set up AngelScript runtime to allow installed NymphCast applications to be used.
 void angelScriptInit() {
@@ -601,6 +647,12 @@ void angelScriptInit() {
 	r = engine->RegisterGlobalFunction(
 								"bool streamTrack(string)", 
 								asFUNCTION(streamTrack), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
+								"bool storeValue(string key, string &value)", 
+								asFUNCTION(storeValue), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
+								"bool storeValue(string key, string &value)", 
+								asFUNCTION(storeValue), asCALL_CDECL);
 								
 	// Register further modules.
 	initJson(engine);
@@ -1087,6 +1139,11 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	
 	std::cout << "Found " << appId << " app." << std::endl;
 	
+	// Update active app ID.
+	activeAppMutex.lock();
+	activeAppId = appId;
+	activeAppMutex.unlock();
+	
 	if (app.asFunction == 0) {
 		// Initialise new instance of the app.
 		int r;
@@ -1097,7 +1154,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 		int len;
 		if (app.location == NYMPHCAST_APP_LOCATION_LOCAL) {
 			// We will load the script from a file on the disk.
-			FILE *f = fopen(("apps/" + app.url).c_str(), "rb");
+			FILE *f = fopen((appsFolder + app.url).c_str(), "rb");
 			if (f == 0) {
 				std::cout << "Failed to open the script file '" << app.url << "'." << std::endl;
 				result = "Failed to open the script file.";
@@ -1328,7 +1385,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
-	std::string appsFolder = "apps/";
+	appsFolder = "apps/";
 	if (!sarge.getFlag("apps", appsFolder)) {
 		std::cout << "Setting app folder to default location." << std::endl;
 	}
@@ -1354,6 +1411,9 @@ int main(int argc, char** argv) {
 		std::cerr << "Failed to read in app list." << std::endl;
 		return 1;
 	}
+	
+	// Initialise Poco.
+	Poco::Data::SQLite::Connector::registerConnector();
 	
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
