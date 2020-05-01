@@ -10,6 +10,7 @@
 
 
 #include <angelscript.h>
+#include <scriptarray/scriptarray.h>
 
 #include <Poco/RegularExpression.h>
 
@@ -29,6 +30,7 @@ public:
 	void createRegExp(std::string re);
 	int extract(const std::string &subject, std::string &str, int options = 0);
 	int extract(const std::string &subject, int offset, std::string &str, int options = 0);
+	int findall(const std::string &subject, CScriptArray* &matches);
 };
 
 #endif

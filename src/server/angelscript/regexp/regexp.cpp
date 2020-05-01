@@ -30,14 +30,19 @@ void initRegExp(asIScriptEngine* engine) {
 								asMETHOD(RegExp, createRegExp), 
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
-								"int extract(string &subject, string &str, int options = 0))", 
+								"int extract(string &subject, string &str, int options = 0)", 
 								asMETHODPR(RegExp, extract, 
 								(const std::string &, std::string &, int), int), 
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
-								"int extract(string &subject, int offset, string &str, int options = 0))", 
+								"int extract(string &subject, int offset, string &str, int options = 0)", 
 								asMETHODPR(RegExp, extract, 
 								(const std::string &, int, std::string &, int), int),
+								asCALL_THISCALL);
+    engine->RegisterObjectMethod("RegExp", 
+								"int findall(string &subject, array<string> &matches)", 
+								asMETHODPR(RegExp, findall, 
+								(const std::string &, CScriptArray* &), int),
 								asCALL_THISCALL);
 }
 
@@ -77,4 +82,26 @@ int RegExp::extract(const std::string &subject, std::string &str, int options) {
 int RegExp::extract(const std::string &subject, int offset, std::string &str, int options) {
 	if (!regexp) { return 0; }
 	return regexp->extract(subject, offset, str, options);
+}
+
+
+// --- FIND ALL ---
+int RegExp::findall(const std::string &subject, CScriptArray* &matches) {
+	if (!regexp) { return 0; }
+	
+	Poco::RegularExpression::MatchVec matchesVector;
+	int n = regexp->match(subject, 0, matchesVector);
+	if (n == 0) { return 0; }
+	
+	// MatchVec is an std::vector of Match structs. The latter contains the length and offset of
+	// the match in the original string.
+	// We want to extract these substrings and return them.
+	matches->Resize(matchesVector.size());
+    for (int i = 0; i < matchesVector.size(); i++) {
+      // Set the value of each element
+      std::string substr = subject.substr(matchesVector[i].offset, matchesVector[i].length);
+      matches->InsertAt(i, &substr);
+    }
+	
+	return n;
 }

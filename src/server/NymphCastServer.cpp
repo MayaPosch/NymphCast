@@ -648,8 +648,8 @@ void angelScriptInit() {
 								"bool streamTrack(string)", 
 								asFUNCTION(streamTrack), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
-								"bool storeValue(string key, string &value)", 
-								asFUNCTION(storeValue), asCALL_CDECL);
+								"bool readValue(string key, string &value)", 
+								asFUNCTION(readValue), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
 								"bool storeValue(string key, string &value)", 
 								asFUNCTION(storeValue), asCALL_CDECL);
