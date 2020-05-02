@@ -49,6 +49,7 @@ namespace fs = std::filesystem;
 #include <Poco/StreamCopier.h>
 #include <Poco/Data/Session.h>
 #include <Poco/Data/SQLite/Connector.h>
+#include <Poco/Timestamp.h>
 
 using namespace Poco;
 
@@ -581,13 +582,18 @@ bool storeValue(std::string key, std::string &value) {
 	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
 	
 	// Create table if it doesn't exist yet.
-	db << "CREATE TABLE IF NOT EXISTS values (key TEXT UNIQUE PRIMARY KEY, value TEXT)", 
+	db << "CREATE TABLE IF NOT EXISTS values (key TEXT UNIQUE PRIMARY KEY, value TEXT, updated INTEGER)", 
 		Poco::Data::Keywords::now;
+		
+	// Get the current timestamp for database insertion.
+	Poco::Timestamp ts;
+	int64_t updated = (int64_t) ts.epochMicroseconds();
 	
 	// Write or update the key/value pair in the table.
-	db << "INSERT OR REPLACE INTO values (key, value) VALUES (:key, :value)",
+	db << "INSERT OR REPLACE INTO values (key, value, updated) VALUES (:key, :value, :updated)",
 		Poco::Data::Keywords::use(key),
 		Poco::Data::Keywords::use(value),
+		Poco::Data::Keywords::use(updated),
 		Poco::Data::Keywords::now;
 		
 	return true;
@@ -596,7 +602,9 @@ bool storeValue(std::string key, std::string &value) {
 
 // --- READ VALUE ---
 // App-level storage: read a single value given a key for an NC app.
-bool readValue(std::string key, std::string &value) {
+// The 'age' parameter (in microseconds) sets the maximum allowed age of the value since its last
+// update. Omitting it or setting it to 0 means that any age is acceptable.
+bool readValue(std::string key, std::string &value, int age = 0) {
 	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
 	
 	// Return false if the table doesn't exist.
@@ -606,10 +614,19 @@ bool readValue(std::string key, std::string &value) {
 	if (statement.rowsExtracted() < 1) { return false; }
 	
 	// Read out value and return true.
-	db << "SELECT value FROM values WHERE key=:key", 
+	int64_t updated = 0;
+	db << "SELECT value, updated FROM values WHERE key=:key", 
 		Poco::Data::Keywords::use(key), 
-		Poco::Data::Keywords::into(value), 
+		Poco::Data::Keywords::into(value),
+		Poco::Data::Keywords::into(updated),
 		Poco::Data::Keywords::now;
+		
+	if (updated == 0) { return false; }
+		
+	// If 'age' parameter has been set, check whether value has expired.
+	Poco::Timestamp ts;
+	Poco::Timestamp uts(updated);
+	if ((uts + age) > ts) { return false; }
 	
 	return true;
 }
@@ -648,10 +665,10 @@ void angelScriptInit() {
 								"bool streamTrack(string)", 
 								asFUNCTION(streamTrack), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
-								"bool readValue(string key, string &value)", 
+								"bool readValue(string, string &, int)", 
 								asFUNCTION(readValue), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
-								"bool storeValue(string key, string &value)", 
+								"bool storeValue(string, string &)", 
 								asFUNCTION(storeValue), asCALL_CDECL);
 								
 	// Register further modules.
