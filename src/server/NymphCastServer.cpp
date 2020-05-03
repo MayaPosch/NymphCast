@@ -604,7 +604,7 @@ bool storeValue(std::string key, std::string &value) {
 // App-level storage: read a single value given a key for an NC app.
 // The 'age' parameter (in microseconds) sets the maximum allowed age of the value since its last
 // update. Omitting it or setting it to 0 means that any age is acceptable.
-bool readValue(std::string key, std::string &value, int age = 0) {
+bool readValue(std::string key, std::string &value, uint64_t age = 0) {
 	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
 	
 	// Return false if the table doesn't exist.
@@ -665,7 +665,7 @@ void angelScriptInit() {
 								"bool streamTrack(string)", 
 								asFUNCTION(streamTrack), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
-								"bool readValue(string, string &, int)", 
+								"bool readValue(string, string &, uint64)", 
 								asFUNCTION(readValue), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
 								"bool storeValue(string, string &)", 
