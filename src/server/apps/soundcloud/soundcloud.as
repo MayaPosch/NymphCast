@@ -61,6 +61,7 @@ void updateClientId() {
 	// The client ID either wasn't found in the KV store, or expired.
 	// Get a fresh client ID from the remote.
 	clientId = getClientId();
+	storeValue(key, clientId);
 }
 
 
