@@ -1,7 +1,8 @@
 
 
-const string clientId = "RhcucnLXC0AmjivrTd0WM5UmndHB2ToL";
-const string baseUrl = "https://api.soundcloud.com";
+string clientId;
+//const string baseUrl = "https://api.soundcloud.com";
+const string baseUrl = "https://api-v2.soundcloud.com";
 
 
 string start() {
@@ -11,10 +12,65 @@ string start() {
 }
 
 
+// --- GET CLIENT ID ---
+// Get a fresh client ID from the SoundCloud server.
+// Returns an empty string if failed.
+string getClientId() {
+	// Obtain the JavaScript file containing the client ID.
+	string query = "https://soundcloud.com/";
+	string response;
+	string id;
+	if (!performHttpsQuery(query, response)) {
+		return id;
+	}
+	
+	// Parse the client ID from the JS file. This requires that we find the right JS file that
+	// contains this information.
+	array matches;
+	Regexp re;
+	re.createRegExp("=\"(https://a-v2\.sndcdn\.com/assets/.*.js)\"");
+	Regexp kre;
+	kre.createRegExp("exports={\"api-v2\".*client_id:\"(\w*)\"");
+	int n = re.findall(response, matches);
+	if (n == 0) { return id; }
+	
+	for (int i = 0; i < matches.length(); ++i) {
+		string js;
+		if (!performHttpsQuery(matches[i], js)) {
+			return id;
+		}
+		
+		// Extract the ID.
+		if (kre.match(js, id) == 1) {
+			return id;	// We're done.
+		}
+	}
+	
+	// No client ID found.
+	return id;
+}
+
+
+// --- UPDATE CLIENT ID ---
+void updateClientId() {
+	// Check that the cached client ID is still current.
+	string key = "clientId";
+	uint64 age = 86400000000; // 24 hours in microseconds.
+	if (readValue(key, clientId, age)) { return; }
+	
+	// The client ID either wasn't found in the KV store, or expired.
+	// Get a fresh client ID from the remote.
+	clientId = getClientId();
+}
+
+
 string findAlbum(string name) {
 	// Send query for albums (/playlists)
 	// TODO: HTML encode the query string (spaces, etc.).
-	string query = baseUrl + "/playlists?client_id=" + clientId + "&q=" + name;
+	//string query = baseUrl + "/playlists?client_id=" + clientId + "&q=" + name;
+	string query = baseUrl + "/search/albums?q=" 
+							+ name + "&client_id=" + clientId 
+							+ "&limit=20&app_locale=en";
 	string response;
 
 	if (!performHttpsQuery(query, response)) {
@@ -29,10 +85,11 @@ string findAlbum(string name) {
 	}
 	
 	JSONValue root = json.getRoot();
+	JSONValue collection = root.get("collection");
 	
 	string output = "";
-	for (int i = 0; i < root.get_size(); ++i) {
-		JSONValue jv = root[i];
+	for (int i = 0; i < collection.get_size(); ++i) {
+		JSONValue jv = collection[i];
 		
 		// Get the ID, artist and album name from the Object.
 		JSONValue idVal = jv.get("id");
@@ -52,24 +109,27 @@ string findAlbum(string name) {
 string findTrack(string name) {
 	// Send query for tracks (/tracks)
 	// TODO: HTML encode the query string (spaces, etc.).
-	string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
+	//string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
+	string query = baseUrl + "/search/tracks?q=" 
+							+ name + "&client_id=" + clientId 
+							+ "&limit=20&app_locale=en";
 	string response;
-
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
 		return "HTTP error.";
 	}
 	
-	// Parse results, get the 
+	// Parse results, get the JSON root.
 	JSONFile json;
 	if (!json.fromString(response)) {
 		return "Failed to parse JSON response.";
 	}
 	
 	JSONValue root = json.getRoot();
+	JSONValue collection = root.get("collection");
 	
 	string output = "";
-	for (int i = 0; i < root.get_size(); ++i) {
+	for (int i = 0; i < collection.get_size(); ++i) {
 		JSONValue jv = root[i];
 		
 		// Get the ID, artist and album name from the Object.
@@ -92,7 +152,10 @@ string findTrack(string name) {
 string findArtist(string name) {
 	// Send query for artists (/users).
 	// TODO: HTML encode the query string (spaces, etc.).
-	string query = baseUrl + "/users?client_id=" + clientId + "&q=" + name;
+	//string query = baseUrl + "/users?client_id=" + clientId + "&q=" + name;
+	string query = baseUrl + "/search/people?q=" 
+							+ name + "&client_id=" + clientId 
+							+ "&limit=20&app_locale=en";
 	string response;
 
 	if (!performHttpsQuery(query, response)) {
@@ -100,16 +163,17 @@ string findArtist(string name) {
 		return "HTTP error.";
 	}
 	
-	// Parse results, get the 
+	// Parse results, get the JSON root.
 	JSONFile json;
 	if (!json.fromString(response)) {
 		return "Failed to parse JSON response.";
 	}
 	
 	JSONValue root = json.getRoot();
+	JSONValue collection = root.get("collection");
 	
 	string output = "";
-	for (int i = 0; i < root.get_size(); ++i) {
+	for (int i = 0; i < collection.get_size(); ++i) {
 		JSONValue user = root[i];
 		
 		// Get the ID, artist name from the Object.
@@ -126,15 +190,15 @@ string findArtist(string name) {
 
 bool playAlbum(int id) {
 	// Obtain the data for the album, then play each individual track.
-	string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId;
+	//string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId;
+	string query = baseUrl + "/playlists/" + id + "&client_id=" + clientId + "&app_locale=en";
 	string response;
-
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
 		return false; //"HTTP error.";
 	}
 	
-	// Parse results, get the 
+	// Parse results, get the JSON root.
 	JSONFile json;
 	if (!json.fromString(response)) {
 		return false; //"Failed to parse JSON response.";
@@ -159,9 +223,26 @@ bool playAlbum(int id) {
 
 
 bool playTrack(int id) {
-	// Use the provided ID to retrieve the album, then stream each individual track on it.
+	// Use the provided ID to retrieve the track, then stream it.
 	//string url = "https://api.soundcloud.com/tracks/547239669/stream?client_id=" + clientId;
-	string url = "https://api.soundcloud.com/tracks/" + id + "/stream?client_id=" + clientId;
+	//string url = "https://api.soundcloud.com/tracks/" + id + "/stream?client_id=" + clientId;
+	string query = baseUrl + "/tracks/" + id + "&client_id=" + clientId;
+	string response;
+	if (!performHttpsQuery(query, response)) {
+		// Something went wrong.
+		return false; //"HTTP error.";
+	}
+	
+	// Parse results, get the JSON root.
+	JSONFile json;
+	if (!json.fromString(response)) {
+		return false; //"Failed to parse JSON response.";
+	}
+	
+	JSONValue root = json.getRoot();
+	JSONValue transcodings = root.get("media").get("transcodings");
+	string url = transcodings[1].get("url").getString();
+	
 	return streamTrack(url);
 }
 
@@ -180,20 +261,34 @@ string command_processor(string input) {
 	
 	// FIXME: handle spaces in search strings.
 	array<string> bits = input.split(" ");
-	if (bits.length() < 3) {
+	int len = bits.length();
+	if (len < 3) {
 		// Cannot be a valid command. Return error.
 		return "Invalid command.";
 	}
 	
+	// Ensure the client ID is up to date.
+	if !(updateClientId()) {
+		return "Updating client ID failed.";
+	}
+	
 	if (bits[0] == "find") {
+		string name = bits[2];
+		if (len > 3) {
+			for (int i = 3; i < len; i++) { 
+				name += bits[i];
+				if ((i + 2) < len) { name += "%20"; }
+			}
+		}
+		
 		if (bits[1] == "album") {
-			return findAlbum(bits[2]);
+			return findAlbum(name);
 		}
 		else if (bits[1] == "track") {
-			return findTrack(bits[2]);
+			return findTrack(name);
 		}
 		else if (bits[1] == "artist") {
-			return findArtist(bits[2]);
+			return findArtist(name);
 		}
 		else {
 			// Error.
