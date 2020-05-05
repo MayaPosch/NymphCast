@@ -26,10 +26,10 @@ string getClientId() {
 	
 	// Parse the client ID from the JS file. This requires that we find the right JS file that
 	// contains this information.
-	array matches;
-	Regexp re;
+	array<string> matches;
+	RegExp re;
 	re.createRegExp("=\"(https://a-v2\.sndcdn\.com/assets/.*.js)\"");
-	Regexp kre;
+	RegExp kre;
 	kre.createRegExp("exports={\"api-v2\".*client_id:\"(\w*)\"");
 	int n = re.findall(response, matches);
 	if (n == 0) { return id; }
@@ -41,7 +41,7 @@ string getClientId() {
 		}
 		
 		// Extract the ID.
-		if (kre.match(js, id) == 1) {
+		if (kre.extract(js, id, 0) == 1) {
 			return id;	// We're done.
 		}
 	}
@@ -52,16 +52,19 @@ string getClientId() {
 
 
 // --- UPDATE CLIENT ID ---
-void updateClientId() {
+bool updateClientId() {
 	// Check that the cached client ID is still current.
 	string key = "clientId";
 	uint64 age = 86400000000; // 24 hours in microseconds.
-	if (readValue(key, clientId, age)) { return; }
+	if (readValue(key, clientId, age)) { return true; }
 	
 	// The client ID either wasn't found in the KV store, or expired.
 	// Get a fresh client ID from the remote.
 	clientId = getClientId();
+	if (clientId.isEmpty()) { return false; }
 	storeValue(key, clientId);
+	
+	return true;
 }
 
 
@@ -76,7 +79,7 @@ string findAlbum(string name) {
 
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
-		return "HTTP error.";
+		return "HTTP error. Query: " + query;
 	}
 	
 	// Parse results.
@@ -117,7 +120,7 @@ string findTrack(string name) {
 	string response;
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
-		return "HTTP error.";
+		return "HTTP error. Query: " + query;
 	}
 	
 	// Parse results, get the JSON root.
@@ -161,7 +164,7 @@ string findArtist(string name) {
 
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
-		return "HTTP error.";
+		return "HTTP error. Query: " + query;
 	}
 	
 	// Parse results, get the JSON root.
@@ -257,7 +260,7 @@ string command_processor(string input) {
 	// . play album <album ID>
 	// . play track <track ID>
 	if (input == "help") {
-		return "Commands:\n. help\n.find (album|track|artist) <query>\n.play (album|track) <query>";
+		return "Commands:\n help\nfind (album|track|artist) <query>\nplay (album|track) <query>";
 	}
 	
 	// FIXME: handle spaces in search strings.
@@ -269,7 +272,7 @@ string command_processor(string input) {
 	}
 	
 	// Ensure the client ID is up to date.
-	if !(updateClientId()) {
+	if (!updateClientId()) {
 		return "Updating client ID failed.";
 	}
 	
