@@ -26,21 +26,21 @@ void initRegExp(asIScriptEngine* engine) {
 									asFUNCTION(DestructRegExp), asCALL_CDECL_OBJLAST);
 	
     engine->RegisterObjectMethod("RegExp", 
-								"void createRegExp(string &re)", 
+								"void createRegExp(string &in)", 
 								asMETHOD(RegExp, createRegExp), 
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
-								"int extract(string &subject, string &str, int options = 0)", 
+								"int extract(string &in, string &out, int)", 
 								asMETHODPR(RegExp, extract, 
 								(const std::string &, std::string &, int), int), 
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
-								"int extract(string &subject, int offset, string &str, int options = 0)", 
+								"int extract(string &in, int offset, string &out, int)", 
 								asMETHODPR(RegExp, extract, 
 								(const std::string &, int, std::string &, int), int),
 								asCALL_THISCALL);
     engine->RegisterObjectMethod("RegExp", 
-								"int findall(string &subject, array<string> &matches)", 
+								"int findall(string &in, array<string> &out)", 
 								asMETHODPR(RegExp, findall, 
 								(const std::string &, CScriptArray* &), int),
 								asCALL_THISCALL);
