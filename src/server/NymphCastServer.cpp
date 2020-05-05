@@ -518,14 +518,17 @@ bool performHttpsQuery(std::string query, std::string &response) {
 	std::string path(uri.getPathAndQuery());
 	if (path.empty()) { path = "/"; }
 	
-	const Poco::Net::Context::Ptr context = new Poco::Net::Context(
+	/* const Poco::Net::Context::Ptr context = new Poco::Net::Context(
 		Poco::Net::Context::CLIENT_USE, "", "", "",
-		Poco::Net::Context::VERIFY_NONE, 9, false,
-		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+		Poco::Net::Context::VERIFY_RELAXED, 9, false,
+		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"); */
 	
-	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+	//Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort());
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
 											Poco::Net::HTTPMessage::HTTP_1_1);
+	req.setContentLength(0);
+	req.set("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/75.0");
 	session.sendRequest(req);
 	Poco::Net::HTTPResponse httpResponse;
 	std::istream& rs = session.receiveResponse(httpResponse);
@@ -542,6 +545,9 @@ bool performHttpsQuery(std::string query, std::string &response) {
 	}
 	else {
 		// Something went wrong.
+		Poco::StreamCopier::copyToString(rs, response);
+		std::cout << "HTTPS query failed. Path: " << path << ". Query: " << query << std::endl;
+		std::cout << "Response: \n" << response << std::endl;
 		return false;
 	}
 	

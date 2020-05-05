@@ -17,7 +17,7 @@ string start() {
 // Returns an empty string if failed.
 string getClientId() {
 	// Obtain the JavaScript file containing the client ID.
-	string query = "https://soundcloud.com/";
+	string query = "https://soundcloud.com/discover";
 	string response;
 	string id;
 	if (!performHttpsQuery(query, response)) {
@@ -260,7 +260,7 @@ string command_processor(string input) {
 	// . play album <album ID>
 	// . play track <track ID>
 	if (input == "help") {
-		return "Commands:\n help\nfind (album|track|artist) <query>\nplay (album|track) <query>";
+		return "Commands:\nhelp\nfind (album|track|artist) <query>\nplay (album|track) <query>";
 	}
 	
 	// FIXME: handle spaces in search strings.
