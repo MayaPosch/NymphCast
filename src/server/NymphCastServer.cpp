@@ -1332,9 +1332,9 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	// Pass string to app.
 	app.asContext->SetArgObject(0, (void*) &message);
 	
-	// Set the timeout before executing the function. Give the function 5 seconds
+	// Set the timeout before executing the function. Give the function 30 seconds
 	// to return before we'll abort it.
-	timeOut = timeGetTime() + std::chrono::seconds(5);
+	timeOut = timeGetTime() + std::chrono::seconds(30);
 
 	// Execute the function.
 	std::cout << "Executing the script." << std::endl;
