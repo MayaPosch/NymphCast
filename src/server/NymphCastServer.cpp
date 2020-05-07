@@ -668,7 +668,7 @@ bool readValue(std::string key, std::string &value, uint64_t age = 0) {
 	// If 'age' parameter has been set, check whether value has expired.
 	Poco::Timestamp ts;
 	Poco::Timestamp uts(updated);
-	if ((uts + age) > ts) {
+	if ((uts + age) < ts) {
 		std::cout << "Value was older than age. Dropping..." << std::endl;
 		return false;
 	}
