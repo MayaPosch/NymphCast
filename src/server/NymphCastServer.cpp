@@ -49,6 +49,7 @@ namespace fs = std::filesystem;
 #include <Poco/StreamCopier.h>
 #include <Poco/Data/Session.h>
 #include <Poco/Data/SQLite/Connector.h>
+#include <Poco/Data/SQLite/SQLiteException.h>
 #include <Poco/Timestamp.h>
 
 using namespace Poco;
@@ -587,20 +588,37 @@ bool streamTrack(std::string url) {
 bool storeValue(std::string key, std::string &value) {
 	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
 	
+	std::cout << "Opened database file for " << activeAppId << std::endl;
+	
 	// Create table if it doesn't exist yet.
-	db << "CREATE TABLE IF NOT EXISTS values (key TEXT UNIQUE PRIMARY KEY, value TEXT, updated INTEGER)", 
-		Poco::Data::Keywords::now;
+	try {
+		db << "CREATE TABLE IF NOT EXISTS data (id TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL, updated INTEGER)", 
+			Poco::Data::Keywords::now;
+	}
+	catch(Poco::Data::SQLite::SQLiteException &exc) {
+		std::cout << "SQL error: " << exc.displayText() << std::endl;
+	}
+	catch (...) {
+		std::cerr << "Creating table failed." << std::endl;
+		return false;
+	}
+		
+	std::cout << "Table 'data' exists." << std::endl;
 		
 	// Get the current timestamp for database insertion.
 	Poco::Timestamp ts;
 	int64_t updated = (int64_t) ts.epochMicroseconds();
 	
+	std::cout << "Writing value into database. Key: " << key << ", value: " << value << std::endl;
+	
 	// Write or update the key/value pair in the table.
-	db << "INSERT OR REPLACE INTO values (key, value, updated) VALUES (:key, :value, :updated)",
+	db << "INSERT OR REPLACE INTO data (id, value, updated) VALUES (:key, :value, :updated)",
 		Poco::Data::Keywords::use(key),
 		Poco::Data::Keywords::use(value),
 		Poco::Data::Keywords::use(updated),
 		Poco::Data::Keywords::now;
+		
+	std::cout << "Updated table." << std::endl;
 		
 	return true;
 }
@@ -613,26 +631,47 @@ bool storeValue(std::string key, std::string &value) {
 bool readValue(std::string key, std::string &value, uint64_t age = 0) {
 	Poco::Data::Session db("SQLite", appsFolder + activeAppId + "/" + activeAppId + ".db");
 	
+	std::cout << "Opened database file for " << activeAppId << std::endl;
+	
 	// Return false if the table doesn't exist.
 	Poco::Data::Statement statement = db << 
-							"SELECT name FROM sqlite_master WHERE type='table' AND name='values'";
-	while (!statement.done()) { statement.execute(); }
-	if (statement.rowsExtracted() < 1) { return false; }
+							"SELECT name FROM sqlite_master WHERE type='table' AND name='data'";
+	try {
+		while (!statement.done()) { statement.execute(); }
+	}
+	catch(Poco::Data::SQLite::SQLiteException &exc) {
+		std::cout << "SQL error: " << exc.displayText() << std::endl;
+	}
+	catch(...) {
+		std::cout << "Failed to execute query." << std::endl;
+		return false;
+	}
+	
+	if (statement.rowsExtracted() < 1) { 
+		std::cout << "Table 'data' does not exist. Returning..." << std::endl;
+		return false;
+	}
 	
 	// Read out value and return true.
 	int64_t updated = 0;
-	db << "SELECT value, updated FROM values WHERE key=:key", 
+	db << "SELECT value, updated FROM data WHERE id=:key", 
 		Poco::Data::Keywords::use(key), 
 		Poco::Data::Keywords::into(value),
 		Poco::Data::Keywords::into(updated),
 		Poco::Data::Keywords::now;
 		
-	if (updated == 0) { return false; }
+	if (updated == 0) { 
+		std::cout << "Updated: 0, key: " << key << ", value: " << value << std::endl;
+		return false;
+	}
 		
 	// If 'age' parameter has been set, check whether value has expired.
 	Poco::Timestamp ts;
 	Poco::Timestamp uts(updated);
-	if ((uts + age) > ts) { return false; }
+	if ((uts + age) > ts) {
+		std::cout << "Value was older than age. Dropping..." << std::endl;
+		return false;
+	}
 	
 	return true;
 }
@@ -674,7 +713,7 @@ void angelScriptInit() {
 								"bool readValue(string, string &out, uint64)", 
 								asFUNCTION(readValue), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction(
-								"bool storeValue(string, string &out)", 
+								"bool storeValue(string, string &in)", 
 								asFUNCTION(storeValue), asCALL_CDECL);
 								
 	// Register further modules.
