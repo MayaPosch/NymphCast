@@ -194,7 +194,7 @@ string findArtist(string name) {
 bool playAlbum(int id) {
 	// Obtain the data for the album, then play each individual track.
 	//string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId;
-	string query = baseUrl + "/playlists/" + id + "&client_id=" + clientId + "&app_locale=en";
+	string query = baseUrl + "/playlists/" + id + "?client_id=" + clientId;
 	string response;
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
@@ -229,7 +229,7 @@ bool playTrack(int id) {
 	// Use the provided ID to retrieve the track, then stream it.
 	//string url = "https://api.soundcloud.com/tracks/547239669/stream?client_id=" + clientId;
 	//string url = "https://api.soundcloud.com/tracks/" + id + "/stream?client_id=" + clientId;
-	string query = baseUrl + "/tracks/" + id + "&client_id=" + clientId;
+	string query = baseUrl + "/tracks/" + id + "?client_id=" + clientId;
 	string response;
 	if (!performHttpsQuery(query, response)) {
 		// Something went wrong.
