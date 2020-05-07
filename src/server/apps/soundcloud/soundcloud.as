@@ -26,14 +26,13 @@ string getClientId() {
 	
 	// Parse the client ID from the JS file. This requires that we find the right JS file that
 	// contains this information.
-	array<string> matches;
+	array<string> matches(0);
 	RegExp re;
-	re.createRegExp("=\"(https://a-v2\.sndcdn\.com/assets/.*.js)\"");
-	RegExp kre;
-	kre.createRegExp("exports={\"api-v2\".*client_id:\"(\w*)\"");
+	re.createRegExp("=\"(https://a-v2\\.sndcdn\\.com/assets/.*.js)\"");
 	int n = re.findall(response, matches);
 	if (n == 0) { return id; }
 	
+	re.createRegExp("exports={\"api-v2\".*client_id:\"(\\w*)\"");
 	for (int i = 0; i < matches.length(); ++i) {
 		string js;
 		if (!performHttpsQuery(matches[i], js)) {
@@ -41,7 +40,7 @@ string getClientId() {
 		}
 		
 		// Extract the ID.
-		if (kre.extract(js, id, 0) == 1) {
+		if (re.findfirst(js, id) == 1) {
 			return id;	// We're done.
 		}
 	}
@@ -279,9 +278,9 @@ string command_processor(string input) {
 	if (bits[0] == "find") {
 		string name = bits[2];
 		if (len > 3) {
-			for (int i = 3; i < len; i++) { 
-				name += bits[i];
+			for (int i = 3; i < len; i++) {
 				if ((i + 2) < len) { name += "%20"; }
+				name += bits[i];
 			}
 		}
 		
