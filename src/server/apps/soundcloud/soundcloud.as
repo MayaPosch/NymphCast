@@ -246,7 +246,21 @@ bool playTrack(int id) {
 	JSONValue transcodings = root.get("media").get("transcodings");
 	string url = transcodings[1].get("url").getString();
 	
-	return streamTrack(url);
+	query = url + "?client_id=" + clientId;
+	if (!performHttpsQuery(query, response)) {
+		return false;
+	}
+	
+	// Parse results for the media URL.
+	JSONFile mediajson;
+	if (!mediajson.fromString(response)) {
+		return false;
+	}
+	
+	JSONValue mediaroot = mediajson.getRoot();
+	string media_url = mediaroot.get("url").getString();	
+	
+	return streamTrack(media_url);
 }
 
 
