@@ -651,7 +651,6 @@ int StreamHandler::read_thread(void *arg) {
     if (infinite_buffer < 0 && is->realtime)
         infinite_buffer = 1;
 
-    //for (;;) {
 	run = true;
 	while (run) {
         if (is->abort_request)
@@ -737,11 +736,16 @@ int StreamHandler::read_thread(void *arg) {
             (!is->video_st || (is->viddec.finished == is->videoq.serial && FrameQueueC::frame_queue_nb_remaining(&is->pictq) == 0))) {
             if (loop != 1 && (!loop || --loop)) {
                 StreamHandler::stream_seek(is, start_time != AV_NOPTS_VALUE ? start_time : 0, 0, 0);
-            } else if (autoexit) {
+            } 
+			else if (autoexit) {
+				av_log(NULL, AV_LOG_INFO, "Auto-exit is true. Exiting...\n");
                 ret = AVERROR_EOF;
                 goto fail;
             }
+			
+			av_log(NULL, AV_LOG_INFO, "Would have quit here if auto-exit was enabled.\n");
         }
+		
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
@@ -752,12 +756,9 @@ int StreamHandler::read_thread(void *arg) {
                 if (is->subtitle_stream >= 0)
                     PacketQueueC::packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream);
                 is->eof = 1;
-				
-				// TODO: stop playback here?
-				//break;
             }
-            if (ic->pb && ic->pb->error)
-                break;
+			
+            if (ic->pb && ic->pb->error) { break; }
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
@@ -765,6 +766,7 @@ int StreamHandler::read_thread(void *arg) {
         } else {
             is->eof = 0;
         }
+		
         /* check if packet is in play range specified by user, then queue, otherwise discard */
         stream_start_time = ic->streams[pkt->stream_index]->start_time;
         pkt_ts = pkt->pts == AV_NOPTS_VALUE ? pkt->dts : pkt->pts;
@@ -773,6 +775,7 @@ int StreamHandler::read_thread(void *arg) {
                 av_q2d(ic->streams[pkt->stream_index]->time_base) -
                 (double)(start_time != AV_NOPTS_VALUE ? start_time : 0) / 1000000
                 <= ((double)duration / 1000000);
+				
         if (pkt->stream_index == is->audio_stream && pkt_in_play_range) {
             PacketQueueC::packet_queue_put(&is->audioq, pkt);
         } else if (pkt->stream_index == is->video_stream && pkt_in_play_range
