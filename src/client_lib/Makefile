@@ -8,10 +8,25 @@ export TOP := $(CURDIR)
 
 ifdef ANDROID
 TOOLCHAIN_PREFIX := arm-linux-androideabi-
+ARCH := android-armv7/
 ifdef OS
 TOOLCHAIN_POSTFIX := .cmd
 endif
-GCC = $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
+else ifdef ANDROID64
+TOOLCHAIN_PREFIX := aarch64-linux-android-
+ARCH := android-aarch64/
+ifdef OS
+TOOLCHAIN_POSTFIX := .cmd
+endif
+endif
+
+ifdef ANDROID
+GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
+MAKEDIR = mkdir -p
+RM = rm
+AR = $(TOOLCHAIN_PREFIX)ar
+else ifdef ANDROID64
+GCC := aarch64-linux-android21-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
@@ -39,40 +54,51 @@ ifdef ANDROID
 CFLAGS += -fPIC
 endif
 
+ifdef ANDROID64
+#CFLAGS += -fPIC --target=aarch64-linux-android21 -fno-addrsig
+endif
+
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
 ifndef ANDROID
+ifndef ANDROID64
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8
 	LIBS += -lws2_32
 endif
 endif
+endif
 
 SOURCES := $(wildcard *.cpp)
-OBJECTS := $(addprefix obj/static/,$(notdir) $(SOURCES:.cpp=.o))
-SHARED_OBJECTS := $(addprefix obj/shared/,$(notdir) $(SOURCES:.cpp=.o))
+OBJECTS := $(addprefix obj/static/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
+SHARED_OBJECTS := $(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 
 all: lib
 
-lib: makedir lib/$(OUTPUT).a lib/$(OUTPUT).so.$(VERSION)
+lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(OUTPUT).so.$(VERSION)
 	
-obj/static/%.o: %.cpp
+obj/static/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(LIBS)
 	
-obj/shared/%.o: %.cpp
+obj/shared/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(SHARED_FLAGS) $(LIBS)
 	
-lib/$(OUTPUT).a: $(OBJECTS)
+lib/$(ARCH)$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
-lib/$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
+lib/$(ARCH)$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
 	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
 	
 makedir:
 	$(MAKEDIR) lib
 	$(MAKEDIR) obj/shared
 	$(MAKEDIR) obj/static
+ifdef ARCH
+	$(MAKEDIR) lib/$(ARCH)
+	$(MAKEDIR) obj/shared/$(ARCH)
+	$(MAKEDIR) obj/static/$(ARCH)
+endif
 	
 test: test-client test-server
 	
