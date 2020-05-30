@@ -6,7 +6,7 @@ import com.nyanko.nymphcastplayer.ui.main.RemotesFragment;
 
 public class NymphCast {
 	static {
-		System.loadLibrary("libnymphcast_jni");
+		System.loadLibrary("nymphcast_jni");
 	}
 
 	private native void NymphCast();
