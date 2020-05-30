@@ -1,6 +1,10 @@
 package com.nyanko.nymphcastplayer.ui.main;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -8,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +21,7 @@ import com.nyanko.nymphcastplayer.MainActivity;
 import com.nyanko.nymphcastplayer.R;
 import com.nyanko.nymphcastplayer.ui.main.MediaContent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +38,7 @@ public class MediaFragment extends Fragment {
 	private int mColumnCount = 1;
 	private OnListFragmentInteractionListener mListener;
 	public static MediaRecyclerViewAdapter mAdapter;
+	public ArrayList<Audio> audioList;
 
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -81,10 +88,43 @@ public class MediaFragment extends Fragment {
 
 		// Load the local media list.
 		// TODO: for new just load audio files.
-		MainActivity.loadAudio();
+		loadAudio();
 		mAdapter.notifyDataSetChanged();
 
 		return view;
+	}
+
+	public void loadAudio() {
+		Context appContext = MainActivity.getContextOfApplication();
+		ContentResolver contentResolver = appContext.getContentResolver();
+
+		Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+		String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
+		String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
+		Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			audioList = new ArrayList<Audio>();
+			MediaContent.ITEMS.clear();
+			audioList.clear();
+			while (cursor.moveToNext()) {
+				long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+				//Uri data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+				String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+				String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+				String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+
+				Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+
+				// Save to audioList and MediaContent.
+				audioList.add(new Audio(contentUri, title, album, artist));
+				MediaContent.ITEMS.add(new MediaContent.MediaItem(title, artist, album, contentUri));
+			}
+		}
+
+		if (cursor != null) {
+			cursor.close();
+		}
 	}
 
 

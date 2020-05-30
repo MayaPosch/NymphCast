@@ -34,11 +34,17 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements MediaFragment.OnListFragmentInteractionListener {
 
-	public ArrayList<Audio> audioList;
 	public static NymphCast nymphCast;
+
+    public static Context contextOfApplication;
+    public static Context getContextOfApplication() {
+        return contextOfApplication;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        contextOfApplication = getApplicationContext();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this);
@@ -80,36 +86,6 @@ public class MainActivity extends AppCompatActivity
         //loadRemotes();
 		nymphCast.findServers();
     }
-
-public void loadAudio() {
-	ContentResolver contentResolver = getContentResolver();
-
-	Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-	String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
-	String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-	Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
-
-	if (cursor != null && cursor.getCount() > 0) {
-	  audioList = new ArrayList<Audio>();
-	  MediaContent.ITEMS.clear();
-	  audioList.clear();
-	  while (cursor.moveToNext()) {
-		  long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-		  //Uri data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-		  String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-		  String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-		  String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-
-		  Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-
-		  // Save to audioList and MediaContent.
-		  audioList.add(new Audio(contentUri, title, album, artist));
-		  MediaContent.ITEMS.add(new MediaContent.MediaItem(title, artist, album, contentUri));
-	  }
-	}
-
-	cursor.close();
-}
 
     /* public void loadRemotes() {
         // TODO: load from NymphCast library.
