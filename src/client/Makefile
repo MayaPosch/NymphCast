@@ -6,22 +6,26 @@ GCC = g++
 MAKEDIR = mkdir -p
 RM = rm
 
+# Include the file with the versioning information ('VERSION' variable).
+include version
+VERSIONINFO = -D__VERSION="\"$(VERSION)\""
+
 OUTPUT = nymphcast_client
 INCLUDE = -I .
-LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs
-CFLAGS := $(INCLUDE) -g3 -std=c++17
+LIB := -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs
+CFLAGS := $(INCLUDE) -g3 -std=c++17 $(VERSIONINFO)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__
-	#LIBS += -lws2_32
+	LIB += -lws2_32
 endif
 
 SOURCES := $(wildcard *.cpp)
 OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
 
-all: makedir $(OBJECTS) bin/$(OUTPUT)
+all: makedir bin/$(OUTPUT)
 
 makedir:
 	$(MAKEDIR) obj
@@ -30,7 +34,7 @@ makedir:
 obj/%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS)
 	
-bin/$(OUTPUT):
+bin/$(OUTPUT): $(OBJECTS)
 	$(GCC) -o $@ $(OBJECTS) $(LIB)
 
 clean:
