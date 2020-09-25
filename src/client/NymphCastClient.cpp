@@ -13,12 +13,14 @@
 */
 
 
-#include <nymph/nymph.h>
+//#include <nymph/nymph.h>
+#include "../client_lib/nymphcast_client.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <filesystem> 		// C++17
+#include <csignal>
 
 namespace fs = std::filesystem;
 
@@ -27,6 +29,8 @@ using namespace std;
 #include <Poco/Condition.h>
 
 using namespace Poco;
+
+#include "sarge.h"
 
 
 // Globals
@@ -38,12 +42,17 @@ std::ifstream source;
 // ---
 
 
-void logFunction(int level, string logStr) {
+/* void logFunction(int level, string logStr) {
 	cout << level << " - " << logStr << endl;
+} */
+
+
+void signal_handler(int signal) {
+	cnd.signal();
 }
 
 
-// Callback to register with the server. 
+/* // Callback to register with the server. 
 // This callback will be called once by the server and then discarded. This is
 // useful for one-off events, but can also be used for callbacks during the 
 // life-time of the client.
@@ -137,38 +146,65 @@ void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
 
 void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
 	//
-}
+} */
 
 
-int main(int argc, char *argv[]) {
-	// Locate the available servers.
-	// TODO: implement something.
+int main(int argc, char *argv[]) {	
+	// Parse the command line arguments.
+	Sarge sarge;
+	sarge.setArgument("h", "help", "Get this help message.", false);
+	sarge.setArgument("v", "version", "Output the NymphCast client version and exit.", false);
+	sarge.setArgument("f", "file", "Name of file to stream to remote receiver.", true);
+	sarge.setArgument("i", "ip", "IP address of the target NymphCast receiver.", true);
+	sarge.setDescription("NymphCast client application. For use with NymphCast servers. More details: http://nyanko.ws/nymphcast.php.");
+	sarge.setUsage("nymphcast_client <options>");
 	
-	// Parse options.
-	// TODO: accept either a filename (media), or a URL.
-	// CLI args:
-	// * --url -u <URL>
-	// 
+	sarge.parseArguments(argc, argv);
+	
+	if (sarge.flagCount() == 0) {
+		sarge.printHelp();
+		return 0;
+	}
+	
+	if (sarge.exists("help")) {
+		sarge.printHelp();
+		return 0;
+	}
+	
+	if (sarge.exists("version")) {
+		std::cout << "NymphCast client version: " << __VERSION << std::endl;
+		return 0;
+	}
 	
 	// Allow the IP address of the server to be passed on the command line.	
 	// Try to open the file.	
 	std::string filename;
 	std::string serverip = "127.0.0.1";
-	if (argc == 2) {
-		filename = argv[1];
-	}
-	else if (argc == 3) {
-		serverip = argv[1];
-		filename = argv[2];
-	}
-	else {
-		std::cerr << "Usage: nymphcast_client <filename>" << std::endl;
-		return 1;
-	}
+	sarge.getFlag("file", filename);
+	sarge.getFlag("ip", serverip);
 	
 	std::cout << "Opening file " << filename << std::endl;
 	
-	fs::path filePath(filename);
+	// Install signal handler to terminate the client application.
+	signal(SIGINT, signal_handler);
+	
+	// TODO: set unique client name.
+	
+	// Set up client library.
+	NymphCastClient client;
+	uint32_t handle = 0;
+	if (!client.connectServer(serverip, handle)) {
+		std::cerr << "Failed to connect to server..." << std::endl;
+		return 1;
+	}
+	
+	// Send file.
+	client.castFile(handle, filename);
+	
+	
+	std::cout << "Press Ctrl+c to quit." << std::endl;
+	
+	/* fs::path filePath(filename);
 	if (!fs::exists(filePath)) {
 		std::cerr << "File " << filename << " doesn't exist." << std::endl;
 		return 1;
@@ -214,7 +250,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	delete returnValue;
-	returnValue = 0;
+	returnValue = 0; */
 	
 	
 	// The remote NymphCast server works in a pull fashion, which means that we have to register
@@ -223,7 +259,7 @@ int main(int argc, char *argv[]) {
 		
 	// Register callback and send message with its ID to the server. Then wait
 	// for the callback to be called.
-	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
+	/* NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
 	NymphRemoteServer::registerCallback("MediaStopCallback", MediaStopCallback, 0);
 	NymphRemoteServer::registerCallback("MediaSeekCallback", MediaSeekCallback, 0);
 	
@@ -247,7 +283,7 @@ int main(int argc, char *argv[]) {
 		NymphRemoteServer::disconnect(handle, result);
 		NymphRemoteServer::shutdown();
 		return 1;
-	}
+	} */
 	
 	// Wait for the condition to be signalled.
 	mtx.lock();
@@ -256,7 +292,10 @@ int main(int argc, char *argv[]) {
 	cout << "Shutting down client...\n";
 	
 	// Shutdown.
-	NymphRemoteServer::disconnect(handle, result);
-	NymphRemoteServer::shutdown();
+	/* NymphRemoteServer::disconnect(handle, result);
+	NymphRemoteServer::shutdown(); */
+	
+	client.disconnectServer(handle);
+	
 	return 0;
 }
