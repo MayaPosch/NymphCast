@@ -21,7 +21,7 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
-#include "zeroconf.hpp"
+#include "nyansd.h"
 
 
 enum {
@@ -195,18 +195,6 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 }
 
 
-void PrintLog(Zeroconf::LogLevel level, const std::string& message) {
-    switch (level) {
-        case Zeroconf::LogLevel::Error:
-            std::cout << "E: " << message << std::endl;
-            break;
-        case Zeroconf::LogLevel::Warning:
-            std::cout << "W: " << message << std::endl;
-            break;
-    }
-}
-
-
 // --- CONSTRUCTOR ---
 NymphCastClient::NymphCastClient() {
 	// Initialise the remote client instance.
@@ -215,8 +203,6 @@ NymphCastClient::NymphCastClient() {
 	
 	appMessageFunction = 0;
 	statusUpdateFunction = 0;
-	
-	Zeroconf::SetLogCallback(PrintLog);
 }
 
 
@@ -288,65 +274,27 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 }
 
 
-void* get_in_addr(sockaddr_storage* sa) {
-	if (sa->ss_family == AF_INET) {
-		return &reinterpret_cast<sockaddr_in*>(sa)->sin_addr;
-	}
-
-	if (sa->ss_family == AF_INET6) {
-		return &reinterpret_cast<sockaddr_in6*>(sa)->sin6_addr;
-	}
-
-	return nullptr;
-}
-
-
 // --- FIND SERVERS ---
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
-	// Perform an mDNS/DNS-SD service discovery run for NymphCast receivers.
-	std::vector<Zeroconf::mdns_responce> items;
-	std::vector<Zeroconf::mdns_responce> items1;
-	bool res = Zeroconf::Resolve("_nymphcast._tcp.local", 3, &items);
-	bool res1 = Zeroconf::Resolve("_nymphcast._tcp", 3, &items1);
-	
+	// Perform a NyanSD service discovery run for NymphCast receivers.
+	std::vector<NYSD_query> queries;
+	std::vector<NYSD_service> responses;
 	std::vector<NymphCastRemote> remotes;
-	if (!res && !res1) {
-		std::cout << "Error resolving DNS-SD request." << std::endl;
-		return remotes;
-	}
 	
-	std::cout << "Found " << items.size() << " remotes matching _nymphcast._tcp.local" << std::endl;
-	std::cout << "Found " << items1.size() << " remotes matching _nymphcast._tcp" << std::endl;
+	NYSD_query query;
+	query.protocol = NYSD_PROTOCOL_ALL;
+	query.filter = "nymphcast";
+	queries.push_back(query);
+	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
 	
-	// Extract the server name, IP address and port.
-	if (items.empty() && items1.empty()) { return remotes; }
-	for (int i = 0; i < items.size(); ++i) {
+	// Process responses.
+	for (int i = 0; i < responses.size(); ++i) {
 		NymphCastRemote rm;
+		rm.ipv4 = NyanSD::ipv4_uintToString(responses[i].ipv4);
+		rm.ipv6 = responses[i].ipv6;
+		rm.name = responses[i].hostname;
+		rm.port = responses[i].port;
 		
-		char buffer[INET6_ADDRSTRLEN + 1] = {0};
-        inet_ntop(items[i].peer.ss_family, get_in_addr(&(items[i].peer)), buffer, INET6_ADDRSTRLEN);
-		
-		std::cout << "Peer: " << buffer << std::endl;
-		rm.ipv4 = std::string(buffer);
-		rm.ipv6 = "";
-		
-		rm.name = items[i].records[0].name;
-		rm.port = 4004;
-		remotes.push_back(rm);
-	}
-	
-	for (int i = 0; i < items1.size(); ++i) {
-		NymphCastRemote rm;
-		
-		char buffer[INET6_ADDRSTRLEN + 1] = {0};
-        inet_ntop(items1[i].peer.ss_family, get_in_addr(&(items1[i].peer)), buffer, INET6_ADDRSTRLEN);
-		
-		std::cout << "Peer: " << buffer << std::endl;
-		rm.ipv4 = std::string(buffer);
-		rm.ipv6 = "";
-		
-		rm.name = items1[i].records[0].name;
-		rm.port = 4004;
 		remotes.push_back(rm);
 	}
 	
