@@ -64,6 +64,8 @@ using namespace Poco;
 
 #include "INIReader.h"
 
+#include "nyansd.h"
+
 
 // Global objects.
 Condition gCon;
@@ -1747,6 +1749,16 @@ int main(int argc, char** argv) {
 	// Start server on port 4004.
 	NymphRemoteClient::start(4004);
 	
+	// Start NyanSD announcement server.
+	NYSD_service sv;
+	sv.port = 4004;
+	sv.protocol = NYSD_PROTOCOL_TCP;
+	sv.service = "nymphcast";
+	NyanSD::addService(sv);
+	
+	std::cout << "Starting NyanSD on port 4004 UDP..." << std::endl;
+	NyanSD::startListener(4004);
+	
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
 	
@@ -1784,6 +1796,7 @@ int main(int argc, char** argv) {
 	avThread.join();
 	SdlRenderer::quit();
 	
+	NyanSD::stopListener();
 	NymphRemoteClient::shutdown();
 	
 	// Wait before exiting, giving threads time to exit.
