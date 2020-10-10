@@ -13,3 +13,4 @@ src/server/wallpapers/*.jpg
 src/server/wallpapers/*.png
 src/server/wallpapers/*.jpeg
 *.class
+*.txt
