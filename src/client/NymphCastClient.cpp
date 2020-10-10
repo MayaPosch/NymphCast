@@ -52,108 +52,12 @@ void signal_handler(int signal) {
 }
 
 
-/* // Callback to register with the server. 
-// This callback will be called once by the server and then discarded. This is
-// useful for one-off events, but can also be used for callbacks during the 
-// life-time of the client.
-void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Media Read callback function called.\n";
-	
-	// Call the 'session_data' remote function with new data buffer.
-	// Read N bytes from the file.
-	// TODO: receive desired block size here from remote?
-	
-	// FIXME: we're using 2M blocks for now. This should be made adjustable by the remote.
-	uint32_t bufLen = 2048 * 1024;
-	char* buffer = new char[bufLen];
-	source.read(buffer, bufLen);
-	
-	// Check characters read.
-	NymphBoolean* fileEof = new NymphBoolean(false);
-	if (source.gcount() < bufLen) { fileEof->setValue(true); }
-	
-	std::string block(buffer, source.gcount());
-	
-	// Debug
-	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
-	
-	std::vector<NymphType*> values;
-	values.push_back(new NymphBlob(block));
-	values.push_back(fileEof);
-	NymphType* returnValue = 0;
-	std::string result;
-	if (!NymphRemoteServer::callMethod(handle, "session_data", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-}
-
-
-void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Client callback function called.\n";
-	
-	// Remove the callbacks.
-	NymphRemoteServer::removeCallback("MediaReadCallback");
-	NymphRemoteServer::removeCallback("MediaStopCallback");
-	NymphRemoteServer::removeCallback("MediaSeekCallback");
-	
-	// End NymphCast session and disconnect from server.
-	std::vector<NymphType*> values;
-	NymphType* returnValue = 0;
-	std::string result;
-	if (!NymphRemoteServer::callMethod(handle, "session_end", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	returnValue = 0;
-	if (!NymphRemoteServer::callMethod(handle, "disconnect", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	if (returnValue->type() != NYMPH_BOOL) {
-		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	// Signal the condition variable to terminate the application.
-	cnd.signal();
-}
-
-
-void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
-	//
-} */
-
-
 int main(int argc, char *argv[]) {	
 	// Parse the command line arguments.
 	Sarge sarge;
 	sarge.setArgument("h", "help", "Get this help message.", false);
 	sarge.setArgument("v", "version", "Output the NymphCast client version and exit.", false);
+	sarge.setArgument("r", "remotes", "Display online NymphCast receivers and quit.", false);
 	sarge.setArgument("f", "file", "Name of file to stream to remote receiver.", true);
 	sarge.setArgument("i", "ip", "IP address of the target NymphCast receiver.", true);
 	sarge.setDescription("NymphCast client application. For use with NymphCast servers. More details: http://nyanko.ws/nymphcast.php.");
@@ -176,6 +80,29 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	
+	// We need access to the NymphCast client library from this point.
+	NymphCastClient client;
+	
+	if (sarge.exists("remotes")) {
+		std::cout << "Scanning for online remote receivers..." << std::endl;
+		
+		std::vector remotes = client.findServers();
+		if (remotes.size() < 1) {
+			std::cout << "No remotes found." << std::endl;
+			return 0;
+		}
+		
+		// Print out list of remotes.
+		std::cout << "Found remotes:" << std::endl;
+		for (int i = 0; i < remotes.size(); ++i) {
+			std::cout << i << ". " << remotes[i].name << " <" << remotes[i].ipv4 << ":" 
+									<< remotes[i].port << "> (" << remotes[i].ipv6 << ")" 
+									<< std::endl;
+		}
+		
+		return 0;
+	}
+	
 	// Allow the IP address of the server to be passed on the command line.	
 	// Try to open the file.	
 	std::string filename;
@@ -191,7 +118,6 @@ int main(int argc, char *argv[]) {
 	// TODO: set unique client name.
 	
 	// Set up client library.
-	NymphCastClient client;
 	uint32_t handle = 0;
 	if (!client.connectServer(serverip, handle)) {
 		std::cerr << "Failed to connect to server..." << std::endl;
