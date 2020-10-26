@@ -489,12 +489,18 @@ int StreamHandler::read_thread(void *arg) {
         av_dict_set(&format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
         scan_all_pmts_set = 1;
     }
+	
+	// Open the input file or stream.
     err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
     if (err < 0) {
         print_error(is->filename, err);
         ret = -1;
         goto fail;
     }
+	
+	// Log stream info.
+	av_log(NULL, AV_LOG_INFO, "Format %s, duration %lld us", ic->iformat->long_name, ic->duration);
+	
     if (scan_all_pmts_set)
         av_dict_set(&format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE);
 
@@ -513,30 +519,32 @@ int StreamHandler::read_thread(void *arg) {
         AVDictionary **opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
+		// Extract info on the individual audio/video & subtitle streams.
         err = avformat_find_stream_info(ic, opts);
 
-        for (i = 0; i < orig_nb_streams; i++)
-            av_dict_free(&opts[i]);
+        for (i = 0; i < orig_nb_streams; i++) { av_dict_free(&opts[i]); }
         av_freep(&opts);
 
         if (err < 0) {
-            av_log(NULL, AV_LOG_WARNING,
-                   "%s: could not find codec parameters\n", is->filename);
+            av_log(NULL, AV_LOG_WARNING, "%s: could not find codec parameters\n", is->filename);
             ret = -1;
             goto fail;
         }
     }
 
-    if (ic->pb)
+    if (ic->pb) {
         ic->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use avio_feof() to test for the end
+	}
 
-    if (seek_by_bytes < 0)
+    if (seek_by_bytes < 0) {
         seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", ic->iformat->name);
+	}
 
     is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
-    if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0)))
+    if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0))) {
         window_title = av_asprintf("%s - %s", t->value, input_filename);
+	}
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
@@ -555,8 +563,9 @@ int StreamHandler::read_thread(void *arg) {
 
     is->realtime = is_realtime(ic);
 
-    if (show_status)
+    if (show_status) {
         av_dump_format(ic, 0, is->filename, 0);
+	}
 
     for (i = 0; i < ic->nb_streams; i++) {
         AVStream *st = ic->streams[i];
@@ -573,10 +582,12 @@ int StreamHandler::read_thread(void *arg) {
         }
     }
 
-    if (!video_disable)
-        st_index[AVMEDIA_TYPE_VIDEO] =
-            av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
-                                st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
+    if (!video_disable) {
+        st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream(ic, 
+															AVMEDIA_TYPE_VIDEO,
+															st_index[AVMEDIA_TYPE_VIDEO], 
+															-1, NULL, 0);
+	}
 								
     if (!audio_disable) {
 		av_log(NULL, AV_LOG_WARNING, "Finding audio stream...\n");
@@ -621,7 +632,7 @@ int StreamHandler::read_thread(void *arg) {
     }
 
     /* open the streams */
-	av_log(NULL, AV_LOG_WARNING, "A: %d, V: %d, S: %d\n", st_index[AVMEDIA_TYPE_AUDIO],
+	av_log(NULL, AV_LOG_INFO, "A: %d, V: %d, S: %d\n", st_index[AVMEDIA_TYPE_AUDIO],
 													st_index[AVMEDIA_TYPE_VIDEO],
 													st_index[AVMEDIA_TYPE_SUBTITLE]);
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
@@ -634,8 +645,10 @@ int StreamHandler::read_thread(void *arg) {
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
         ret = StreamHandler::stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
     }
-    if (is->show_mode == SHOW_MODE_NONE)
+	
+    if (is->show_mode == SHOW_MODE_NONE) {
         is->show_mode = ret >= 0 ? SHOW_MODE_VIDEO : SHOW_MODE_RDFT;
+	}
 
     if (st_index[AVMEDIA_TYPE_SUBTITLE] >= 0) {
         StreamHandler::stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
@@ -648,22 +661,19 @@ int StreamHandler::read_thread(void *arg) {
         goto fail;
     }
 
-    if (infinite_buffer < 0 && is->realtime)
-        infinite_buffer = 1;
+    if (infinite_buffer < 0 && is->realtime) { infinite_buffer = 1; }
 
+	// Start the main processing loop.
 	run = true;
 	while (run) {
-        if (is->abort_request)
-            break;
+        if (is->abort_request) { break; }
         if (is->paused != is->last_paused) {
             is->last_paused = is->paused;
-            if (is->paused)
-                is->read_pause_return = av_read_pause(ic);
-            else
-                av_read_play(ic);
+            if (is->paused) { is->read_pause_return = av_read_pause(ic); }
+            else { av_read_play(ic); }
         }
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
-        if (is->paused &&
+        if (is->paused && 
                 (!strcmp(ic->iformat->name, "rtsp") ||
                  (ic->pb && !strncmp(input_filename, "mmsh:", 5)))) {
             /* wait 10 ms to avoid trying to get another packet */
@@ -748,7 +758,10 @@ int StreamHandler::read_thread(void *arg) {
 		
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
-            if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
+			// EOF or error. Just terminate.
+			break;
+			
+            /* if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
                 if (is->video_stream >= 0)
                     PacketQueueC::packet_queue_put_nullpacket(&is->videoq, is->video_stream);
                 if (is->audio_stream >= 0)
@@ -762,7 +775,7 @@ int StreamHandler::read_thread(void *arg) {
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
-            continue;
+            continue; */
         } else {
             is->eof = 0;
         }
@@ -778,12 +791,15 @@ int StreamHandler::read_thread(void *arg) {
 				
         if (pkt->stream_index == is->audio_stream && pkt_in_play_range) {
             PacketQueueC::packet_queue_put(&is->audioq, pkt);
-        } else if (pkt->stream_index == is->video_stream && pkt_in_play_range
+        } 
+		else if (pkt->stream_index == is->video_stream && pkt_in_play_range
                    && !(is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
             PacketQueueC::packet_queue_put(&is->videoq, pkt);
-        } else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
+        } 
+		else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
             PacketQueueC::packet_queue_put(&is->subtitleq, pkt);
-        } else {
+        } 
+		else {
             av_packet_unref(pkt);
         }
     }

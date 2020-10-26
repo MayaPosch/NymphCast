@@ -1,5 +1,5 @@
 /*
-	av_io.cpp - Implementation file for the static AV_IO class.
+	ffplay.cpp - Implementation file for the static AV_IO class.
 	
 	Revision 0
 	
@@ -559,7 +559,7 @@ void Ffplay::run() {
 												 0,				  // Write callback function. 
 												 media_seek);
 		 
-		// Allocate the AVFormatContext.
+		// Allocate the AVFormatContext. This holds information about the container format.
 		formatContext = avformat_alloc_context();
 		formatContext->pb = ioContext;	// Set the IOContext.
 		//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
