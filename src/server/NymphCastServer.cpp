@@ -101,7 +101,7 @@ int fast = 0;
 int genpts = 0;
 int lowres = 0;
 int decoder_reorder_pts = -1;
-int autoexit;
+int autoexit = 1;
 int exit_on_keydown;
 int exit_on_mousedown;
 int loop = 1;

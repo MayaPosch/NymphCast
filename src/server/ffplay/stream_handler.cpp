@@ -758,10 +758,8 @@ int StreamHandler::read_thread(void *arg) {
 		
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
-			// EOF or error. Just terminate.
-			break;
-			
-            /* if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
+			// EOF or error. 
+            if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
                 if (is->video_stream >= 0)
                     PacketQueueC::packet_queue_put_nullpacket(&is->videoq, is->video_stream);
                 if (is->audio_stream >= 0)
@@ -775,7 +773,7 @@ int StreamHandler::read_thread(void *arg) {
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
-            continue; */
+            continue;
         } else {
             is->eof = 0;
         }
@@ -805,23 +803,25 @@ int StreamHandler::read_thread(void *arg) {
     }
 
     ret = 0;
- fail:
-    if (ic && !is->ic)
-        avformat_close_input(&ic);
+fail:
+	if (ic && !is->ic) {
+		av_log(NULL, AV_LOG_INFO, "Goto 'fail': avformat_close_input()...\n");
+		avformat_close_input(&ic);
+	}
 
-    if (ret != 0) {
-        SDL_Event event;
-
-        event.type = FF_QUIT_EVENT;
-        event.user.data1 = is;
-        SDL_PushEvent(&event);
-    }
+    // We always exit the player on EoF or error.
+    SDL_Event event;
+	event.type = FF_QUIT_EVENT;
+	event.user.data1 = is;
+	SDL_PushEvent(&event);
+	
+	av_log(NULL, AV_LOG_INFO, "Goto 'fail'. Exiting main loop...\n");
 	
 	AudioRenderer::quit();
 	VideoRenderer::quit();
 	
-    SDL_DestroyMutex(wait_mutex);
-    return 0;
+	SDL_DestroyMutex(wait_mutex);
+	return 0;
 }
 
 VideoState* StreamHandler::stream_open(const char *filename, AVInputFormat *iformat, 	
