@@ -21,7 +21,8 @@ endif
 endif
 
 ifdef ANDROID
-GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
+#GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
+GCC := armv7a-linux-androideabi21-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
