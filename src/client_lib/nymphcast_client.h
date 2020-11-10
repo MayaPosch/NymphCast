@@ -75,6 +75,7 @@ public:
 	void setStatusUpdateCallback(StatusUpdateFunction function);
 	std::string getApplicationList(uint32_t handle);
 	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);
+	std::string loadResource(uint32_t handle, std::string appId, std::string name);
 
 	std::vector<NymphCastRemote> findServers();
 	bool connectServer(std::string ip, uint32_t &handle);

@@ -274,6 +274,29 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 }
 
 
+// --- LOAD RESOURCE ---
+// Obtain the named file data for either the appId or global if left empty.
+std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, std::string name) {
+	// string app_loadResource(string appId, string name)
+	std::vector<NymphType*> values;
+	values.push_back(new NymphString(appId));
+	values.push_back(new NymphString(name));
+	NymphType* returnValue = 0;
+	std::string result;
+	if (!NymphRemoteServer::callMethod(handle, "app_loadResource", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		return std::string();
+	}
+	
+	if (returnValue->type() != NYMPH_STRING) {
+		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+		return std::string();
+	}
+	
+	return ((NymphString*) returnValue)->getValue();
+}
+
+
 // --- FIND SERVERS ---
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform a NyanSD service discovery run for NymphCast receivers.
