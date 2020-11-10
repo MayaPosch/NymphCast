@@ -18,37 +18,40 @@ public:
 	~MainWindow();
 	
 private slots:
+    // Menu
 	void connectServer();
 	void connectServerIP(std::string ip);
 	void disconnectServer();
 	void about();
 	void quit();
-	
 	void castFile();
 	void castUrl();
 	
+    // Player tab
 	void addFile();
-	void removeFile();
-	
+	void removeFile();	
 	void play();
 	void stop();
 	void pause();
 	void forward();
 	void rewind();
 	void seek();
-	
 	void mute();
 	void adjustVolume(int value);
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
 	
+    // Remotes tab.
 	void remoteListRefresh();
 	void remoteConnectSelected();
 	void remoteDisconnectSelected();
 	
-	void appsListRefresh();
-	
+    // Apps tab.
+	void appsListRefresh();	
 	void sendCommand();
+    
+    // Tabs (GUI) tab.
+    void appsHome();
 	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);

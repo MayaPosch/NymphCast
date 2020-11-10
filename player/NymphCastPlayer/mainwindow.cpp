@@ -57,26 +57,30 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->actionFile, SIGNAL(triggered()), this, SLOT(castFile()));
 	connect(ui->actionURL, SIGNAL(triggered()), this, SLOT(castUrl()));
 	
-	// UI
+	// Tabs
+    // Player tab.
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
-	connect(ui->refreshRemotesToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
-	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteConnectSelected()));
-	connect(ui->disconnectToolButton, SIGNAL(clicked()), this, SLOT(remoteDisconnectSelected()));
-	
-	connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
+    connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
 	connect(ui->endToolButton, SIGNAL(clicked()), this, SLOT(forward()));
 	connect(ui->playToolButton, SIGNAL(clicked()), this, SLOT(play()));
 	connect(ui->stopToolButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(ui->pauseToolButton, SIGNAL(clicked()), this, SLOT(pause()));
-	
-	connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
+    connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
+    
+    // Remotes tab.
+	connect(ui->refreshRemotesToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
+	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteConnectSelected()));
+	connect(ui->disconnectToolButton, SIGNAL(clicked()), this, SLOT(remoteDisconnectSelected()));
 	
+	// Apps tab.
 	connect(ui->updateRemoteAppsButton, SIGNAL(clicked()), this, SLOT(appsListRefresh()));
-	
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
+    
+    // Apps (GUI) tab.
+    connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
 	
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
@@ -130,7 +134,7 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 
 
 // --- SET PLAYING ---
-void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
+void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 	if (status.playing) {
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
@@ -408,7 +412,7 @@ void MainWindow::appsListRefresh() {
 	
 	// Update local list.
 	ui->remoteAppsComboBox->clear();
-	QStringList appItems = (QString::fromStdString(appList)).split("\n", QString::SkipEmptyParts);
+	QStringList appItems = (QString::fromStdString(appList)).split("\n", Qt::SkipEmptyParts);
 	ui->remoteAppsComboBox->addItems(appItems);
 }
 
@@ -436,6 +440,20 @@ void MainWindow::sendCommand() {
 	// Append the response to the output field.
 	ui->remoteAppTextEdit->appendPlainText(QString::fromStdString(response));
 	ui->remoteAppTextEdit->appendPlainText("\n");
+}
+
+
+// --- APPS HOME ---
+void MainWindow::appsHome() {
+    if (!connected) { return; }
+    
+    // Request the starting Apps page from the remote.
+    QString page = QString::fromStdString(client.loadResource(serverHandle, std::string(), 
+                                                                               "index.html"));
+    
+    
+    // Set the received HTML into the target widget.
+    ui->appTabGuiTextBrowser->setHtml(page);
 }
 
 

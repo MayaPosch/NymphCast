@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="appGuiTab">
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -341,6 +341,27 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Apps (GUI)</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QTextBrowser" name="appTabGuiTextBrowser"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="appTabGuiHomeButton">
+            <property name="text">
+             <string>Home</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="appsTab">
        <attribute name="title">
         <string>Apps</string>
@@ -384,16 +405,6 @@
              </item>
              <item>
               <widget class="QLineEdit" name="remoteAppLineEdit"/>
-             </item>
-             <item>
-              <widget class="QTextBrowser" name="textBrowser">
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-               <property name="openLinks">
-                <bool>false</bool>
-               </property>
-              </widget>
              </item>
             </layout>
            </item>
