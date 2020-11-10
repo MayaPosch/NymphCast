@@ -25,6 +25,7 @@
 #include <chrono>
 #include <filesystem> 		// C++17
 #include <set>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
@@ -1414,6 +1415,82 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- APP LOAD RESOURCE ---
+NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Validate the application ID, try to find running instance, else launch new app instance.
+	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string name = ((NymphString*) msg->parameters()[1])->getValue();
+	
+	// Find the application details.
+	std::string result = "";
+	
+	if (appId.empty()) {
+		// Use root folder.
+		// First check that the name doesn't contain a '/' or '\' as this might be used to create
+		// a relative path that breaks security (hierarchy travel).
+		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
+			std::cerr << "File name contained illegal directory separator character." << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		fs::path f = name;
+		if (!fs::exists(f)) {
+			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		// Read in file data.
+		std::ifstream fstr(name);
+		fstr.seekg(0, std::ios::end);
+		size_t size = fstr.tellg();
+		result.reserve(size);
+		fstr.seekg(0);
+		fstr.read(&result[0], size);
+	}
+	else {
+		// Use App folder.
+		// First check that the app really exists, as a safety feature. This should prevent
+		// relative path that lead up the hierarchy.
+		NymphCastApp app = NymphCastApps::findApp(appId);
+		if (app.id.empty()) {
+			std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		// Next check that the name doesn't contain a '/' or '\' as this might be used to create
+		// a relative path that breaks security (hierarchy travel).
+		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
+			std::cerr << "File name contained illegal directory separator character." << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		fs::path f = appId + "/" + name;
+		if (!fs::exists(f)) {
+			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
+			returnMsg->setResultValue(new NymphString(result));
+			return returnMsg;
+		}
+		
+		// Read in file data.
+		std::ifstream fstr(appId + "/" + name);
+		fstr.seekg(0, std::ios::end);
+		size_t size = fstr.tellg();
+		result.reserve(size);
+		fstr.seekg(0);
+		fstr.read(&result[0], size);
+	}
+	
+	returnMsg->setResultValue(new NymphString(result));
+	return returnMsg;
+}
+
+
 // --- LOG FUNCTION ---
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -1670,6 +1747,20 @@ int main(int argc, char** argv) {
 	NymphMethod appSendFunction("app_send", parameters, NYMPH_STRING);
 	appSendFunction.setCallback(app_send);
 	NymphRemoteClient::registerMethod("app_send", appSendFunction);	
+	
+	// AppLoadResource
+	// string app_loadResource(string appId, string resource)
+	// appID	: ID of the app, or blank for the root folder.
+	// resource	: Name of the resource file.
+	// Returns the contents of the requested file, either from an App folder, or (if AppId is empty)
+	// from the Apps root folder.
+	// Return string is empty if the requested resource could not be found.
+	parameters.clear();
+	parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_STRING);
+	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_STRING);
+	appLoadResourceFunction.setCallback(app_loadResource);
+	NymphRemoteClient::registerMethod("app_loadResource", appLoadResourceFunction);
 	
 	
 	// Register client callbacks
