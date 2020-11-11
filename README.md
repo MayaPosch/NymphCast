@@ -1,4 +1,4 @@
-[Repository Structure](#id-rs) &middot; [Getting Started](#id-gs) &middot; [Building From Source](#id-bfs) &middot; [Developer's Guide](#id-dg) &middot; [SDK](#id-sdk) &middot; [License](#id-lic)
+[Repository Structure](#id-rs) &middot; [Getting Started](#id-gs) &middot; [Building From Source](#id-bfs) &middot; [Developer's Guide](#id-dg) &middot; [SDK](#id-sdk) &middot; [License](#id-lic) &middot; [Donate](#id-donate)
 
 # What is NymphCast? #
 
@@ -191,6 +191,9 @@ After this the only files needed by a client project are this library file and t
 ## License ##
 
 NymphCast is a fully open source project. The full, BSD-licensed source code can be found at its project page on Github, along with binary releases.
+
+<a id="id-donate"></a>
+## Donate ##
 
 This also means that NymphCast is fully free. Its development therefore relies on your support. If you appreciate the project, your contribution or [donation](http://nyanko.ws/nymphcast.php) can support the continued development.
 
