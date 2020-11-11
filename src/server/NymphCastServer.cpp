@@ -1424,7 +1424,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 	std::string name = ((NymphString*) msg->parameters()[1])->getValue();
 	
 	// Find the application details.
-	std::string result = "";
+	std::string result;
 	
 	if (appId.empty()) {
 		// Use root folder.
@@ -1436,7 +1436,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 			return returnMsg;
 		}
 		
-		fs::path f = name;
+		fs::path f = appsFolder + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
 			returnMsg->setResultValue(new NymphString(result));
@@ -1444,12 +1444,14 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Read in file data.
-		std::ifstream fstr(name);
+		std::cout << "Reading file: " << f.string() << std::endl;
+		std::ifstream fstr(f.string());
 		fstr.seekg(0, std::ios::end);
 		size_t size = fstr.tellg();
-		result.reserve(size);
+		std::string buffer(size, ' ');
 		fstr.seekg(0);
-		fstr.read(&result[0], size);
+		fstr.read(&buffer[0], size);
+		result.swap(buffer);
 	}
 	else {
 		// Use App folder.
@@ -1470,7 +1472,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 			return returnMsg;
 		}
 		
-		fs::path f = appId + "/" + name;
+		fs::path f = appsFolder + appId + "/" + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
 			returnMsg->setResultValue(new NymphString(result));
@@ -1478,12 +1480,14 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Read in file data.
-		std::ifstream fstr(appId + "/" + name);
+		std::cout << "Reading file: " << f.string() << std::endl;
+		std::ifstream fstr(f.string());
 		fstr.seekg(0, std::ios::end);
 		size_t size = fstr.tellg();
-		result.reserve(size);
+		std::string buffer(size, ' ');
 		fstr.seekg(0);
-		fstr.read(&result[0], size);
+		fstr.read(&buffer[0], size);
+		result.swap(buffer);
 	}
 	
 	returnMsg->setResultValue(new NymphString(result));
