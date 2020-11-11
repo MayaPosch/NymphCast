@@ -28,10 +28,12 @@ CONFIG += c++11
 #CONFIG += console
 
 SOURCES += \
+        appbrowser.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
+        appbrowser.h \
         mainwindow.h
 
 FORMS += \

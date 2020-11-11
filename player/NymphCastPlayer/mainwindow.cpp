@@ -13,6 +13,12 @@
 #include <QSettings>
 #include <QStringList>
 #include <QStandardPaths>
+#include <QDir>
+
+
+// Static declarations
+uint32_t MainWindow::serverHandle;
+NymphCastClient MainWindow::client;
 
 	
 Q_DECLARE_METATYPE(NymphPlaybackStatus);
@@ -81,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Apps (GUI) tab.
     connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
+    connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
 	
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
@@ -142,9 +149,9 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		
 		// Set position & duration.
 		QTime position(0, 0);
-		position.addSecs((int64_t) status.position);
+		position = position.addSecs((int64_t) status.position);
 		QTime duration(0, 0);
-		duration.addSecs(status.duration);
+		duration = duration.addSecs(status.duration);
 		ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
 														duration.toString("hh:mm:ss"));
 														
@@ -449,11 +456,28 @@ void MainWindow::appsHome() {
     
     // Request the starting Apps page from the remote.
     QString page = QString::fromStdString(client.loadResource(serverHandle, std::string(), 
-                                                                               "index.html"));
+                                                                               "apps.html"));
     
     
     // Set the received HTML into the target widget.
     ui->appTabGuiTextBrowser->setHtml(page);
+}
+
+
+// --- ANCHOR CLICKED ---
+void MainWindow::anchorClicked(const QUrl &link) {
+    // Parse URL string for the command desired.
+    QStringList list = link.path().split("/");
+    
+    // Process command.
+    if (list.size() < 1) { return; }
+    
+    if (list[0] == "start") {
+        // Start an app here, which should be listed in the second slot.
+        if (list.size() < 2) { return; }
+        
+        // 
+    }
 }
 
 

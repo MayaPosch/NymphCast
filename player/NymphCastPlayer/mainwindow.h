@@ -14,6 +14,9 @@ class MainWindow : public QMainWindow {
 	Q_OBJECT
 	
 public:
+    static uint32_t serverHandle;
+	static NymphCastClient client;
+    
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 	
@@ -52,6 +55,8 @@ private slots:
     
     // Tabs (GUI) tab.
     void appsHome();
+    
+    void anchorClicked(const QUrl &link);
 	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
@@ -62,8 +67,6 @@ private:
 	bool connected = false;
 	bool muted = false;
 	bool playingTrack = false;
-	uint32_t serverHandle;
-	NymphCastClient client;
 	
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
 };
