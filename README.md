@@ -16,6 +16,8 @@ Client-side core functionality is provided through the NymphCast library.
 
 The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
 
+![](art/NymphCastPlayer_screenshot_player_tab_alpha3.jpg) ![](art/NymphCastPlayer_screenshot_remotes_tab_alpha3.jpg)![](art/NymphCastPlayer_screenshot_apps_index_cropped_alpha3.jpg)
+
 ### **Server Platforms** ###
 
 The server targets SBCs, but like the client (and SDK) should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency:
