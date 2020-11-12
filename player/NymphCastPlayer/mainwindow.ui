@@ -349,11 +349,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
-           <widget class="AppBrowser" name="appTabGuiTextBrowser">
-            <property name="openLinks">
-             <bool>false</bool>
-            </property>
-           </widget>
+           <widget class="QLiteHtmlWidget" name="appTabGuiTextBrowser"/>
           </item>
           <item>
            <widget class="QPushButton" name="appTabGuiHomeButton">
@@ -515,9 +511,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>AppBrowser</class>
-   <extends>QTextBrowser</extends>
-   <header>appbrowser.h</header>
+   <class>QLiteHtmlWidget</class>
+   <extends>QPlainTextEdit</extends>
+   <header>qlitehtmlwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

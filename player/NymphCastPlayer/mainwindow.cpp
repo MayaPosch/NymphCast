@@ -87,7 +87,11 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Apps (GUI) tab.
     connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
-    connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
+    //connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
+    connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
+    
+    using namespace std::placeholders; 
+    ui->appTabGuiTextBrowser->setResourceHandler(std::bind(&MainWindow::loadResource, this, _1));
 	
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
@@ -476,8 +480,42 @@ void MainWindow::anchorClicked(const QUrl &link) {
         // Start an app here, which should be listed in the second slot.
         if (list.size() < 2) { return; }
         
-        // 
+        // Try to load the index page for the specified app.
+        QString page = QString::fromStdString(client.loadResource(serverHandle, 
+                                                                  list[1].toStdString(), 
+                                                                   "index.html"));
+        
+        if (page.isEmpty()) { 
+            QMessageBox::warning(this, tr("Failed to start"), tr("The selected app could not be started."));
+            return; 
+        }
+        
+        // Set the received HTML into the target widget.
+        ui->appTabGuiTextBrowser->setHtml(page);
     }
+    else {
+        // Assume the first entry contains an app name, followed by commands.
+        // TODO: validate app names here.
+    }
+}
+
+
+// --- LOAD RESOURCE ---
+QByteArray MainWindow::loadResource(const QUrl &name) {
+    // Parse the URL for the desired resource.
+    QFileInfo dir(name.path());
+    QString qAppId = dir.path();
+    std::string filename = name.fileName().toStdString();
+    
+    // FIXME: Hack to deal with weird QLiteHtml behaviour with relative URLs.
+    if (qAppId.startsWith("/")) {
+        qAppId.remove(0, 1);
+    }
+    
+    std::string appId = qAppId.toStdString();
+    
+    QByteArray page = QByteArray::fromStdString(client.loadResource(serverHandle, appId, filename));
+    return page;
 }
 
 

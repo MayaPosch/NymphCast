@@ -68,6 +68,7 @@ private:
 	bool muted = false;
 	bool playingTrack = false;
 	
+    QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
 };
 
