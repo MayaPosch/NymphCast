@@ -89,6 +89,7 @@ SOURCES += \
 HEADERS += \
         appbrowser.h \
         container_qpainter.h \
+        container_qpainter_p.h \
         litehtml/include/litehtml.h \
         litehtml/include/litehtml/attributes.h \
         litehtml/include/litehtml/background.h \
@@ -156,6 +157,7 @@ HEADERS += \
         litehtml/src/gumbo/include/gumbo/vector.h \
         litehtml/src/gumbo/visualc/include/strings.h \
         mainwindow.h \
+        qlitehtml_global.h \
         qlitehtmlwidget.h
 
 FORMS += \

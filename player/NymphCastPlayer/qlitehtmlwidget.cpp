@@ -34,8 +34,6 @@
 #include <QStyle>
 #include <QTimer>
 
-#include <litehtml.h>
-
 const int kScrollBarStep = 40;
 
 // TODO copied from litehtml/include/master.css
@@ -370,9 +368,11 @@ display: block;
 class QLiteHtmlWidgetPrivate
 {
 public:
-    litehtml::context context;
+    QString html;
+    DocumentContainerContext context;
     QUrl url;
     DocumentContainer documentContainer;
+    qreal zoomFactor = 1;
 };
 
 QLiteHtmlWidget::QLiteHtmlWidget(QWidget *parent)
@@ -396,7 +396,7 @@ QLiteHtmlWidget::QLiteHtmlWidget(QWidget *parent)
     });
 
     // TODO adapt mastercss to palette (default text & background color)
-    d->context.load_master_stylesheet(mastercss);
+    d->context.setMasterStyleSheet(mastercss);
 }
 
 QLiteHtmlWidget::~QLiteHtmlWidget()
@@ -412,7 +412,7 @@ void QLiteHtmlWidget::setUrl(const QUrl &url)
     const QString urlString = urlWithoutAnchor.toString(QUrl::None);
     const int lastSlash = urlString.lastIndexOf('/');
     const QString baseUrl = lastSlash >= 0 ? urlString.left(lastSlash) : urlString;
-    d->documentContainer.set_base_url(baseUrl.toUtf8().constData());
+    d->documentContainer.setBaseUrl(baseUrl);
 }
 
 QUrl QLiteHtmlWidget::url() const
@@ -422,18 +422,63 @@ QUrl QLiteHtmlWidget::url() const
 
 void QLiteHtmlWidget::setHtml(const QString &content)
 {
-    litehtml::document::ptr doc = litehtml::document::createFromUTF8(content.toUtf8().constData(),
-                                                                     &d->documentContainer,
-                                                                     &d->context);
-    d->documentContainer.setDocument(doc);
+    d->html = content;
+    d->documentContainer.setPaintDevice(viewport());
+    d->documentContainer.setDocument(content.toUtf8(), &d->context);
     verticalScrollBar()->setValue(0);
     horizontalScrollBar()->setValue(0);
     render();
 }
 
+QString QLiteHtmlWidget::html() const
+{
+    return d->html;
+}
+
 QString QLiteHtmlWidget::title() const
 {
     return d->documentContainer.caption();
+}
+
+void QLiteHtmlWidget::setZoomFactor(qreal scale)
+{
+    Q_ASSERT(scale != 0);
+    d->zoomFactor = scale;
+    withFixedTextPosition([this] { render(); });
+}
+
+qreal QLiteHtmlWidget::zoomFactor() const
+{
+    return d->zoomFactor;
+}
+
+bool QLiteHtmlWidget::findText(const QString &text,
+                               QTextDocument::FindFlags flags,
+                               bool incremental,
+                               bool *wrapped)
+{
+    bool success = false;
+    QVector<QRect> oldSelection;
+    QVector<QRect> newSelection;
+    d->documentContainer
+        .findText(text, flags, incremental, wrapped, &success, &oldSelection, &newSelection);
+    // scroll to search result position and/or redraw as necessary
+    QRect newSelectionCombined;
+    for (const QRect &r : newSelection)
+        newSelectionCombined = newSelectionCombined.united(r);
+    QScrollBar *vBar = verticalScrollBar();
+    const int top = newSelectionCombined.top();
+    const int bottom = newSelectionCombined.bottom() - toVirtual(viewport()->size()).height();
+    if (success && top < vBar->value() && vBar->minimum() <= top) {
+        vBar->setValue(top);
+    } else if (success && vBar->value() < bottom && bottom <= vBar->maximum()) {
+        vBar->setValue(bottom);
+    } else {
+        viewport()->update(fromVirtual(newSelectionCombined.translated(-scrollPosition())));
+        for (const QRect &r : oldSelection)
+            viewport()->update(fromVirtual(r.translated(-scrollPosition())));
+    }
+    return success;
 }
 
 void QLiteHtmlWidget::setDefaultFont(const QFont &font)
@@ -449,23 +494,16 @@ QFont QLiteHtmlWidget::defaultFont() const
 
 void QLiteHtmlWidget::scrollToAnchor(const QString &name)
 {
-    if (!d->documentContainer.document())
+    if (!d->documentContainer.hasDocument())
         return;
     horizontalScrollBar()->setValue(0);
     if (name.isEmpty()) {
         verticalScrollBar()->setValue(0);
         return;
     }
-    litehtml::element::ptr element = d->documentContainer.document()->root()->select_one(
-        QString("#%1").arg(name).toStdString());
-    if (!element) {
-        element = d->documentContainer.document()->root()->select_one(
-            QString("[name=%1]").arg(name).toStdString());
-    }
-    if (element) {
-        const int y = element->get_placement().y;
+    const int y = d->documentContainer.anchorY(name);
+    if (y >= 0)
         verticalScrollBar()->setValue(std::min(y, verticalScrollBar()->maximum()));
-    }
 }
 
 void QLiteHtmlWidget::setResourceHandler(const QLiteHtmlWidget::ResourceHandler &handler)
@@ -480,23 +518,22 @@ QString QLiteHtmlWidget::selectedText() const
 
 void QLiteHtmlWidget::paintEvent(QPaintEvent *event)
 {
-    if (!d->documentContainer.document())
+    if (!d->documentContainer.hasDocument())
         return;
     d->documentContainer.setScrollPosition(scrollPosition());
-    const QPoint pos = -scrollPosition();
-    const QRect r = event->rect();
-    const litehtml::position clip = {r.x(), r.y(), r.width(), r.height()};
     QPainter p(viewport());
-    d->documentContainer.document()->draw(reinterpret_cast<litehtml::uint_ptr>(&p),
-                                          pos.x(),
-                                          pos.y(),
-                                          &clip);
+    p.setWorldTransform(QTransform().scale(d->zoomFactor, d->zoomFactor));
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    d->documentContainer.draw(&p, toVirtual(event->rect()));
 }
 
 void QLiteHtmlWidget::resizeEvent(QResizeEvent *event)
 {
-    QAbstractScrollArea::resizeEvent(event);
-    render();
+    withFixedTextPosition([this, event] {
+        QAbstractScrollArea::resizeEvent(event);
+        render();
+    });
 }
 
 void QLiteHtmlWidget::mouseMoveEvent(QMouseEvent *event)
@@ -505,7 +542,7 @@ void QLiteHtmlWidget::mouseMoveEvent(QMouseEvent *event)
     QPoint pos;
     htmlPos(event->pos(), &viewportPos, &pos);
     for (const QRect &r : d->documentContainer.mouseMoveEvent(pos, viewportPos))
-        viewport()->update(r.translated(-scrollPosition()));
+        viewport()->update(fromVirtual(r.translated(-scrollPosition())));
 }
 
 void QLiteHtmlWidget::mousePressEvent(QMouseEvent *event)
@@ -514,7 +551,7 @@ void QLiteHtmlWidget::mousePressEvent(QMouseEvent *event)
     QPoint pos;
     htmlPos(event->pos(), &viewportPos, &pos);
     for (const QRect &r : d->documentContainer.mousePressEvent(pos, viewportPos, event->button()))
-        viewport()->update(r.translated(-scrollPosition()));
+        viewport()->update(fromVirtual(r.translated(-scrollPosition())));
 }
 
 void QLiteHtmlWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -523,7 +560,7 @@ void QLiteHtmlWidget::mouseReleaseEvent(QMouseEvent *event)
     QPoint pos;
     htmlPos(event->pos(), &viewportPos, &pos);
     for (const QRect &r : d->documentContainer.mouseReleaseEvent(pos, viewportPos, event->button()))
-        viewport()->update(r.translated(-scrollPosition()));
+        viewport()->update(fromVirtual(r.translated(-scrollPosition())));
 }
 
 void QLiteHtmlWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -533,7 +570,7 @@ void QLiteHtmlWidget::mouseDoubleClickEvent(QMouseEvent *event)
     htmlPos(event->pos(), &viewportPos, &pos);
     for (const QRect &r :
          d->documentContainer.mouseDoubleClickEvent(pos, viewportPos, event->button())) {
-        viewport()->update(r.translated(-scrollPosition()));
+        viewport()->update(fromVirtual(r.translated(-scrollPosition())));
     }
 }
 
@@ -541,24 +578,43 @@ void QLiteHtmlWidget::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event)
     for (const QRect &r : d->documentContainer.leaveEvent())
-        viewport()->update(r.translated(-scrollPosition()));
+        viewport()->update(fromVirtual(r.translated(-scrollPosition())));
+}
+
+void QLiteHtmlWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+    QPoint viewportPos;
+    QPoint pos;
+    htmlPos(event->pos(), &viewportPos, &pos);
+    emit contextMenuRequested(event->pos(), d->documentContainer.linkAt(pos, viewportPos));
+}
+
+void QLiteHtmlWidget::withFixedTextPosition(const std::function<void()> &action)
+{
+    // remember element to which to scroll after re-rendering
+    QPoint viewportPos;
+    QPoint pos;
+    htmlPos({}, &viewportPos, &pos); // top-left
+    const int y = d->documentContainer.withFixedElementPosition(pos.y(), action);
+    if (y >= 0)
+        verticalScrollBar()->setValue(std::min(y, verticalScrollBar()->maximum()));
 }
 
 void QLiteHtmlWidget::render()
 {
-    if (!d->documentContainer.document())
+    if (!d->documentContainer.hasDocument())
         return;
+    const int fullWidth = width() / d->zoomFactor;
+    const QSize vViewportSize = toVirtual(viewport()->size());
     const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, this);
-    const int w = width() - scrollbarWidth - 2;
-    d->documentContainer.render(w, viewport()->height());
-    horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()
-        ->setRange(0, std::max(0, d->documentContainer.document()->width() - viewport()->width()));
-    verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0,
-                                  std::max(0,
-                                           d->documentContainer.document()->height()
-                                               - viewport()->height()));
+    const int w = fullWidth - scrollbarWidth - 2;
+    d->documentContainer.render(w, vViewportSize.height());
+    // scroll bars reflect virtual/scaled size of html document
+    horizontalScrollBar()->setPageStep(vViewportSize.width());
+    horizontalScrollBar()->setRange(0, std::max(0, d->documentContainer.documentWidth() - w));
+    verticalScrollBar()->setPageStep(vViewportSize.height());
+    verticalScrollBar()
+        ->setRange(0, std::max(0, d->documentContainer.documentHeight() - vViewportSize.height()));
     viewport()->update();
 }
 
@@ -569,6 +625,30 @@ QPoint QLiteHtmlWidget::scrollPosition() const
 
 void QLiteHtmlWidget::htmlPos(const QPoint &pos, QPoint *viewportPos, QPoint *htmlPos) const
 {
-    *viewportPos = viewport()->mapFromParent(pos);
+    *viewportPos = toVirtual(viewport()->mapFromParent(pos));
     *htmlPos = *viewportPos + scrollPosition();
+}
+
+QPoint QLiteHtmlWidget::toVirtual(const QPoint &p) const
+{
+    return {int(p.x() / d->zoomFactor), int(p.y() / d->zoomFactor)};
+}
+
+QSize QLiteHtmlWidget::toVirtual(const QSize &s) const
+{
+    return {int(s.width() / d->zoomFactor), int(s.height() / d->zoomFactor)};
+}
+
+QRect QLiteHtmlWidget::toVirtual(const QRect &r) const
+{
+    return {toVirtual(r.topLeft()), toVirtual(r.size())};
+}
+
+QRect QLiteHtmlWidget::fromVirtual(const QRect &r) const
+{
+    const QPoint tl{int(r.x() * d->zoomFactor), int(r.y() * d->zoomFactor)};
+    // round size up, and add one since the topleft point was rounded down
+    const QSize s{int(r.width() * d->zoomFactor + 0.5) + 1,
+                  int(r.height() * d->zoomFactor + 0.5) + 1};
+    return {tl, s};
 }
