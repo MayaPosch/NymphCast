@@ -195,5 +195,5 @@ NymphCast is a fully open source project. The full, BSD-licensed source code can
 <a id="id-donate"></a>
 ## Donate ##
 
-This also means that NymphCast is fully free. Its development therefore relies on your support. If you appreciate the project, your contribution, [Ko-Fi](https://ko-fi.com/mayaposch) or [donation](http://nyanko.ws/nymphcast.php) can support the continued development.
+NymphCast is fully free, but its development relies on your support. If you appreciate the project, your contribution, [Ko-Fi](https://ko-fi.com/mayaposch) or [donation](http://nyanko.ws/nymphcast.php#donate) will help to support the continued development.
 
