@@ -1432,14 +1432,14 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
 			std::cerr << "File name contained illegal directory separator character." << std::endl;
-			returnMsg->setResultValue(new NymphString(result));
+			returnMsg->setResultValue(new NymphBlob(result));
 			return returnMsg;
 		}
 		
 		fs::path f = appsFolder + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
-			returnMsg->setResultValue(new NymphString(result));
+			returnMsg->setResultValue(new NymphBlob(result));
 			return returnMsg;
 		}
 		
@@ -1460,7 +1460,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		NymphCastApp app = NymphCastApps::findApp(appId);
 		if (app.id.empty()) {
 			std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
-			returnMsg->setResultValue(new NymphString(result));
+			returnMsg->setResultValue(new NymphBlob(result));
 			return returnMsg;
 		}
 		
@@ -1468,14 +1468,14 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
 			std::cerr << "File name contained illegal directory separator character." << std::endl;
-			returnMsg->setResultValue(new NymphString(result));
+			returnMsg->setResultValue(new NymphBlob(result));
 			return returnMsg;
 		}
 		
 		fs::path f = appsFolder + appId + "/" + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
-			returnMsg->setResultValue(new NymphString(result));
+			returnMsg->setResultValue(new NymphBlob(result));
 			return returnMsg;
 		}
 		
@@ -1490,7 +1490,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		result.swap(buffer);
 	}
 	
-	returnMsg->setResultValue(new NymphString(result));
+	returnMsg->setResultValue(new NymphBlob(result));
 	return returnMsg;
 }
 
@@ -1762,7 +1762,7 @@ int main(int argc, char** argv) {
 	parameters.clear();
 	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_STRING);
+	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_BLOB);
 	appLoadResourceFunction.setCallback(app_loadResource);
 	NymphRemoteClient::registerMethod("app_loadResource", appLoadResourceFunction);
 	

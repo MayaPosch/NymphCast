@@ -288,12 +288,12 @@ std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, st
 		return std::string();
 	}
 	
-	if (returnValue->type() != NYMPH_STRING) {
+	if (returnValue->type() != NYMPH_BLOB) {
 		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
 		return std::string();
 	}
 	
-	return ((NymphString*) returnValue)->getValue();
+	return ((NymphBlob*) returnValue)->getValue();
 }
 
 
