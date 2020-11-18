@@ -230,7 +230,7 @@ void MainWindow::disconnectServer() {
 // Refresh the list of remote servers on the network.
 void MainWindow::remoteListRefresh() {
 	// Get the current list.
-	std::vector<NymphCastRemote> remotes = client.findServers();
+	remotes = client.findServers();
 	
 	// Update the list with any changed items.
 	// Target the 'remotesListWidget' widget.
@@ -239,7 +239,8 @@ void MainWindow::remoteListRefresh() {
 		//new QListWidgetItem(remotes[i].ipv4 + " (" + remotes[i].name + ")", ui->remotesListWidget);
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(remotes[i].ipv4 + " (" + remotes[i].name + ")"));
-		newItem->setData(Qt::UserRole, QVariant(QString::fromStdString(remotes[i].ipv4)));
+		//newItem->setData(Qt::UserRole, QVariant(QString::fromStdString(remotes[i].ipv4)));
+		newItem->setData(Qt::UserRole, QVariant(i));
 		ui->remotesListWidget->insertItem(i, newItem);
 	}
 	
@@ -249,12 +250,30 @@ void MainWindow::remoteListRefresh() {
 // --- REMOTE CONNECT SELECTED ---
 // Connect to the selected remote server.
 void MainWindow::remoteConnectSelected() {
-	// TODO: Check that the selected server hasn't already been connected to.
-	QListWidgetItem* item = ui->remotesListWidget->currentItem();
-	QString ip = item->data(Qt::UserRole).toString();
+	if (!connected) { return; }
+	
+	//QListWidgetItem* item = ui->remotesListWidget->currentItem();
+	//QString ip = item->data(Qt::UserRole).toString();
+	QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
+	
+	if (items.size() == 0) { return; }
+	
+	// The first (index 0) remote is connected to as the master remote. Any further remotes are
+	// sent to the master remote as slave remotes.
 	
 	// Connect to the server.
-	connectServerIP(ip.toStdString());
+	//connectServerIP(ip.toStdString());
+	int ref = items[0]->data(Qt::UserRole).toInt();
+	connectServerIP(remotes[ref].ipv4);
+	
+	if (!connected || items.size() < 2) { return; }
+	
+	std::vector<NymphCastRemote> slaves;
+	for (int i = 1; i < items.size(); ++i) {
+		slaves.push_back(remotes[i]);
+	}
+	
+	client.addSlaves(serverHandle, slaves);
 }
 
 

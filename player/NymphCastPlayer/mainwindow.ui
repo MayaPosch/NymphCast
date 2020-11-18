@@ -254,6 +254,13 @@
             </layout>
            </item>
            <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Select 1 remote or a group to connect to.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QListWidget" name="remotesListWidget"/>
            </item>
            <item>
@@ -423,7 +430,7 @@
      <x>0</x>
      <y>0</y>
      <width>360</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

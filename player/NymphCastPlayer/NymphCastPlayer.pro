@@ -25,7 +25,7 @@ ANDROID_ABIS="armeabi-v7a"
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG += c++14
-#CONFIG += console
+CONFIG += console
 
 INCLUDEPATH += litehtml/ litehtml/include litehtml/include/litehtml litehtml/src/gumbo/include \
 				litehtml/src/gumbo/include/gumbo
@@ -163,6 +163,7 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
+LIBS += -LD:\Dev\msys64\mingw64\lib 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 
 win32:LIBS += -lws2_32

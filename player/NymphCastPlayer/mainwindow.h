@@ -64,6 +64,7 @@ signals:
 private:
 	Ui::MainWindow *ui;
 	
+	std::vector<NymphCastRemote> remotes;
 	bool connected = false;
 	bool muted = false;
 	bool playingTrack = false;
