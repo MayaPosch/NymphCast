@@ -860,6 +860,52 @@ NymphMessage* session_meta(int session, NymphMessage* msg, void* data) {
 }
 
 
+struct NymphCastRemote {
+	std::string name;
+	std::string ipv4;
+	std::string ipv6;
+	uint16_t port;
+};
+
+std::vector<NymphCastRemote> slave_remotes;
+
+
+// Client sends list of slave server which this server instance should control.
+// Returns: OK (0), ERROR (1).
+// int session_add_slave(array servers);
+NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Extract the array.
+	std::vector<NymphType*> remotes = ((NymphArray*) msg->parameters()[0])->getValues();
+	for (int i = 0; i < remotes.size(); ++i) {
+		NymphStruct* ns = (NymphStruct*) remotes[i];
+		NymphCastRemote remote;
+		NymphType* value = 0;
+		((NymphStruct*) remotes[i])->getValue("name", value);
+		remote.name = ((NymphString*) value)->getValue();
+		((NymphStruct*) remotes[i])->getValue("ipv4", value);
+		remote.ipv4 = ((NymphString*) value)->getValue();
+		((NymphStruct*) remotes[i])->getValue("ipv6", value);
+		remote.ipv6 = ((NymphString*) value)->getValue();
+	
+		slave_remotes.push_back(remote);
+	}
+	
+	// Validate that each slave remote is accessible and determine latency.
+	for (int i = 0; i < slave_remotes.size(); ++i) {
+		// Establish RPC connection to remote and perform PTP handshake.
+		
+		
+		// Add successful remote to local list.
+		
+	}
+	
+	returnMsg->setResultValue(new NymphUint8(0));
+	return returnMsg;
+}
+
+
 // Client sends a chunk of track data.
 // Returns: OK (0), ERROR (1).
 // int session_data(string buffer, boolean done)
@@ -1604,6 +1650,16 @@ int main(int argc, char** argv) {
 	NymphMethod sessionMetaFunction("session_meta", parameters, NYMPH_UINT8);
 	sessionMetaFunction.setCallback(session_meta);
 	NymphRemoteClient::registerMethod("session_meta", sessionMetaFunction);
+	
+	// Client adds slave NymphCast servers to the session.
+	// Any slaves will follow the master server exactly when it comes to playback.
+	// Returns: OK (0), ERROR (1).
+	// int session_add_slave(array servers);
+	parameters.clear();
+	parameters.push_back(NYMPH_ARRAY);
+	NymphMethod sessionAddSlaveFunction("session_add_slave", parameters, NYMPH_UINT8);
+	sessionAddSlaveFunction.setCallback(session_add_slave);
+	NymphRemoteClient::registerMethod("session_add_slave", sessionAddSlaveFunction);
 	
 	// Client sends a chunk of track data.
 	// Returns: OK (0), ERROR (1).
