@@ -401,6 +401,38 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 }
 
 
+// --- ADD SLAVES ---
+// Send a list of slave remotes which the target remote will mirror its playback status on.
+// This includes audio and video playback.
+bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes) {
+	NymphArray* sArr = new NymphArray;
+	for (int i = 0; i < remotes.size(); ++i) {
+		NymphStruct* remote = new NymphStruct;
+		remote->addPair("name", new NymphString(remotes[i].name));
+		remote->addPair("ipv4", new NymphString(remotes[i].ipv4));
+		remote->addPair("ipv6", new NymphString(remotes[i].ipv6));
+		sArr->addValue(remote);
+	}
+	
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	values.push_back(sArr);
+	if (!NymphRemoteServer::callMethod(handle, "session_add_slave", values, returnValue, result)) {
+		std::cout << "Error calling remote method session_add_slave: " << result << std::endl;
+		return false;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return false;
+	}
+	
+	return true;
+}
+
+
 // --- CAST FILE ---
 bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	/* fs::path filePath(filename);

@@ -81,6 +81,7 @@ public:
 	bool connectServer(std::string ip, uint32_t &handle);
 	bool disconnectServer(uint32_t handle);
 	
+	bool addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes);
 	bool castFile(uint32_t handle, std::string filename);
 	bool castUrl(uint32_t handle, std::string url);
 	
