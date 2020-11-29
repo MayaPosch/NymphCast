@@ -33,6 +33,7 @@ AVPacket flush_pkt;
 #include <vector>
 
 #include "types.h"
+#include "../databuffer.h"
 
 #include "player.h"
 #include "stream_handler.h"
@@ -269,11 +270,15 @@ void show_help_default(const char *opt, const char *arg)
  * @return The number of bytes read into the buffer.
  */
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
-	DataBuffer* db = static_cast<DataBuffer*>(opaque); 
+	uint32_t bytesRead = DataBuffer::read(buf_size, buf);	
+	if (bytesRead == 0) { return AVERROR_EOF; }	
+	return bytesRead;
+	
+	//DataBuffer* db = static_cast<DataBuffer*>(opaque); 
 	
 	// Fill the buffer from the memory buffer.
 	// Return the read length.
-	uint32_t bytesToCopy = 0;
+	/* uint32_t bytesToCopy = 0;
 	
 	// Check if we're headed for a buffer underrun.
 	if (db->buffBytesLeft < buf_size && !db->eof) {
@@ -342,9 +347,6 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 			
 			
 			db->mutex.lock();
-			/* std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
-					(db->data[db->currentSlot]->begin() + db->currentIndex) + byteCount, 
-					(buf + bytesWritten)); */
 			memcpy((buf + bytesWritten), (db->data[db->currentSlot]->data() + db->currentIndex), byteCount);
 			db->mutex.unlock();
 							
@@ -395,7 +397,7 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	//if (bytesToCopy == 0) { return 0; }
 	if (bytesToCopy == 0) { return AVERROR_EOF; }
 	
-	return bytesToCopy;
+	return bytesToCopy; */
 }
 
 
@@ -411,38 +413,51 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	std::cout << "media_seek: offset " << offset << ", whence " << whence << std::endl;
 	
-	DataBuffer* db = static_cast<DataBuffer*>(opaque);
+	//DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	int64_t new_offset = AVERROR(EIO);
+	bool retval = true;
 	switch (whence) {
 		case SEEK_SET:	// Seek from the beginning of the file.
 			std::cout << "media_seek: SEEK_SET" << std::endl;
-			new_offset = offset;
+			//new_offset = offset;
+			retval = DataBuffer::seek(DB_SEEK_START, offset);
 			break;
 		case SEEK_CUR:	// Seek from the current position.
 			std::cout << "media_seek: SEEK_CUR" << std::endl;
-			new_offset = db->currentByte + offset;
+			//new_offset = db->currentByte + offset;
+			retval = DataBuffer::seek(DB_SEEK_CURRENT, offset);
 			break;
 		case SEEK_END:	// Seek from the end of the file.
 			std::cout << "media_seek: SEEK_END" << std::endl;
-			new_offset = db->fileSize + offset;
+			//new_offset = db->fileSize + offset;
+			retval = DataBuffer::seek(DB_SEEK_END, offset);
 			break;
 		case AVSEEK_SIZE:
 			std::cout << "media_seek: received AVSEEK_SIZE, returning file size." << std::endl;
-			new_offset = db->fileSize;
-			return new_offset;
+			//new_offset = db->fileSize;
+			//return new_offset;
+			return DataBuffer::getFileSize();
 			break;
 		default:
 			new_offset = -1;
 			return new_offset;
 	}
 	
-	// FIXME: Shouldn't happen.
-	if (new_offset < 0) {
-		std::cerr << "media_seek: negative offset." << std::endl;
+	if (!retval) {
+		// Some error occurred. Return -1 to let ffmpeg know.
+		std::cerr << "Error during seeking." << std::endl;
 		return -1;
 	}
 	
-	std::cout << "media_seek: new offset: " << new_offset << std::endl;
+	return new_offset;
+	
+	// FIXME: Shouldn't happen.
+	/* if (new_offset < 0) {
+		std::cerr << "media_seek: negative offset." << std::endl;
+		return -1;
+	} */
+	
+	/* std::cout << "media_seek: new offset: " << new_offset << std::endl;
 	std::cout << "IdxLow: " << db->buffIndexLow << ", IdxHigh: " << db->buffIndexHigh << std::endl;
 	
 	// Try to find the index in the buffered data. If unavailable, request new data from client.
@@ -480,7 +495,7 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	}
  
 	// Return the new position:
-	return new_offset;
+	return new_offset; */
 }
 
 
@@ -554,7 +569,7 @@ void Ffplay::run() {
 		// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
 		ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
 												 0,				  // bWriteable (1=true,0=false) 
-												 &media_buffer,	  // user data
+												 0, //&media_buffer,	  // user data
 												 media_read, 
 												 0,				  // Write callback function. 
 												 media_seek);
@@ -615,7 +630,9 @@ void Ffplay::run() {
 	
 	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
 	
-	resetDataBuffer(); // Reset to allow for new player run.
+	//resetDataBuffer(); // Reset to allow for new player run.
+	DataBuffer::reset();	// Clears the data buffer (file data buffer).
+	finishPlayback();		// Calls handler for post-playback steps.
 }
  
  

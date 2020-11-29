@@ -9,6 +9,7 @@
 
 
 #include <string>
+#include <atomic>
 
 
 extern "C" { 
@@ -423,7 +424,7 @@ extern int autorotate;
 extern int find_stream_info;
 extern int filter_nbthreads;
 
-extern bool castingUrl;
+extern std::atomic<bool> castingUrl;
 extern std::string castUrl;
 
 /* current context */

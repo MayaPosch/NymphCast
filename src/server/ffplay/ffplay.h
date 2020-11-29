@@ -30,7 +30,7 @@
 
 
 
-struct DataBuffer {
+/* struct DataBuffer {
 	std::vector<std::string*> data;			// The data byte, inside string instances.
 	std::atomic<uint64_t> fileSize;			// Number of bytes in file being streamed.
 	std::atomic<uint64_t> currentIndex;		// The current index into the vector element.
@@ -62,7 +62,7 @@ struct DataBuffer {
 	
 	Poco::Mutex streamTrackQueueMutex;
 	std::queue<std::string> streamTrackQueue;
-};
+}; */
 
 
 struct FileMetaInfo {
@@ -83,11 +83,12 @@ struct FileMetaInfo {
 
 
 // --- Globals ---
-extern DataBuffer media_buffer;
+//extern DataBuffer media_buffer;
 extern FileMetaInfo file_meta;
 extern std::atomic<bool> playerStarted;
 	
-void resetDataBuffer(); // Defined in NymphCastServer.cpp
+//void resetDataBuffer(); // Defined in NymphCastServer.cpp
+void finishPlayback();
 
 	
 class Ffplay : public Poco::Runnable {

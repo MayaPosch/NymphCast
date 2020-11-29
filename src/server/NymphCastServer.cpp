@@ -26,6 +26,8 @@
 #include <filesystem> 		// C++17
 #include <set>
 #include <fstream>
+#include <mutex>
+#include <condition_variable>
 
 namespace fs = std::filesystem;
 
@@ -33,6 +35,7 @@ namespace fs = std::filesystem;
 #include "ffplay/types.h"
 #include "sdl_renderer.h"
 
+#include "databuffer.h"
 #include "screensaver.h"
 
 #include <nymph/nymph.h>
@@ -123,9 +126,6 @@ char *afilters = NULL;
 int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
-
-bool castingUrl = false;
-std::string castUrl;
 
 
 #ifdef main
@@ -274,9 +274,11 @@ NymphCastApp NymphCastApps::defaultApp;
 
 
 // --- Globals ---
-DataBuffer media_buffer;
+//DataBuffer media_buffer;
 FileMetaInfo file_meta;
-std::atomic<bool> playerStarted;
+std::atomic<bool> playerStarted = false;
+std::atomic<bool> castingUrl = false;		// We're either casting data or streaming when playing.
+std::string castUrl;
 Poco::Thread avThread;
 Ffplay ffplay;
 const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
@@ -289,24 +291,25 @@ std::string appsFolder;
 // --- DATA REQUEST FUNCTION ---
 // This function can be signalled with the condition variable to request data from the client.
 void dataRequestFunction() {
+	// Create and share condition variable with DataBuffer class.
+	std::mutex mtx;
+	std::condition_variable cv;
+	DataBuffer::setDataRequestCondition(&cv);
+	
 	while (1) {
 		// Wait for the condition to be signalled.
-		media_buffer.requestMutex.lock();
-		media_buffer.requestCondition.wait(media_buffer.requestMutex);
-		
-		if (media_buffer.requestInFlight) { continue; }
+		std::unique_lock<std::mutex> lk(mtx);
+		cv.wait(lk);
 		
 		// Request more data.
 		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
 		std::vector<NymphType*> values;
 		std::string result;
 		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaReadCallback", values, result)) {
+		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
 			std::cerr << "Calling callback failed: " << result << std::endl;
 			return;
 		}
-		
-		media_buffer.requestInFlight = true;
 	}
 }
 
@@ -339,7 +342,25 @@ NymphStruct* getPlaybackStatus() {
 }
 
 
-void resetDataBuffer() {
+// --- SEEKING HANDLER ---
+void seekingHandler(uint32_t session, int64_t offset) {
+	if (DataBuffer::seeking()) {
+		// Send message to client indicating that we're seeking in the file.
+		std::vector<NymphType*> values;
+		values.push_back(new NymphUint64(offset));
+		std::string result;
+		NymphBoolean* resVal = 0;
+		if (!NymphRemoteClient::callCallback(session, "MediaSeekCallback", values, result)) {
+			std::cerr << "Calling media seek callback failed: " << result << std::endl;
+			return;
+		}
+				
+		return; 
+	}
+}
+
+
+/* void resetDataBuffer() {
 	media_buffer.currentIndex = 0;		// The current index into the vector element.
 	media_buffer.currentByte = 0;
 	media_buffer.currentSlot = 0;		// The current vector slot we're using.
@@ -350,10 +371,11 @@ void resetDataBuffer() {
 	media_buffer.buffIndexHigh = 0;	
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
-	media_buffer.requestInFlight = false;
+	media_buffer.requestInFlight = false; */
 	
 	// If we're in the midst of a seeking operation, we are done here.
-	if (media_buffer.seeking) {		
+	//if (media_buffer.seeking) {
+	/* if (DataBuffer::seeking()) {
 		// Set high/low indices for the buffer in preparation for new data.
 		media_buffer.buffIndexLow = media_buffer.seekingPosition.load();
 		media_buffer.buffIndexHigh = media_buffer.seekingPosition.load();
@@ -379,18 +401,36 @@ void resetDataBuffer() {
 		
 		media_buffer.seeking = false;		
 		return; 
-	}
+	} */
 	
-	media_buffer.seeking = false;
+	/* media_buffer.seeking = false;
 	media_buffer.fileSize = 0;
 	playerStarted = false;
-	castingUrl = false;
+	castingUrl = false; */
 	
+
+// --- FINISH PLAYBACK ---
+// Called at the end of playback of a stream or file.
+// If a stream is queued, play it, otherwise end playback.
+void finishPlayback() {
 	// Check whether we have any queued URLs to stream next.
-	media_buffer.streamTrackQueueMutex.lock();
-	if (!media_buffer.streamTrackQueue.empty() && !playerStarted) {
+	if (DataBuffer::hasStreamTrack()) {
 		playerStarted = true;
-		castUrl = media_buffer.streamTrackQueue.front();
+		castUrl = DataBuffer::getStreamTrack();
+		castingUrl = true;
+		
+		avThread.start(ffplay);
+		
+		return;
+	}
+	
+	castingUrl = false;
+	playerStarted = false;
+	
+	//media_buffer.streamTrackQueueMutex.lock();
+	/* if (!media_buffer.streamTrackQueue.empty() && !playerStarted) {
+		playerStarted = true;
+		//castUrl = media_buffer.streamTrackQueue.front();
 		media_buffer.streamTrackQueue.pop();
 		castingUrl = true;
 		media_buffer.streamTrackQueueMutex.unlock();
@@ -398,15 +438,15 @@ void resetDataBuffer() {
 		avThread.start(ffplay);
 				
 		return;
-	}
+	} */
 	
-	media_buffer.streamTrackQueueMutex.unlock();
-	
+	//media_buffer.streamTrackQueueMutex.unlock();
 	// Send message to client indicating that we're done.
+	uint32_t handle = DataBuffer::getSessionHandle();
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphBoolean* resVal = 0;
-	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStopCallback", values, result)) {
+	if (!NymphRemoteClient::callCallback(handle, "MediaStopCallback", values, result)) {
 		std::cerr << "Calling media stop callback failed: " << result << std::endl;
 		return;
 	}
@@ -415,7 +455,7 @@ void resetDataBuffer() {
 	values.clear();
 	values.push_back(getPlaybackStatus());
 	resVal = 0;
-	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
 		std::cerr << "Calling media status callback failed: " << result << std::endl;
 		return;
 	}
@@ -479,7 +519,7 @@ void clientSend(uint32_t id, std::string message) {
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphBoolean* resVal = 0;
-	if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "ReceiveFromAppCallback", 
+	if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "ReceiveFromAppCallback", 
 																				values, result)) {
 		std::cerr << "Calling callback failed: " << result << std::endl;
 		return;
@@ -567,9 +607,11 @@ bool streamTrack(std::string url) {
 	// TODO: allow to cancel any currently playing track/empty queue?
 	if (playerStarted) {
 		// Add to queue.
-		media_buffer.streamTrackQueueMutex.lock();
+		DataBuffer::addStreamTrack(url);
+		
+		/* media_buffer.streamTrackQueueMutex.lock();
 		media_buffer.streamTrackQueue.push(url);
-		media_buffer.streamTrackQueueMutex.unlock();
+		media_buffer.streamTrackQueueMutex.unlock(); */
 		
 		return true;
 	}
@@ -828,14 +870,17 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
-	media_buffer.fileSize = it->second.filesize; // Set to stream size.
-	media_buffer.activeSession = session;
+	DataBuffer::setFileSize(it->second.filesize);
+	DataBuffer::setSessionHandle(session);
+	//media_buffer.fileSize = it->second.filesize; // Set to stream size.
+	//media_buffer.activeSession = session;
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
 	// TODO: Initial buffer size is 1 MB. Make this dynamically scale.
-	media_buffer.requestInFlight = false;
-	media_buffer.requestCondition.signal();
+	DataBuffer::start();
+	/* media_buffer.requestInFlight = false;
+	media_buffer.requestCondition.signal(); */
 	it->second.sessionActive = true;
 	
 	// Stop screensaver.
@@ -913,12 +958,12 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// TODO: if this boolean is false already, dismiss message?
-	media_buffer.requestInFlight = false;
+	//media_buffer.requestInFlight = false;
 	
-	if (media_buffer.seeking) {
+	/* if (media_buffer.seeking) {
 		// Signal condition variable to indicate seeking operation succeeded.
 		media_buffer.seekingCondition.signal();
-	}
+	} */
 	
 	// Get iterator to the session instance for the client.
 	std::map<int, CastClient>::iterator it;
@@ -929,14 +974,19 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Safely write the data for this session to the buffer.
-	std::string* mediaData = new std::string(((NymphBlob*) msg->parameters()[0])->getValue());
+	//std::string* mediaData = new std::string(((NymphBlob*) msg->parameters()[0])->getValue());
+	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
 	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
+	
+	// Write string into buffer.
+	// TODO: transfer copy of new buffer data to slave remotes as well.
+	DataBuffer::write(mediaData);
 	
 	// Copy pointer into free slot of vector, delete data if not empty.
 	// Reset the next slot value if the end of the vector has been reached.
-	std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
-				<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
-	if (media_buffer.freeSlots > 0) {
+	//std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
+		//		<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
+	/* if (media_buffer.freeSlots > 0) {
 		std::cout << "Writing into buffer slot: " << media_buffer.nextSlot << std::endl;
 		media_buffer.mutex.lock();
 		if (media_buffer.data[media_buffer.nextSlot] != 0) {
@@ -970,12 +1020,13 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		media_buffer.freeSlots--;
 		media_buffer.buffBytesLeft += mediaData->length();
 		media_buffer.buffIndexHigh += mediaData->length();
-	}
+	} */
 	
-	// Signal the condition variable in the VLC read callback in case we're waiting there.
-	media_buffer.bufferDelayCondition.signal();
+	// Signal the condition variable in the read callback in case we're waiting there.
+	//media_buffer.bufferDelayCondition.signal();
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
+	// TODO: take into account delay of slave remotes before starting local playback.
 	if (!playerStarted) {
 		playerStarted = true;
 		avThread.start(ffplay);
@@ -986,14 +1037,15 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		values.push_back(getPlaybackStatus());
 		std::string result;
 		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(media_buffer.activeSession, "MediaStatusCallback", values, result)) {
+		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaStatusCallback", values, result)) {
 			std::cerr << "Calling media status callback failed: " << result << std::endl;
 		}
 	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
 	if (done) {
-		media_buffer.eof = true;
+		//media_buffer.eof = true;
+		DataBuffer::setEof(done);
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -1869,8 +1921,14 @@ int main(int argc, char** argv) {
 	
 	// End client callback registration.
 	
+	// Initialise buffer of the desired size.
+	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 10485760);
+	DataBuffer::init(buffer_size);
+	DataBuffer::setSeekRequestCallback(seekingHandler);
+	//DataBuffer::setDataRequestHandler(dataRequestFunction);
+	
 	// Create empty buffer with N entries, initialised as empty strings.
-	media_buffer.mutex.lock();
+	/* media_buffer.mutex.lock();
 	media_buffer.data.assign(50, 0);
 	media_buffer.mutex.unlock();
 	
@@ -1886,11 +1944,11 @@ int main(int argc, char** argv) {
 	media_buffer.freeSlots = 50;
 	media_buffer.eof = false;
 	media_buffer.seeking = false;
-	media_buffer.requestInFlight = false;
+	media_buffer.requestInFlight = false; */
 	
-	std::cout << "Set up new buffer." << std::endl;
-	std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
-				<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
+	std::cout << "Set up new buffer with size: " << buffer_size << " bytes." << std::endl;
+	//std::cout << "Total buffers: " << media_buffer.data.size() << ", current: " 
+		//		<< media_buffer.currentSlot << ", next: " << media_buffer.nextSlot << std::endl;
 	
 	playerStarted = false;
 	
@@ -1938,9 +1996,10 @@ int main(int argc, char** argv) {
 	gCon.wait(gMutex);
 	
 	// Clean-up
-	for (int i = 0 ; i < media_buffer.data.size(); ++i) {
+	DataBuffer::cleanup();
+	/* for (int i = 0 ; i < media_buffer.data.size(); ++i) {
 		delete media_buffer.data[i];
-	}
+	} */
  
 	// Close window and clean up libSDL.
 	ffplay.quit();
