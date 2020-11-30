@@ -55,7 +55,7 @@ void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
 
 // --- NYMPHCAST ---
 // Set up NymphCast client library.
-JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_NymphCast
+extern "C" JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_NymphCast
 	(JNIEnv *env, jobject obj) {
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
@@ -64,7 +64,7 @@ JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_NymphCast
 
 
 // --- SET CLIENT ID ---
-JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_setClientId
+extern "C" JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_setClientId
 	(JNIEnv* env, jobject obj, jstring id) {
 	jboolean isCopy;
 	const char* convValue = env->GetStringUTFChars(id, &isCopy);
@@ -76,7 +76,7 @@ JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_setClientId
 
 
 // --- GET APPLICATION LIST ---
-JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_getApplicationList
+extern "C" JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_getApplicationList
 	(JNIEnv* env, jobject obj) {
 	jstring result = nullptr;
 	if (!connected) { return result; }
@@ -89,7 +89,7 @@ JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_getApplicati
 
 
 // --- SEND APPLICATION MESSAGE ---
-JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_sendApplicationMessage
+extern "C" JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_sendApplicationMessage
 	(JNIEnv* env, jobject obj, jstring appId, jstring msg) {
 	jstring result = nullptr;
 	if (!connected) { return result; }
@@ -111,7 +111,7 @@ JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_sendApplicat
 
 
 // --- FIND SERVERS ---
-JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_findServers
+extern "C" JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_findServers
 	(JNIEnv* env, jobject obj) {
 	remotesMutex.lock();
 	remotes = client.findServers();
@@ -131,7 +131,7 @@ JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_findServers
 
 
 // --- CONNECT SERVER ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_connectServer
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_connectServer
 	(JNIEnv* env, jobject obj, jlong index) {
 	if (connected && activeIndex == index) { return true; }
 
@@ -160,7 +160,7 @@ JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_connectServ
 
 
 // --- DISCONNECT SERVER ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_disconnectServer
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_disconnectServer
 	(JNIEnv* env, jobject obj, jlong index) {
 	// Use the index with the list of remotes to determine whether we are connected to the
 	// indicated remote.
@@ -177,7 +177,7 @@ JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_disconnectS
 
 
 // -- CAST FILE ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castFile
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castFile
 	(JNIEnv* env, jobject obj, jstring filename) {
 	jboolean isCopy;
 	const char* convValue = (env)->GetStringUTFChars(filename, &isCopy);
@@ -192,7 +192,7 @@ JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castFile
 
 
 // --- CAST URL ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castUrl
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castUrl
 	(JNIEnv* env, jobject obj, jstring url) {
 	jboolean isCopy;
 	const char* convValue = (env)->GetStringUTFChars(url, &isCopy);
@@ -207,7 +207,7 @@ JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_castUrl
 
 
 // -- PLAYBACK START ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_playbackStart
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_playbackStart
 	(JNIEnv* env, jobject obj) {
 	if (!connected) { return false; }
 
@@ -219,7 +219,7 @@ JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_playbackSta
 
 
 // -- PLAYBACK STOP ---
-JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_playbackStop
+extern "C" JNIEXPORT jboolean JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_playbackStop
 	(JNIEnv* env, jobject obj) {
 	if (!connected) { return false; }
 
