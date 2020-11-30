@@ -34,7 +34,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements MediaFragment.OnListFragmentInteractionListener {
 
-	public static NymphCast nymphCast;
+	public static NymphCast nymphCast = new NymphCast();
 
     public static Context contextOfApplication;
     public static Context getContextOfApplication() {
