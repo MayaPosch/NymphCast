@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         // Load the initial remotes.
 		// TODO: Call the init() function in the NymphCast client library here to start the core code.
         //loadRemotes();
-		nymphCast.findServers();
+		//nymphCast.findServers();
     }
 
     /* public void loadRemotes() {
