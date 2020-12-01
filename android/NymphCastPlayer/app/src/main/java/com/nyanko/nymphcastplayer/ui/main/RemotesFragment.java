@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.nyanko.nymphcastplayer.MainActivity;
+import com.nyanko.nymphcastplayer.NymphCast;
 import com.nyanko.nymphcastplayer.R;
 
 /**
@@ -73,6 +75,10 @@ public class RemotesFragment extends Fragment {
 			mAdapter = new RemotesRecyclerViewAdapter(RemotesContent.ITEMS, mListener);
 			recyclerView.setAdapter(mAdapter);
 		}
+
+		// FIXME: Initial remotes discovery call.
+		MainActivity.nymphCast.findServers();
+
 		return view;
 	}
 
