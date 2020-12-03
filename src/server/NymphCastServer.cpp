@@ -28,6 +28,7 @@
 #include <fstream>
 #include <mutex>
 #include <condition_variable>
+#include <ctime>
 
 namespace fs = std::filesystem;
 
@@ -827,6 +828,28 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- CONNECT MASTER ---
+// Master server calls this to turn this server instance into a slave.
+// This disables the regular client connection functionality for the duration of the master/slave
+// session.
+// uint8 connectMaster()
+NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
+	std::cout << "Received master connect request, slave mode initiation requested." << std::endl;
+	
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Switch to slave mode, if possible.
+	
+	// Obtain timestamp, compare with current time.
+	
+	// Send delay request to master.
+	
+	// Determine final latency and share with master.
+	
+	return returnMsg;
+}
+
+
 // Client disconnects from server.
 // bool disconnect()
 NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
@@ -910,11 +933,13 @@ struct NymphCastRemote {
 	std::string ipv4;
 	std::string ipv6;
 	uint16_t port;
+	uint32_t handle;
 };
 
 std::vector<NymphCastRemote> slave_remotes;
 
 
+// --- SESSION ADD SLAVE ---
 // Client sends list of slave server which this server instance should control.
 // Returns: OK (0), ERROR (1).
 // int session_add_slave(array servers);
@@ -939,11 +964,47 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	
 	// Validate that each slave remote is accessible and determine latency.
 	for (int i = 0; i < slave_remotes.size(); ++i) {
-		// Establish RPC connection to remote and perform PTP handshake.
+		// Establish RPC connection to remote. Starts the PTP-like handshake.
+		NymphCastRemote& rm = slave_remotes[i];
+		std::string result;
+		if (!NymphRemoteServer::connect(rm.ipv4, 4004, rm.handle, 0, result)) {
+			// Failed to connect, error out. Disconnect from any already connected slaves.
+			std::cerr << "Slave connection error: " << result << std::endl;
+			for (; i >= 0; --i) {
+				NymphCastRemote& drm = slave_remotes[i];
+				NymphRemoteServer::disconnect(drm.handle, result);
+			}
+			
+			returnMsg->setResultValue(new NymphUint8(1));
+			return returnMsg;
+		}
 		
+		// Attempt to start slave mode on the remote.
+		// Send the current timestamp to the slave remote as part of the latency determination.
+		std::vector<NymphType*> values;
+		values.push_back(new NymphSint64(time(0)));
+		NymphType* returnValue = 0;
+		if (!NymphRemoteServer::callMethod(rm.handle, "connectMaster", values, returnValue, result)) {
+			std::cerr << "Slave connect master failed: " << result << std::endl;
+			// TODO: disconnect from slave remotes.
+			returnMsg->setResultValue(new NymphUint8(1));
+			return returnMsg;
+		}
 		
-		// Add successful remote to local list.
+		// Check return value.
+		if (returnValue->type() != NYMPH_UINT8) {
+			std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+			// TODO: disconnect from slave remotes.
+			returnMsg->setResultValue(new NymphUint8(1));
+			return returnMsg;
+		}
 		
+		if (((NymphUint8*) returnValue)->getValue() != 0) {
+			std::cerr << "Configuring remote as slave failed." << std::endl;
+			// TODO: disconnect from slave remotes.
+			returnMsg->setResultValue(new NymphUint8(1));
+			return returnMsg;
+		}
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
