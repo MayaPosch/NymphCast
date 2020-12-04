@@ -832,19 +832,51 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 // Master server calls this to turn this server instance into a slave.
 // This disables the regular client connection functionality for the duration of the master/slave
 // session.
-// uint8 connectMaster()
+// uint8 connectMaster(sint64)
 NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	std::cout << "Received master connect request, slave mode initiation requested." << std::endl;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Switch to slave mode, if possible.
+	// Return error if we're currently playing content in stand-alone mode.
 	
 	// Obtain timestamp, compare with current time.
 	
 	// Send delay request to master.
 	
 	// Determine final latency and share with master.
+	
+	return returnMsg;
+}
+
+
+// --- RECEIVE DATA MASTER ---
+// Receives data chunks for playback.
+// uint8 receiveDataMaster(blob data)
+NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Extract data blob and add it to the buffer.
+	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
+	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
+	int64_t when = ((NymphSint64*) msg->parameters()[2])->getValue();
+	
+	// Write string into buffer.
+	DataBuffer::write(mediaData);
+	
+	if (!playerStarted) {
+		// Start the player when the time in 'when' has been reached.
+		
+		
+		// Start player.
+		playerStarted = true;
+		avThread.start(ffplay);
+	}
+	
+	if (done) {
+		DataBuffer::setEof(done);
+	}
 	
 	return returnMsg;
 }
@@ -936,7 +968,16 @@ struct NymphCastRemote {
 	uint32_t handle;
 };
 
+
+enum NcsMode {
+	NCS_MODE_STANDALONE = 0,
+	NCS_MODE_MASTER,
+	NCS_MODE_SLAVE
+};
+
+NcsMode serverMode = NCS_MODE_STANDALONE;
 std::vector<NymphCastRemote> slave_remotes;
+uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 
 
 // --- SESSION ADD SLAVE ---
@@ -1040,8 +1081,30 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
 	
 	// Write string into buffer.
-	// TODO: transfer copy of new buffer data to slave remotes as well.
 	DataBuffer::write(mediaData);
+	
+	// TODO: transfer copy of new buffer data to slave remotes as well.
+	// If passing the message through to slave remotes, add the timestamp to the message.
+	// This timestamp is the current time plus the largest master-slave latency times 2.
+	if (serverMode == NCS_MODE_MASTER) {
+		time_t now = time(0);
+		time_t then = (slaveLatencyMax * 2); // TODO: latency max.
+		
+		// Prepare data vector.
+		std::vector<NymphType*> values;
+		values.push_back(new NymphBlob(mediaData));
+		values.push_back(new NymphBoolean(done));
+		values.push_back(new NymphSint64(then));
+		
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "receiveDataMaster", values, returnValue, result)) {
+				//
+			}
+		}
+	}
 	
 	// Copy pointer into free slot of vector, delete data if not empty.
 	// Reset the next slot value if the end of the vector has been reached.
@@ -1089,6 +1152,14 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
 	// TODO: take into account delay of slave remotes before starting local playback.
 	if (!playerStarted) {
+		// if we're in master mode, only start after the slaves are starting as well.
+		// In slave mode, we execute time-critical commands like playback start when
+		if (serverMode == NCS_MODE_MASTER) {
+			// We use the calculated latency to the slave to determine when to send the play
+			// command to the slave
+		}
+		
+		// Start playback locally.
 		playerStarted = true;
 		avThread.start(ffplay);
 		
@@ -1736,6 +1807,24 @@ int main(int argc, char** argv) {
 	NymphMethod connectFunction("connect", parameters, NYMPH_BOOL);
 	connectFunction.setCallback(connectClient);
 	NymphRemoteClient::registerMethod("connect", connectFunction);
+	
+	// Master server calls this to turn this server instance into a slave.
+	// uint8 connectMaster(sint64)
+	parameters.clear();
+	parameters.push_back(NYMPH_SINT64);
+	NymphMethod connectMasterFunction("connectMaster", parameters, NYMPH_UINT8);
+	connectMasterFunction.setCallback(connectMaster);
+	NymphRemoteClient::registerMethod("connectMaster", connectMasterFunction);
+	
+	// Receives data chunks for playback.
+	// uint8 receiveDataMaster(blob data, bool done, sint64)
+	parameters.clear();
+	parameters.push_back(NYMPH_BLOB);
+	parameters.push_back(NYMPH_BOOL);
+	parameters.push_back(NYMPH_SINT64);
+	NymphMethod receivedataMasterFunction("receiveDataMaster", parameters, NYMPH_UINT8);
+	receivedataMasterFunction.setCallback(receiveDataMaster);
+	NymphRemoteClient::registerMethod("receiveDataMaster", receivedataMasterFunction);
 	
 	// Client disconnects from server.
 	// bool disconnect()
