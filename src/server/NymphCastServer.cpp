@@ -832,7 +832,8 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 // Master server calls this to turn this server instance into a slave.
 // This disables the regular client connection functionality for the duration of the master/slave
 // session.
-// uint8 connectMaster(sint64)
+// Returns the timestamp when the message was received.
+// sint64 connectMaster(sint64)
 NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	std::cout << "Received master connect request, slave mode initiation requested." << std::endl;
 	
@@ -840,8 +841,16 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	
 	// Switch to slave mode, if possible.
 	// Return error if we're currently playing content in stand-alone mode.
+	if (playerStarted) {
+		returnMsg->setResultValue(new NymphSint64(0));
+	}
+	else {
+		// FIXME: for now we just return the current time.
+		returnMsg->setResultValue(new NymphSint64(time(0)));
+	}
 	
 	// Obtain timestamp, compare with current time.
+	//time_t then = ((NymphSint64*) msg->parameters()[0])->getValue();
 	
 	// Send delay request to master.
 	
@@ -867,7 +876,11 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	
 	if (!playerStarted) {
 		// Start the player when the time in 'when' has been reached.
-		
+		std::condition_variable cv;
+		std::mutex cv_m;
+		std::unique_lock<std::mutex> lk(cv_m);
+		std::chrono::system_clock::time_point then = std::chrono::system_clock::from_time_t(when);
+		while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
 		
 		// Start player.
 		playerStarted = true;
@@ -966,6 +979,7 @@ struct NymphCastRemote {
 	std::string ipv6;
 	uint16_t port;
 	uint32_t handle;
+	time_t delay;
 };
 
 
@@ -1022,8 +1036,9 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		
 		// Attempt to start slave mode on the remote.
 		// Send the current timestamp to the slave remote as part of the latency determination.
+		time_t now = time(0);
 		std::vector<NymphType*> values;
-		values.push_back(new NymphSint64(time(0)));
+		values.push_back(new NymphSint64(now));
 		NymphType* returnValue = 0;
 		if (!NymphRemoteServer::callMethod(rm.handle, "connectMaster", values, returnValue, result)) {
 			std::cerr << "Slave connect master failed: " << result << std::endl;
@@ -1033,19 +1048,24 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Check return value.
-		if (returnValue->type() != NYMPH_UINT8) {
-			std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		if (returnValue->type() != NYMPH_SINT64) {
+			std::cout << "Return value wasn't a sint64. Type: " << returnValue->type() << std::endl;
 			// TODO: disconnect from slave remotes.
 			returnMsg->setResultValue(new NymphUint8(1));
 			return returnMsg;
 		}
 		
-		if (((NymphUint8*) returnValue)->getValue() != 0) {
+		if (((NymphSint64*) returnValue)->getValue() == 0) {
 			std::cerr << "Configuring remote as slave failed." << std::endl;
 			// TODO: disconnect from slave remotes.
 			returnMsg->setResultValue(new NymphUint8(1));
 			return returnMsg;
 		}
+		
+		// Use returned time stamp to calculate the delay.
+		time_t theirs = ((NymphSint64*) returnValue)->getValue();
+		rm.delay = theirs - now;
+		if (rm.delay > slaveLatencyMax) { slaveLatencyMax = rm.delay; }
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -1812,7 +1832,7 @@ int main(int argc, char** argv) {
 	// uint8 connectMaster(sint64)
 	parameters.clear();
 	parameters.push_back(NYMPH_SINT64);
-	NymphMethod connectMasterFunction("connectMaster", parameters, NYMPH_UINT8);
+	NymphMethod connectMasterFunction("connectMaster", parameters, NYMPH_SINT64);
 	connectMasterFunction.setCallback(connectMaster);
 	NymphRemoteClient::registerMethod("connectMaster", connectMasterFunction);
 	
