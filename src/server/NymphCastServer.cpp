@@ -329,6 +329,20 @@ void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
 }
 
 
+// --- MEDIA STOP CALLBACK ---
+// Called by a slave remote as a stop notification.
+void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
+	// 
+}
+
+
+// --- MEDIA STATUS CALLBACK ---
+// Called by a slave remote during a status update.
+void MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data) {
+	// Handled by the usual client & master routines.
+}
+
+
 // --- GET PLAYBACK STATUS ---
 NymphStruct* getPlaybackStatus() {
 	// Set the playback status.
@@ -2115,6 +2129,8 @@ int main(int argc, char** argv) {
 	using namespace std::placeholders; 
 	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
 	NymphRemoteServer::registerCallback("MediaSeekCallback", MediaSeekCallback, 0);
+	NymphRemoteServer::registerCallback("MediaStopCallback", MediaStopCallback, 0);
+	NymphRemoteServer::registerCallback("MediaStatusCallback", MediaStatusCallback, 0);
 	
 	// Initialise buffer of the desired size.
 	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 10485760);
