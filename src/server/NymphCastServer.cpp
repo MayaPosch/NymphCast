@@ -315,6 +315,20 @@ void dataRequestFunction() {
 }
 
 
+// --- MEDIA READ CALLBACK ---
+// Called by slave remotes during a read request.
+void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data) {
+	// Handled by the usual client & master routines.
+}
+
+
+// --- MEDIA SEEK CALLBACK ---
+// Called by a slave remote during a seek request.
+void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
+	// Handled by the usual client & master routines.
+}
+
+
 // --- GET PLAYBACK STATUS ---
 NymphStruct* getPlaybackStatus() {
 	// Set the playback status.
@@ -789,12 +803,36 @@ struct CastClient {
 std::map<int, CastClient> clients;
 
 
+struct NymphCastRemote {
+	std::string name;
+	std::string ipv4;
+	std::string ipv6;
+	uint16_t port;
+	uint32_t handle;
+	time_t delay;
+};
+
+
+enum NcsMode {
+	NCS_MODE_STANDALONE = 0,
+	NCS_MODE_MASTER,
+	NCS_MODE_SLAVE
+};
+
+NcsMode serverMode = NCS_MODE_STANDALONE;
+std::vector<NymphCastRemote> slave_remotes;
+uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
+
+
 // Callback for the connect function.
 NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::cout << "Received message for session: " << session << ", msg ID: " << msg->getMessageId() << "\n";
 	
 	std::string clientStr = ((NymphString*) msg->parameters()[0])->getValue();
 	std::cout << "Client string: " << clientStr << "\n";
+	
+	// TODO: check whether we're not operating in slave mode already.
+	serverMode = NCS_MODE_STANDALONE;
 	
 	// Register this client with its ID. Return error if the client ID already exists.
 	NymphMessage* returnMsg = msg->getReplyMessage();
@@ -846,6 +884,9 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	}
 	else {
 		// FIXME: for now we just return the current time.
+		serverMode = NCS_MODE_SLAVE;
+		//DataBuffer::setFileSize(it->second.filesize);
+		DataBuffer::setSessionHandle(session);
 		returnMsg->setResultValue(new NymphSint64(time(0)));
 	}
 	
@@ -971,27 +1012,6 @@ NymphMessage* session_meta(int session, NymphMessage* msg, void* data) {
 	
 	return returnMsg;
 }
-
-
-struct NymphCastRemote {
-	std::string name;
-	std::string ipv4;
-	std::string ipv6;
-	uint16_t port;
-	uint32_t handle;
-	time_t delay;
-};
-
-
-enum NcsMode {
-	NCS_MODE_STANDALONE = 0,
-	NCS_MODE_MASTER,
-	NCS_MODE_SLAVE
-};
-
-NcsMode serverMode = NCS_MODE_STANDALONE;
-std::vector<NymphCastRemote> slave_remotes;
-uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 
 
 // --- SESSION ADD SLAVE ---
@@ -2090,6 +2110,11 @@ int main(int argc, char** argv) {
 	NymphRemoteClient::registerCallback("ReceiveFromAppCallback", receiveFromAppCallback);
 	
 	// End client callback registration.
+	
+	// Master-Slave registrations.
+	using namespace std::placeholders; 
+	NymphRemoteServer::registerCallback("MediaReadCallback", MediaReadCallback, 0);
+	NymphRemoteServer::registerCallback("MediaSeekCallback", MediaSeekCallback, 0);
 	
 	// Initialise buffer of the desired size.
 	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 10485760);
