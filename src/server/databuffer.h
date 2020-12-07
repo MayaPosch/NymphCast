@@ -18,7 +18,6 @@
 #include <string>
 
 
-//typedef std::function<bool()> DataRequestCallback;
 typedef std::function<void(uint32_t, int64_t)> SeekRequestCallback;
 
 enum DataBufferSeek {
@@ -55,7 +54,6 @@ class DataBuffer {
 	static std::mutex bufferMutex;
 	static std::atomic<bool> eof;
 	static std::atomic<BufferState> state;
-	//static DataRequestCallback dataRequestCallback = 0;
 	static SeekRequestCallback seekRequestCallback;
 	static std::condition_variable* dataRequestCV;
 	static std::mutex dataWaitMutex;
@@ -72,7 +70,6 @@ class DataBuffer {
 public:
 	static bool init(uint32_t capacity);
 	static bool cleanup();
-	//static void setDataRequestCallback(DataRequestCallback callback);
 	static void setSeekRequestCallback(SeekRequestCallback cb);
 	static void setDataRequestCondition(std::condition_variable* condition);
 	static void setSessionHandle(uint32_t handle);

@@ -273,131 +273,6 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	uint32_t bytesRead = DataBuffer::read(buf_size, buf);
 	if (bytesRead == 0) { return AVERROR_EOF; }	
 	return bytesRead;
-	
-	//DataBuffer* db = static_cast<DataBuffer*>(opaque); 
-	
-	// Fill the buffer from the memory buffer.
-	// Return the read length.
-	/* uint32_t bytesToCopy = 0;
-	
-	// Check if we're headed for a buffer underrun.
-	if (db->buffBytesLeft < buf_size && !db->eof) {
-		std::cout << "Requesting more data..." << std::endl;
-		db->requestCondition.signal(); // Ask for more data.
-		db->bufferDelayMutex.lock();
-		db->bufferDelayCondition.tryWait(db->bufferDelayMutex, 150);
-	}
-	else if (db->buffBytesLeft == 0) { return AVERROR_EOF; }
-
-	if (db->eof && db->buffBytesLeft > 0) {
-		bytesToCopy = db->buffBytesLeft;
-	}
-	else if (db->buffBytesLeft >= buf_size) {  	// At least as many bytes remaining as requested
-		bytesToCopy = buf_size;
-	} 
-	else if (db->buffBytesLeft < buf_size) {	// Fewer than requested number of bytes remaining
-		bytesToCopy = db->buffBytesLeft;
-	} 
-	else {
-		return 0;   // No bytes left to copy
-	}
-	
-	// FIXME: Ensure we're not copying beyond the assigned buffer. 
-	// Presumably concurrency issues can lead to 'bytesToCopy' being set to a higher value than
-	// what 'db->buffBytesLeft' was originally set to.
-	if (bytesToCopy > buf_size) {
-		std::cout << "Resetting bytesToCopy: was " << bytesToCopy << ", with buffer size: " 
-					<< buf_size << std::endl;
-		bytesToCopy = buf_size;
-	}
-
-	// Each slot has a limited depth. Check that we can copy the whole requested buffer
-	// from a single slot, only updating the index into that slot.
-	// Else, copy what is left in the current slot into the buffer, then copy the rest from the
-	// next slot.
-	if (db->slotBytesLeft < bytesToCopy) {
-					
-		uint32_t nextBytes = bytesToCopy;
-		
-		// Copy the rest of the bytes in the slot, move onto the next slot.
-		uint32_t byteCount = 0;
-		uint32_t bytesWritten = 0;
-		bool nextSlot = false;
-		while (nextBytes > 0) {
-			if (db->slotBytesLeft < nextBytes) {
-				// Cannot copy the remainder of the requested bytes in one go yet.
-				// Just copy what we can.
-				byteCount = db->slotBytesLeft;
-				nextBytes -= db->slotBytesLeft;
-				nextSlot = true;
-			}
-			else {
-				// Copy the remaining bytes into the buffer.
-				byteCount = nextBytes;
-				nextBytes = 0;
-				if (db->slotBytesLeft == byteCount) {
-					nextSlot = false;
-				}
-			}
-			
-			// Debug
-			std::cout << "Reading from slot " << db->currentSlot << std::endl;
-			std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
-						<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
-			
-			
-			db->mutex.lock();
-			memcpy((buf + bytesWritten), (db->data[db->currentSlot]->data() + db->currentIndex), byteCount);
-			db->mutex.unlock();
-							
-			db->slotBytesLeft -= byteCount;
-			bytesWritten += byteCount;
-			if (nextSlot) {
-				nextSlot = false;
-				db->currentSlot++;
-				if (!(db->currentSlot < db->numSlots)) { db->currentSlot = 0; }				
-				db->slotSize = db->data[db->currentSlot]->length();
-				std::cout << "New slot size: " << db->slotSize << std::endl;
-				db->currentIndex = 0;
-				db->slotBytesLeft = db->slotSize.load();
-				db->freeSlots++; // The used buffer slot just became available for more data.
-			}
-			else {
-				db->currentIndex += byteCount;
-			}
-		}
-	}
-	else {
-		// Debug
-		std::cout << "Reading from slot " << db->currentSlot << std::endl;
-		std::cout << "Index: " << db->currentIndex << "\t/\t" << db->slotSize 
-					<< ", \tCopy: " << bytesToCopy << "\t/\t" << db->slotBytesLeft << std::endl;
-		
-		// Just copy the bytes from the slot, adjusting the index and bytes left count.
-		db->mutex.lock();
-		std::copy(db->data[db->currentSlot]->begin() + db->currentIndex, 
-				(db->data[db->currentSlot]->begin() + db->currentIndex) + bytesToCopy, 
-				buf);
-		db->mutex.unlock();
-		db->currentIndex += bytesToCopy;	// Increment bytes read count
-		db->slotBytesLeft -= bytesToCopy;
-	}
-	
-	db->buffBytesLeft -= bytesToCopy;
-	db->currentByte += bytesToCopy;
-	
-	// If there are free slots in the buffer, request more data from the client.
-	if (!db->requestInFlight && !(db->eof) && db->freeSlots > 0) {
-		db->requestCondition.signal();
-	}
-	
-	// Debug
-	//OUT_FILE.write((const char*) buf, bytesToCopy);
-	
-	//if (bytesToCopy == 0) { return 0; }
-	if (bytesToCopy == 0) { return AVERROR_EOF; }
-	
-	return bytesToCopy; */
 }
 
 
@@ -413,29 +288,23 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	std::cout << "media_seek: offset " << offset << ", whence " << whence << std::endl;
 	
-	//DataBuffer* db = static_cast<DataBuffer*>(opaque);
 	int64_t new_offset = AVERROR(EIO);
 	bool retval = true;
 	switch (whence) {
 		case SEEK_SET:	// Seek from the beginning of the file.
 			std::cout << "media_seek: SEEK_SET" << std::endl;
-			//new_offset = offset;
 			retval = DataBuffer::seek(DB_SEEK_START, offset);
 			break;
 		case SEEK_CUR:	// Seek from the current position.
 			std::cout << "media_seek: SEEK_CUR" << std::endl;
-			//new_offset = db->currentByte + offset;
 			retval = DataBuffer::seek(DB_SEEK_CURRENT, offset);
 			break;
 		case SEEK_END:	// Seek from the end of the file.
 			std::cout << "media_seek: SEEK_END" << std::endl;
-			//new_offset = db->fileSize + offset;
 			retval = DataBuffer::seek(DB_SEEK_END, offset);
 			break;
 		case AVSEEK_SIZE:
 			std::cout << "media_seek: received AVSEEK_SIZE, returning file size." << std::endl;
-			//new_offset = db->fileSize;
-			//return new_offset;
 			return DataBuffer::getFileSize();
 			break;
 		default:
@@ -450,52 +319,6 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	}
 	
 	return new_offset;
-	
-	// FIXME: Shouldn't happen.
-	/* if (new_offset < 0) {
-		std::cerr << "media_seek: negative offset." << std::endl;
-		return -1;
-	} */
-	
-	/* std::cout << "media_seek: new offset: " << new_offset << std::endl;
-	std::cout << "IdxLow: " << db->buffIndexLow << ", IdxHigh: " << db->buffIndexHigh << std::endl;
-	
-	// Try to find the index in the buffered data. If unavailable, request new data from client.
-	if (new_offset < db->buffIndexLow || new_offset > db->buffIndexHigh) {
-		// Reset the buffer and send request to client.
-		db->seeking = true;
-		db->seekingPosition = offset;
-		std::cout << "Resetting data buffer..." << std::endl;
-		resetDataBuffer();
-		if (db->seeking) {
-			// Seeking operation failed.
-			std::cerr << "Seeking failed." << std::endl;
-			db->seeking = false;
-			return -1;
-		}
-		
-		db->seeking = false;
-		db->currentByte = new_offset;
-	}
-	else {
-		// Set the new position of the index in the appropriate buffer.
-		uint64_t adjusted_offset = new_offset - db->buffIndexLow;
-		uint32_t wholeSlots = adjusted_offset / db->slotSize;
-		uint32_t newSlot = (adjusted_offset / db->slotSize) + db->buffSlotLow;
-		if ((newSlot + 1) > db->numSlots) {
-			newSlot -= (db->numSlots - 1);
-		}
-		
-		db->currentIndex = adjusted_offset - (db->slotSize * wholeSlots);
-		db->currentByte = new_offset;
-		db->currentSlot = newSlot;
-		db->slotSize = db->data[newSlot]->length();
-		db->slotBytesLeft = db->data[db->currentSlot]->length() - db->currentIndex;
-		db->buffBytesLeft = db->buffIndexHigh - db->currentByte;
-	}
- 
-	// Return the new position:
-	return new_offset; */
 }
 
 
@@ -523,8 +346,6 @@ void Ffplay::setVolume(uint8_t volume) {
 
 // --- RUN ---
 void Ffplay::run() {
-	//int flags;
-	
 	init_dynload();
 	
 	// Fake command line arguments.
@@ -630,7 +451,6 @@ void Ffplay::run() {
 	
 	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
 	
-	//resetDataBuffer(); // Reset to allow for new player run.
 	DataBuffer::reset();	// Clears the data buffer (file data buffer).
 	finishPlayback();		// Calls handler for post-playback steps.
 }

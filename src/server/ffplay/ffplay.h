@@ -29,42 +29,6 @@
 #include "types.h"
 
 
-
-/* struct DataBuffer {
-	std::vector<std::string*> data;			// The data byte, inside string instances.
-	std::atomic<uint64_t> fileSize;			// Number of bytes in file being streamed.
-	std::atomic<uint64_t> currentIndex;		// The current index into the vector element.
-	std::atomic<uint64_t> currentByte;		// Current file position in bytes (0 - size).
-	std::atomic<uint32_t> currentSlot;		// The current vector slot we're using.
-	std::atomic<uint32_t> slotSize;			// Slot size in bytes.
-	std::atomic<uint32_t> slotBytesLeft;	// Bytes left in the current slot.
-	std::atomic<uint32_t> numSlots;			// Total number of slots in the data vector.
-	std::atomic<uint32_t> nextSlot;			// Next slot to fill in the buffer vector.
-	std::atomic<uint32_t> freeSlots;		// Slots free to write new data into.
-	std::atomic<uint32_t> buffBytesLeft;	// Number of bytes available for reading in the buffer.
-	std::atomic<bool> eof;					// Whether End of File for the source file has been reached.
-	
-	std::atomic<uint32_t> buffSlotLow;		// Current slot containing the low index.
-	std::atomic<uint64_t> buffIndexLow;		// File index at the buffer front (low index).
-	std::atomic<uint64_t> buffIndexHigh;	// File index at the buffer back (high index).
-	Poco::Mutex mutex;
-	Poco::Mutex dataMutex;
-	std::atomic<uint32_t> activeSession;
-	Poco::Condition bufferDelayCondition;
-	Poco::Mutex bufferDelayMutex;
-	Poco::Condition requestCondition;
-	Poco::Mutex requestMutex;
-	std::atomic<bool> requestInFlight;
-	std::atomic<bool> seeking;				// Are we performing a seeking operation?
-	std::atomic<uint64_t> seekingPosition;	// Position to seek to.
-	Poco::Condition seekingCondition;
-	Poco::Mutex seekingMutex;
-	
-	Poco::Mutex streamTrackQueueMutex;
-	std::queue<std::string> streamTrackQueue;
-}; */
-
-
 struct FileMetaInfo {
 	//std::atomic<uint32_t> filesize;		// bytes.
 	std::atomic<uint64_t> duration;		// seconds
@@ -83,12 +47,10 @@ struct FileMetaInfo {
 
 
 // --- Globals ---
-//extern DataBuffer media_buffer;
 extern FileMetaInfo file_meta;
 extern std::atomic<bool> playerStarted;
 	
-//void resetDataBuffer(); // Defined in NymphCastServer.cpp
-void finishPlayback();
+void finishPlayback(); // Defined in NymphCastServer.cpp
 
 	
 class Ffplay : public Poco::Runnable {

@@ -42,7 +42,6 @@ uint32_t DataBuffer::byteIndexHigh = 0;
 std::atomic<bool> DataBuffer::eof = false;
 std::atomic<DataBuffer::BufferState> DataBuffer::state;
 std::mutex DataBuffer::bufferMutex;
-//DataRequestCallback DataBuffer::dataRequestCallback = 0;
 SeekRequestCallback DataBuffer::seekRequestCallback = 0;
 std::condition_variable* DataBuffer::dataRequestCV = 0;
 std::mutex DataBuffer::dataWaitMutex;
@@ -101,12 +100,6 @@ bool DataBuffer::cleanup() {
 	
 	return true;
 }
-
-
-// --- SET DATA REQUEST CALLBACK ---
-/* void DataBuffer::setDataRequestCallback(DataRequestCallback callback) {
-	dataRequestCallback = callback;
-} */
 
 
 // --- SET SEEK REQUEST CALLBACK ---
@@ -169,7 +162,6 @@ void DataBuffer::requestData() {
 	std::unique_lock<std::mutex> lk(dataWaitMutex);
 	using namespace std::chrono_literals;
 	while (dataWaitCV.wait_for(lk, 150ms) != std::cv_status::timeout) {
-		//if (stat == std::cv_status::timeout) { break; }
 		if (!dataRequestPending) { break; }
 	}
 }
@@ -235,7 +227,6 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		while (!seekRequestPending) {
 			std::cv_status stat = seekRequestCV.wait_for(lk, 150ms);
 			if (stat == std::cv_status::timeout) { return -1; }
-			//if (!seekRequestPending) { break; }
 		}
 		
 		state = DBS_IDLE;
