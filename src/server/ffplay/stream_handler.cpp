@@ -758,6 +758,9 @@ int StreamHandler::read_thread(void *arg) {
 		
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
+			// FIXME: hack.
+			if (ret == AVERROR_EOF) { break; }
+			
 			// EOF or error. 
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
                 if (is->video_stream >= 0)
