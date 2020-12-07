@@ -270,7 +270,7 @@ void show_help_default(const char *opt, const char *arg)
  * @return The number of bytes read into the buffer.
  */
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
-	uint32_t bytesRead = DataBuffer::read(buf_size, buf);	
+	uint32_t bytesRead = DataBuffer::read(buf_size, buf);
 	if (bytesRead == 0) { return AVERROR_EOF; }	
 	return bytesRead;
 	
