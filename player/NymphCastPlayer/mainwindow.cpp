@@ -250,13 +250,16 @@ void MainWindow::remoteListRefresh() {
 // --- REMOTE CONNECT SELECTED ---
 // Connect to the selected remote server.
 void MainWindow::remoteConnectSelected() {
-	if (!connected) { return; }
+	if (connected) { return; }
 	
 	//QListWidgetItem* item = ui->remotesListWidget->currentItem();
 	//QString ip = item->data(Qt::UserRole).toString();
 	QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
 	
-	if (items.size() == 0) { return; }
+	if (items.size() == 0) { 
+		QMessageBox::warning(this, tr("No selection"), tr("No remotes were selected."));
+		return; 
+	}
 	
 	// The first (index 0) remote is connected to as the master remote. Any further remotes are
 	// sent to the master remote as slave remotes.
