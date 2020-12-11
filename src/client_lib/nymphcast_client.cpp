@@ -325,6 +325,34 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 }
 
 
+// --- FIND SHARES ---
+std::vector<NymphCastRemote> NymphCastClient::findShares() {
+	// Perform NyanSD service discovery query for NymphCast media servers.
+	std::vector<NYSD_query> queries;
+	std::vector<NYSD_service> responses;
+	std::vector<NymphCastRemote> remotes;
+	
+	NYSD_query query;
+	query.protocol = NYSD_PROTOCOL_ALL;
+	query.filter = "nymphcast_mediaserver";
+	queries.push_back(query);
+	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
+	
+	// Process responses.
+	for (int i = 0; i < responses.size(); ++i) {
+		NymphCastRemote rm;
+		rm.ipv4 = NyanSD::ipv4_uintToString(responses[i].ipv4);
+		rm.ipv6 = responses[i].ipv6;
+		rm.name = responses[i].hostname;
+		rm.port = responses[i].port;
+		
+		remotes.push_back(rm);
+	}
+	
+	return remotes;
+}
+
+
 // --- CONNECT SERVER ---
 bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 	std::string serverip = "127.0.0.1";
@@ -396,6 +424,107 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 	// Shutdown.
 	std::string result;
 	NymphRemoteServer::disconnect(handle, result);
+	
+	return true;
+}
+
+
+// --- GET SHARES ---
+std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserver) {
+	std::vector<NymphMediaFile> files;
+	
+	// Establish new connection to mediaserver.
+	uint32_t mshandle;
+	std::string result;
+	if (!NymphRemoteServer::connect(mediaserver.ipv4, 4004, mshandle, 0, result)) {
+		std::cout << "Connecting to remote server failed: " << result << std::endl;
+		return files;
+	}
+	
+	// Call RPC function to get the list of shared files on the server.
+	std::vector<NymphType*> values;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(mshandle, "getFileList", values, returnValue, result)) {
+		std::cout << "Error calling remote method getFileList: " << result << std::endl;
+		return files;
+	}
+	
+	if (returnValue->type() != NYMPH_ARRAY) {
+		std::cout << "Return value wasn't an array. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(mshandle, result);
+		return files;
+	}
+	
+	// Disconnect from remote mediaserver.
+	NymphRemoteServer::disconnect(mshandle, result);
+	
+	// Parse array and return it.
+	std::vector<NymphType*> ncf = ((NymphArray*) returnValue)->getValues();
+	for (int j = 0; j < ncf.size(); ++j) {
+		NymphMediaFile file;
+		file.mediaserver = mediaserver;
+		NymphType* value = 0;
+		((NymphStruct*) ncf[j])->getValue("id", value);
+		file.id = ((NymphUint32*) value)->getValue();
+		((NymphStruct*) ncf[j])->getValue("name", value);
+		file.name = ((NymphString*) value)->getValue();
+		((NymphStruct*) ncf[j])->getValue("section", value);
+		file.section = ((NymphString*) value)->getValue();
+		
+		files.push_back(file);
+	}
+		
+	return files;
+}
+
+
+// --- PLAY SHARE ---
+bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers) {
+	if (receivers.empty()) { return false; }
+	
+	// Establish new connection to mediaserver.
+	uint32_t mshandle;
+	std::string result;
+	if (!NymphRemoteServer::connect(file.mediaserver.ipv4, 4004, mshandle, 0, result)) {
+		std::cout << "Connecting to remote server failed: " << result << std::endl;
+		return false;
+	}
+	
+	// Encode receivers.
+	NymphArray* recArr = new NymphArray();
+	for (int i = 0; i < receivers.size(); ++i) {
+		NymphStruct* remote = new NymphStruct;
+		remote->addPair("name", new NymphString(receivers[i].name));
+		remote->addPair("ipv4", new NymphString(receivers[i].ipv4));
+		remote->addPair("ipv6", new NymphString(receivers[i].ipv6));
+		recArr->addValue(remote);
+	}
+	
+	// Encode file data.
+	NymphUint32* fileId = new NymphUint32(file.id);
+	
+	// Call RPC function to get the list of shared files on the server.
+	std::vector<NymphType*> values;
+	values.push_back(fileId);
+	values.push_back(recArr);
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(mshandle, "playMedia", values, returnValue, result)) {
+		std::cout << "Error calling remote method playMedia: " << result << std::endl;
+		return false;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(mshandle, result);
+		return false;
+	}
+	
+	// Disconnect from remote mediaserver.
+	NymphRemoteServer::disconnect(mshandle, result);
+	
+	// Check result.
+	uint8_t res = ((NymphUint8*) returnValue)->getValue();
+	if (res != 0) { return false; }
 	
 	return true;
 }

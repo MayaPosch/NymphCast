@@ -49,6 +49,14 @@ struct NymphPlaybackStatus {
 };
 
 
+struct NymphMediaFile {
+	NymphCastRemote mediaserver;
+	uint32_t id;
+	std::string name;
+	std::string section;
+};
+
+
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
 typedef std::function<void(uint32_t handle, NymphPlaybackStatus status)> StatusUpdateFunction;
 
@@ -78,8 +86,12 @@ public:
 	std::string loadResource(uint32_t handle, std::string appId, std::string name);
 
 	std::vector<NymphCastRemote> findServers();
+	std::vector<NymphCastRemote> findShares();
 	bool connectServer(std::string ip, uint32_t &handle);
 	bool disconnectServer(uint32_t handle);
+	
+	std::vector<NymphMediaFile> getShares(NymphCastRemote mediaserver);
+	bool playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers);
 	
 	bool addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes);
 	bool castFile(uint32_t handle, std::string filename);
