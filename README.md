@@ -19,6 +19,7 @@ The current development version is v0.1-alpha4. Version 0.1 will be the first re
 - [x] Streaming media content (files) between client and server.
 - [x] Streaming online content by passing a URL to the server.
 - [x] Support all mainstream audio and video codecs using ffmpeg.
+- [x] Run AngelScript-based apps with a custom API for external communication.
 - [x] Multi-cast media content to multiple servers with good synchronization.
 - [ ] Playback of media content shared on the local network.
 
@@ -33,6 +34,7 @@ The current development version is v0.1-alpha4. Version 0.1 will be the first re
 - [ ] Release.
 
 ## Components ##
+
 
 The NymphCast project consists out of multiple components:
 
