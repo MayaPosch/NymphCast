@@ -11,6 +11,39 @@ NymphCast requires at least the server application to run on a target device, wh
 
 Client-side core functionality is provided through the NymphCast library.
 
+## Features & Status ##
+
+The current development version is v0.1-alpha4. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
+
+
+- [x] Streaming media content (files) between client and server.
+- [x] Streaming online content by passing a URL to the server.
+- [x] Support all mainstream audio and video codecs using ffmpeg.
+- [x] Multi-cast media content to multiple servers with good synchronization.
+- [ ] Playback of media content shared on the local network.
+
+**Timeline for the v0.1 release:**
+
+- [x] Begin implementation.
+- [ ] Implemented all features.
+- [ ] Validated features.
+- [ ] Feature freeze.
+- [ ] Beta testing start.
+- [ ] Release candidates.
+- [ ] Release.
+
+## Components ##
+
+The NymphCast project consists out of multiple components:
+
+Component | Purpose | Status
+---|---|---
+NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha4
+NymphCast Client SDK | Software Development Kit for developing NymphCast clients. | v0.1-alpha4
+NymphCast Client | CLI-based NymphCast client. SDK reference implementation. | v0.1-alpha4
+NymphCast Player | Graphical, Qt-based NymphCast client. | v0.1-alpha4
+NymphCast Player Android | Android-based NymphCast client. | v0.1-alpha0
+[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application that makes media content available on the LAN. | v0.1-alpha0
 
 ### **NymphCast Player Client** ###
 
@@ -20,21 +53,20 @@ The NymphCast Player is provided as a demonstration of the NymphCast SDK (see de
 
 ### **Server Platforms** ###
 
-The server targets SBCs, but like the client (and SDK) should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency:
+The server should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency.
 
-* **Desktop/Server:** Windows, Linux, macOS, Solaris, HP-UX, AIX
-* **Embedded/Mobile:** Windows Embedded CE, Embedded Linux (uClibc or glibc), iOS, Android, QNX, VxWorks
+For audio and video playback, the server relies on the FFmpeg and SDL2 libraries, which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
 
-The server relies on the FFmpeg and SDL2 libraries, which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
+### **Client Platforms** ###
 
-### **Limitations** ###
+For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support.
 
-The server is assumed to have 100 MB heap space free for caching.
+For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required.
 
 <a id="id-rs"></a>
 ## Repository Structure ##
 
-The repository currently contains the NymphCast server, NymphCast Player client sources. Some developer tools are also provided but are of no concern for the first-time user.
+The repository currently contains the NymphCast server, client SDK and NymphCast Player client sources.
 
 	/
 	|- player 	(the NymphCast demonstration client)
@@ -84,18 +116,27 @@ To start the server, execute the binary (from the `bin/` folder) to have it star
 `./nymphcast_server -c nymphcast_config.ini`.
  
 The server will listen on all network interfaces for incoming connections. It supports the following options:
-<pre>
+```
 -h	--help				Get this help message.
 -c	--configuration		Path to the configuration file.
 -a	--apps				Path to the NymphCast apps folder.
 -w	--wallpaper			Path to the wallpapers folder.
 -v	--version			Output NymphCast server version and exit.
-</pre>
+```
 
-The **client binary** has to be provided with the filename of a media file that should be sent to the remote server, with an optional IP address of the remote server:
+The **client binary** supports the following flags:
 
-	$ nymphcast_client <filename>
-	$ nymphcast_client <IP> <filename>
+```
+Usage:
+        nymphcast_client <options>
+
+Options:
+-h      --help          Get this help message.
+-v      --version       Output the NymphCast client version and exit.
+-r      --remotes       Display online NymphCast receivers and quit.
+-f      --file          Name of file to stream to remote receiver.
+-i      --ip            IP address of the target NymphCast receiver.
+```
 
 The **NymphCast Player** is a GUI-based application and accepts no command line options.
 
