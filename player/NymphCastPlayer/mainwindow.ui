@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
-     <widget class="QTabWidget" name="appGuiTab">
+     <widget class="QTabWidget" name="sharesiTab">
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -420,6 +420,34 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Shares</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_11">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <item>
+           <widget class="QPushButton" name="sharesScanButton">
+            <property name="text">
+             <string>Scan for shares</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="sharesTreeView"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="sharesPlayButton">
+            <property name="text">
+             <string>Play selected file</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -430,7 +458,7 @@
      <x>0</x>
      <y>0</y>
      <width>360</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

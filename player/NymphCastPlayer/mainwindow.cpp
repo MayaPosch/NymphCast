@@ -90,6 +90,10 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     //connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     
+    // Shares tab.
+    connect(ui->sharesScanButton, SIGNAL(clicked()), this, SLOT(scanForShares()));
+    connect(ui->sharesPlayButton, SIGNAL(clicked()), this, SLOT(playSelectedShare()));
+    
     using namespace std::placeholders; 
     ui->appTabGuiTextBrowser->setResourceHandler(std::bind(&MainWindow::loadResource, this, _1));
 	
@@ -99,6 +103,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
 	client.setStatusUpdateCallback(std::bind(&MainWindow::statusUpdateCallback,	this, _1, _2));
+    
+    // Set values.
+    ui->sharesTreeView->setModel(&sharesModel);
 	
 #if defined(Q_OS_ANDROID)
 	// On Android platforms we read in the media files into the playlist as they are in standard
@@ -273,7 +280,8 @@ void MainWindow::remoteConnectSelected() {
 	
 	std::vector<NymphCastRemote> slaves;
 	for (int i = 1; i < items.size(); ++i) {
-		slaves.push_back(remotes[i]);
+        ref = items[i]->data(Qt::UserRole).toInt();
+		slaves.push_back(remotes[ref]);
 	}
 	
 	client.addSlaves(serverHandle, slaves);
@@ -538,6 +546,76 @@ QByteArray MainWindow::loadResource(const QUrl &name) {
     
     QByteArray page = QByteArray::fromStdString(client.loadResource(serverHandle, appId, filename));
     return page;
+}
+
+
+// --- SCAN FOR SHARES ---
+void MainWindow::scanForShares() {
+    // Scan for media server instances on the network.
+    std::vector<NymphCastRemote> mediaservers = client.findShares();
+    if (mediaservers.empty()) {
+        QMessageBox::warning(this, tr("No media servers found."), tr("No media servers found."));
+        return;
+    }
+    
+    // For each media server, request the shared file list.
+    sharesModel.clear();
+    mediaFiles.clear();
+    QStandardItem* parentItem = sharesModel.invisibleRootItem();
+    for (uint32_t i = 0; i < mediaservers.size(); ++i) {
+        std::vector<NymphMediaFile> files = client.getShares(mediaservers[9]);
+        if (files.empty()) { continue; }
+        
+        // Insert into model. Use the media server's host name as top folder, with the shared
+        // files inserted underneath it.
+        QStandardItem* item = new QStandardItem(QString::fromStdString(mediaservers[i].name));
+        item->setSelectable(false);
+        for (uint32_t j = 0; j < files.size(); ++j) {
+            QStandardItem* fn = new QStandardItem(QString::fromStdString(files[j].name));
+            QList<QVariant> ids;
+            ids.append(QVariant(files[j].id));
+            mediaFiles.push_back(files);
+            ids.append(QVariant(mediaFiles.size()));
+            
+            fn->setData(QVariant(ids), Qt::UserRole);
+            item->appendRow(fn);
+        }
+        
+        parentItem->appendRow(item);
+    }
+}
+
+
+// --- PLAY SELECTED SHARE --
+void MainWindow::playSelectedShare() {
+    if (!connected) { return; }
+    
+    // Get the currently selected file name and obtain the ID.
+    QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
+    if (indexes.size() == 0) {
+        QMessageBox::warning(this, tr("No file selected."), tr("No media file selected."));
+        return;
+    }
+    else if (indexes.size() > 1) {
+        QMessageBox::warning(this, tr("No file selected."), tr("No media file selected."));
+        return;
+    }
+    
+    QMap<int, QVariant> data = sharesModel.itemData(indexes[0]);
+    QList<QVariant> ids = data[Qt::UserRole].toList();
+    
+    // Obtain list of target receivers.
+    QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
+    std::vector<NymphCastRemote> receivers;
+	for (int i = 0; i < items.size(); ++i) {
+        int ref = items[i]->data(Qt::UserRole).toInt();
+		receivers.push_back(remotes[ref]);
+	}
+    
+    // Play file via media server.
+    if (!client.playShare(mediaFiles[1][0], receivers)) {
+         //
+    }
 }
 
 
