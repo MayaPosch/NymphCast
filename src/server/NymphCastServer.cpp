@@ -1084,11 +1084,11 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	if (!playerStarted) {
 		// if we're in master mode, only start after the slaves are starting as well.
 		// In slave mode, we execute time-critical commands like playback start when
-		if (serverMode == NCS_MODE_MASTER) {
+		/* if (serverMode == NCS_MODE_MASTER) {
 			// We use the calculated latency to the slave to determine when to send the play
 			// command to the slave.
 			// TODO:
-		}
+		} */
 		
 		// Start playback locally.
 		playerStarted = true;
@@ -1725,6 +1725,9 @@ int main(int argc, char** argv) {
 	long timeout = 5000; // 5 seconds.
 	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
 	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	
+	// Initialise the client component (RemoteServer) for use with slave remotes.
+	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
