@@ -261,7 +261,11 @@
             </widget>
            </item>
            <item>
-            <widget class="QListWidget" name="remotesListWidget"/>
+            <widget class="QListWidget" name="remotesListWidget">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::MultiSelection</enum>
+             </property>
+            </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
