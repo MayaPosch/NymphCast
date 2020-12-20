@@ -1147,6 +1147,19 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	
 	uint8_t volume = ((NymphUint8*) msg->parameters()[0])->getValue();
 	
+	std::vector<NymphType*> values;
+	values.push_back(new NymphUint8(volume));
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "volume_set", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
 	ffplay.setVolume(volume);
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -1158,6 +1171,18 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 // uint8 volume_up()
 NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "volume_up", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
 	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
@@ -1174,6 +1199,18 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "volume_down", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_9;
@@ -1188,6 +1225,18 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 // uint8 volume_mute()
 NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "volume_mute", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
 	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
@@ -1204,6 +1253,18 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "playback_start", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_SPACE;
@@ -1218,6 +1279,18 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 // uint8 playback_stop()
 NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "playback_stop", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
 	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
@@ -1234,6 +1307,18 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "playback_pause", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_SPACE;
@@ -1246,6 +1331,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 
 // --- PLAYBACK REWIND ---
 // uint8 playback_rewind()
+// TODO:
 NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
@@ -1256,6 +1342,7 @@ NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 
 // --- PLAYBACK FORWARD ---
 // uint8 playback_forward()
+// TODO:
 NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
@@ -1310,6 +1397,19 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 	
 	castingUrl = true;
 	castUrl = ((NymphString*) msg->parameters()[0])->getValue();
+	
+	std::vector<NymphType*> values;
+	values.push_back(new NymphString(castUrl));
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastRemote& rm = slave_remotes[i];
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "playback_url", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
