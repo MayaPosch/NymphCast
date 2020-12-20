@@ -28,7 +28,7 @@
 #include <fstream>
 #include <mutex>
 #include <condition_variable>
-#include <ctime>
+//#include <ctime>
 
 namespace fs = std::filesystem;
 
@@ -833,7 +833,10 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 		serverMode = NCS_MODE_SLAVE;
 		//DataBuffer::setFileSize(it->second.filesize);
 		DataBuffer::setSessionHandle(session);
-		returnMsg->setResultValue(new NymphSint64(time(0)));
+		
+		Poco::Timestamp ts;
+		int64_t now = (int64_t) ts.epochMicroseconds();
+		returnMsg->setResultValue(new NymphSint64(now));
 	}
 	
 	// TODO: Obtain timestamp, compare with current time.
@@ -866,7 +869,9 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 		std::condition_variable cv;
 		std::mutex cv_m;
 		std::unique_lock<std::mutex> lk(cv_m);
-		std::chrono::system_clock::time_point then = std::chrono::system_clock::from_time_t(when);
+		//std::chrono::system_clock::time_point then = std::chrono::system_clock::from_time_t(when);
+		std::chrono::microseconds dur(when);
+		std::chrono::time_point<std::chrono::system_clock> then(dur);
 		while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
 		
 		// Start player.
@@ -1013,7 +1018,8 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		
 		// Attempt to start slave mode on the remote.
 		// Send the current timestamp to the slave remote as part of the latency determination.
-		time_t now = time(0);
+		Poco::Timestamp ts;
+		int64_t now = (int64_t) ts.epochMicroseconds();
 		std::vector<NymphType*> values;
 		values.push_back(new NymphSint64(now));
 		NymphType* returnValue = 0;
@@ -1077,8 +1083,9 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// If passing the message through to slave remotes, add the timestamp to the message.
 	// This timestamp is the current time plus the largest master-slave latency times 2.
 	if (serverMode == NCS_MODE_MASTER) {
-		time_t now = time(0);
-		time_t then = (slaveLatencyMax * 2); // TODO: latency max.
+		Poco::Timestamp ts;
+		int64_t now = (int64_t) ts.epochMicroseconds();
+		int64_t then = (slaveLatencyMax * 2); // TODO: latency max.
 		
 		// Prepare data vector.
 		std::vector<NymphType*> values;
