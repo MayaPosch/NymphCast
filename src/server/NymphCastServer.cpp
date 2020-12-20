@@ -1048,7 +1048,11 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		// Use returned time stamp to calculate the delay.
 		time_t theirs = ((NymphSint64*) returnValue)->getValue();
 		rm.delay = theirs - now;
-		if (rm.delay > slaveLatencyMax) { slaveLatencyMax = rm.delay; }
+		if (rm.delay > slaveLatencyMax) { 
+			slaveLatencyMax = rm.delay;
+			std::cout << "Max slave latency increased to: " << slaveLatencyMax << " microseconds." 
+						<< std::endl;
+		}
 	}
 	
 	serverMode = NCS_MODE_MASTER;
@@ -1079,13 +1083,12 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// Write string into buffer.
 	DataBuffer::write(mediaData);
 	
-	// TODO: transfer copy of new buffer data to slave remotes as well.
 	// If passing the message through to slave remotes, add the timestamp to the message.
 	// This timestamp is the current time plus the largest master-slave latency times 2.
 	if (serverMode == NCS_MODE_MASTER) {
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
-		int64_t then = (slaveLatencyMax * 2); // TODO: latency max.
+		int64_t then = now + (slaveLatencyMax * 2);
 		
 		// Prepare data vector.
 		std::vector<NymphType*> values;
