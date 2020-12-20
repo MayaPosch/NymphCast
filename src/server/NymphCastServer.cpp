@@ -777,7 +777,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::string clientStr = ((NymphString*) msg->parameters()[0])->getValue();
 	std::cout << "Client string: " << clientStr << "\n";
 	
-	// TODO: check whether we're not operating in slave mode already.
+	// TODO: check whether we're not operating in slave or master mode already.
 	serverMode = NCS_MODE_STANDALONE;
 	
 	// Register this client with its ID. Return error if the client ID already exists.
@@ -836,12 +836,12 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 		returnMsg->setResultValue(new NymphSint64(time(0)));
 	}
 	
-	// Obtain timestamp, compare with current time.
+	// TODO: Obtain timestamp, compare with current time.
 	//time_t then = ((NymphSint64*) msg->parameters()[0])->getValue();
 	
-	// Send delay request to master.
+	// TODO: Send delay request to master.
 	
-	// Determine final latency and share with master.
+	// TODO: Determine final latency and share with master.
 	
 	return returnMsg;
 }
@@ -892,6 +892,8 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 	if (it != clients.end()) {
 		clients.erase(it);
 	}
+	
+	serverMode = NCS_MODE_STANDALONE;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	returnMsg->setResultValue(new NymphBoolean(true));
@@ -1029,6 +1031,8 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		rm.delay = theirs - now;
 		if (rm.delay > slaveLatencyMax) { slaveLatencyMax = rm.delay; }
 	}
+	
+	serverMode = NCS_MODE_MASTER;
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
