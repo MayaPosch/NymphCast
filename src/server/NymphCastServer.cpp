@@ -893,6 +893,19 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 		clients.erase(it);
 	}
 	
+	// Disconnect any slave remotes if we're connected.
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			// Establish RPC connection to remote. Starts the PTP-like handshake.
+			NymphCastRemote& rm = slave_remotes[i];
+			std::string result;
+			if (!NymphRemoteServer::disconnect(rm.handle, result)) {
+				// Failed to connect, error out. Disconnect from any already connected slaves.
+				std::cerr << "Slave disconnect error: " << result << std::endl;
+			}
+		}
+	}
+	
 	serverMode = NCS_MODE_STANDALONE;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
