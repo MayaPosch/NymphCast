@@ -1085,10 +1085,11 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	
 	// If passing the message through to slave remotes, add the timestamp to the message.
 	// This timestamp is the current time plus the largest master-slave latency times 2.
+	int64_t then = 0;
 	if (serverMode == NCS_MODE_MASTER) {
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
-		int64_t then = now + (slaveLatencyMax * 2);
+		then = now + (slaveLatencyMax * 2);
 		
 		// Prepare data vector.
 		std::vector<NymphType*> values;
@@ -1116,6 +1117,16 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 			// command to the slave.
 			// TODO:
 		} */
+		
+		if (serverMode == NCS_MODE_MASTER) {
+			// Start the player when the time in 'then' has been reached.
+			std::condition_variable cv;
+			std::mutex cv_m;
+			std::unique_lock<std::mutex> lk(cv_m);
+			std::chrono::microseconds dur(then);
+			std::chrono::time_point<std::chrono::system_clock> when(dur);
+			while (cv.wait_until(lk, when) != std::cv_status::timeout) { }
+		}
 		
 		// Start playback locally.
 		playerStarted = true;
