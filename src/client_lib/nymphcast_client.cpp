@@ -421,8 +421,17 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 	NymphRemoteServer::removeCallback("MediaStopCallback");
 	NymphRemoteServer::removeCallback("MediaSeekCallback");
 	
-	// Shutdown.
+	// Send disconnect command.
 	std::string result;
+	std::vector<NymphType*> values;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "disconnect", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return false;
+	}
+	
+	// Shutdown.
 	NymphRemoteServer::disconnect(handle, result);
 	
 	return true;
