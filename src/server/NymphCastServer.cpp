@@ -755,7 +755,7 @@ struct NymphCastRemote {
 	std::string ipv6;
 	uint16_t port;
 	uint32_t handle;
-	time_t delay;
+	int64_t delay;
 };
 
 
@@ -778,6 +778,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::cout << "Client string: " << clientStr << "\n";
 	
 	// TODO: check whether we're not operating in slave or master mode already.
+	std::cout << "Switching to stand-alone server mode." << std::endl;
 	serverMode = NCS_MODE_STANDALONE;
 	
 	// Register this client with its ID. Return error if the client ID already exists.
@@ -830,6 +831,7 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	}
 	else {
 		// FIXME: for now we just return the current time.
+		std::cout << "Switching to slave server mode." << std::endl;
 		serverMode = NCS_MODE_SLAVE;
 		//DataBuffer::setFileSize(it->second.filesize);
 		DataBuffer::setSessionHandle(session);
@@ -898,19 +900,26 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 		clients.erase(it);
 	}
 	
+	std::cout << "Current server mode: " << serverMode << std::endl;
+	
 	// Disconnect any slave remotes if we're connected.
 	if (serverMode == NCS_MODE_MASTER) {
+		std::cout << "# of slave remotes: " << slave_remotes.size() << std::endl;
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			// Establish RPC connection to remote. Starts the PTP-like handshake.
+			// Disconnect from slave remote.
 			NymphCastRemote& rm = slave_remotes[i];
+			std::cout << "Disconnecting slave: " << rm.name << std::endl;
 			std::string result;
 			if (!NymphRemoteServer::disconnect(rm.handle, result)) {
 				// Failed to connect, error out. Disconnect from any already connected slaves.
 				std::cerr << "Slave disconnect error: " << result << std::endl;
 			}
 		}
+		
+		slave_remotes.clear();
 	}
 	
+	std::cout << "Switching to stand-alone server mode." << std::endl;
 	serverMode = NCS_MODE_STANDALONE;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
@@ -995,6 +1004,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		remote.ipv4 = ((NymphString*) value)->getValue();
 		((NymphStruct*) remotes[i])->getValue("ipv6", value);
 		remote.ipv6 = ((NymphString*) value)->getValue();
+		remote.delay = 0;
 	
 		slave_remotes.push_back(remote);
 	}
@@ -1048,6 +1058,8 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		// Use returned time stamp to calculate the delay.
 		time_t theirs = ((NymphSint64*) returnValue)->getValue();
 		rm.delay = theirs - now;
+		std::cout << "Slave delay: " << rm.delay << " microseconds." << std::endl;
+		std::cout << "Current max slave delay: " << slaveLatencyMax << std::endl;
 		if (rm.delay > slaveLatencyMax) { 
 			slaveLatencyMax = rm.delay;
 			std::cout << "Max slave latency increased to: " << slaveLatencyMax << " microseconds." 
@@ -1055,6 +1067,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	
+	std::cout << "Switching to master server mode." << std::endl;
 	serverMode = NCS_MODE_MASTER;
 	
 	returnMsg->setResultValue(new NymphUint8(0));
