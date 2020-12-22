@@ -867,14 +867,15 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	DataBuffer::write(mediaData);
 	
 	if (!playerStarted) {
-		// Start the player when the time in 'when' has been reached.
+		// Start the player when the delay in 'when' has been reached.
 		std::condition_variable cv;
 		std::mutex cv_m;
 		std::unique_lock<std::mutex> lk(cv_m);
 		//std::chrono::system_clock::time_point then = std::chrono::system_clock::from_time_t(when);
 		std::chrono::microseconds dur(when);
 		std::chrono::time_point<std::chrono::system_clock> then(dur);
-		while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
+		//while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
+		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 		
 		// Start player.
 		playerStarted = true;
@@ -1040,6 +1041,10 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 			return returnMsg;
 		}
 		
+		// Get new time. This should be roughly twice the latency to the slave remote.
+		ts.update();
+		int64_t pong = ts.epochMicroseconds();
+		
 		// Check return value.
 		if (returnValue->type() != NYMPH_SINT64) {
 			std::cout << "Return value wasn't a sint64. Type: " << returnValue->type() << std::endl;
@@ -1056,8 +1061,10 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Use returned time stamp to calculate the delay.
+		// FIXME: using stopwatch-style local time to determine latency for now.
 		time_t theirs = ((NymphSint64*) returnValue)->getValue();
-		rm.delay = theirs - now;
+		//rm.delay = theirs - now;
+		rm.delay = pong - now;
 		std::cout << "Slave delay: " << rm.delay << " microseconds." << std::endl;
 		std::cout << "Current max slave delay: " << slaveLatencyMax << std::endl;
 		if (rm.delay > slaveLatencyMax) { 
@@ -1102,16 +1109,21 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	if (serverMode == NCS_MODE_MASTER) {
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
-		then = now + (slaveLatencyMax * 2);
+		//then = now + (slaveLatencyMax * 2);
 		
-		// Prepare data vector.
-		std::vector<NymphType*> values;
-		values.push_back(new NymphBlob(mediaData));
-		values.push_back(new NymphBoolean(done));
-		values.push_back(new NymphSint64(then));
+		NymphBlob* mediaBlob = new NymphBlob(mediaData);
+		NymphBoolean* doneBool = new NymphBoolean(done);
 		
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastRemote& rm = slave_remotes[i];
+			then = slaveLatencyMax - rm.delay;
+		
+			// Prepare data vector.
+			std::vector<NymphType*> values;
+			values.push_back(mediaBlob);
+			values.push_back(doneBool);
+			values.push_back(new NymphSint64(then));
+			
 			std::string result;
 			NymphType* returnValue = 0;
 			if (!NymphRemoteServer::callMethod(rm.handle, "receiveDataMaster", values, returnValue, result)) {
@@ -1132,13 +1144,13 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		} */
 		
 		if (serverMode == NCS_MODE_MASTER) {
-			// Start the player when the time in 'then' has been reached.
+			// Start the player when the delay in 'then' has been reached.
 			std::condition_variable cv;
 			std::mutex cv_m;
 			std::unique_lock<std::mutex> lk(cv_m);
-			std::chrono::microseconds dur(then);
-			std::chrono::time_point<std::chrono::system_clock> when(dur);
-			while (cv.wait_until(lk, when) != std::cv_status::timeout) { }
+			std::chrono::microseconds dur(slaveLatencyMax);
+			//std::chrono::time_point<std::chrono::system_clock> when(dur);
+			while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 		}
 		
 		// Start playback locally.
