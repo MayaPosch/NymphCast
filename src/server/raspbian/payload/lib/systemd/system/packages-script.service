@@ -1,0 +1,12 @@
+[Unit]
+Description=Unattended package installation on the Pi
+Requires=network-online.target
+Requires=time-sync.target
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/packages-script.sh

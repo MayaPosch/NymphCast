@@ -1,0 +1,9 @@
+[Unit]
+Description=Unattended configuration of the Pi
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/one-time-script.sh
