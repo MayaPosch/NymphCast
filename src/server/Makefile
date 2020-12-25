@@ -117,3 +117,30 @@ install-systemd:
 install-openrc:
 	install -d $(DESTDIR)$(CONFDIR)/init.d/	
 	sed ${SED_REPLACE} openrc/nymphcast > $(DESTDIR)$(CONFDIR)/init.d/nymphcast
+
+
+# Construct an archive for Raspbian: audio-only, or full.
+ar-rasp-full: bin/$(OUTPUT)
+	$(MAKEDIR) out/tmp
+	cp -r raspbian/. out/tmp/
+	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	cp nymphcast_video_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
+	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
+	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
+	cp -r wallpapers/ out/tmp/payload/usr/local/share/nymphcast/.
+	cp forest_brook.jpg out/tmp/payload/usr/local/share/nymphcast/wallpapers/.
+	cp green.jpg out/tmp/payload/usr/local/share/nymphcast/wallpapers/.
+	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
+	cd out/tmp && zip -vr ../nymphcast_raspbian.zip . && cd -
+	
+ar-rasp-audio: bin/$(OUTPUT)
+	rm -rf out/tmp
+	rm out/nymphcast_audio_raspbian.zip
+	$(MAKEDIR) out/tmp
+	cp -r raspbian/. out/tmp/
+	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	cp nymphcast_audio_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
+	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
+	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
+	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
+	cd out/tmp && zip -vr ../nymphcast_audio_raspbian.zip . && cd -
