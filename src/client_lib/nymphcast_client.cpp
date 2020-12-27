@@ -473,11 +473,11 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 		NymphMediaFile file;
 		file.mediaserver = mediaserver;
 		NymphType* value = 0;
-		((NymphStruct*) ncf[j])->getValue("id", value);
+		if (!((NymphStruct*) ncf[j])->getValue("id", value)) { return files; }
 		file.id = ((NymphUint32*) value)->getValue();
-		((NymphStruct*) ncf[j])->getValue("name", value);
+		if (!((NymphStruct*) ncf[j])->getValue("filename", value)) { return files; }
 		file.name = ((NymphString*) value)->getValue();
-		((NymphStruct*) ncf[j])->getValue("section", value);
+		if (!((NymphStruct*) ncf[j])->getValue("section", value)) { return files; }
 		file.section = ((NymphString*) value)->getValue();
 		
 		files.push_back(file);
