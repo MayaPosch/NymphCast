@@ -563,7 +563,7 @@ void MainWindow::scanForShares() {
     mediaFiles.clear();
     QStandardItem* parentItem = sharesModel.invisibleRootItem();
     for (uint32_t i = 0; i < mediaservers.size(); ++i) {
-        std::vector<NymphMediaFile> files = client.getShares(mediaservers[9]);
+        std::vector<NymphMediaFile> files = client.getShares(mediaservers[i]);
         if (files.empty()) { continue; }
         
         // Insert into model. Use the media server's host name as top folder, with the shared
@@ -588,6 +588,7 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
+	// FIXME: use selected remote(s) as check & input here.
     if (!connected) { return; }
     
     // Get the currently selected file name and obtain the ID.
