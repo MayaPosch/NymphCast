@@ -96,6 +96,9 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 		source.clear();
 	}
 	
+	// Seek from the beginning of the file.
+	std::cout << "Seeking from file beginning..." << std::endl;
+	source.seekg(0);
 	source.seekg(position);
 	
 	// Read in first segment.
@@ -107,10 +110,6 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	uint32_t bufLen = 2048 * 1024;
 	char* buffer = new char[bufLen];
 	source.read(buffer, bufLen);
-	if (!source.good()) {
-		std::cerr << "Error while seeking. Stream bad." << std::endl;
-		return;
-	}
 	
 	// Check characters read, set EOF if at the end.
 	NymphBoolean* fileEof = new NymphBoolean(false);
