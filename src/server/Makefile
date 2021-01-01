@@ -124,6 +124,7 @@ ar-rasp-full: bin/$(OUTPUT)
 	$(MAKEDIR) out/tmp
 	cp -r raspbian/. out/tmp/
 	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	$(MAKEDIR) out/tmp/payload/etc/nymphcast
 	cp nymphcast_video_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
 	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
 	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
@@ -135,10 +136,11 @@ ar-rasp-full: bin/$(OUTPUT)
 	
 ar-rasp-audio: bin/$(OUTPUT)
 	rm -rf out/tmp
-	rm out/nymphcast_audio_raspbian.zip
+	rm -f out/nymphcast_audio_raspbian.zip
 	$(MAKEDIR) out/tmp
 	cp -r raspbian/. out/tmp/
 	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	$(MAKEDIR) out/tmp/payload/etc/nymphcast
 	cp nymphcast_audio_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
 	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
 	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
