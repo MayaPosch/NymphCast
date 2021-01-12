@@ -2226,6 +2226,8 @@ int main(int argc, char** argv) {
 	gMutex.lock();
 	gCon.wait(gMutex);
 	
+	std::cout << "Shutting down..." << std::endl;
+	
 	// Clean-up
 	DataBuffer::cleanup();
  
