@@ -573,6 +573,8 @@ void MainWindow::scanForShares() {
         for (uint32_t j = 0; j < files.size(); ++j) {
             QStandardItem* fn = new QStandardItem(QString::fromStdString(files[j].name));
             QList<QVariant> ids;
+			ids.append(QVariant(i));
+			ids.append(QVariant(j));
             ids.append(QVariant(files[j].id));
             mediaFiles.push_back(files);
             ids.append(QVariant(mediaFiles.size()));
@@ -589,7 +591,7 @@ void MainWindow::scanForShares() {
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
 	// FIXME: use selected remote(s) as check & input here.
-    if (!connected) { return; }
+    //if (!connected) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
@@ -614,7 +616,7 @@ void MainWindow::playSelectedShare() {
 	}
     
     // Play file via media server.
-    if (!client.playShare(mediaFiles[1][0], receivers)) {
+    if (!client.playShare(mediaFiles[ids[0].toInt()][ids[1].toInt()], receivers)) {
          //
     }
 }
