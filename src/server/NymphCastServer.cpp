@@ -2175,7 +2175,7 @@ int main(int argc, char** argv) {
 	NymphRemoteServer::registerCallback("MediaStatusCallback", MediaStatusCallback, 0);
 	
 	// Initialise buffer of the desired size.
-	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 10485760);
+	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 20971520); // Default 20 MB.
 	DataBuffer::init(buffer_size);
 	DataBuffer::setSeekRequestCallback(seekingHandler);
 	
