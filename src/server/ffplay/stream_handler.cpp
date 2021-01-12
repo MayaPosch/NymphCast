@@ -378,6 +378,7 @@ void StreamHandler::stream_toggle_pause(VideoState *is) {
 
 /* seek in the stream */
 void StreamHandler::stream_seek(VideoState *is, int64_t pos, int64_t rel, int seek_by_bytes) {
+	av_log(NULL, AV_LOG_INFO, "StreamHandler::stream_seek called.\n");
     if (!is->seek_req) {
         is->seek_pos = pos;
         is->seek_rel = rel;
@@ -551,7 +552,7 @@ int StreamHandler::read_thread(void *arg) {
         int64_t timestamp;
 
         timestamp = start_time;
-        /* add the stream start time */
+        // add the stream start time
         if (ic->start_time != AV_NOPTS_VALUE)
             timestamp += ic->start_time;
         ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
@@ -683,6 +684,7 @@ int StreamHandler::read_thread(void *arg) {
         }
 #endif
         if (is->seek_req) {
+			av_log(NULL, AV_LOG_INFO, "Seek request: %d, target: %d\n", is->seek_rel, is->seek_pos);
             int64_t seek_target = is->seek_pos;
             int64_t seek_min    = is->seek_rel > 0 ? seek_target - is->seek_rel + 2: INT64_MIN;
             int64_t seek_max    = is->seek_rel < 0 ? seek_target - is->seek_rel - 2: INT64_MAX;
@@ -718,6 +720,7 @@ int StreamHandler::read_thread(void *arg) {
             if (is->paused)
                 StreamHandler::step_to_next_frame(is);
         }
+		
         if (is->queue_attachments_req) {
             if (is->video_st && is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC) {
                 AVPacket copy = { 0 };
@@ -741,6 +744,7 @@ int StreamHandler::read_thread(void *arg) {
             SDL_UnlockMutex(wait_mutex);
             continue;
         }
+		
         if (!is->paused &&
             (!is->audio_st || (is->auddec.finished == is->audioq.serial && FrameQueueC::frame_queue_nb_remaining(&is->sampq) == 0)) &&
             (!is->video_st || (is->viddec.finished == is->videoq.serial && FrameQueueC::frame_queue_nb_remaining(&is->pictq) == 0))) {
