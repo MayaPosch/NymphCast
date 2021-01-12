@@ -66,10 +66,10 @@ public class RemotesRecyclerViewAdapter extends RecyclerView.Adapter<RemotesRecy
 
 						// Check that we successfully connected.
 						if (res) {
-							// Update UI.
+							// TODO: Update UI.
 						}
 						else {
-							// Display connection error.
+							// TODO: Display connection error.
 						}
 
 						break;
