@@ -18,6 +18,8 @@
 #include <chrono>
 #ifdef DEBUG
 #include <iostream>
+/* #include <fstream>
+std::ofstream outFile("out.mp3", std::ofstream::out | std::ofstream::binary); */
 #endif
 
 
@@ -221,6 +223,13 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	
 	// Check whether we have the requested data in the buffer.
 	if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
+#ifdef DEBUG
+	/* if (outFile.is_open()) {
+		outFile.close();
+	}
+	
+	outFile.open("out.mp3", std::ios::out | std::ios::binary | std::ios::trunc); */
+#endif
 		// Data is not in buffer. Reset buffer and send seek request to client.
 		reset();
 		byteIndexLow = new_offset;
@@ -269,7 +278,7 @@ bool DataBuffer::seeking() {
 // Returns the number of bytes read, or 0 in case of an error.
 uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef DEBUG
-	std::cout << "DataBuffer::read: len " << len << std::endl;
+	std::cout << "DataBuffer::read: len " << len << ". EOF: " << eof << std::endl;
 #endif
 
 	// Request more data if the buffer does not have enough unread data left, and EOF condition
@@ -302,7 +311,9 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		index += len;
 		unreadHigh -= len;
 		bytesRead += len;
-		if (unreadHigh == 0) { index = begin; } // Read from the front. Back is exhausted.
+		
+		// Read from the front if the back is exhausted.
+		if (unreadHigh == 0 && bytesFreeHigh == 0) { index = begin; } 
 	}
 	else if (unreadHigh > 0 && bytesFreeHigh > 0) {
 		// Read the bytes we have got from the back in the buffer.
@@ -375,9 +386,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 // --- WRITE ---
 // Write data into the buffer.
 uint32_t DataBuffer::write(std::string &data) {
-#ifdef DEBUG
+/* #ifdef DEBUG
 		std::cout << "DataBuffer::write called for bytes: " << data.length() << std::endl;
-#endif
+		outFile.write(data.data(), data.length());
+#endif */
 	// First check whether we can perform a straight copy. For this we need enough available bytes
 	// at the end of the buffer. Else we have to attempt to write the remainder into the front of
 	// the buffer.
@@ -410,8 +422,8 @@ uint32_t DataBuffer::write(std::string &data) {
 		back = begin; // Buffer loops back to the front after it fills up.
 		
 		uint32_t bytesToWrite = data.length() - bytesFreeHigh;
+		unreadHigh += bytesFreeHigh;
 		bytesFreeHigh = 0;
-		unreadHigh += data.length();
 		if (bytesToWrite > bytesFreeLow) {
 			// Buffer is too small for remaining bytes. Copy what we can.
 			memcpy(back, data.data() + bytesWritten, bytesFreeLow);
@@ -460,6 +472,11 @@ uint32_t DataBuffer::write(std::string &data) {
 // Set the End-Of-File status of the file being streamed.
 void DataBuffer::setEof(bool eof) {
 	DataBuffer::eof = eof;
+/* #ifdef DEBUG
+	if (eof == true) {
+		outFile.close();
+	}
+#endif */
 }
 
 
