@@ -84,6 +84,7 @@ public:
 	static uint32_t read(uint32_t len, uint8_t* bytes);
 	static uint32_t write(std::string &data);
 	static void setEof(bool eof);
+	static bool isEof();
 	
 	static void addStreamTrack(std::string track);
 	static bool hasStreamTrack();

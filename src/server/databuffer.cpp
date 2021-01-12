@@ -74,6 +74,7 @@ bool DataBuffer::init(uint32_t capacity) {
 	front = begin;
 	back = begin;
 	index = begin;
+	eof = false;
 	size = 0;
 	unread = 0;
 	unreadLow = 0;
@@ -209,6 +210,14 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 #ifdef DEBUG
 	std::cout << "New offset: " << new_offset << std::endl;
 #endif
+
+	// Ensure that the new offset isn't past the end of the file. If so, return -1.
+	if (new_offset > filesize) {
+#ifdef DEBUG
+		std::cout << "New offset larger than file size. Returning -1." << std::endl;
+#endif
+		return -1;
+	}
 	
 	// Check whether we have the requested data in the buffer.
 	if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
@@ -231,7 +240,11 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		
 		state = DBS_IDLE;
 	}
-	else {
+	else {	
+#ifdef DEBUG
+		std::cout << "Setting new buffer position." << std::endl;
+#endif
+
 		// Set the new position in the buffer.
 		uint32_t oldUnread = unread;
 		byteIndex = new_offset;							// Absolute byte index.
@@ -256,15 +269,24 @@ bool DataBuffer::seeking() {
 // Returns the number of bytes read, or 0 in case of an error.
 uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef DEBUG
-	std::cout << "DataBuffer::read: len " << len << ", bytes " << bytes << std::endl;
+	std::cout << "DataBuffer::read: len " << len << std::endl;
 #endif
 
-	if (!eof && len < unread) {
+	// Request more data if the buffer does not have enough unread data left, and EOF condition
+	// has not been reached.
+	if (!eof && len > unread) {
 		// More data should be available on the client, try to request it.
 #ifdef DEBUG
 		std::cout << "Requesting more data..." << std::endl;
 #endif
 		requestData();
+	}
+	
+	if (unread == 0 && eof) {
+#ifdef DEBUG
+		std::cout << "Reached EOF." << std::endl;
+#endif
+		return 0;
 	}
 	
 	bufferMutex.lock();
@@ -282,12 +304,30 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		bytesRead += len;
 		if (unreadHigh == 0) { index = begin; } // Read from the front. Back is exhausted.
 	}
-	else if (bytesFreeHigh > 0) {
-		// Only some bytes left on the high end, read it and return.
+	else if (unreadHigh > 0 && bytesFreeHigh > 0) {
+		// Read the bytes we have got from the back in the buffer.
+#ifdef DEBUG
+		std::cout << "Read data from back." << std::endl;
+#endif
 		memcpy(bytes, index, unreadHigh);
 		index += unreadHigh;
 		bytesRead += unreadHigh;
 		unreadHigh = 0;
+	}
+	else if (unreadHigh == 0 && unreadLow > 0) {
+		// Read what we need from the front.
+		if (len <= unreadLow) {
+			// Read the remaining requested bytes in one chunk.
+			memcpy(bytes, index, len);
+			index += len;
+			bytesRead += len;
+		}
+		else {
+			// Not enough bytes left in the buffer. Read what we can, then return.
+			memcpy(bytes, index, unreadLow);
+			index += unreadLow;
+			bytesRead += unreadLow;
+		}
 	}
 	else {
 #ifdef DEBUG
@@ -316,13 +356,11 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	// Update counters.
 	unread -= bytesRead;
 	byteIndex += bytesRead;
+	size -= bytesRead;
 	
 #ifdef DEBUG
 		std::cout << "unread " << unread << ", byteIndex " << byteIndex << std::endl;
 		std::cout << "bytesRead: " << bytesRead << std::endl;
-#endif
-	
-#ifdef DEBUG
 		std::cout << "unreadLow: " << unreadLow << ", unreadHigh: " << unreadHigh
 					<< ", bytesFreeHigh: " << bytesFreeHigh << ", bytesFreeLow: " << bytesFreeLow
 					<< std::endl;
@@ -348,7 +386,7 @@ uint32_t DataBuffer::write(std::string &data) {
 	uint32_t bytesWritten = 0;
 	if (data.length() <= bytesFreeHigh) {
 #ifdef DEBUG
-		std::cout << "Write whole chunk in once. BytesFreeHigh: " << bytesFreeHigh << std::endl;
+		std::cout << "Write whole chunk at back. BytesFreeHigh: " << bytesFreeHigh << std::endl;
 #endif
 		// Copy the data into the buffer.
 		memcpy(back, data.data(), data.length());
@@ -422,6 +460,12 @@ uint32_t DataBuffer::write(std::string &data) {
 // Set the End-Of-File status of the file being streamed.
 void DataBuffer::setEof(bool eof) {
 	DataBuffer::eof = eof;
+}
+
+
+// --- IS EOF ---
+bool DataBuffer::isEof() {
+	return DataBuffer::eof;
 }
 
 
