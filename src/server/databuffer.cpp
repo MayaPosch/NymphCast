@@ -250,7 +250,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		byteIndex = new_offset;							// Absolute byte index.
 		index = front + (new_offset - byteIndexLow);	// Index into buffer translation.
 		unread = byteIndexHigh - new_offset;
-		unreadLow += unread - oldUnread;
+		unreadLow += new_offset - byteIndexLow;
 		unreadHigh -= unread - oldUnread;
 	}
 	

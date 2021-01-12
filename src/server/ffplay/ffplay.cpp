@@ -318,7 +318,7 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 			return new_offset; */
 	}
 	
-	if (new_offset < 1) {
+	if (new_offset < 0) {
 		// Some error occurred.
 		std::cerr << "Error during seeking." << std::endl;
 		new_offset = AVERROR(EIO);
