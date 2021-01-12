@@ -57,9 +57,9 @@ static void do_exit(VideoState *is) {
 	exit(0);
 }
 
-static void sigterm_handler(int sig) {
+/* static void sigterm_handler(int sig) {
 	exit(123);
-}
+} */
 
 
 static int opt_frame_size(void *optctx, const char *opt, const char *arg) {
@@ -271,7 +271,13 @@ void show_help_default(const char *opt, const char *arg)
  */
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	uint32_t bytesRead = DataBuffer::read(buf_size, buf);
-	if (bytesRead == 0) { return AVERROR_EOF; }	
+	std::cout << "Read " << bytesRead << " bytes." << std::endl;
+	if (bytesRead == 0) {
+		std::cout << "EOF is " << DataBuffer::isEof() << std::endl;
+		if (DataBuffer::isEof()) { return AVERROR_EOF; }
+		else { return AVERROR(EIO); }
+	}
+	
 	return bytesRead;
 }
 
@@ -289,34 +295,36 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 	std::cout << "media_seek: offset " << offset << ", whence " << whence << std::endl;
 	
 	int64_t new_offset = AVERROR(EIO);
-	bool retval = true;
 	switch (whence) {
 		case SEEK_SET:	// Seek from the beginning of the file.
 			std::cout << "media_seek: SEEK_SET" << std::endl;
-			retval = DataBuffer::seek(DB_SEEK_START, offset);
+			new_offset = DataBuffer::seek(DB_SEEK_START, offset);
 			break;
 		case SEEK_CUR:	// Seek from the current position.
 			std::cout << "media_seek: SEEK_CUR" << std::endl;
-			retval = DataBuffer::seek(DB_SEEK_CURRENT, offset);
+			new_offset = DataBuffer::seek(DB_SEEK_CURRENT, offset);
 			break;
 		case SEEK_END:	// Seek from the end of the file.
 			std::cout << "media_seek: SEEK_END" << std::endl;
-			retval = DataBuffer::seek(DB_SEEK_END, offset);
+			new_offset = DataBuffer::seek(DB_SEEK_END, offset);
 			break;
 		case AVSEEK_SIZE:
 			std::cout << "media_seek: received AVSEEK_SIZE, returning file size." << std::endl;
 			return DataBuffer::getFileSize();
 			break;
 		default:
-			new_offset = -1;
-			return new_offset;
+			std::cout << "media_seek: default. The universe broke." << std::endl;
+			/* new_offset = -1;
+			return new_offset; */
 	}
 	
-	if (!retval) {
-		// Some error occurred. Return -1 to let ffmpeg know.
+	if (new_offset < 1) {
+		// Some error occurred.
 		std::cerr << "Error during seeking." << std::endl;
-		return -1;
+		new_offset = AVERROR(EIO);
 	}
+	
+	std::cout << "New offset: " << new_offset << std::endl;
 	
 	return new_offset;
 }
@@ -369,8 +377,8 @@ void Ffplay::run() {
 
 	init_opts();
 	
-	signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).	*/
-	signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
+	//signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).	*/
+	//signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
 
 	show_banner(argc, argv.data(), options);
 	parse_options(NULL, argc, argv.data(), options, opt_input_file);
@@ -383,7 +391,7 @@ void Ffplay::run() {
 		input_filename = "";
 	
 		// Create internal buffer for FFmpeg.
-		size_t iBufSize = 16 * 1024 * 1024; // 16 MB
+		size_t iBufSize = 32 * 1024; // 32 kB
 		uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
 		 
 		// Allocate the AVIOContext:
