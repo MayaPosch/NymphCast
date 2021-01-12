@@ -299,6 +299,7 @@ void Player::event_loop(VideoState *cur_stream) {
                 incr = -60.0;
             do_seek:
                     if (seek_by_bytes) {
+						av_log(NULL, AV_LOG_DEBUG, "Seek by bytes...\n");
                         pos = -1;
                         if (pos < 0 && cur_stream->video_stream >= 0)
                             pos = FrameQueueC::frame_queue_last_pos(&cur_stream->pictq);
@@ -312,7 +313,9 @@ void Player::event_loop(VideoState *cur_stream) {
                             incr *= 180000.0;
                         pos += incr;
                         StreamHandler::stream_seek(cur_stream, pos, incr, 1);
-                    } else {
+                    } 
+					else {
+						av_log(NULL, AV_LOG_DEBUG, "Seek by time...\n");
                         pos = ClockC::get_master_clock(cur_stream);
                         if (isnan(pos))
                             pos = (double)cur_stream->seek_pos / AV_TIME_BASE;
