@@ -179,3 +179,5 @@ DISTFILES += \
 	litehtml/include/master.css \
 	litehtml/src/gumbo/CMakeLists.txt \
 	litehtml/src/gumbo/tag.in
+
+#win32:RC_ICONS += img/mqtticon-large.png

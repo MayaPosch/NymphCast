@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>NymphCast Player</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/img/img/nymphcast_logo_no_text.png</normaloff>:/img/img/nymphcast_logo_no_text.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
@@ -462,7 +466,7 @@
      <x>0</x>
      <y>0</y>
      <width>360</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

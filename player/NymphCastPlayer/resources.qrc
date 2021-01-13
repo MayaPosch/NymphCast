@@ -43,4 +43,8 @@
         <file>icons/connected.png</file>
         <file>icons/disconnected.png</file>
     </qresource>
+    <qresource prefix="/img">
+        <file>img/nymphcast_logo_cropped.png</file>
+        <file>img/nymphcast_logo_no_text.png</file>
+    </qresource>
 </RCC>
