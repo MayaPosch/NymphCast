@@ -42,28 +42,32 @@ Component | Purpose | Status
 ---|---|---
 NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha4
 NymphCast Client SDK | Software Development Kit for developing NymphCast clients. | v0.1-alpha4
-NymphCast Client | CLI-based NymphCast client. SDK reference implementation. | v0.1-alpha4
-NymphCast Player | Graphical, Qt-based NymphCast client. | v0.1-alpha4
+NymphCast Client | CLI-based NymphCast client. | v0.1-alpha4
+NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-alpha4
 NymphCast Player Android | Android-based NymphCast client. | v0.1-alpha0
-[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application that makes media content available on the LAN. | v0.1-alpha0
+[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-alpha0
 
 ### **NymphCast Player Client** ###
 
-The NymphCast Player is provided as a demonstration of the NymphCast SDK (see details on the SDK later in the document), implementing basic NymphCast functionality. It is designed to run on any mainstream desktop OS, as well as Android-based smartphones and tablets.
+The NymphCast Player provides NymphCast client functionality. It is also a demonstration platform for the NymphCast SDK (see details on the SDK later in this document). It is designed to run on any OS that is supported by the Qt framework.
 
 ![](art/NymphCastPlayer_screenshot_player_tab_alpha3.jpg) ![](art/NymphCastPlayer_screenshot_remotes_tab_alpha3.jpg)![](art/NymphCastPlayer_screenshot_apps_index_cropped_alpha3.jpg)
 
 ### **Server Platforms** ###
 
-The server should work on any platform that supports a C++17 toolchain and is supported by the LibPoco dependency.
+The server should work on any platform that is supported by a C++17 toolchain and the LibPoco dependency. This includes Windows, MacOS, Linux and BSD.
 
-For audio and video playback, the server relies on the FFmpeg and SDL2 libraries, which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms.
+FFmpeg and SDL2 libraries are used for audio and video playback. Both of which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms. **System requirements** also depend on whether only audio or also video playback is required. The latter can be disabled, which drops any graphical output requirement.
+
+**Memory requirements** depend on the NymphCast Server configuration: by default the ffmpeg library uses an internal 32 kB buffer, and the server itself a 20 MB buffer. The latter can be configured using the (required) configuration INI file, allowing it to be tweaked to fit the use case.
 
 ### **Client Platforms** ###
 
-For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support.
+For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support. Essentially, this means any mainstream desktop OS including Linux, Windows, BSD and MacOS should qualify.
 
 For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required.
+
+Mobile platforms are a work in progress. An Android client (native Java with JNI) is in development.
 
 <a id="id-rs"></a>
 ## Repository Structure ##
@@ -71,6 +75,7 @@ For the CLI-based NymphCast Client, only LibPoco and and C++17 support are requi
 The repository currently contains the NymphCast server, client SDK and NymphCast Player client sources.
 
 	/
+	|- android	(Android client app)
 	|- player 	(the NymphCast demonstration client)
 	|- src/
 	|	|- client 		(basic NymphCast client, for testing)
@@ -148,10 +153,11 @@ The **NymphCast Player** is a GUI-based application and accepts no command line 
 
 **Note:** This section is for building the project from source. Pre-built binaries are provided in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder.
 
-The steps below assume building the server part on a system like a Raspberry Pi, and running a current version of Debian (Buster) or equivalent. The player client demo application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
+The steps below assume building the server part on a system running a current version of Debian (Buster) or similarly current version of Arch (Manjaro) Linux or Alpine Linux. The player client demo application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
 
-Once the project files are downloaded and the dependencies are satisfied, run the Makefile in the `client` and `server` folders, which should output a binary into the newly created `bin/` folder.
-To build the corresponding parts of NymphCast, in addition to a C++ toolchain with C++17 support, one needs the dependencies as listed below.
+Once the project files have been downloaded, run the `setup.sh` script in the project root, or install the dependencies and run the Makefile in the `client` and `server` folders as described. Either method will output a binary into the newly created `bin/` folder.
+
+To build the corresponding client-related parts of NymphCast, in addition to a C++ toolchain with C++17 support, one needs the dependencies as listed below.
 
 ### **Server Dependencies** ###
 
@@ -163,9 +169,28 @@ To build the corresponding parts of NymphCast, in addition to a C++ toolchain wi
 
 On **Debian** & derivatives:
 
-Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev` and `sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev`
+```
+sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev
+``` 
+and 
+```
+sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
+```
 
-### **Client Library Dependencie**s ###
+On **Arch** & derivatives:
+
+```
+sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg
+```
+
+On **Alpine** & derivatives:
+
+```
+sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
+```
+
+
+### **Client Library Dependencies** ###
 
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 * LibPOCO (1.5+)
@@ -176,17 +201,15 @@ Install the needed dependencies: `sudo apt -y install libsdl2-image-dev libsdl2-
 If using a compatible OS (e.g. **Debian** Buster, Alpine Linux or Arch Linux), one can use the setup script: 
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
-2. Run the `install_linux.sh` script in the project root to install Avahi & Systemd services on Linux systems which support both.
+2. Run the `install_linux.sh` script in the project root to install the binaries and set up a systemd/OpenRC service on Linux systems.
 
 Else, use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
-2. Copy the NymphRPC library from `NymphRPC/lib/` to `/usr/local/lib` (or on Linux: shared library to `usr/lib`).
-3. Create `/usr/local/include/nymph` folder. Perform `sudo cp src/*.h /usr/local/include/nymph`.
+2. Install NymphRPC with `sudo make install`.
 4. Change to `NymphCast/src/server` and execute `make` command.
-5. The server binary is found under `bin/`. Copy the *.jpg images into a `bin/wallpapers/` folder for the screensaver feature.
-6. Copy the `nymphcast_config.ini` file into `bin/` as well.
-7. Copy the `apps/` folder into the `bin/`' folder.
+5. Use `sudo make install` to install the server and associated files.
+6. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
 
 
 ### **Building The NymphCast Player Client** ###
@@ -201,8 +224,7 @@ Or (building and running on Windows & other platforms):
 
 1. Download or clone the project repository 
 2. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
-3. Install the newly created library under `lib/` into `/usr/local/lib` or equivalent.
-4. Copy the `nymphcast_client.h` header to `/usr/local/include` or equivalent.
+3. Execute `sudo make install` to install the library.
 5. Ensure the Qt5 SDK is installed.
 6. Create `player/NymphCastPlayer/build` folder and change into it.
 7. Execute `qmake ..` followed by `make`.
@@ -214,7 +236,7 @@ Now you should be able to execute the player binary, connect to the server insta
 <a id="id-dg"></a>
 ## Developer's Guide ##
 
-The focus of the project is currently on the development of the NymphCast server and the protocol parts. We're encouraging third parties to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
+The focus of the project is currently on the development of the NymphCast server and the protocol parts. Third parties are encouraged to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
 
 The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/nymphcast.php).
 
@@ -233,7 +255,7 @@ After this the only files needed by a client project are this library file and t
 <a id="id-lic"></a>
 ## License ##
 
-NymphCast is a fully open source project. The full, BSD-licensed source code can be found at its project page on Github, along with binary releases.
+NymphCast is a fully open source project. The full, 3-clause BSD-licensed source code can be found at its project page on Github, along with binary releases.
 
 <a id="id-donate"></a>
 ## Donate ##
