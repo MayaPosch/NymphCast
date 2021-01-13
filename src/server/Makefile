@@ -106,7 +106,8 @@ install:
 	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
-	install -m 644 avahi/nymphcast.service $(DESTDIR)$(CONFDIR)/avahi/services/
+
+#install -m 644 avahi/nymphcast.service $(DESTDIR)$(CONFDIR)/avahi/services/
 
 .PHONY: install-systemd
 install-systemd:
