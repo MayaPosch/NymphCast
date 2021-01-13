@@ -15,4 +15,5 @@ else
 fi
 
 # Install Avahi service.
-sudo install -m666 src/server/avahi/nymphcast.service /etc/avahi/services/.
+# TODO: Avahi was replaced by NyanSD. This entry can likely be removed.
+#sudo install -m666 src/server/avahi/nymphcast.service /etc/avahi/services/.
