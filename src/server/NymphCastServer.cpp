@@ -285,6 +285,9 @@ const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
 std::string activeAppId;
 std::mutex activeAppMutex;
 std::string appsFolder;
+std::atomic<bool> running = true;
+std::condition_variable dataRequestCv;
+std::mutex dataRequestMtx;
 // ---
 
 
@@ -292,14 +295,17 @@ std::string appsFolder;
 // This function can be signalled with the condition variable to request data from the client.
 void dataRequestFunction() {
 	// Create and share condition variable with DataBuffer class.
-	std::mutex mtx;
-	std::condition_variable cv;
-	DataBuffer::setDataRequestCondition(&cv);
+	DataBuffer::setDataRequestCondition(&dataRequestCv);
 	
-	while (1) {
+	while (running) {
 		// Wait for the condition to be signalled.
-		std::unique_lock<std::mutex> lk(mtx);
-		cv.wait(lk);
+		std::unique_lock<std::mutex> lk(dataRequestMtx);
+		dataRequestCv.wait(lk);
+		
+		if (!running) { 
+			std::cout << "Shutting down data request function..." << std::endl;
+			break;
+		}
 		
 		// Request more data.
 		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
@@ -1380,7 +1386,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	
 	SDL_Event event;
 	event.type = SDL_KEYDOWN;
-	event.key.keysym.sym = SDLK_SPACE;
+	event.key.keysym.sym = SDLK_p;
 	SDL_PushEvent(&event);
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -2230,6 +2236,9 @@ int main(int argc, char** argv) {
 	
 	// Clean-up
 	DataBuffer::cleanup();
+	running = false;
+	dataRequestCv.notify_one();
+	drq.join();
  
 	// Close window and clean up libSDL.
 	ffplay.quit();
