@@ -457,7 +457,7 @@ void Ffplay::run() {
 		av_freep(&ioContext);
 	}
 	
-	av_log(NULL, AV_LOG_FATAL, "Quitting...\n");
+	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
 	
 	DataBuffer::reset();	// Clears the data buffer (file data buffer).
 	finishPlayback();		// Calls handler for post-playback steps.

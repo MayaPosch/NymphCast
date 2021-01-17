@@ -202,7 +202,7 @@ void Player::event_loop(VideoState *cur_stream) {
     SDL_Event event;
     double incr, pos, frac;
 	
-	av_log(NULL, AV_LOG_DEBUG, "Entering event loop.\n");
+	av_log(NULL, AV_LOG_INFO, "Entering event loop.\n");
 
 	bool run = true;
     while (run) {
@@ -213,7 +213,7 @@ void Player::event_loop(VideoState *cur_stream) {
             if (exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                 //do_exit(cur_stream);
 				
-				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop...\n");
+				av_log(NULL, AV_LOG_INFO, "Exiting event loop...\n");
 				
 				run = false;
 				continue;
@@ -299,7 +299,7 @@ void Player::event_loop(VideoState *cur_stream) {
                 incr = -60.0;
             do_seek:
                     if (seek_by_bytes) {
-						av_log(NULL, AV_LOG_DEBUG, "Seek by bytes...\n");
+						av_log(NULL, AV_LOG_INFO, "Seek by bytes...\n");
                         pos = -1;
                         if (pos < 0 && cur_stream->video_stream >= 0)
                             pos = FrameQueueC::frame_queue_last_pos(&cur_stream->pictq);
@@ -315,7 +315,7 @@ void Player::event_loop(VideoState *cur_stream) {
                         StreamHandler::stream_seek(cur_stream, pos, incr, 1);
                     } 
 					else {
-						av_log(NULL, AV_LOG_DEBUG, "Seek by time...\n");
+						av_log(NULL, AV_LOG_INFO, "Seek by time...\n");
                         pos = ClockC::get_master_clock(cur_stream);
                         if (isnan(pos))
                             pos = (double)cur_stream->seek_pos / AV_TIME_BASE;
@@ -407,7 +407,7 @@ void Player::event_loop(VideoState *cur_stream) {
         case SDL_QUIT:
         case FF_QUIT_EVENT:
             //do_exit(cur_stream);
-				av_log(NULL, AV_LOG_DEBUG, "Exiting event loop due to quit event...\n");
+				av_log(NULL, AV_LOG_INFO, "Exiting event loop due to quit event...\n");
 			run = false;
 			continue;
             break;
