@@ -8,12 +8,14 @@
 #include "subtitle_handler.h"
 #include "video_renderer.h"
 #include "sdl_renderer.h"
+#include "player.h"
 
 #include "stream_handler.h"
 
 
 // Static initialisations.
 std::atomic_bool StreamHandler::run;
+std::atomic<bool> StreamHandler::eof;
 
 
 #if CONFIG_AVFILTER
@@ -666,6 +668,7 @@ int StreamHandler::read_thread(void *arg) {
 
 	// Start the main processing loop.
 	run = true;
+	eof = false;
 	while (run) {
         if (is->abort_request) { break; }
         if (is->paused != is->last_paused) {
@@ -763,7 +766,7 @@ int StreamHandler::read_thread(void *arg) {
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
 			// FIXME: hack.
-			if (ret == AVERROR_EOF) { break; }
+			if (ret == AVERROR_EOF) { eof = true; break; }
 			
 			// EOF or error. 
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
@@ -817,10 +820,14 @@ fail:
 	}
 
     // We always exit the player on EoF or error.
-    SDL_Event event;
-	event.type = FF_QUIT_EVENT;
-	event.user.data1 = is;
-	SDL_PushEvent(&event);
+	if (eof) {
+		SDL_Event event;
+		event.type = FF_QUIT_EVENT;
+		event.user.data1 = is;
+		SDL_PushEvent(&event);
+	}
+	
+	Player::quit();
 	
 	av_log(NULL, AV_LOG_INFO, "Goto 'fail'. Exiting main loop...\n");
 	

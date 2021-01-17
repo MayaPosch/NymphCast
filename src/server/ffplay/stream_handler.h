@@ -12,6 +12,7 @@
 class StreamHandler {
 	VideoState* vstate;
 	static std::atomic_bool run;
+	static std::atomic<bool> eof;
 	
 	static int read_thread(void *arg);
 	
