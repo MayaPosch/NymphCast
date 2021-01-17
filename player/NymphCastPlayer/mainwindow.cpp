@@ -177,7 +177,8 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
-		ui->volumeSlider->setValue(0);
+		
+		ui->volumeSlider->setValue(status.volume);
 	}
 }
 
