@@ -2033,7 +2033,7 @@ int main(int argc, char** argv) {
 	
 	// PlaybackPause.
 	// uint8 playback_pause()
-	// Start playback.
+	// Pause playback.
 	// Returns success or error number.
 	parameters.clear();
 	NymphMethod playbackPauseFunction("playback_pause", parameters, NYMPH_UINT8);
