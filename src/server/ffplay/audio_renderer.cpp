@@ -483,7 +483,7 @@ int AudioRenderer::audio_thread(void *arg) {
 		if (!run) { goto the_end; }
 		
 		// FIXME: Debug attempt.
-		if (is->eof) { is->auddec.finished = is->auddec.pkt_serial; }
+		//if (is->eof) { is->auddec.finished = is->auddec.pkt_serial; }
 		
         if ((got_frame = DecoderC::decoder_decode_frame(&is->auddec, frame, NULL)) < 0)
             goto the_end;

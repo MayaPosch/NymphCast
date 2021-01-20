@@ -149,7 +149,7 @@ int PacketQueueC::packet_queue_get(PacketQueue *q, AVPacket *pkt, int block, int
             ret = 0;
             break;
         } else {
-            SDL_CondWaitTimeout(q->cond, q->mutex, 1000);	// FIXME: time out after 1s.
+            SDL_CondWait(q->cond, q->mutex);
         }
     }
     SDL_UnlockMutex(q->mutex);
