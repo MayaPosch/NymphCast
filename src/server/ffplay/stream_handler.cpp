@@ -367,6 +367,7 @@ static int is_realtime(AVFormatContext *s)
 /* pause or resume the video */
 void StreamHandler::stream_toggle_pause(VideoState *is) {
     if (is->paused) {
+		av_log(NULL, AV_LOG_INFO, "Toggle: currently paused.\n");
         is->frame_timer += av_gettime_relative() / 1000000.0 - is->vidclk.last_updated;
         if (is->read_pause_return != AVERROR(ENOSYS)) {
             is->vidclk.paused = 0;
@@ -374,6 +375,7 @@ void StreamHandler::stream_toggle_pause(VideoState *is) {
         ClockC::set_clock(&is->vidclk, ClockC::get_clock(&is->vidclk), is->vidclk.serial);
     }
 	
+	av_log(NULL, AV_LOG_INFO, "Toggle: toggling paused state.\n");
     ClockC::set_clock(&is->extclk, ClockC::get_clock(&is->extclk), is->extclk.serial);
     is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = !is->paused;
 }
