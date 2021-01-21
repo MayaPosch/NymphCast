@@ -103,7 +103,7 @@ bool Player::start(Config config) {
 
 
 /* pause or resume the video */
-static void stream_toggle_pause(VideoState *is)
+/* static void stream_toggle_pause(VideoState *is)
 {
     if (is->paused) {
         is->frame_timer += av_gettime_relative() / 1000000.0 - is->vidclk.last_updated;
@@ -114,7 +114,7 @@ static void stream_toggle_pause(VideoState *is)
     }
     ClockC::set_clock(&is->extclk, ClockC::get_clock(&is->extclk), is->extclk.serial);
     is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = !is->paused;
-}
+} */
 
 static void toggle_pause(VideoState *is)
 {
@@ -219,116 +219,122 @@ void Player::event_loop(VideoState *cur_stream) {
 				continue;
                 break;
             }
+			
             // If we don't yet have a window, skip all key events, because read_thread might still be initializing...
-            if (!cur_stream->width)
+			// FIXME: disabling this check as it disables interaction during audio-only (no window) 
+			// playback, where features like pause are still needed.
+            /* if (!cur_stream->width) {
+				av_log(NULL, AV_LOG_INFO, "We don't have a window yet. Skip key events.\n");
                 continue;
+			} */
+			
             switch (event.key.keysym.sym) {
-            case SDLK_f:
-                toggle_full_screen(cur_stream);
-                cur_stream->force_refresh = 1;
-                break;
-            case SDLK_p:
-            case SDLK_SPACE:
-                toggle_pause(cur_stream);
-                break;
-            case SDLK_m:
-                toggle_mute(cur_stream);
-                break;
-            case SDLK_KP_MULTIPLY:
-            case SDLK_0:
-                update_volume(cur_stream, 1, SDL_VOLUME_STEP);
-                break;
-            case SDLK_KP_DIVIDE:
-            case SDLK_9:
-                update_volume(cur_stream, -1, SDL_VOLUME_STEP);
-                break;
-            case SDLK_s: // S: Step to next frame
-                StreamHandler::step_to_next_frame(cur_stream);
-                break;
-            case SDLK_a:
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_AUDIO);
-                break;
-            case SDLK_v:
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_VIDEO);
-                break;
-            case SDLK_c:
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_VIDEO);
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_AUDIO);
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_SUBTITLE);
-                break;
-            case SDLK_t:
-                StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_SUBTITLE);
-                break;
-            case SDLK_w:
-#if CONFIG_AVFILTER
-                if (cur_stream->show_mode == SHOW_MODE_VIDEO && cur_stream->vfilter_idx < nb_vfilters - 1) {
-                    if (++cur_stream->vfilter_idx >= nb_vfilters)
-                        cur_stream->vfilter_idx = 0;
-                } else {
-                    cur_stream->vfilter_idx = 0;
-                    toggle_audio_display(cur_stream);
-                }
-#else
-                toggle_audio_display(cur_stream);
-#endif
-                break;
-            case SDLK_PAGEUP:
-                if (cur_stream->ic->nb_chapters <= 1) {
-                    incr = 600.0;
-                    goto do_seek;
-                }
-                seek_chapter(cur_stream, 1);
-                break;
-            case SDLK_PAGEDOWN:
-                if (cur_stream->ic->nb_chapters <= 1) {
-                    incr = -600.0;
-                    goto do_seek;
-                }
-                seek_chapter(cur_stream, -1);
-                break;
-            case SDLK_LEFT:
-                incr = seek_interval ? -seek_interval : -10.0;
-                goto do_seek;
-            case SDLK_RIGHT:
-                incr = seek_interval ? seek_interval : 10.0;
-                goto do_seek;
-            case SDLK_UP:
-                incr = 60.0;
-                goto do_seek;
-            case SDLK_DOWN:
-                incr = -60.0;
-            do_seek:
-                    if (seek_by_bytes) {
-						av_log(NULL, AV_LOG_INFO, "Seek by bytes...\n");
-                        pos = -1;
-                        if (pos < 0 && cur_stream->video_stream >= 0)
-                            pos = FrameQueueC::frame_queue_last_pos(&cur_stream->pictq);
-                        if (pos < 0 && cur_stream->audio_stream >= 0)
-                            pos = FrameQueueC::frame_queue_last_pos(&cur_stream->sampq);
-                        if (pos < 0)
-                            pos = avio_tell(cur_stream->ic->pb);
-                        if (cur_stream->ic->bit_rate)
-                            incr *= cur_stream->ic->bit_rate / 8.0;
-                        else
-                            incr *= 180000.0;
-                        pos += incr;
-                        StreamHandler::stream_seek(cur_stream, pos, incr, 1);
-                    } 
-					else {
-						av_log(NULL, AV_LOG_INFO, "Seek by time...\n");
-                        pos = ClockC::get_master_clock(cur_stream);
-                        if (isnan(pos))
-                            pos = (double)cur_stream->seek_pos / AV_TIME_BASE;
-                        pos += incr;
-                        if (cur_stream->ic->start_time != AV_NOPTS_VALUE && pos < cur_stream->ic->start_time / (double)AV_TIME_BASE)
-                            pos = cur_stream->ic->start_time / (double)AV_TIME_BASE;
-                        StreamHandler::stream_seek(cur_stream, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
-                    }
-                break;
-            default:
-                break;
-            }
-            break;
+				case SDLK_f:
+					toggle_full_screen(cur_stream);
+					cur_stream->force_refresh = 1;
+					break;
+				case SDLK_p:
+				case SDLK_SPACE:
+					toggle_pause(cur_stream);
+					break;
+				case SDLK_m:
+					toggle_mute(cur_stream);
+					break;
+				case SDLK_KP_MULTIPLY:
+				case SDLK_0:
+					update_volume(cur_stream, 1, SDL_VOLUME_STEP);
+					break;
+				case SDLK_KP_DIVIDE:
+				case SDLK_9:
+					update_volume(cur_stream, -1, SDL_VOLUME_STEP);
+					break;
+				case SDLK_s: // S: Step to next frame
+					StreamHandler::step_to_next_frame(cur_stream);
+					break;
+				case SDLK_a:
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_AUDIO);
+					break;
+				case SDLK_v:
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_VIDEO);
+					break;
+				case SDLK_c:
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_VIDEO);
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_AUDIO);
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_SUBTITLE);
+					break;
+				case SDLK_t:
+					StreamHandler::stream_cycle_channel(cur_stream, AVMEDIA_TYPE_SUBTITLE);
+					break;
+				case SDLK_w:
+	#if CONFIG_AVFILTER
+					if (cur_stream->show_mode == SHOW_MODE_VIDEO && cur_stream->vfilter_idx < nb_vfilters - 1) {
+						if (++cur_stream->vfilter_idx >= nb_vfilters)
+							cur_stream->vfilter_idx = 0;
+					} else {
+						cur_stream->vfilter_idx = 0;
+						toggle_audio_display(cur_stream);
+					}
+	#else
+					toggle_audio_display(cur_stream);
+	#endif
+					break;
+				case SDLK_PAGEUP:
+					if (cur_stream->ic->nb_chapters <= 1) {
+						incr = 600.0;
+						goto do_seek;
+					}
+					seek_chapter(cur_stream, 1);
+					break;
+				case SDLK_PAGEDOWN:
+					if (cur_stream->ic->nb_chapters <= 1) {
+						incr = -600.0;
+						goto do_seek;
+					}
+					seek_chapter(cur_stream, -1);
+					break;
+				case SDLK_LEFT:
+					incr = seek_interval ? -seek_interval : -10.0;
+					goto do_seek;
+				case SDLK_RIGHT:
+					incr = seek_interval ? seek_interval : 10.0;
+					goto do_seek;
+				case SDLK_UP:
+					incr = 60.0;
+					goto do_seek;
+				case SDLK_DOWN:
+					incr = -60.0;
+				do_seek:
+						if (seek_by_bytes) {
+							av_log(NULL, AV_LOG_INFO, "Seek by bytes...\n");
+							pos = -1;
+							if (pos < 0 && cur_stream->video_stream >= 0)
+								pos = FrameQueueC::frame_queue_last_pos(&cur_stream->pictq);
+							if (pos < 0 && cur_stream->audio_stream >= 0)
+								pos = FrameQueueC::frame_queue_last_pos(&cur_stream->sampq);
+							if (pos < 0)
+								pos = avio_tell(cur_stream->ic->pb);
+							if (cur_stream->ic->bit_rate)
+								incr *= cur_stream->ic->bit_rate / 8.0;
+							else
+								incr *= 180000.0;
+							pos += incr;
+							StreamHandler::stream_seek(cur_stream, pos, incr, 1);
+						} 
+						else {
+							av_log(NULL, AV_LOG_INFO, "Seek by time...\n");
+							pos = ClockC::get_master_clock(cur_stream);
+							if (isnan(pos))
+								pos = (double)cur_stream->seek_pos / AV_TIME_BASE;
+							pos += incr;
+							if (cur_stream->ic->start_time != AV_NOPTS_VALUE && pos < cur_stream->ic->start_time / (double)AV_TIME_BASE)
+								pos = cur_stream->ic->start_time / (double)AV_TIME_BASE;
+							StreamHandler::stream_seek(cur_stream, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+						}
+					break;
+				default:
+					break;
+				}
+				break;
         case SDL_MOUSEBUTTONDOWN:
             if (exit_on_mousedown) {
                 //do_exit(cur_stream);
