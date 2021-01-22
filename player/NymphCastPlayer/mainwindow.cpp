@@ -535,6 +535,10 @@ void MainWindow::anchorClicked(const QUrl &link) {
     else {
         // Assume the first entry contains an app name, followed by commands.
         // TODO: validate app names here.
+		if (list.size() < 2) { return; }
+		std::string response = client.sendApplicationMessage(serverHandle, list[0].toStdString(), 
+																			list[1].toStdString());
+		// TODO: use response.
     }
 }
 
