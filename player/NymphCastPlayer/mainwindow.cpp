@@ -243,7 +243,7 @@ void MainWindow::remoteListRefresh() {
 	// Update the list with any changed items.
 	// Target the 'remotesListWidget' widget.
 	ui->remotesListWidget->clear(); // FIXME: just resetting the whole thing for now.
-	for (int i = 0; i < remotes.size(); ++i) {
+	for (uint32_t i = 0; i < remotes.size(); ++i) {
 		//new QListWidgetItem(remotes[i].ipv4 + " (" + remotes[i].name + ")", ui->remotesListWidget);
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(remotes[i].ipv4 + " (" + remotes[i].name + ")"));
@@ -362,6 +362,11 @@ void MainWindow::play() {
 	}
 	else {
 		QListWidgetItem* item = ui->mediaListWidget->currentItem();
+		if (item == 0) { 
+			QMessageBox::warning(this, tr("No file selected"), tr("Please first select a file to play."));
+			return; 
+		}
+		
 		QString filename = item->data(Qt::UserRole).toString();
 
 #if defined(Q_OS_ANDROID)
