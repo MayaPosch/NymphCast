@@ -506,8 +506,11 @@ void MainWindow::appsHome() {
 
 // --- ANCHOR CLICKED ---
 void MainWindow::anchorClicked(const QUrl &link) {
+	// Debug
+	std::cout << "anchorClicked: " << link.path().toStdString() << std::endl;
+	
     // Parse URL string for the command desired.
-    QStringList list = link.path().split("/");
+    QStringList list = link.path().split("/", Qt::SkipEmptyParts);
     
     // Process command.
     if (list.size() < 1) { return; }
