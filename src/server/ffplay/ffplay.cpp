@@ -447,14 +447,13 @@ void Ffplay::run() {
 	
 	SDL_Delay(500); // wait 500 ms.
 	
-	// Free resources
-	if (formatContext) {
-		avformat_close_input(&formatContext);
-	}
-	
 	if (ioContext) {
 		av_freep(&ioContext->buffer);
 		av_freep(&ioContext);
+	}
+	
+	if (is) {
+		StreamHandler::stream_close(is);
 	}
 	
 	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
