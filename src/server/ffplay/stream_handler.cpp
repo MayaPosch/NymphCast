@@ -254,6 +254,7 @@ static void stream_component_close(VideoState *is, int stream_index)
     switch (codecpar->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
         DecoderC::decoder_abort(&is->auddec, &is->sampq);
+		av_log(NULL, AV_LOG_INFO, "Closing audio device...\n");
         SDL_CloseAudioDevice(audio_dev);
         DecoderC::decoder_destroy(&is->auddec);
         swr_free(&is->swr_ctx);
@@ -306,6 +307,7 @@ void StreamHandler::stream_close(VideoState *is) {
 
     /* close each stream */
     if (is->audio_stream >= 0)
+		av_log(NULL, AV_LOG_INFO, "Closing audio stream component...\n");
         stream_component_close(is, is->audio_stream);
     if (is->video_stream >= 0)
         stream_component_close(is, is->video_stream);
