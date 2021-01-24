@@ -335,6 +335,7 @@ void StreamHandler::stream_close(VideoState *is) {
     if (is->sub_texture)
         SDL_DestroyTexture(is->sub_texture);
     av_free(is);
+	is = 0;
 }
 
 
