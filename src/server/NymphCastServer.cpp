@@ -370,6 +370,11 @@ NymphStruct* getPlaybackStatus() {
 	else {
 		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
 		response->addPair("playing", new NymphBoolean(false));
+		response->addPair("duration", new NymphUint64(0));
+		response->addPair("position", new NymphDouble(0));
+		response->addPair("title", new NymphString());
+		response->addPair("artist", new NymphString());
+		response->addPair("volume", new NymphUint8(ffplay.getVolume()));
 	}
 	
 	return response;
