@@ -43,7 +43,7 @@ private slots:
 	void rewind();
 	void seek();
 	void mute();
-	void adjustVolume(int value);
+	void adjustVolume();
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
 	

@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->stopToolButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(ui->pauseToolButton, SIGNAL(clicked()), this, SLOT(pause()));
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
-	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
+	connect(ui->volumeSlider, SIGNAL(sliderReleased()), this, SLOT(adjustVolume()));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
     
     // Remotes tab.
@@ -443,7 +443,8 @@ void MainWindow::mute() {
 
 
 // --- ADJUST VOLUME ---
-void MainWindow::adjustVolume(int value) {
+void MainWindow::adjustVolume() {
+	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
 	
 	client.volumeSet(serverHandle, value);
