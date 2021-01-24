@@ -374,7 +374,7 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("position", new NymphDouble(0));
 		response->addPair("title", new NymphString());
 		response->addPair("artist", new NymphString());
-		response->addPair("volume", new NymphUint8(ffplay.getVolume()));
+		response->addPair("volume", new NymphUint8(0));
 	}
 	
 	return response;
