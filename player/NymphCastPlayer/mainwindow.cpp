@@ -444,6 +444,7 @@ void MainWindow::mute() {
 
 // --- ADJUST VOLUME ---
 void MainWindow::adjustVolume() {
+	if (!connected) { return; }
 	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
 	
