@@ -127,6 +127,7 @@ char *afilters = NULL;
 int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
+std::atomic<uint32_t> audio_volume = 100;
 
 
 #ifdef main
@@ -1230,6 +1231,7 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	
+	audio_volume = volume;
 	ffplay.setVolume(volume);
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -1259,6 +1261,8 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_0;
 	SDL_PushEvent(&event);
 	
+	// TODO: update global audio_volume variable.
+	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
@@ -1285,6 +1289,8 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_9;
 	SDL_PushEvent(&event);
+	
+	// TODO: update global audio_volume variable.
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;

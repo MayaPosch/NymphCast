@@ -334,7 +334,8 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 uint8_t Ffplay::getVolume() {
 	if (!is) { return 0; }
 	
-	return is->audio_volume;
+	return audio_volume;
+	//return is->audio_volume;
 }
 
 

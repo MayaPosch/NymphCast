@@ -433,6 +433,8 @@ extern int64_t audio_callback_time;
 
 extern AVPacket flush_pkt;
 
+extern std::atomic<uint32_t> audio_volume;
+
 #define FF_QUIT_EVENT	(SDL_USEREVENT + 2)
 
 extern SDL_AudioDeviceID audio_dev;
