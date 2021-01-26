@@ -57,8 +57,17 @@ bool SdlRenderer::init() {
 		if (borderless) { flags |= SDL_WINDOW_BORDERLESS; }
 		else { flags |= SDL_WINDOW_RESIZABLE; }
 		
+		// Obtain dimensions of primary display.
+		SDL_DisplayMode dm;
+		if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
+			av_log(NULL, AV_LOG_FATAL, "Couldn't get current display mode: %s\n", SDL_GetError());
+			return false;
+		}
+		
+		av_log(NULL, AV_LOG_WARNING, "Creating window with dimensions %dx%d.\n", dm.w, dm.h);
+		
 		window = SDL_CreateWindow("NymphCast", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-															default_width, default_height, flags);
+															dm.w, dm.h, flags);
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 		if (window) {
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -77,6 +86,8 @@ bool SdlRenderer::init() {
 			av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
 			return false;
 		}
+		
+		SDL_ShowWindow(window);
 	}
 	
 	return true;
@@ -319,9 +330,10 @@ void SdlRenderer::image_display(std::string image) {
 	if (texture) { SDL_DestroyTexture(texture); texture = 0; }
 	texture = IMG_LoadTexture(renderer, image.data());
 	
-	int w, h;
+	/* int w, h;
 	SDL_QueryTexture(texture, 0, 0, &w, &h);
-	resizeWindow(w, h);
+	av_log(NULL, AV_LOG_INFO, "Resizing window for texture with w/h: %d, %d.\n", w, h);
+	resizeWindow(w, h); */
 	
 	SDL_RenderCopy(renderer, texture, 0, 0);
 	SDL_RenderPresent(renderer);
