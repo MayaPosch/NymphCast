@@ -4,6 +4,7 @@
 
 #include <thread>
 #include <filesystem> 		// C++17
+#include <iostream>
 
 #include "ffplay/sdl_renderer.h"
 
@@ -27,7 +28,7 @@ void ScreenSaver::changeImage(int) {
 	}
 	
 	// Load current image.
-	fprintf(stdout, "Changing image to %s\n", images[imageId].data());
+	std::cout << "Changing image to " << images[imageId] << std::endl;
 	SdlRenderer::image_display(images[imageId++]);
 	if (!(imageId < images.size())) { imageId = 0; }
 }
@@ -51,7 +52,7 @@ void ScreenSaver::start(uint32_t changeSecs) {
         images.push_back(entry.path().string());
 	}
 	
-	fprintf(stdout, "Found %d wallpapers.", images.size());
+	std::cout << "Found " << images.size() << " wallpapers." << std::endl;
 	
 	// Display initial image.
 	changeImage(0);
@@ -68,7 +69,7 @@ void ScreenSaver::start(uint32_t changeSecs) {
 void ScreenSaver::stop() {
 	if (!active) { return; }
 	
-	fprintf(stderr, "Stopping timer...\n");
+	std::cout << "Stopping timer..." << std::endl;
 	
 	// Stop timer.
 	ct.stop();
