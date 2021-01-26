@@ -2203,6 +2203,18 @@ int main(int argc, char** argv) {
 	// Install signal handler to terminate the server.
 	signal(SIGINT, signal_handler);
 	
+	// Set further global variables.
+	// FIXME: refactor.
+	if (display_disable) {
+		video_disable = 1;
+	}
+	
+	// Initialise SDL.
+	if (!SdlRenderer::init()) {
+		std::cerr << "Failed to init SDL. Aborting..." << std::endl;
+		return 0;
+	}
+	
 	// Start server on port 4004.
 	NymphRemoteClient::start(4004);
 	
@@ -2218,15 +2230,6 @@ int main(int argc, char** argv) {
 	
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
-	
-	// Set further global variables.
-	// FIXME: refactor.
-	if (display_disable) {
-		video_disable = 1;
-	}
-	
-	// Initialise SDL.
-	SdlRenderer::init();
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
