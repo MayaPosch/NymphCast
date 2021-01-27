@@ -41,16 +41,16 @@ void ScreenSaver::cleanUp() {
 
 void ScreenSaver::setDataPath(std::string path) {
 	dataPath = path;
-}
-
-
-void ScreenSaver::start(uint32_t changeSecs) {
-	if (active) { return; }
 	
 	// Read in image names.
 	for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
         images.push_back(entry.path().string());
 	}
+}
+
+
+void ScreenSaver::start(uint32_t changeSecs) {
+	if (active) { return; }
 	
 	std::cout << "Found " << images.size() << " wallpapers." << std::endl;
 	
