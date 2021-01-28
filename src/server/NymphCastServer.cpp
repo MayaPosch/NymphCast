@@ -2248,6 +2248,11 @@ int main(int argc, char** argv) {
 	
 	std::cout << "Shutting down..." << std::endl;
 	
+	// Stop screensaver if it's running.
+	if (!display_disable) {
+		ScreenSaver::stop();
+	}
+	
 	// Clean-up
 	DataBuffer::cleanup();
 	running = false;
