@@ -307,13 +307,25 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	queries.push_back(query);
 	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
 	
-	// Process responses.
+	// Process responses. 
+	// TODO: Check for potential duplicate responses (same IP).
 	for (int i = 0; i < responses.size(); ++i) {
 		NymphCastRemote rm;
 		rm.ipv4 = NyanSD::ipv4_uintToString(responses[i].ipv4);
 		rm.ipv6 = responses[i].ipv6;
 		rm.name = responses[i].hostname;
 		rm.port = responses[i].port;
+		
+		// Check for duplicates.
+		for (uint32_t j = 0; j < remotes.size(); ++j) {
+			if (remotes[j].ipv4 == rm.ipv4 &&
+				remotes[j].ipv6 == rm.ipv6 &&
+				remotes[j].name == rm.name &&
+				remotes[j].port == rm.port) {
+				std::cout << "Skipping duplicate entry." << std::endl;
+				continue;
+			}
+		}
 		
 		remotes.push_back(rm);
 	}
