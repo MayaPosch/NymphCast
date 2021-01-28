@@ -311,6 +311,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		index += len;
 		unreadHigh -= len;
 		bytesRead += len;
+		bytesFreeLow += len;
 		
 		// Read from the front if the back is exhausted.
 		if (unreadHigh == 0 && bytesFreeHigh == 0) { index = begin; } 
@@ -323,6 +324,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		memcpy(bytes, index, unreadHigh);
 		index += unreadHigh;
 		bytesRead += unreadHigh;
+		bytesFreeLow += unreadHigh;
 		unreadHigh = 0;
 	}
 	else if (unreadHigh == 0 && unreadLow > 0) {
@@ -332,12 +334,14 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			memcpy(bytes, index, len);
 			index += len;
 			bytesRead += len;
+			unreadLow -= len;
 		}
 		else {
 			// Not enough bytes left in the buffer. Read what we can, then return.
 			memcpy(bytes, index, unreadLow);
 			index += unreadLow;
 			bytesRead += unreadLow;
+			unreadLow = 0;
 		}
 	}
 	else {
@@ -348,6 +352,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		memcpy(bytes, index, unreadHigh);
 		index = begin;
 		bytesRead += unreadHigh;
+		bytesFreeLow += unreadHigh;
 		unreadHigh = 0;
 		uint32_t bytesToRead = len - bytesRead;
 		if (bytesToRead <= unreadLow) {
@@ -355,12 +360,14 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			memcpy(bytes + bytesRead, index, bytesToRead);
 			index += bytesToRead;
 			bytesRead += bytesToRead;
+			unreadLow -= bytesToRead;
 		}
 		else {
 			// Not enough bytes left in the buffer. Read what we can, then return.
 			memcpy(bytes + bytesRead, index, unreadLow);
 			index += unreadLow;
 			bytesRead += unreadLow;
+			unreadLow = 0;
 		}
 	}
 	
@@ -429,6 +436,7 @@ uint32_t DataBuffer::write(std::string &data) {
 			memcpy(back, data.data() + bytesWritten, bytesFreeLow);
 			bytesWritten += bytesFreeLow;
 			unreadLow += bytesFreeLow;
+			byteIndexLow += bytesFreeLow;
 			bytesFreeLow = 0;
 		}
 		else {
@@ -437,6 +445,7 @@ uint32_t DataBuffer::write(std::string &data) {
 			bytesWritten += bytesToWrite;
 			unreadLow += bytesToWrite;
 			bytesFreeLow -= bytesToWrite;
+			byteIndexLow += bytesToWrite;
 		}
 	}
 	
