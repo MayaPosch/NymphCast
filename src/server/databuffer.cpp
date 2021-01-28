@@ -419,6 +419,29 @@ uint32_t DataBuffer::write(std::string &data) {
 			back = begin;
 		}
 	}
+	if (bytesFreeHigh == 0) {
+#ifdef DEBUG
+		std::cout << "Write front." << std::endl;
+#endif
+		if (data.length() > bytesFreeLow) {
+			// Buffer is too small for remaining bytes. Copy what we can.
+			memcpy(back, data.data(), bytesFreeLow);
+			bytesWritten += bytesFreeLow;
+			unreadLow += bytesFreeLow;
+			byteIndexLow += bytesFreeLow;
+			back += bytesFreeLow;
+			bytesFreeLow = 0;
+		}
+		else {
+			// Straight copy into buffer.
+			memcpy(back, data.data(), data.length());
+			bytesWritten = data.length();
+			unreadLow += bytesWritten;
+			bytesFreeLow -= bytesWritten;
+			byteIndexLow += bytesWritten;
+			back += bytesWritten;
+		}
+	}
 	else {
 #ifdef DEBUG
 		std::cout << "Write back, then front." << std::endl;
