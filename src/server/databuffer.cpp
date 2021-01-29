@@ -419,7 +419,7 @@ uint32_t DataBuffer::write(std::string &data) {
 			back = begin;
 		}
 	}
-	if (bytesFreeHigh == 0) {
+	else if (bytesFreeHigh == 0) {
 #ifdef DEBUG
 		std::cout << "Write front." << std::endl;
 #endif
