@@ -328,6 +328,9 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		unreadHigh = 0;
 	}
 	else if (unreadHigh == 0 && unreadLow > 0) {
+#ifdef DEBUG
+		std::cout << "Read from front." << std::endl;
+#endif
 		// Read what we need from the front.
 		if (len <= unreadLow) {
 			// Read the remaining requested bytes in one chunk.
@@ -335,12 +338,14 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			index += len;
 			bytesRead += len;
 			unreadLow -= len;
+			bytesFreeLow += len;
 		}
 		else {
 			// Not enough bytes left in the buffer. Read what we can, then return.
 			memcpy(bytes, index, unreadLow);
 			index += unreadLow;
 			bytesRead += unreadLow;
+			bytesFreeLow += unreadLow;
 			unreadLow = 0;
 		}
 	}
