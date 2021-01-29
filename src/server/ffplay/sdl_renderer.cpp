@@ -17,6 +17,7 @@ SDL_Renderer* SdlRenderer::renderer = 0;
 SDL_Texture* SdlRenderer::texture = 0;
 //SDL_RendererInfo SdlRenderer::renderer_info = {0};
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
+std::atomic<bool> SdlRenderer::run_events;
 
 
 bool SdlRenderer::init() {
@@ -338,8 +339,23 @@ void SdlRenderer::image_display(std::string image) {
 	SDL_RenderCopy(renderer, texture, 0, 0);
 	SDL_RenderPresent(renderer);
 	
+	//SDL_Event event;
+	//SDL_PollEvent(&event);
+}
+
+
+void SdlRenderer::run_event_loop() {
+	run_events = true;
 	SDL_Event event;
-	SDL_PollEvent(&event);
+	while (run_events) {
+		SDL_PollEvent(&event);
+		SDL_Delay(200);
+	}
+}
+
+
+void SdlRenderer::stop_event_loop() {
+	run_events = false;
 }
 
 

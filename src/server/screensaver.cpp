@@ -63,11 +63,19 @@ void ScreenSaver::start(uint32_t changeSecs) {
 	ct.start(changeSecs * 1000);	// Convert to milliseconds.
 		
 	active = true;
+	
+	// Start SDL loop.
+	SdlRenderer::run_event_loop();
 }
 
 
 void ScreenSaver::stop() {
 	if (!active) { return; }
+	
+	std::cout << "Stopping SDL loop..." << std::endl;
+	
+	// Stop SDL event loop.
+	SdlRenderer::stop_event_loop();
 	
 	std::cout << "Stopping timer..." << std::endl;
 	

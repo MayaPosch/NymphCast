@@ -2231,15 +2231,15 @@ int main(int argc, char** argv) {
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
 	
+	// Initialise AngelScript runtime.
+	angelScriptInit();
+	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
 	if (!display_disable) {
 		ScreenSaver::setDataPath(wallpapersFolder);
 		ScreenSaver::start(15);
 	}
-	
-	// Initialise AngelScript runtime.
-	angelScriptInit();
 	
 	
 	// Wait for the condition to be signalled.

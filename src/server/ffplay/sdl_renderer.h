@@ -6,6 +6,7 @@
 #include "types.h"
 
 #include <string>
+#include <atomic>
 
 #include <SDL2/SDL_image.h>
 
@@ -16,6 +17,7 @@ class SdlRenderer {
 	static SDL_Texture* texture;
 	//static SDL_RendererInfo renderer_info;
 	//static SDL_AudioDeviceID audio_dev;
+	static std::atomic<bool> run_events;
 	
 	static void fill_rectangle(int x, int y, int w, int h);
 	static int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, 
@@ -30,6 +32,8 @@ public:
 	static void set_fullscreen(bool fullscreen);
 	static void video_display(VideoState *is);
 	static void image_display(std::string image);
+	static void run_event_loop();
+	static void stop_event_loop();
 	static void video_audio_display(VideoState *s);
 	static void video_image_display(VideoState *is);
 };
