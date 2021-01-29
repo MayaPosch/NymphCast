@@ -352,6 +352,17 @@ void Ffplay::setVolume(uint8_t volume) {
 }
 
 
+#ifdef _WIN32
+void avLogCallback(void *ptr, int level, const char *fmt, va_list vargs) {
+    //if (level > av_log_get_level()) { return; }
+
+	//std::cout << level << " - " << fmt << std::endl;
+
+    //printf("%s ", "va_log:");
+    vprintf(fmt, vargs);
+} 
+#endif
+
 
 // --- RUN ---
 void Ffplay::run() {
@@ -369,6 +380,10 @@ void Ffplay::run() {
 
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	parse_loglevel(argc, argv.data(), options);
+	
+#ifdef _WIN32
+	av_log_set_callback(avLogCallback);
+#endif
 
 	/* register all codecs, demux and protocols */
 #if CONFIG_AVDEVICE
