@@ -42,7 +42,7 @@ static int video_open(VideoState *is) {
     w = screen_width ? screen_width : default_width;
     h = screen_height ? screen_height : default_height;
 
-	SdlRenderer::resizeWindow(w, h);
+	//SdlRenderer::resizeWindow(w, h);
 
     is->width  = w;
     is->height = h;
