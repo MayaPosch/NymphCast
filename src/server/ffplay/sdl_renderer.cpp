@@ -60,6 +60,8 @@ bool SdlRenderer::init() {
 		
 		// Obtain dimensions of primary display.
 		SDL_DisplayMode dm;
+		screen_width = dm.w;
+		screen_height = dm.h;
 		if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
 			av_log(NULL, AV_LOG_FATAL, "Couldn't get current display mode: %s\n", SDL_GetError());
 			return false;
