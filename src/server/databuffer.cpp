@@ -317,9 +317,9 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		if (unreadHigh == 0 && bytesFreeHigh == 0) { index = begin; } 
 	}
 	else if (unreadHigh > 0 && bytesFreeHigh > 0) {
-		// Read the bytes we have got from the back in the buffer.
+		// Read the bytes we do have from the back into the buffer.
 #ifdef DEBUG
-		std::cout << "Read data from back." << std::endl;
+		std::cout << "Read partial data from back." << std::endl;
 #endif
 		memcpy(bytes, index, unreadHigh);
 		index += unreadHigh;
@@ -422,9 +422,18 @@ uint32_t DataBuffer::write(std::string &data) {
 		back += bytesWritten;
 		if (bytesFreeHigh == 0) {
 			back = begin;
+			bytesFreeHigh = bytesFreeLow;
+			bytesFreeLow = 0;
 		}
 	}
 	else if (bytesFreeHigh == 0) {
+		if (bytesFreeLow == 0) {
+			// No room left in buffer. Abort write.
+			std::cerr << "Buffer is full. Cannot write." << std::endl;
+			bufferMutex.unlock();
+			return 0;
+		}
+		
 #ifdef DEBUG
 		std::cout << "Write front." << std::endl;
 #endif
@@ -446,6 +455,13 @@ uint32_t DataBuffer::write(std::string &data) {
 			byteIndexLow += bytesWritten;
 			back += bytesWritten;
 		}
+		
+		// Check if we're at the end of the buffer.
+		if (back == end) {
+			back = begin;
+			bytesFreeHigh = bytesFreeLow;
+			bytesFreeLow = 0;
+		}
 	}
 	else {
 #ifdef DEBUG
@@ -465,6 +481,7 @@ uint32_t DataBuffer::write(std::string &data) {
 			bytesWritten += bytesFreeLow;
 			unreadLow += bytesFreeLow;
 			byteIndexLow += bytesFreeLow;
+			back += bytesFreeLow;
 			bytesFreeLow = 0;
 		}
 		else {
@@ -474,7 +491,12 @@ uint32_t DataBuffer::write(std::string &data) {
 			unreadLow += bytesToWrite;
 			bytesFreeLow -= bytesToWrite;
 			byteIndexLow += bytesToWrite;
+			back += bytesToWrite;
 		}
+		
+		// Adjust counters since we are now back at the buffer beginning.
+		bytesFreeHigh = bytesFreeLow;
+		bytesFreeLow = 0;
 	}
 	
 #ifdef DEBUG
