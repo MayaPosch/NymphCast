@@ -348,6 +348,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			bytesFreeLow += unreadLow;
 			unreadLow = 0;
 		}
+		
+		if (index == end) {
+			index = begin;
+		}
 	}
 	else {
 #ifdef DEBUG
@@ -373,6 +377,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			index += unreadLow;
 			bytesRead += unreadLow;
 			unreadLow = 0;
+		}
+		
+		if (index == end) {
+			index = begin;
 		}
 	}
 	
@@ -422,8 +430,8 @@ uint32_t DataBuffer::write(std::string &data) {
 		back += bytesWritten;
 		if (bytesFreeHigh == 0) {
 			back = begin;
-			bytesFreeHigh = bytesFreeLow;
-			bytesFreeLow = 0;
+			//bytesFreeHigh = bytesFreeLow;
+			//bytesFreeLow = 0;
 		}
 	}
 	else if (bytesFreeHigh == 0) {
@@ -459,8 +467,8 @@ uint32_t DataBuffer::write(std::string &data) {
 		// Check if we're at the end of the buffer.
 		if (back == end) {
 			back = begin;
-			bytesFreeHigh = bytesFreeLow;
-			bytesFreeLow = 0;
+			//bytesFreeHigh = bytesFreeLow;
+			//bytesFreeLow = 0;
 		}
 	}
 	else {
@@ -495,8 +503,8 @@ uint32_t DataBuffer::write(std::string &data) {
 		}
 		
 		// Adjust counters since we are now back at the buffer beginning.
-		bytesFreeHigh = bytesFreeLow;
-		bytesFreeLow = 0;
+		//bytesFreeHigh = bytesFreeLow;
+		//bytesFreeLow = 0;
 	}
 	
 #ifdef DEBUG
