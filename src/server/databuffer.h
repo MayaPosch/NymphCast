@@ -35,7 +35,6 @@ class DataBuffer {
 	};
 	
 	static uint8_t* buffer;		// Pointer to buffer.
-	static uint8_t* begin;		// Pointer to buffer start (idx 0).
 	static uint8_t* end;		// Pointer to buffer end (idx Nsize).
 	static uint8_t* front;		// Pointer to front of data in buffer (low).
 	static uint8_t* back;		// Pointer to back of data in buffer (last byte + 1).
@@ -44,10 +43,7 @@ class DataBuffer {
 	static uint32_t size;		// Total size of data in buffer in bytes.
 	static int64_t filesize;	// Size of the media file being streamed, in bytes.
 	static uint32_t unread;		// Number of unread bytes in the buffer.
-	static uint32_t unreadLow;		// Number of unread bytes in the buffer at the front (low).
-	static uint32_t unreadHigh;		// Number of unread bytes in the buffer at the back (high).
-	static uint32_t bytesFreeLow;	// Number of free bytes in buffer at the front (low).
-	static uint32_t bytesFreeHigh;	// Number of free bytes in buffer at the back (high).
+	static uint32_t free;		// Number of free bytes in the buffer.
 	static uint32_t byteIndex;		// First unread byte index into the media file data.
 	static uint32_t byteIndexLow;	// Lowest media file byte index present in the buffer.
 	static uint32_t byteIndexHigh;	// Highest media file byte index present in the buffer.

@@ -18,14 +18,11 @@
 #include <chrono>
 #ifdef DEBUG
 #include <iostream>
-/* #include <fstream>
-std::ofstream outFile("out.mp3", std::ofstream::out | std::ofstream::binary); */
 #endif
 
 
 // Static initialisations.
 uint8_t* DataBuffer::buffer = 0;
-uint8_t* DataBuffer::begin = 0;
 uint8_t* DataBuffer::end = 0;
 uint8_t* DataBuffer::front = 0;
 uint8_t* DataBuffer::back = 0;
@@ -34,10 +31,7 @@ uint32_t DataBuffer::capacity = 0;
 uint32_t DataBuffer::size = 0;
 int64_t DataBuffer::filesize = 0;
 uint32_t DataBuffer::unread = 0;
-uint32_t DataBuffer::unreadLow = 0;
-uint32_t DataBuffer::unreadHigh = 0;
-uint32_t DataBuffer::bytesFreeLow = 0;
-uint32_t DataBuffer::bytesFreeHigh = 0;
+uint32_t DataBuffer::free = 0;
 uint32_t DataBuffer::byteIndex = 0;
 uint32_t DataBuffer::byteIndexLow = 0;
 uint32_t DataBuffer::byteIndexHigh = 0;
@@ -71,18 +65,14 @@ bool DataBuffer::init(uint32_t capacity) {
 	// Allocate new buffer and return result.
 	buffer = new uint8_t[capacity];
 	DataBuffer::capacity = capacity;
-	begin = buffer;
-	end = begin + capacity;
-	front = begin;
-	back = begin;
-	index = begin;
+	end = buffer + capacity;
+	front = buffer;
+	back = buffer;
+	index = buffer;
 	eof = false;
 	size = 0;
 	unread = 0;
-	unreadLow = 0;
-	unreadHigh = 0;
-	bytesFreeLow = 0;
-	bytesFreeHigh = capacity;
+	free = capacity;
 	byteIndex = 0;
 	byteIndexLow = 0;
 	byteIndexHigh = 0;
@@ -174,15 +164,12 @@ void DataBuffer::requestData() {
 // Reset the buffer to the initialised state. This leaves the existing allocated buffer intact, 
 // but erases its contents.
 bool DataBuffer::reset() {
-	front = begin;
-	back = begin;
+	front = buffer;
+	back = buffer;
 	size = 0;
-	index = begin;
+	index = buffer;
 	unread = 0;
-	unreadLow = 0;
-	unreadHigh = 0;
-	bytesFreeLow = 0;
-	bytesFreeHigh = capacity;
+	free = capacity;
 	byteIndex = 0;
 	byteIndexLow = 0;
 	byteIndexHigh = 0;
@@ -221,15 +208,12 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		return -1;
 	}
 	
-	// Check whether we have the requested data in the buffer.
-	if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
-#ifdef DEBUG
-	/* if (outFile.is_open()) {
-		outFile.close();
-	}
+	// TODO: removing local check. We just assume the local data isn't in the buffer and reload.
+	// In testing, the local data check has offered little benefits (not enough data in buffer).
+	// Check that this feature can be fully removed, or maybe reimplemented.
 	
-	outFile.open("out.mp3", std::ios::out | std::ios::binary | std::ios::trunc); */
-#endif
+	// Check whether we have the requested data in the buffer.
+	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
 		reset();
 		byteIndexLow = new_offset;
@@ -248,7 +232,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		}
 		
 		state = DBS_IDLE;
-	}
+	/* }
 	else {	
 #ifdef DEBUG
 		std::cout << "Setting new buffer position." << std::endl;
@@ -256,12 +240,12 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 
 		// Set the new position in the buffer.
 		uint32_t oldUnread = unread;
-		byteIndex = new_offset;							// Absolute byte index.
+		//byteIndex = new_offset;							// Absolute byte index.
 		index = front + (new_offset - byteIndexLow);	// Index into buffer translation.
 		unread = byteIndexHigh - new_offset;
-		unreadLow += new_offset - byteIndexLow;
-		unreadHigh -= unread - oldUnread;
-	}
+		//unreadLow += new_offset - byteIndexLow;
+		//unreadHigh -= unread - oldUnread;
+	} */
 	
 	return new_offset;
 }
@@ -300,101 +284,101 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	
 	bufferMutex.lock();
 	uint32_t bytesRead = 0;
-	if (len <= unreadHigh) {
+	
+	// Determine the number of bytes we can read in one copy operation.
+	// This depends on the location of the write pointer ('back') compared to the 
+	// read pointer ('index'). If the write pointer is ahead of the read pointer, we can read up 
+	// till there, otherwise to the end of the buffer.
+	uint32_t bytesSingleRead = 0;
+	if (index < back) { bytesSingleRead = back - index; }
+	else { bytesSingleRead = end - index; }
+	
+#ifdef DEBUG
+	std::cout << "bytesSingleRead: " << bytesSingleRead << std::endl;
+#endif
+	
+	if (len <= bytesSingleRead) {
+		// Can read requested data in single chunk.
 #ifdef DEBUG
 		std::cout << "Read whole block." << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		// Read requested data in one chunk from the buffer back.
 		memcpy(bytes, index, len);
-		
-		// Update counters, etc.
-		index += len;
-		unreadHigh -= len;
+		index += len;		// Advance read pointer.
 		bytesRead += len;
-		bytesFreeLow += len;
+		unread -= len;		// Unread bytes decreases by read byte count.
+		free += len;		// Read bytes become free for overwriting.
 		
-		// Read from the front if the back is exhausted.
-		if (unreadHigh == 0 && bytesFreeHigh == 0) { index = begin; } 
+		if (index >= end) {
+			index = buffer;	// Read pointer went past the buffer end. Reset to buffer begin.
+		}
 	}
-	else if (unreadHigh > 0 && bytesFreeHigh > 0) {
-		// Read the bytes we do have from the back into the buffer.
+	else if (bytesSingleRead > 0 && unread == bytesSingleRead) {
+		// Less data in buffer than needed & nothing at the front.
+		// Read what we can from the back, then return.
 #ifdef DEBUG
 		std::cout << "Read partial data from back." << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		memcpy(bytes, index, unreadHigh);
-		index += unreadHigh;
-		bytesRead += unreadHigh;
-		bytesFreeLow += unreadHigh;
-		unreadHigh = 0;
-	}
-	else if (unreadHigh == 0 && unreadLow > 0) {
-#ifdef DEBUG
-		std::cout << "Read from front." << std::endl;
-#endif
-		// Read what we need from the front.
-		if (len <= unreadLow) {
-			// Read the remaining requested bytes in one chunk.
-			memcpy(bytes, index, len);
-			index += len;
-			bytesRead += len;
-			unreadLow -= len;
-			bytesFreeLow += len;
-		}
-		else {
-			// Not enough bytes left in the buffer. Read what we can, then return.
-			memcpy(bytes, index, unreadLow);
-			index += unreadLow;
-			bytesRead += unreadLow;
-			bytesFreeLow += unreadLow;
-			unreadLow = 0;
+		memcpy(bytes, index, bytesSingleRead);
+		index += bytesSingleRead;		// Advance read pointer.
+		bytesRead += bytesSingleRead;
+		unread -= bytesSingleRead;		// Unread bytes decreases by read byte count.
+		free += bytesSingleRead;		// Read bytes become free for overwriting.
+		
+		if (index >= end) {
+			index = buffer;	// Read pointer went past the buffer end. Reset to buffer begin.
 		}
 		
-		if (index == end) {
-			index = begin;
-		}
 	}
-	else {
+	else if (bytesSingleRead > 0 && unread > bytesSingleRead) {
+		// Read part from the end of the buffer, then read rest from the front.
 #ifdef DEBUG
 		std::cout << "Read back, then front." << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		// Read the remaining unread bytes from the back, then continue reading from the front.
-		memcpy(bytes, index, unreadHigh);
-		index = begin;
-		bytesRead += unreadHigh;
-		bytesFreeLow += unreadHigh;
-		unreadHigh = 0;
+		memcpy(bytes, index, bytesSingleRead);
+		index += bytesSingleRead;		// Advance read pointer.
+		bytesRead += bytesSingleRead;
+		unread -= bytesSingleRead;		// Unread bytes decreases by read byte count.
+		free += bytesSingleRead;		// Read bytes become free for overwriting.
+		
+		index = buffer;	// Switch read pointer to front of the buffer.
+		
+		// Read remainder from front.
 		uint32_t bytesToRead = len - bytesRead;
-		if (bytesToRead <= unreadLow) {
-			// Read the remaining requested bytes in one chunk.
+#ifdef DEBUG
+		std::cout << "bytesRead: " << bytesRead << ", bytesToRead: " << bytesToRead << std::endl;
+#endif
+		if (bytesToRead <= unread) {
+			// Read the remaining bytes we need.
 			memcpy(bytes + bytesRead, index, bytesToRead);
 			index += bytesToRead;
 			bytesRead += bytesToRead;
-			unreadLow -= bytesToRead;
+			unread -= bytesToRead;
+			free += bytesToRead;
 		}
 		else {
-			// Not enough bytes left in the buffer. Read what we can, then return.
-			memcpy(bytes + bytesRead, index, unreadLow);
-			index += unreadLow;
-			bytesRead += unreadLow;
-			unreadLow = 0;
-		}
-		
-		if (index == end) {
-			index = begin;
+			// Read the unread bytes still available in the buffer.
+			memcpy(bytes + bytesRead, index, unread);
+			index += unread;
+			bytesRead += unread;
+			unread -= 0;
+			free += unread;
 		}
 	}
-	
-	// Update counters.
-	unread -= bytesRead;
-	byteIndex += bytesRead;
-	size -= bytesRead;
+	else {
+		// Default case.
+#ifdef DEBUG
+		std::cout << "FIXME: Default case." << std::endl;
+#endif
+		// FIXME: This shouldn't happen.
+		
+	}
 	
 #ifdef DEBUG
-		std::cout << "unread " << unread << ", byteIndex " << byteIndex << std::endl;
+		std::cout << "unread " << unread << ", free " << free << std::endl;
 		std::cout << "bytesRead: " << bytesRead << std::endl;
-		std::cout << "unreadLow: " << unreadLow << ", unreadHigh: " << unreadHigh
-					<< ", bytesFreeHigh: " << bytesFreeHigh << ", bytesFreeLow: " << bytesFreeLow
-					<< std::endl;
 #endif
 	
 	bufferMutex.unlock();
@@ -406,121 +390,99 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 // --- WRITE ---
 // Write data into the buffer.
 uint32_t DataBuffer::write(std::string &data) {
-/* #ifdef DEBUG
-		std::cout << "DataBuffer::write called for bytes: " << data.length() << std::endl;
-		outFile.write(data.data(), data.length());
-#endif */
 	// First check whether we can perform a straight copy. For this we need enough available bytes
 	// at the end of the buffer. Else we have to attempt to write the remainder into the front of
 	// the buffer.
+	// The bytesFreeLow and bytesFreeHigh counters are for keeping track of the number of free bytes
+	// at the low (beginning) and high (end) side respectively.
 	bufferMutex.lock();
 	dataRequestPending = false;
 	uint32_t bytesWritten = 0;
-	if (data.length() <= bytesFreeHigh) {
+	
+	// Determine the number of bytes we can write in one copy operation.
+	// This depends on the number of 'free' bytes, and the location of the read pointer ('index') 
+	// compared to the  write pointer ('back'). If the read pointer is ahead of the write pointer, 
+	// we can write up till there, otherwise to the end of the buffer.
+	uint32_t bytesSingleWrite = 0;
+	if (back < index) { bytesSingleWrite = index - back; }
+	else if (back == index) { bytesSingleWrite = free; }
+	else { bytesSingleWrite = end - back; }
+	
+	if (data.length() <= bytesSingleWrite) {
 #ifdef DEBUG
-		std::cout << "Write whole chunk at back. BytesFreeHigh: " << bytesFreeHigh << std::endl;
+		std::cout << "Write whole chunk at back. Single write: " << bytesSingleWrite << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		// Copy the data into the buffer.
+		// Enough space to write the data in one go.
 		memcpy(back, data.data(), data.length());
 		bytesWritten = data.length();
-		bytesFreeHigh -= data.length();
-		unreadHigh += data.length();
-		
-		// Move back pointer to just beyond the newly written data.
 		back += bytesWritten;
-		if (bytesFreeHigh == 0) {
-			back = begin;
-			//bytesFreeHigh = bytesFreeLow;
-			//bytesFreeLow = 0;
+		unread += bytesWritten;
+		free -= bytesWritten;
+		
+		if (back >= end) {
+			back = buffer;
 		}
 	}
-	else if (bytesFreeHigh == 0) {
-		if (bytesFreeLow == 0) {
-			// No room left in buffer. Abort write.
-			std::cerr << "Buffer is full. Cannot write." << std::endl;
-			bufferMutex.unlock();
-			return 0;
-		}
-		
+	else if (bytesSingleWrite > 0 && free == bytesSingleWrite) {
 #ifdef DEBUG
-		std::cout << "Write front." << std::endl;
+		std::cout << "Partial write at back. Single write: " << bytesSingleWrite << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		if (data.length() > bytesFreeLow) {
-			// Buffer is too small for remaining bytes. Copy what we can.
-			memcpy(back, data.data(), bytesFreeLow);
-			bytesWritten += bytesFreeLow;
-			unreadLow += bytesFreeLow;
-			byteIndexLow += bytesFreeLow;
-			back += bytesFreeLow;
-			bytesFreeLow = 0;
+		// Only enough space in buffer to write to the back. Write what we can, then return.
+		memcpy(back, data.data(), bytesSingleWrite);
+		bytesWritten = bytesSingleWrite;
+		back += bytesWritten;
+		unread += bytesWritten;
+		free -= bytesWritten;
+		
+		if (back >= end) {
+			back = buffer;
+		}
+	}
+	else if (bytesSingleWrite > 0 && free > bytesSingleWrite) {
+#ifdef DEBUG
+		std::cout << "Partial write at back, rest at front. Single write: " << bytesSingleWrite << std::endl;
+		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
+#endif
+		// Write to the back, then the rest at the front.
+		memcpy(back, data.data(), bytesSingleWrite);
+		bytesWritten = bytesSingleWrite;
+		back += bytesWritten;
+		unread += bytesWritten;
+		free -= bytesWritten;
+		
+		back = buffer;
+		
+		// Write remainder at the front.
+		uint32_t bytesToWrite = data.length() - bytesWritten;
+		if (bytesToWrite >= unread) {
+			// Write the remaining bytes we have.
+			memcpy(back, data.data() + bytesWritten, bytesToWrite);
+			index += bytesToWrite;
+			bytesWritten += bytesToWrite;
+			unread += bytesToWrite;
+			free -= bytesToWrite;
 		}
 		else {
-			// Straight copy into buffer.
-			memcpy(back, data.data(), data.length());
-			bytesWritten = data.length();
-			unreadLow += bytesWritten;
-			bytesFreeLow -= bytesWritten;
-			byteIndexLow += bytesWritten;
-			back += bytesWritten;
-		}
-		
-		// Check if we're at the end of the buffer.
-		if (back == end) {
-			back = begin;
-			//bytesFreeHigh = bytesFreeLow;
-			//bytesFreeLow = 0;
+			// Write the unread bytes still available in the buffer.
+			memcpy(back, data.data() + bytesWritten, free);
+			index += free;
+			bytesWritten += free;
+			unread += free;
+			free += 0;
 		}
 	}
 	else {
+		// FIXME: shouldn't happen.
 #ifdef DEBUG
-		std::cout << "Write back, then front." << std::endl;
+		std::cout << "FIXME: Default case." << std::endl;
 #endif
-		// Copy what we can, then try to copy the rest into the beginning of the buffer
-		memcpy(back, data.data(), bytesFreeHigh);
-		bytesWritten = bytesFreeHigh;
-		back = begin; // Buffer loops back to the front after it fills up.
-		
-		uint32_t bytesToWrite = data.length() - bytesFreeHigh;
-		unreadHigh += bytesFreeHigh;
-		bytesFreeHigh = 0;
-		if (bytesToWrite > bytesFreeLow) {
-			// Buffer is too small for remaining bytes. Copy what we can.
-			memcpy(back, data.data() + bytesWritten, bytesFreeLow);
-			bytesWritten += bytesFreeLow;
-			unreadLow += bytesFreeLow;
-			byteIndexLow += bytesFreeLow;
-			back += bytesFreeLow;
-			bytesFreeLow = 0;
-		}
-		else {
-			// Straight copy into buffer.
-			memcpy(back, data.data() + bytesWritten, bytesToWrite);
-			bytesWritten += bytesToWrite;
-			unreadLow += bytesToWrite;
-			bytesFreeLow -= bytesToWrite;
-			byteIndexLow += bytesToWrite;
-			back += bytesToWrite;
-		}
-		
-		// Adjust counters since we are now back at the buffer beginning.
-		//bytesFreeHigh = bytesFreeLow;
-		//bytesFreeLow = 0;
 	}
 	
 #ifdef DEBUG
-		std::cout << "unreadLow: " << unreadLow << ", unreadHigh: " << unreadHigh
-					<< ", bytesFreeHigh: " << bytesFreeHigh << ", bytesFreeLow: " << bytesFreeLow
-					<< std::endl;
-#endif
-		
-	// Update counters.
-	size += bytesWritten;
-	unread += bytesWritten;
-	byteIndexHigh += bytesWritten;
-	
-#ifdef DEBUG
-		std::cout << "size: " << size << ", unread: " << unread << ", byteIndexHigh: "
-					<< byteIndexHigh << ", bytesWritten: " << bytesWritten << std::endl;
+		std::cout << "unread: " << unread << ", free: " 
+					<< free << ", bytesWritten: " << bytesWritten << std::endl;
 #endif
 	
 	bufferMutex.unlock();
@@ -539,11 +501,6 @@ uint32_t DataBuffer::write(std::string &data) {
 // Set the End-Of-File status of the file being streamed.
 void DataBuffer::setEof(bool eof) {
 	DataBuffer::eof = eof;
-/* #ifdef DEBUG
-	if (eof == true) {
-		outFile.close();
-	}
-#endif */
 }
 
 
