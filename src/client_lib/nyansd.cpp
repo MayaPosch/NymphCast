@@ -154,11 +154,11 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 			catch (Poco::TimeoutException &exc) {
 				std::cerr << "ReceiveBytes: " << exc.displayText() << std::endl;
 				udpsocket.close();
-				return false;
+				continue;
 			}
 			catch (...) {
 				std::cerr << "ReceiveBytes: Unknown exception." << std::endl;
-				return false;
+				continue;
 			}
 			
 			std::cout << "Received message with length " << rs.length << std::endl;
