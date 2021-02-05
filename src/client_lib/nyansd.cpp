@@ -16,6 +16,8 @@
 #include <Poco/Net/DatagramSocket.h>
 #include <Poco/Net/NetworkInterface.h>
 #include <Poco/Net/DNS.h>
+#include <Poco/Net/NetException.h>
+#include <Poco/Exception.h>
 
 
 // Static variables.
@@ -72,41 +74,101 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 	
 	std::cout << "Message length: " << msg.length() << std::endl;
 	
-	// Open UDP socket, send message.
-	Poco::Net::DatagramSocket udpsocket(Poco::Net::IPAddress::IPv4);
-	udpsocket.setBroadcast(true);
-	Poco::Net::SocketAddress sa("255.255.255.255", port);
-	udpsocket.sendTo(msg.data(), msg.length(), sa);
-	 
-	// Listen for responses for 500 milliseconds.
-	Poco::Timespan ts(500000);	// 500 ms timeout.
-	int n;
-	Poco::Net::Socket::SocketList readList, writeList, exceptList;
-	readList.push_back(udpsocket);
+	// Open UDP socket for each interface and send the broadcast message.
 	std::vector<ResponseStruct> buffers;
-	while (Poco::Net::Socket::select(readList, writeList, exceptList, ts)) {
-		ResponseStruct rs;
-		rs.data = new char[2048];
-		try {
-			rs.length = udpsocket.receiveBytes(rs.data, 2048, 0);
+	std::map<uint32_t, Poco::Net::NetworkInterface> interfaces = Poco::Net::NetworkInterface::map(true, true);
+	
+	std::cout << "Found " << interfaces.size() << " network interfaces." << std::endl;
+	
+	for (uint32_t i = 0; i < interfaces.size(); ++i) {
+		Poco::Net::NetworkInterface ifc = interfaces[i];
+		
+		// FIXME: broadcast check always returns false. Seems useless.
+		/* if (!ifc.supportsBroadcast()) {
+			std::cerr << "Network interface does not support broadcast." << std::endl;
+			continue; 
+		} */
+		
+		if (!ifc.supportsIPv4()) {
+			std::cerr << "Network interface does not support IPv4." << std::endl;
+			continue; 
 		}
-		catch (Poco::TimeoutException &exc) {
-			std::cerr << "ReceiveBytes: " << exc.displayText() << std::endl;
-			udpsocket.close();
+		
+		Poco::Net::IPAddress ip;
+		try {
+			ip = ifc.firstAddress(Poco::Net::IPAddress::IPv4);
+		}
+		catch (Poco::NotFoundException &e) {
+			std::cerr << "Received NotFoundException: " << e.displayText() << std::endl;
+			continue;
+		}
+		catch (...) {
+			std::cerr << "Received unknown exception." << std::endl;
+			continue;
+		}
+		
+		std::string ipStr = ip.toString();
+		
+		std::cout << "Modifying IP address: " << ipStr << std::endl;
+		
+		// Replace the last digits with '255' to make it into a broadcast address.
+		ipStr.replace(ipStr.find_last_of('.') + 1, 3, "255");
+		
+		std::cout << "Broadcast IP address: " << ipStr << std::endl;
+		
+		if (!ip.isIPv4Compatible()) {
+			std::cerr << "Not an IPv4 IP, skipping." << std::endl;
+			continue;
+		}
+		
+		Poco::Net::DatagramSocket udpsocket(Poco::Net::IPAddress::IPv4);
+		udpsocket.setBroadcast(true);
+		Poco::Net::SocketAddress sa(ip, port);
+		std::cout << "Sending..." << std::endl;
+		
+		try {
+			udpsocket.sendTo(msg.data(), msg.length(), sa);
+		}
+		catch (Poco::Net::NetException &e) {
+			std::cerr << "UDP Socket sendTo: got exception - " << e.displayText() << std::endl;
 			return false;
 		}
 		catch (...) {
-			std::cerr << "ReceiveBytes: Unknown exception." << std::endl;
+			std::cerr << "UDP Socket sendTo: got unknown exception." << std::endl;
 			return false;
 		}
+	 
+		std::cout << "Listening..." << std::endl;
 		
-		std::cout << "Received message with length " << rs.length << std::endl;
+		// Listen for responses for 500 milliseconds.
+		Poco::Timespan ts(500000);	// 500 ms timeout.
+		int n;
+		Poco::Net::Socket::SocketList readList, writeList, exceptList;
+		readList.push_back(udpsocket);
+		while (Poco::Net::Socket::select(readList, writeList, exceptList, ts)) {
+			ResponseStruct rs;
+			rs.data = new char[2048];
+			try {
+				rs.length = udpsocket.receiveBytes(rs.data, 2048, 0);
+			}
+			catch (Poco::TimeoutException &exc) {
+				std::cerr << "ReceiveBytes: " << exc.displayText() << std::endl;
+				udpsocket.close();
+				return false;
+			}
+			catch (...) {
+				std::cerr << "ReceiveBytes: Unknown exception." << std::endl;
+				return false;
+			}
+			
+			std::cout << "Received message with length " << rs.length << std::endl;
+			
+			buffers.push_back(rs);
+		}
 		
-		buffers.push_back(rs);
+		// Close socket as we're done with this interface.
+		udpsocket.close();
 	}
-	
-	// Close socket as we're done with the network side.
-	udpsocket.close();
 	
 	std::cout << "Parsing " << buffers.size() << " response(s)..." << std::endl;
 	
