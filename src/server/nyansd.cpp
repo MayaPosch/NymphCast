@@ -77,11 +77,14 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 	// Open UDP socket for each interface and send the broadcast message.
 	std::vector<ResponseStruct> buffers;
 	std::map<uint32_t, Poco::Net::NetworkInterface> interfaces = Poco::Net::NetworkInterface::map(true, true);
+	uint32_t ifc_size = interfaces.size();
+	std::cout << "Found " << ifc_size << " network interfaces." << std::endl;
 	
-	std::cout << "Found " << interfaces.size() << " network interfaces." << std::endl;
-	
-	for (uint32_t i = 0; i < interfaces.size(); ++i) {
-		Poco::Net::NetworkInterface ifc = interfaces[i];
+	std::map<uint32_t, Poco::Net::NetworkInterface>::const_iterator it;
+	for (it = interfaces.begin(); it != interfaces.end(); ++it) {
+		const Poco::Net::NetworkInterface& ifc = it->second;
+		
+		std::cerr << "Network interface '" << ifc.displayName() << "'." << std::endl;
 		
 		// FIXME: broadcast check always returns false. Seems useless.
 		/* if (!ifc.supportsBroadcast()) {
@@ -90,7 +93,7 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 		} */
 		
 		if (!ifc.supportsIPv4()) {
-			std::cerr << "Network interface does not support IPv4." << std::endl;
+			std::cerr << "Network interface " << it->first << " does not support IPv4." << std::endl;
 			continue; 
 		}
 		
