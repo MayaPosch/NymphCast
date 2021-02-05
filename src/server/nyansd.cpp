@@ -131,11 +131,11 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 		}
 		catch (Poco::Net::NetException &e) {
 			std::cerr << "UDP Socket sendTo: got exception - " << e.displayText() << std::endl;
-			return false;
+			continue;
 		}
 		catch (...) {
 			std::cerr << "UDP Socket sendTo: got unknown exception." << std::endl;
-			return false;
+			continue;
 		}
 	 
 		std::cout << "Listening..." << std::endl;
