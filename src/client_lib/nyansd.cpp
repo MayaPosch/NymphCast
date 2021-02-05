@@ -107,6 +107,11 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 			continue;
 		}
 		
+		if (!ip.isIPv4Compatible()) {
+			std::cerr << "Not an IPv4 IP, skipping." << std::endl;
+			continue;
+		}
+		
 		std::string ipStr = ip.toString();
 		
 		std::cout << "Modifying IP address: " << ipStr << std::endl;
@@ -116,14 +121,9 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 		
 		std::cout << "Broadcast IP address: " << ipStr << std::endl;
 		
-		if (!ip.isIPv4Compatible()) {
-			std::cerr << "Not an IPv4 IP, skipping." << std::endl;
-			continue;
-		}
-		
 		Poco::Net::DatagramSocket udpsocket(Poco::Net::IPAddress::IPv4);
 		udpsocket.setBroadcast(true);
-		Poco::Net::SocketAddress sa(ip, port);
+		Poco::Net::SocketAddress sa(ipStr, port);
 		std::cout << "Sending..." << std::endl;
 		
 		try {
