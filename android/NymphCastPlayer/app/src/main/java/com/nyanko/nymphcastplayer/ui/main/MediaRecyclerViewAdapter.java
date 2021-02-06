@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.nyanko.nymphcastplayer.MainActivity;
 import com.nyanko.nymphcastplayer.ui.main.MediaFragment.OnListFragmentInteractionListener;
 import com.nyanko.nymphcastplayer.ui.main.MediaContent.MediaItem;
 
@@ -19,7 +20,6 @@ import java.util.List;
 /**
  * {@link RecyclerView.Adapter} that can display a {@link MediaItem} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
  */
 public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecyclerViewAdapter.ViewHolder> {
 
@@ -65,8 +65,8 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
 						// Notify the active callbacks interface (the activity, if the
 						// fragment is attached to one) that an item has been selected.
 
-						// FIXME: cannot work here.
-						//mListener.onListFragmentInteraction(holder.mItem);
+						MediaItem mi = MediaContent.ITEMS.get(position);
+						mListener.onListFragmentInteraction(mi);
 						break;
 					case R.id.media_menu_info:
 						// TODO: Show information about track.
@@ -101,6 +101,7 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
 			mView = view;
 			mIdView = (TextView) view.findViewById(R.id.item_number);
 			mContentView = (TextView) view.findViewById(R.id.content);
+			//mItem = (TextView) view.findViewById(R.id.mediaid);
 		}
 
 		@Override

@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.nyanko.nymphcastplayer.MainActivity;
 import com.nyanko.nymphcastplayer.ui.main.RemotesFragment.OnListFragmentInteractionListener;
 
@@ -67,9 +69,12 @@ public class RemotesRecyclerViewAdapter extends RecyclerView.Adapter<RemotesRecy
 						// Check that we successfully connected.
 						if (res) {
 							// TODO: Update UI.
+							//Toast.makeText(getApplicationContext(), "You selected the action : " + item.getTitle()+" position "+position, Toast.LENGTH_SHORT).show();
+							Snackbar.make(v, "Connected to remote...", Snackbar.LENGTH_LONG).show();
 						}
 						else {
 							// TODO: Display connection error.
+							Snackbar.make(v, "Failed to connect to remote...", Snackbar.LENGTH_LONG).show();
 						}
 
 						break;

@@ -1,6 +1,8 @@
 package com.nyanko.nymphcastplayer;
 
 
+import android.util.Log;
+
 import com.nyanko.nymphcastplayer.ui.main.RemotesContent;
 import com.nyanko.nymphcastplayer.ui.main.RemotesFragment;
 
@@ -29,6 +31,7 @@ public class NymphCast {
 
 	// --- Non-native ---
 	public void setRemoteList(String[] remotes) {
+		Log.i("NymphCast", "SetRemoteList called.");
 		// Clear the old list, replace with items from the array.
 		RemotesContent.ITEMS.clear();
 

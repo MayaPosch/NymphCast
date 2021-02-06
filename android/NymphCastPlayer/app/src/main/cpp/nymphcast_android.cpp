@@ -12,6 +12,9 @@
 #include <nymphcast_client.h>
 #include <atomic>
 #include <mutex>
+#include <android/log.h>
+
+#define TAG "NYMPHCAST"
 
 
 NymphCastClient client;
@@ -113,15 +116,23 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_s
 // --- FIND SERVERS ---
 extern "C" JNIEXPORT void JNICALL Java_com_nyanko_nymphcastplayer_NymphCast_findServers
 	(JNIEnv* env, jobject obj) {
+	if (!connected) { return; }
+
+	__android_log_print(ANDROID_LOG_INFO, TAG, "Finding servers...");
+
 	remotesMutex.lock();
 	remotes = client.findServers();
 	remotesMutex.unlock();
+
+	__android_log_print(ANDROID_LOG_INFO, TAG, "Found %lu remotes.", remotes.size());
 
 	// Create the new array
 	jobjectArray remoteArray = env->NewObjectArray(remotes.size(), env->FindClass("java/lang/String"), 0);
 	for (int i = 0; i < remotes.size(); ++i) {
 		env->SetObjectArrayElement(remoteArray, i, env->NewStringUTF(remotes[i].ipv4.c_str()));
 	}
+
+	__android_log_print(ANDROID_LOG_INFO, TAG, "Updating UI list...");
 
 	// Update the UI list.
 	jclass ncj = env->GetObjectClass(obj);

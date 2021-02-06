@@ -64,6 +64,9 @@ public class MainActivity extends AppCompatActivity
                     case 2:
                         tab.setText("Apps");
                         break;
+                    case 3:
+                        tab.setText("MediaServer");
+                        break;
                     default:
                         tab.setText("Foo");
                 }
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                nymphCast.findServers();
             }
         });
 
@@ -94,39 +98,39 @@ public class MainActivity extends AppCompatActivity
         RemotesContent.addItem(item);
     } */
 
-@RequiresApi(api = Build.VERSION_CODES.KITKAT)
-public static String getPath(final Context context, final Uri uri) {
-    final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static String getPath(final Context context, final Uri uri) {
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
-    // DocumentProvider
-    if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-        System.out.println("getPath() uri: " + uri.toString());
-        System.out.println("getPath() uri authority: " + uri.getAuthority());
-        System.out.println("getPath() uri path: " + uri.getPath());
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            System.out.println("getPath() uri: " + uri.toString());
+            System.out.println("getPath() uri authority: " + uri.getAuthority());
+            System.out.println("getPath() uri path: " + uri.getPath());
 
-        // ExternalStorageProvider
-        if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
-            final String docId = DocumentsContract.getDocumentId(uri);
-            final String[] split = docId.split(":");
-            final String type = split[0];
-            System.out.println("getPath() docId: " + docId + ", split: " + split.length + ", type: " + type);
+            // ExternalStorageProvider
+            if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                System.out.println("getPath() docId: " + docId + ", split: " + split.length + ", type: " + type);
 
-            // This is for checking Main Memory
-            if ("primary".equalsIgnoreCase(type)) {
-                if (split.length > 1) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1] + "/";
+                // This is for checking Main Memory
+                if ("primary".equalsIgnoreCase(type)) {
+                    if (split.length > 1) {
+                        return Environment.getExternalStorageDirectory() + "/" + split[1] + "/";
+                    } else {
+                        return Environment.getExternalStorageDirectory() + "/";
+                    }
+                    // This is for checking SD Card
                 } else {
-                    return Environment.getExternalStorageDirectory() + "/";
+                    return "storage" + "/" + docId.replace(":", "/");
                 }
-                // This is for checking SD Card
-            } else {
-                return "storage" + "/" + docId.replace(":", "/");
-            }
 
+            }
         }
+        return null;
     }
-    return null;
-}
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void onListFragmentInteraction(MediaContent.MediaItem item) {
