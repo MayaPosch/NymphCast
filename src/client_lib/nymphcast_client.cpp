@@ -294,6 +294,20 @@ std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, st
 }
 
 
+bool isDuplicate(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
+	for (uint32_t j = 0; j < remotes.size(); ++j) {
+		if (remotes[j].ipv4 == rm.ipv4 &&
+			remotes[j].ipv6 == rm.ipv6 &&
+			remotes[j].name == rm.name &&
+			remotes[j].port == rm.port) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+
 // --- FIND SERVERS ---
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform a NyanSD service discovery run for NymphCast receivers.
@@ -308,7 +322,7 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
 	
 	// Process responses. 
-	// TODO: Check for potential duplicate responses (same IP).
+	// Check for potential duplicate responses.
 	for (int i = 0; i < responses.size(); ++i) {
 		NymphCastRemote rm;
 		rm.ipv4 = NyanSD::ipv4_uintToString(responses[i].ipv4);
@@ -317,14 +331,9 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 		rm.port = responses[i].port;
 		
 		// Check for duplicates.
-		for (uint32_t j = 0; j < remotes.size(); ++j) {
-			if (remotes[j].ipv4 == rm.ipv4 &&
-				remotes[j].ipv6 == rm.ipv6 &&
-				remotes[j].name == rm.name &&
-				remotes[j].port == rm.port) {
-				std::cout << "Skipping duplicate entry." << std::endl;
-				continue;
-			}
+		if (isDuplicate(remotes, rm)) {
+			std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			continue;
 		}
 		
 		remotes.push_back(rm);
