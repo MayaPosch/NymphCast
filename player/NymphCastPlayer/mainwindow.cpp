@@ -592,7 +592,7 @@ void MainWindow::scanForShares() {
 			ids.append(QVariant(j));
             ids.append(QVariant(files[j].id));
             mediaFiles.push_back(files);
-            ids.append(QVariant(mediaFiles.size()));
+            ids.append(QVariant((uint32_t) mediaFiles.size()));
             
             fn->setData(QVariant(ids), Qt::UserRole);
             item->appendRow(fn);
