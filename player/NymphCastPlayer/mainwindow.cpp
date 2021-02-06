@@ -15,6 +15,35 @@
 #include <QStandardPaths>
 #include <QDir>
 
+#if defined(Q_OS_ANDROID)
+#include <QtAndroidExtras>
+#include <QAndroidJniEnvironment>
+#include <QtAndroid>
+
+class MediaItem : public QObject {
+	Q_OBJECT
+	Q_PROPERTY(QString title READ title CONSTANT)
+	Q_PROPERTY(QString album READ album CONSTANT)
+	Q_PROPERTY(QString artist READ artist CONSTANT)
+	Q_PROPERTY(QString path READ path CONSTANT)
+	
+	QString m_title;
+	QString m_album;
+	QString m_artist;
+	QString m_path;
+	
+public:
+	MediaItem(const QString title, const QString album, const QString artist, const QString path, 
+																		QObject *parent = nullptr) 
+		: QObject(parent), m_title(title), m_album(album), m_artist(artist), m_path(path) { }
+	
+	QString title() const { return m_title }
+	QString album() const { return m_album; }
+	QString artist() const { return m_artist; }
+	QSTring path() const { return m_path; }
+};
+#endif
+
 
 // Static declarations
 uint32_t MainWindow::serverHandle;
@@ -116,25 +145,40 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	ui->addButton->setEnabled(false);
 	ui->removeButton->setEnabled(false);
 	
-	// Next, read the local media files and add them to the list, sorting music and videos.
-	QStringList audio = QStandardPaths::locateAll(QStandardPaths::MusicLocation, QString());
-	QStringList video = QStandardPaths::locateAll(QStandardPaths::MoviesLocation, QString());
+	if(!QAndroidJniObject::isClassAvailable("com/nyanko/nymphcastplayer/NymphCast")) {
+		qDebug() << "Java class is missing.";
+		return;
+	}
 	
-	for (int i = 0; i < audio.size(); ++i) {
+	// Next, read the local media files and add them to the list, sorting music and videos.
+	//QStringList audio = QStandardPaths::locateAll(QStandardPaths::MusicLocation, QString());
+	//QStringList video = QStandardPaths::locateAll(QStandardPaths::MoviesLocation, QString());
+	QAndroidJniObject audioObj = QAndroidJniObject::callStaticObjectMethod(
+							"com/nyanko/nymphcastplayer/NymphCast",
+							"loadAudio"
+							"(Landroid/content/Context)[Lcom/nyanko/nymphcastplayer/NymphCast;",
+							QtAndroid::androidContext().object()));
+		
+	for (int i = 0; i < audioObj.callMethod<jint>("size"); ++i) {
 		// Add item to the list.
+		QAndroidJniObject track = audioObj.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
+		const QString title = track.callObjectMethod("getTitle", "()Ljava/lang/String;").toString();
+		const QString album = track.callObjectMethod("getAlbum", "()Ljava/lang/String;").toString();
+		const QString artist = track.callObjectMethod("getArtist", "()Ljava/lang/String;").toString();
+		const QString path = track.callObjectMethod("getPath", "()Ljava/lang/String;").toString();
 		QListWidgetItem *newItem = new QListWidgetItem;
-		newItem->setText(audio[i]);
-		newItem->setData(Qt::UserRole, QVariant(audio[i]));
+		newItem->setText(artist + " - " + title);
+		newItem->setData(Qt::UserRole, QVariant(path));
 		ui->mediaListWidget->addItem(newItem);
 	}
 	
-	for (int i = 0; i < video.size(); ++i) {
+	/* for (int i = 0; i < video.size(); ++i) {
 		// Add item to the list.
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(video[i]);
 		newItem->setData(Qt::UserRole, QVariant(video[i]));
 		ui->mediaListWidget->addItem(newItem);
-	}	
+	}	 */
 	
 #endif
 }
