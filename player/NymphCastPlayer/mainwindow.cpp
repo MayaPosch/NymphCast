@@ -37,10 +37,10 @@ public:
 																		QObject *parent = nullptr) 
 		: QObject(parent), m_title(title), m_album(album), m_artist(artist), m_path(path) { }
 	
-	QString title() const { return m_title }
+	QString title() const { return m_title; }
 	QString album() const { return m_album; }
 	QString artist() const { return m_artist; }
-	QSTring path() const { return m_path; }
+	QString path() const { return m_path; }
 };
 #endif
 
@@ -154,10 +154,10 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	//QStringList audio = QStandardPaths::locateAll(QStandardPaths::MusicLocation, QString());
 	//QStringList video = QStandardPaths::locateAll(QStandardPaths::MoviesLocation, QString());
 	QAndroidJniObject audioObj = QAndroidJniObject::callStaticObjectMethod(
-							"com/nyanko/nymphcastplayer/NymphCast",
-							"loadAudio"
-							"(Landroid/content/Context)[Lcom/nyanko/nymphcastplayer/NymphCast;",
-							QtAndroid::androidContext().object()));
+                            "com/nyanko/nymphcastplayer/NymphCast",
+							"loadAudio",
+							"(Landroid/content/Context)Lcom/nyanko/nymphcastplayer/NymphCast;",
+							QtAndroid::androidContext().object());
 		
 	for (int i = 0; i < audioObj.callMethod<jint>("size"); ++i) {
 		// Add item to the list.

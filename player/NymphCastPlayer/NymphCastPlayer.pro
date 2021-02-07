@@ -22,7 +22,7 @@ TEMPLATE = app
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS LITEHTML_UTF8
 
-ANDROID_ABIS="armeabi-v7a"
+ANDROID_ABIS= arm64-v8a
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -168,7 +168,8 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-LIBS += -LD:\Dev\msys64\mingw64\lib 
+#android: LIBS += -L$$PWD/android/
+#else: LIBS += -LD:\Dev\msys64\mingw64\lib 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 
 win32:LIBS += -lws2_32

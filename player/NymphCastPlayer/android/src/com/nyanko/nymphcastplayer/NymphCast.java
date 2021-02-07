@@ -3,11 +3,18 @@ package com.nyanko.nymphcastplayer;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import java.util.ArrayList;
 import android.provider.MediaStore;
 import com.nyanko.nymphcastplayer.MediaItem;
+
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.view.View;
+//import androidx.annotation.RequiresApi;
 
 
 public class NymphCast {
@@ -46,14 +53,16 @@ public class NymphCast {
 		if (cursor != null) {
 			cursor.close();
 		}
+		
+		return items;
 	}
 	
-	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
+	//@RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        //final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
         // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        //if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
             System.out.println("getPath() uri: " + uri.toString());
             System.out.println("getPath() uri authority: " + uri.getAuthority());
             System.out.println("getPath() uri path: " + uri.getPath());
@@ -78,11 +87,11 @@ public class NymphCast {
                 }
 
             }
-        }
+        //}
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+/*     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void onListFragmentInteraction(MediaContent.MediaItem item) {
         // A media item got selected for playback.
 		Uri contentUri = item.uri;
@@ -98,5 +107,5 @@ public class NymphCast {
 			// Pass the integer value "fd" into your native code. Remember to call
 			// close(2) on the file descriptor when you're done using it.
 		} */
-    }
+    //} */
 }

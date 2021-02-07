@@ -1,7 +1,7 @@
-package com.nyanko.nymphcastplayer
+package com.nyanko.nymphcastplayer;
 
 
-public static class MediaItem {
+public class MediaItem {
 	private final String title;
 	private final String album;
 	private final String artist;
