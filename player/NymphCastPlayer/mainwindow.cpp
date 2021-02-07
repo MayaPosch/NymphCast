@@ -156,7 +156,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	QAndroidJniObject audioObj = QAndroidJniObject::callStaticObjectMethod(
                             "com/nyanko/nymphcastplayer/NymphCast",
 							"loadAudio",
-							"(Landroid/content/Context)Lcom/nyanko/nymphcastplayer/NymphCast;",
+							"(Landroid/content/Context;)Ljava/util/ArrayList;",
 							QtAndroid::androidContext().object());
 		
 	for (int i = 0; i < audioObj.callMethod<jint>("size"); ++i) {
