@@ -168,8 +168,6 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-#android: LIBS += -L$$PWD/android/
-#else: LIBS += -LD:\Dev\msys64\mingw64\lib 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 
 win32:LIBS += -lws2_32
