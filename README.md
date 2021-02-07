@@ -44,7 +44,7 @@ NymphCast Server | Receiver end-point for clients. Connected to the audiovisual 
 NymphCast Client SDK | Software Development Kit for developing NymphCast clients. | v0.1-alpha4
 NymphCast Client | CLI-based NymphCast client. | v0.1-alpha4
 NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-alpha4
-NymphCast Player Android | Android-based NymphCast client. | v0.1-alpha0
+NymphCast Player Android | Native Android-based NymphCast client. | v0.1-alpha0
 [NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-alpha0
 
 ### **NymphCast Player Client** ###
@@ -63,7 +63,7 @@ FFmpeg and SDL2 libraries are used for audio and video playback. Both of which a
 
 ### **Client Platforms** ###
 
-For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support. Essentially, this means any mainstream desktop OS including Linux, Windows, BSD and MacOS should qualify.
+For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support. Essentially, this means any mainstream desktop OS including Linux, Windows, BSD and MacOS should qualify, along with mobile platforms. Currently Android is also supported, with iOS support planned.
 
 For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required.
 
@@ -216,11 +216,11 @@ Else, use the manual procedure:
 
 This demonstration client uses Qt5 to provide user interface functionality. The binary release comes with the necessary dependencies, but when building it from source, make sure Qt5.x is installed or get it from [www.qt.io](https://www.qt.io/download).
 
-For Windows (x64):
+For **Windows** (x64):
 
 1. Download and extract the binary release.
 
-Or (building and running on Windows & other platforms):
+Or (building and running on Windows & other **desktop** platforms):
 
 1. Download or clone the project repository 
 2. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
@@ -230,7 +230,17 @@ Or (building and running on Windows & other platforms):
 7. Execute `qmake ..` followed by `make`.
 8. The player binary is created either in the same build folder or in a `debug/` sub-folder.
 
+On **Android**:
+
+1. Download or clone the project repository.
+2. Compile the dependencies (NymphCast client SDK, NymphRPC & Poco) for the target Android platforms.
+3. Ensure dependency libraries along with their headers are installed in the Android NDK, under `<ANDROID_SDK>/ndk/<VERSION>/toolchains/llvm/prebuilt/<HOST_OS>/sysroot/usr/lib/<TARGET>` where `TARGET` is the target Android platform (ARMv7, AArch64, x86, x86_64). Header files are placed in the accompanying `usr/include` folder.
+4. Open the Qt project in a Qt Creator instance which has been configured for building for Android targets, and build the project.
+5. An APK is produced, which can be loaded on any supported Android device.
+
 Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
+
+
 
 
 <a id="id-dg"></a>
@@ -248,6 +258,8 @@ An SDK has been made available in the `src/client_lib/` folder. The player proje
 To use the SDK, the Makefile in the SDK folder can be executed with a simple `make` command, after which a library file can be found in the `src/client_lib/lib` folder. 
 
 **Note:** to compile the SDK, both [NymphRPC](https://github.com/MayaPosch/NymphRPC) and LibPOCO (1.5+) must be installed.
+
+**Note:** For Android, one can compile for ARMv7 Android using `make lib ANDROID=1`and for AArch64 Android using `ANDROID64=1`. This requires that the Android SDK and NDK are installed and on the system path.
 
 After this the only files needed by a client project are this library file and the `nymphcast_client.h` header file. 
 
