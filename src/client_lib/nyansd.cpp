@@ -86,12 +86,6 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 		
 		std::cerr << "Network interface '" << ifc.displayName() << "'." << std::endl;
 		
-		// FIXME: broadcast check always returns false. Seems useless.
-		/* if (!ifc.supportsBroadcast()) {
-			std::cerr << "Network interface does not support broadcast." << std::endl;
-			continue; 
-		} */
-		
 		if (!ifc.supportsIPv4()) {
 			std::cerr << "Network interface " << it->first << " does not support IPv4." << std::endl;
 			continue; 
