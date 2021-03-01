@@ -180,8 +180,19 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+	android/AndroidManifest.xml \
+	android/build.gradle \
+	android/gradle/wrapper/gradle-wrapper.jar \
+	android/gradle/wrapper/gradle-wrapper.properties \
+	android/gradlew \
+	android/gradlew.bat \
+	android/res/values/libs.xml \
+	android/res/xml/network_security_config.xml \
 	litehtml/include/master.css \
 	litehtml/src/gumbo/CMakeLists.txt \
 	litehtml/src/gumbo/tag.in
 
-#win32:RC_ICONS += img/mqtticon-large.png
+android {
+QMAKE_CFLAGS +=  -fno-strict-aliasing 
+QMAKE_CXXFLAGS +=  -fno-strict-aliasing
+}
