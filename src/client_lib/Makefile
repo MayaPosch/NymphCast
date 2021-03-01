@@ -56,7 +56,7 @@ CFLAGS += -fPIC
 endif
 
 ifdef ANDROID64
-#CFLAGS += -fPIC --target=aarch64-linux-android21 -fno-addrsig
+CFLAGS += -fPIC -fno-strict-aliasing
 endif
 
 # Check for MinGW and patch up POCO
@@ -79,7 +79,7 @@ all: lib
 lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(OUTPUT).so.$(VERSION)
 	
 obj/static/$(ARCH)%.o: %.cpp
-	$(GCC) -c -o $@ $< $(CFLAGS) $(LIBS)
+	$(GCC) -c -o $@ $< $(CFLAGS)
 	
 obj/shared/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS) $(SHARED_FLAGS) $(LIBS)
