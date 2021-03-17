@@ -4,12 +4,15 @@ build/
 *.user
 *.log
 obj/
+obj-*/
 bin/
 *.o
 build-*/
 linux-build/
 lib/
+lib-*/
 src/server/wallpapers/*.jpg
 src/server/wallpapers/*.png
 src/server/wallpapers/*.jpeg
 *.class
+
