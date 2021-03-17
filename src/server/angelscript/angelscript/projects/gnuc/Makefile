@@ -79,9 +79,10 @@ else ifeq ($(TARGETPLATFORM), android)
 	-march=armv6 -mthumb-interwork \
 	-mfloat-abi=softfp -fno-rtti
 else
-	OBJDIR = obj
-	LIBDIR = ../../lib
-	CXX ?= g++
+	OBJDIR = obj-$(TARGET)
+	LIBDIR = ../../lib-$(TARGET)
+	#CXX ?= g++
+	CXX := $(GPP)
 	# On i686 architecture you may need to add -march=i686 if you get 
 	# an undefined symbol for __sync_sub_and_fetch_4 in as_atomic.cpp.
 	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing

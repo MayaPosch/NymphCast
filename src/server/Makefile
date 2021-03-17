@@ -1,19 +1,32 @@
-# Makefile for the NymphCast client project.
+# Makefile for the NymphCast server project.
 #
 # (c) 2019 Nyanko.ws
 
-ifdef TARGET
-include Makefile.$(TARGET)
+
+ifdef PLATFORM
+include platforms/$(PLATFORM).mk
+TARGET := $(PLATFORM)
+else
+# Get the compiler's (GCC or Clang) target triplet and use that as platform.
+TARGET := $(shell g++ -dumpmachine)
+$(info TARGET: $(TARGET))
+endif
+
+ifdef TOOLCHAIN
+#include Makefile.$(TARGET)
+include toolchain/$(TOOLCHAIN).mk
 else
 GPP = g++
 GCC = gcc
+STRIP = strip
 MAKEDIR = mkdir -p
 RM = rm
 endif
 
-ifdef PLATFORM
-include platforms/Makefile.$(PLATFORM)
-endif
+export TARGET
+export GPP
+
+TARGET_BIN := $(TARGET)/
 
 # Include the file with the versioning information ('VERSION' variable).
 include version
@@ -22,11 +35,11 @@ VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on \
 			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags`
-LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData -lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib -langelscript -lstdc++fs `sdl2-config --libs`
-FLAGS := -ffunction-sections -fdata-sections -g3 -O0
+LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData -lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript -lstdc++fs `sdl2-config --libs`
+FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
-LDFLAGS := -Wl,--gc-sections $(LIB)
+LDFLAGS := -Wl,--gc-sections $(PLATFORM_LDFLAGS) $(LIB)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
@@ -47,8 +60,8 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard angelscript/json/*.cpp) \
 			$(wildcard angelscript/regexp/*.cpp)
 C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
-OBJECTS := $(addprefix obj/,$(notdir) $(SOURCES:.cpp=.o))
-C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
+OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
+C_OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
 
 PREFIX ?= /usr/local
 
@@ -63,31 +76,31 @@ SED_REPLACE := -e 's:@BIN@:$(DESTDIR)$(PREFIX)/bin/$(OUTPUT):g' \
 	-e 's:@APPS@:$(DESTDIR)$(PREFIX)/share/nymphcast/apps/:g' \
 	-e 's:@WALLPAPERS@:$(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/:g'
 
-all: bin/$(OUTPUT)
+all: makedir bin/$(TARGET_BIN)$(OUTPUT)
 
 makedir:
-	$(MAKEDIR) obj/ffplay
-	$(MAKEDIR) obj/angelscript/add_on/scriptstdstring
-	$(MAKEDIR) obj/angelscript/add_on/scriptbuilder
-	$(MAKEDIR) obj/angelscript/add_on/scriptarray
-	$(MAKEDIR) obj/angelscript/add_on/scriptdictionary
-	$(MAKEDIR) obj/angelscript/json
-	$(MAKEDIR) obj/angelscript/regexp
-	$(MAKEDIR) bin
+	$(MAKEDIR) obj/$(TARGET_BIN)ffplay
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/add_on/scriptstdstring
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/add_on/scriptbuilder
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/add_on/scriptarray
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/add_on/scriptdictionary
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/json
+	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/regexp
+	$(MAKEDIR) bin/$(TARGET)
 	
 angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
 
-obj/%.o: %.cpp
+obj/$(TARGET_BIN)%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
 
-obj/%.o: %.c
+obj/$(TARGET_BIN)%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(CFLAGS)
 	
-bin/$(OUTPUT): angelscript makedir $(OBJECTS) $(C_OBJECTS)
+bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	cp $@ $@.debug
-	strip -S --strip-unneeded $@
+	$(STRIP) -S --strip-unneeded $@
 
 clean:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
