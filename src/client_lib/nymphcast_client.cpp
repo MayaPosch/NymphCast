@@ -644,7 +644,7 @@ bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 	std::string result;
 	NymphType* returnValue = 0;
 	values.push_back(new NymphString(url));
-	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
+	if (!NymphRemoteServer::callMethod(handle, "playback_url", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
