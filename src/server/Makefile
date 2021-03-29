@@ -71,7 +71,7 @@ else
 	CONFDIR := /etc
 endif
 
-SED_REPLACE := -e 's:@BIN@:$(DESTDIR)$(PREFIX)/bin/$(OUTPUT):g' \
+SED_REPLACE := -e 's:@BIN@:$(DESTDIR)$(PREFIX)/bin/$(TARGET_BIN)$(OUTPUT):g' \
 	-e 's:@CONFIG@:$(DESTDIR)$(CONFDIR)/nymphcast/nymphcast_config.ini:g' \
 	-e 's:@APPS@:$(DESTDIR)$(PREFIX)/share/nymphcast/apps/:g' \
 	-e 's:@WALLPAPERS@:$(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/:g'
@@ -115,7 +115,7 @@ install:
 		-d $(DESTDIR)$(PREFIX)/share/nymphcast/apps/ \
 		-d $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/ \
 		-d $(DESTDIR)$(CONFDIR)/avahi/services/
-	install -m 755 bin/$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 bin/$(TARGET_BIN)$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
 	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
@@ -134,10 +134,10 @@ install-openrc:
 
 
 # Construct an archive for Raspbian: audio-only, or full.
-ar-rasp-full: bin/$(OUTPUT)
+ar-rasp-full: bin/$(TARGET_BIN)$(OUTPUT)
 	$(MAKEDIR) out/tmp
 	cp -r raspbian/. out/tmp/
-	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	cp bin/$(TARGET_BIN)$(OUTPUT) out/tmp/payload/usr/local/bin/.
 	$(MAKEDIR) out/tmp/payload/etc/nymphcast
 	cp nymphcast_video_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
 	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
@@ -148,12 +148,12 @@ ar-rasp-full: bin/$(OUTPUT)
 	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
 	cd out/tmp && zip -vr ../nymphcast_raspbian.zip . && cd -
 	
-ar-rasp-audio: bin/$(OUTPUT)
+ar-rasp-audio: bin/$(TARGET_BIN)$(OUTPUT)
 	rm -rf out/tmp
 	rm -f out/nymphcast_audio_raspbian.zip
 	$(MAKEDIR) out/tmp
 	cp -r raspbian/. out/tmp/
-	cp bin/$(OUTPUT) out/tmp/payload/usr/local/bin/.
+	cp bin/$(TARGET_BIN)$(OUTPUT) out/tmp/payload/usr/local/bin/.
 	$(MAKEDIR) out/tmp/payload/etc/nymphcast
 	cp nymphcast_audio_config.ini out/tmp/payload/etc/nymphcast/nymphcast_config.ini
 	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
