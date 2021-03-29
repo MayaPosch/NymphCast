@@ -6,6 +6,7 @@
 #include <angelscript.h>
 #include "../../../add_on/scriptstdstring/scriptstdstring.h"
 #include "../../../add_on/scripthelper/scripthelper.h"
+#include "../../../add_on/scriptarray/scriptarray.h"
 
 using namespace std;
 
@@ -149,6 +150,9 @@ void ConfigureEngine(asIScriptEngine *engine)
 	// Look at the implementation for this function for more information
 	// on how to register a custom string type, and other object types.
 	RegisterStdString(engine);
+
+	// Register the script array type
+	RegisterScriptArray(engine, false);
 
 	// Register the global variables
 	r = engine->RegisterGlobalProperty("float g_gravity", &g_gravity); assert( r >= 0 );

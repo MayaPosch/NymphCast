@@ -28,6 +28,7 @@ typedef map<string, int> map_t;
 END_AS_NAMESPACE
 #endif
 
+BEGIN_AS_NAMESPACE
 class CStdStringFactory : public asIStringFactory
 {
 public:

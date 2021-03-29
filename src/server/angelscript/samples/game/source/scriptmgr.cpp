@@ -54,8 +54,8 @@ int CScriptMgr::Init()
 	r = engine->RegisterObjectBehaviour("CGameObj", asBEHAVE_GET_WEAKREF_FLAG, "int &f()", asMETHOD(CGameObj, GetWeakRefFlag), asCALL_THISCALL); assert( r >= 0 );
 
 	// The object's position is read-only to the script. The position is updated with the Move method
-	r = engine->RegisterObjectMethod("CGameObj", "int get_x() const", asMETHOD(CGameObj, GetX), asCALL_THISCALL); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("CGameObj", "int get_y() const", asMETHOD(CGameObj, GetY), asCALL_THISCALL); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("CGameObj", "int get_x() const property", asMETHOD(CGameObj, GetX), asCALL_THISCALL); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("CGameObj", "int get_y() const property", asMETHOD(CGameObj, GetY), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("CGameObj", "bool Move(int dx, int dy)", asMETHOD(CGameObj, Move), asCALL_THISCALL); assert( r >= 0 );
 
 	// The script can kill the owning object
@@ -85,7 +85,7 @@ int CScriptMgr::Init()
 	r = engine->RegisterGlobalProperty("CGameMgr game", gameMgr); assert( r >= 0 );
 
 	// The script can determine what the user wants to do through the actionStates
-	r = engine->RegisterObjectMethod("CGameMgr", "bool get_actionState(int idx)", asMETHOD(CGameMgr, GetActionState), asCALL_THISCALL); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("CGameMgr", "bool get_actionState(int idx) property", asMETHOD(CGameMgr, GetActionState), asCALL_THISCALL); assert( r >= 0 );
 
 	// The script can call this method to end the game
 	r = engine->RegisterObjectMethod("CGameMgr", "void EndGame(bool win)", asMETHOD(CGameMgr, EndGame), asCALL_THISCALL); assert( r >= 0 );

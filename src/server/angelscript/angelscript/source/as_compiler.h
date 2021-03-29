@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2019 Andreas Jonsson
+   Copyright (c) 2003-2020 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied 
    warranty. In no event will the authors be held liable for any 
@@ -423,6 +423,9 @@ protected:
 	// This array holds the string constants that were allocated during the compilation, 
 	// so they can be released upon completion, whether the compilation was successful or not.
 	asCArray<void*>       usedStringConstants;
+
+	// This array holds the nodes that have been allocated temporarily
+	asCArray<asCScriptNode*> nodesToFreeUponComplete;
 
 	bool isCompilingDefaultArg;
 	bool isProcessingDeferredParams;

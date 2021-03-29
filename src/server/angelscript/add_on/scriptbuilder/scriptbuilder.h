@@ -200,7 +200,7 @@ protected:
 	{
 		bool operator()(const std::string &a, const std::string &b) const
 		{
-			return _strcmpi(a.c_str(), b.c_str()) < 0;
+			return _stricmp(a.c_str(), b.c_str()) < 0;
 		}
 	};
 	std::set<std::string, ci_less> includedScripts;

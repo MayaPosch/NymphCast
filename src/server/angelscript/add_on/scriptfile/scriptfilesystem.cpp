@@ -1,4 +1,5 @@
 #include "scriptfilesystem.h"
+#include "../autowrapper/aswrappedcall.h"
 
 #if defined(_WIN32)
 #include <direct.h> // _getcwd
@@ -30,6 +31,10 @@ void RegisterScriptFileSystem_Native(asIScriptEngine *engine)
 {
 	int r;
 
+	assert( engine->GetTypeInfoByName("string") );
+	assert( engine->GetTypeInfoByDecl("array<string>") );
+	assert( engine->GetTypeInfoByName("datetime") );
+
 	r = engine->RegisterObjectType("filesystem", 0, asOBJ_REF); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("filesystem", asBEHAVE_FACTORY, "filesystem @f()", asFUNCTION(ScriptFileSystem_Factory), asCALL_CDECL); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("filesystem", asBEHAVE_ADDREF, "void f()", asMETHOD(CScriptFileSystem,AddRef), asCALL_THISCALL); assert( r >= 0 );
@@ -47,13 +52,44 @@ void RegisterScriptFileSystem_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("filesystem", "int deleteFile(const string &in)", asMETHOD(CScriptFileSystem, DeleteFile), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("filesystem", "int copyFile(const string &in, const string &in)", asMETHOD(CScriptFileSystem, CopyFile), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("filesystem", "int move(const string &in, const string &in)", asMETHOD(CScriptFileSystem, Move), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "datetime getCreateDateTime(const string &in) const", asMETHOD(CScriptFileSystem, GetCreateDateTime), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "datetime getModifyDateTime(const string &in) const", asMETHOD(CScriptFileSystem, GetModifyDateTime), asCALL_THISCALL); assert(r >= 0);
+}
+
+void RegisterScriptFileSystem_Generic(asIScriptEngine *engine)
+{
+	int r;
+
+	assert( engine->GetTypeInfoByName("string") );
+	assert( engine->GetTypeInfoByDecl("array<string>") );
+	assert( engine->GetTypeInfoByName("datetime") );
+
+	r = engine->RegisterObjectType("filesystem", 0, asOBJ_REF); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("filesystem", asBEHAVE_FACTORY, "filesystem @f()", WRAP_FN(ScriptFileSystem_Factory), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("filesystem", asBEHAVE_ADDREF, "void f()", WRAP_MFN(CScriptFileSystem,AddRef), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("filesystem", asBEHAVE_RELEASE, "void f()", WRAP_MFN(CScriptFileSystem,Release), asCALL_GENERIC); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("filesystem", "bool changeCurrentPath(const string &in)", WRAP_MFN(CScriptFileSystem, ChangeCurrentPath), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("filesystem", "string getCurrentPath() const", WRAP_MFN(CScriptFileSystem, GetCurrentPath), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("filesystem", "array<string> @getDirs() const", WRAP_MFN(CScriptFileSystem, GetDirs), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("filesystem", "array<string> @getFiles() const", WRAP_MFN(CScriptFileSystem, GetFiles), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("filesystem", "bool isDir(const string &in) const", WRAP_MFN(CScriptFileSystem, IsDir), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("filesystem", "bool isLink(const string &in) const", WRAP_MFN(CScriptFileSystem, IsLink), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int64 getSize(const string &in) const", WRAP_MFN(CScriptFileSystem, GetSize), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int makeDir(const string &in)", WRAP_MFN(CScriptFileSystem, MakeDir), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int removeDir(const string &in)", WRAP_MFN(CScriptFileSystem, RemoveDir), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int deleteFile(const string &in)", WRAP_MFN(CScriptFileSystem, DeleteFile), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int copyFile(const string &in, const string &in)", WRAP_MFN(CScriptFileSystem, CopyFile), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "int move(const string &in, const string &in)", WRAP_MFN(CScriptFileSystem, Move), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "datetime getCreateDateTime(const string &in) const", WRAP_MFN(CScriptFileSystem, GetCreateDateTime), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("filesystem", "datetime getModifyDateTime(const string &in) const", WRAP_MFN(CScriptFileSystem, GetModifyDateTime), asCALL_GENERIC); assert(r >= 0);
 }
 
 void RegisterScriptFileSystem(asIScriptEngine *engine)
 {
-//	if( strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY") )
-//		RegisterScriptFileSystem_Generic(engine);
-//	else
+	if( strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY") )
+		RegisterScriptFileSystem_Generic(engine);
+	else
 		RegisterScriptFileSystem_Native(engine);
 }
 
@@ -504,5 +540,90 @@ string CScriptFileSystem::GetCurrentPath() const
 	return currentPath;
 }
 
+CDateTime CScriptFileSystem::GetCreateDateTime(const string &path) const
+{
+	string search;
+	if (path.find(":") != string::npos || path.find("/") == 0 || path.find("\\") == 0)
+		search = path;
+	else
+		search = currentPath + "/" + path;
+
+#if defined(_WIN32)
+	// Windows uses UTF16 so it is necessary to convert the string
+	wchar_t bufUTF16[10000];
+	MultiByteToWideChar(CP_UTF8, 0, search.c_str(), -1, bufUTF16, 10000);
+
+	// Get the create date/time of the file
+	FILETIME createTm;
+	HANDLE file = CreateFileW(bufUTF16, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	BOOL success = GetFileTime(file, &createTm, 0, 0);
+	CloseHandle(file);
+	if( !success )
+	{
+		asIScriptContext *ctx = asGetActiveContext();
+		if( ctx )
+			ctx->SetException("Failed to get file creation date/time");
+		return CDateTime();
+	}
+	SYSTEMTIME tm;
+	FileTimeToSystemTime(&createTm, &tm);
+	return CDateTime(tm.wYear, tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond);
+#else
+	// Get the create date/time of the file
+	struct stat st;
+	if (stat(search.c_str(), &st) == -1)
+	{
+		asIScriptContext *ctx = asGetActiveContext();
+		if( ctx )
+			ctx->SetException("Failed to get file creation date/time");
+		return CDateTime();
+	}
+	tm *t = localtime(&st.st_ctime);
+	return CDateTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);	
+#endif
+}
+
+CDateTime CScriptFileSystem::GetModifyDateTime(const string &path) const
+{
+	string search;
+	if (path.find(":") != string::npos || path.find("/") == 0 || path.find("\\") == 0)
+		search = path;
+	else
+		search = currentPath + "/" + path;
+
+#if defined(_WIN32)
+	// Windows uses UTF16 so it is necessary to convert the string
+	wchar_t bufUTF16[10000];
+	MultiByteToWideChar(CP_UTF8, 0, search.c_str(), -1, bufUTF16, 10000);
+
+	// Get the last modify date/time of the file
+	FILETIME modifyTm;
+	HANDLE file = CreateFileW(bufUTF16, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	BOOL success = GetFileTime(file, 0, 0, &modifyTm);
+	CloseHandle(file);
+	if( !success )
+	{
+		asIScriptContext *ctx = asGetActiveContext();
+		if( ctx )
+			ctx->SetException("Failed to get file modify date/time");
+		return CDateTime();
+	}
+	SYSTEMTIME tm;
+	FileTimeToSystemTime(&modifyTm, &tm);
+	return CDateTime(tm.wYear, tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond);
+#else
+	// Get the last modify date/time of the file
+	struct stat st;
+	if (stat(search.c_str(), &st) == -1)
+	{
+		asIScriptContext *ctx = asGetActiveContext();
+		if( ctx )
+			ctx->SetException("Failed to get file modify date/time");
+		return CDateTime();
+	}
+	tm *t = localtime(&st.st_mtime);
+	return CDateTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);	
+#endif
+}
 
 END_AS_NAMESPACE

@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2019 Andreas Jonsson
+   Copyright (c) 2003-2020 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -102,6 +102,10 @@ asCCompiler::~asCCompiler()
 	for (asUINT n = 0; n < usedStringConstants.GetLength(); n++)
 		engine->stringFactory->ReleaseStringConstant(usedStringConstants[n]);
 	usedStringConstants.SetLength(0);
+
+	// Clean up the temporary script nodes that were allocated during compilation
+	for (asUINT n = 0; n < nodesToFreeUponComplete.GetLength(); n++)
+		nodesToFreeUponComplete[n]->Destroy(engine);
 }
 
 void asCCompiler::Reset(asCBuilder *in_builder, asCScriptCode *in_script, asCScriptFunction *in_outFunc)
@@ -352,7 +356,9 @@ int asCCompiler::SetupParametersAndReturnVariable(asCArray<asCString> &parameter
 
 	// Is the return type allowed?
 	if( returnType != asCDataType::CreatePrimitive(ttVoid, false) &&
-		!returnType.CanBeInstantiated() )
+		!returnType.CanBeInstantiated() &&
+		!returnType.IsReference() &&
+		!returnType.IsObjectHandle() )
 	{
 		// TODO: Hasn't this been validated by the builder already?
 		asCString str;
@@ -431,6 +437,7 @@ void asCCompiler::CompileMemberInitialization(asCByteCode *bc, bool onlyDefaults
 		asCObjectProperty *prop = outFunc->objectType->properties[n];
 
 		// Check if the property has an initialization expression
+		asCParser parser(builder);
 		asCScriptNode *declNode = 0;
 		asCScriptNode *initNode = 0;
 		asCScriptCode *initScript = 0;
@@ -466,7 +473,6 @@ void asCCompiler::CompileMemberInitialization(asCByteCode *bc, bool onlyDefaults
 				initScript = script;
 #else
 				// Re-parse the initialization expression as the parser now knows the types, which it didn't earlier
-				asCParser parser(builder);
 				int r = parser.ParseVarInit(initScript, initNode);
 				if( r < 0 )
 					continue;
@@ -2322,6 +2328,12 @@ int asCCompiler::CompileDefaultAndNamedArgs(asCScriptNode *node, asCArray<asCExp
 		}
 
 		MergeExprBytecodeAndType(args[n], &expr);
+		if (args[n]->exprNode)
+		{
+			// Disconnect the node from the parser, and tell the compiler to free it when complete
+			args[n]->exprNode->DisconnectParent();
+			nodesToFreeUponComplete.PushLast(args[n]->exprNode);
+		}
 	}
 
 	reservedVariables.SetLength(prevReservedVars);
@@ -2655,6 +2667,8 @@ bool asCCompiler::CompileAutoType(asCDataType &type, asCExprContext &compiledCtx
 			// Handle const qualifier on auto
 			if (type.IsReadOnly())
 				newType.MakeReadOnly(true);
+			else if (type.IsHandleToConst())
+				newType.MakeHandleToConst(true);
 			else if (newType.IsPrimitive())
 				newType.MakeReadOnly(false);
 
@@ -9253,7 +9267,7 @@ asCCompiler::SYMBOLTYPE asCCompiler::SymbolLookupMember(const asCString &name, a
 	{
 		asCScriptFunction *f = engine->scriptFunctions[ot->methods[n]];
 		if (f->name == name &&
-			(builder->module->accessMask & f->accessMask))
+			(builder->module->m_accessMask & f->accessMask))
 		{
 			outResult->type.dataType.SetTypeInfo(objType);
 			return SL_CLASSMETHOD;
@@ -9835,7 +9849,7 @@ int asCCompiler::CompileVariableAccess(const asCString &name, const asCString &s
 			{
 				asCScriptFunction *f = engine->scriptFunctions[ot->methods[n]];
 				if (f->name == name &&
-					(builder->module->accessMask & f->accessMask))
+					(builder->module->m_accessMask & f->accessMask))
 				{
 					func = f;
 					break;
@@ -10901,7 +10915,7 @@ int asCCompiler::CompileConstructCall(asCScriptNode *node, asCExprContext *ctx)
 
 	// It is possible that the name is really a constructor
 	asCDataType dt;
-	dt = builder->CreateDataTypeFromNode(node->firstChild, script, outFunc->nameSpace);
+	dt = builder->CreateDataTypeFromNode(node->firstChild, script, outFunc->nameSpace, false, outFunc->objectType);
 	if( dt.IsPrimitive() )
 	{
 		// This is a cast to a primitive type
@@ -10964,6 +10978,10 @@ int asCCompiler::CompileConstructCall(asCScriptNode *node, asCExprContext *ctx)
 			asCExprContext conv(engine);
 			conv.Copy(args[0]);
 			asUINT cost = ImplicitConversion(&conv, dt, node->lastChild, asIC_EXPLICIT_VAL_CAST, false);
+
+			// Clean the property_arg in the temporary copy so 
+			// it isn't deleted when conv goes out of scope
+			conv.property_arg = 0;
 
 			// Don't use this if the cost is 0 because it would mean that nothing
 			// is done and the script wants a new value to be constructed
@@ -11409,7 +11427,7 @@ int asCCompiler::CompileFunctionCall(asCScriptNode *node, asCExprContext *ctx, a
 	if (symbolType == SL_CLASSTYPE || symbolType == SL_GLOBALTYPE)
 	{
 		bool isValid = false;
-		asCDataType dt = builder->CreateDataTypeFromNode(node->firstChild, script, outFunc->nameSpace, false, 0, false, &isValid);
+		asCDataType dt = builder->CreateDataTypeFromNode(node->firstChild, script, outFunc->nameSpace, false, outFunc->objectType, false, &isValid);
 		if (isValid)
 			return CompileConstructCall(node, ctx);
 	}
@@ -13601,7 +13619,7 @@ int asCCompiler::CompileOverloadedDualOperator2(asCScriptNode *node, const char 
 				(!isConst || func->IsReadOnly()) )
 			{
 				// Make sure the method is accessible by the module
-				if( builder->module->accessMask & func->accessMask )
+				if( builder->module->m_accessMask & func->accessMask )
 				{
 					funcs.PushLast(func->id);
 				}

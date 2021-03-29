@@ -120,7 +120,7 @@ protected:
 	CScriptArray(const CScriptArray &other);
 	virtual ~CScriptArray();
 
-	bool  Less(const void *a, const void *b, bool asc, asIScriptContext *ctx, SArrayCache *cache);
+	bool  Less(const void *a, const void *b, bool asc);
 	void *GetArrayItemPointer(int index);
 	void *GetDataPointer(void *buffer);
 	void  Copy(void *dst, void *src);

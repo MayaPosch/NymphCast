@@ -88,6 +88,7 @@ else
 	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing
 endif
 
+## Detect if targeting ARM CPU and if so tell assembler to accept implicit IT constructs in thumb mode
 GCC_ARCH := $(shell $(CXX) -dumpmachine)
 $(info GCC ARCH: $(GCC_ARCH))
 ifneq (,$(findstring arm-,$(GCC_ARCH)))
