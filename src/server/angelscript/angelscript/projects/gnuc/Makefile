@@ -108,6 +108,8 @@ SRCNAMES = \
   as_bytecode.cpp \
   as_callfunc.cpp \
   as_callfunc_arm.cpp \
+  as_callfunc_arm64.cpp \
+  as_callfunc_arm64_gcc.cpp \
   as_callfunc_mips.cpp \
   as_callfunc_ppc.cpp \
   as_callfunc_ppc_64.cpp \
