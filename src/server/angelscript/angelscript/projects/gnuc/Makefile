@@ -145,7 +145,9 @@ OBJ = $(addprefix $(OBJDIR)/, $(notdir $(SRCNAMES:.cpp=.o)))
 
 ifeq ($(TARGETPLATFORM), iphone)
 	OBJ += $(OBJDIR)/as_callfunc_arm_xcode.o
-elif defined __aarch64__
+endif
+
+ifneq (,$(findstring aarch64-,$(GCC_ARCH)))
 	OBJ += $(OBJDIR)/as_callfunc_arm64_gcc.o
 else
 	OBJ += $(OBJDIR)/as_callfunc_arm_gcc.o
