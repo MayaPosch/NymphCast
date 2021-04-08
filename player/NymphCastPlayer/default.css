@@ -7,17 +7,42 @@
 
 QMainWindow {
 	background-color: white;
+	padding: 0px;
+	margin: 0xp;
+}
+
+
+QWidget {
+	spacing: 3;
+	padding: 0px;
+	margin: 0xp;
 }
 
 
 QTabBar::tab {
 	padding-top: 10px;
 	padding-bottom: 10px;
-	padding-left: 20px;
-	padding-right: 20px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 
-QPushButton, QToolButton {
+QPushButton {
+	background-color: white;
+	border-style: outset;
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: black;
+	padding: 5px;
+}
+
+
+QPushButton:pressed {
+	background-color: grey;
+	border-style: inset;
+}
+
+
+QToolButton {
 	
 }
