@@ -184,7 +184,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	// First, disable the 'add' and 'remove' buttons as these won't be used on Android.
 	ui->addButton->setEnabled(false);
+    ui->addButton->setVisible(false);
 	ui->removeButton->setEnabled(false);
+    ui->removeButton->setVisible(false);
 	
 	if(!QAndroidJniObject::isClassAvailable("com/nyanko/nymphcastplayer/NymphCast")) {
 		qDebug() << "Java class is missing.";
@@ -267,6 +269,22 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		ui->positionSlider->setValue(0);
 		
 		ui->volumeSlider->setValue(status.volume);
+		
+		if (playingTrack) {
+			// We finished playing the currently selected track.
+			// If auto-play is on, play the next track.
+            if (ui->singlePlayCheckBox->isChecked()) {
+                // Next track.
+                int crow = ui->mediaListWidget->currentRow();
+                if (++crow == ui->mediaListWidget->count()) {
+                    // Restart at top.
+                    crow = 0;
+                }
+                
+                ui->mediaListWidget->setCurrentRow(crow);
+                play();
+            }
+		}
 	}
 }
 
@@ -393,7 +411,13 @@ void MainWindow::castFile() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
 	if (filename.isEmpty()) { return; }
 	
-	client.castFile(serverHandle, filename.toStdString());
+	if (client.castFile(serverHandle, filename.toStdString())) {
+		// Playing back file now. Update status.
+		playingTrack = true;
+	}
+	else {
+		// TODO: Display error.
+	}
 }
 
 
@@ -456,12 +480,11 @@ void MainWindow::play() {
 		}
 		
 		QString filename = item->data(Qt::UserRole).toString();
-
-#if defined(Q_OS_ANDROID)
-		// Ensure we convert the path to 
-#endif
 		
-		client.castFile(serverHandle, filename.toStdString());
+        if (client.castFile(serverHandle, filename.toStdString())) {
+            // Playing back file now. Update status.
+           playingTrack = true;
+        }
 	}
 	
 }

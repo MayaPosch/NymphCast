@@ -25,6 +25,21 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QTabWidget" name="sharesiTab">
       <property name="currentIndex">
@@ -37,11 +52,20 @@
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QListWidget" name="mediaListWidget"/>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>5</number>
+            </property>
             <item>
              <widget class="QPushButton" name="addButton">
               <property name="text">
@@ -68,6 +92,13 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="singlePlayCheckBox">
+              <property name="text">
+               <string>Single Play</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -180,7 +211,7 @@
           <item>
            <widget class="QSlider" name="volumeSlider">
             <property name="maximum">
-             <number>128</number>
+             <number>100</number>
             </property>
             <property name="value">
              <number>100</number>
