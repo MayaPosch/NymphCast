@@ -455,7 +455,7 @@ litehtml::uint_ptr DocumentContainerPrivate::create_font(const litehtml::tchar_t
                                                          unsigned int decoration,
                                                          litehtml::font_metrics *fm)
 {
-    const QStringList splitNames = QString::fromUtf8(faceName).split(',', Qt::SkipEmptyParts);
+    const QStringList splitNames = QString::fromUtf8(faceName).split(',', QString::SkipEmptyParts);
     QStringList familyNames;
     std::transform(splitNames.cbegin(),
                    splitNames.cend(),

@@ -572,7 +572,7 @@ void MainWindow::appsListRefresh() {
 	
 	// Update local list.
 	ui->remoteAppsComboBox->clear();
-	QStringList appItems = (QString::fromStdString(appList)).split("\n", Qt::SkipEmptyParts);
+	QStringList appItems = (QString::fromStdString(appList)).split("\n", QString::SkipEmptyParts);
 	ui->remoteAppsComboBox->addItems(appItems);
 }
 
@@ -623,7 +623,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 	std::cout << "anchorClicked: " << link.path().toStdString() << std::endl;
 	
     // Parse URL string for the command desired.
-    QStringList list = link.path().split("/", Qt::SkipEmptyParts);
+    QStringList list = link.path().split("/", QString::SkipEmptyParts);
     
     // Process command.
     if (list.size() < 1) { return; }
