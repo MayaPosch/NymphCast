@@ -244,6 +244,7 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 // --- SET PLAYING ---
 void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 	if (status.playing) {
+        std::cout << "Status: Set playing..." << std::endl;
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
 		ui->stopToolButton->setEnabled(true);
@@ -261,6 +262,7 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		ui->volumeSlider->setValue(status.volume);
 	}
 	else {
+        std::cout << "Status: Set not playing..." << std::endl;
 		// Remote player is not active.
 		ui->playToolButton->setEnabled(true);
 		ui->stopToolButton->setEnabled(false);
@@ -271,15 +273,19 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		ui->volumeSlider->setValue(status.volume);
 		
 		if (playingTrack) {
+            std::cout << "Status: Playing track, check autoplay..." << std::endl;
 			// We finished playing the currently selected track.
 			// If auto-play is on, play the next track.
-            if (ui->singlePlayCheckBox->isChecked()) {
+            if (ui->singlePlayCheckBox->isChecked() == false) {
+                std::cout << "Status: Move to next track..." << std::endl;
                 // Next track.
                 int crow = ui->mediaListWidget->currentRow();
                 if (++crow == ui->mediaListWidget->count()) {
                     // Restart at top.
                     crow = 0;
                 }
+                
+                std::cout << "Status: Start playing track index " << crow << "..." << std::endl;
                 
                 ui->mediaListWidget->setCurrentRow(crow);
                 play();
