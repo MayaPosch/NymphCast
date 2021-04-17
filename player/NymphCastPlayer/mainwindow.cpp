@@ -273,6 +273,7 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		ui->volumeSlider->setValue(status.volume);
 		
 		if (playingTrack) {
+            playingTrack = false;
             std::cout << "Status: Playing track, check autoplay..." << std::endl;
 			// We finished playing the currently selected track.
 			// If auto-play is on, play the next track.
@@ -500,7 +501,8 @@ void MainWindow::play() {
 void MainWindow::stop() {
 	//
 	if (!connected) { return; }
-	
+    
+    playingTrack = false;
 	client.playbackStop(serverHandle);
 }
 
