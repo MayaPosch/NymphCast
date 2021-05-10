@@ -591,15 +591,21 @@ bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> re
 
 // --- CAST FILE ---
 bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
+	// Empty filename not handled by `!file.exists()` below.
+	if (filename.length() == 0 ) {
+		std::cerr << "Filename is empty" << std::endl;
+		return false;
+	}
+
 	/* fs::path filePath(filename);
 	if (!fs::exists(filePath)) { */
 	Poco::File file(filename);
 	if (!file.exists()) {
-		std::cerr << "File " << filename << " doesn't exist." << std::endl;
-		return 1;
+		std::cerr << "File '" << filename << "' doesn't exist." << std::endl;
+		return false;
 	}
 	
-	std::cout << "Opening file " << filename << std::endl;
+	std::cout << "Opening file '" << filename << "'" << std::endl;
 	
 	if (source.is_open()) {
 		source.close();
@@ -607,8 +613,8 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	
 	source.open(filename, std::ios::binary);
 	if (!source.good()) {
-		std::cerr << "Failed to read input file." << std::endl;
-		return 1;
+		std::cerr << "Failed to read input file '" << filename << "'" << std::endl;
+		return false;
 	}
 	
 	// Start the session
