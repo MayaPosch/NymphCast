@@ -20,6 +20,7 @@
 #include <vector>
 #include <filesystem> 		// C++17
 #include <csignal>
+#include <atomic>
 
 namespace fs = std::filesystem;
 
@@ -35,7 +36,7 @@ using namespace Poco;
 // Globals
 Condition cnd;
 Mutex mtx;
-
+std::atomic<bool> playing = false;
 uint32_t handle;		// NymphRPC handle.
 std::ifstream source;
 // ---
@@ -43,6 +44,16 @@ std::ifstream source;
 
 void signal_handler(int signal) {
 	cnd.signal();
+}
+
+
+void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
+	if (playing && !status.playing) {
+		cnd.signal();
+	}
+	else {
+		playing = true;
+	}
 }
 
 
@@ -97,12 +108,20 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	
+	// Enter command processing loop.
+	// If the 'file' flag is set, start by playing back the file, optionally using the provided IP.
+	
 	// Allow the IP address of the server to be passed on the command line.	
 	// Try to open the file.	
 	std::string filename;
 	std::string serverip = "127.0.0.1";
 	sarge.getFlag("file", filename);
 	sarge.getFlag("ip", serverip);
+	
+	if (filename.length() == 0 ) {
+		std::cout << "Please specify filename using option -f, --file" << std::endl;
+		return 1;
+	}
 	
 	std::cout << "Opening file " << filename << std::endl;
 	
@@ -114,13 +133,18 @@ int main(int argc, char *argv[]) {
 	// Set up client library.
 	uint32_t handle = 0;
 	if (!client.connectServer(serverip, handle)) {
-		std::cerr << "Failed to connect to server..." << std::endl;
+		std::cerr << "Failed to connect to server '" << serverip << "'" << std::endl;
 		return 1;
 	}
 	
-	// Send file.
-	client.castFile(handle, filename);
+	namespace sph = std::placeholders;
+	client.setStatusUpdateCallback(std::bind(::statusUpdateCallback, sph::_1, sph::_2));
 	
+	// Send file.
+	if (!client.castFile(handle, filename)){
+		std::cerr << "Failed to cast file '" << filename << "' to server '" << serverip << "'" << std::endl;
+		return 1;
+	};
 	
 	std::cout << "Press Ctrl+c to quit." << std::endl;
 	
