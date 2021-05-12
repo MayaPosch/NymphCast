@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QTime>
 #include <QFile>
+#include <QTextStream>
 #include <QSettings>
 #include <QStringList>
 #include <QStandardPaths>
@@ -225,7 +226,22 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 		newItem->setData(Qt::UserRole, QVariant(video[i]));
 		ui->mediaListWidget->addItem(newItem);
 	}	 */
+#else
+	// Reload stored file paths, if any.
+	QFile playlist;
+	playlist.setFileName("filepaths.conf");
+	playlist.open(QIODevice::ReadOnly);
+	QTextStream textStream(&playlist);
+	QString line;
+	while (!(line = textStream.readLine()).isNull()) {
+		QFileInfo finf(line);
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(finf.fileName());
+		newItem->setData(Qt::UserRole, QVariant(line));
+		ui->mediaListWidget->addItem(newItem);
+	}
 	
+	playlist.close();
 #endif
 }
 
@@ -443,8 +459,14 @@ void MainWindow::castUrl() {
 // --- ADD FILE ---
 void MainWindow::addFile() {
 	// Select file from filesystem, add to playlist.
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
+	// Use stored directory location, if any.
+	QSettings settings;
+	QString dir = settings.value("openFileDir").toString();
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"), dir);
 	if (filename.isEmpty()) { return; }
+	
+	// Update current folder.
+	settings.setValue("openFileDir", filename);
 	
 	// Check file.
 	QFileInfo finf(filename);
@@ -458,6 +480,14 @@ void MainWindow::addFile() {
 	newItem->setText(finf.fileName());
 	newItem->setData(Qt::UserRole, QVariant(filename));
 	ui->mediaListWidget->addItem(newItem);
+	
+	// Store path of added file to reload on restart. Append to file.
+	QFile playlist;
+	playlist.setFileName("filepaths.conf");
+	playlist.open(QIODevice::WriteOnly | QIODevice::Append);
+	QTextStream textStream(&playlist);
+	textStream << filename << "\n";
+	playlist.close();
 }
 
 
@@ -467,6 +497,21 @@ void MainWindow::removeFile() {
 	QListWidgetItem* item = ui->mediaListWidget->currentItem();
 	ui->mediaListWidget->removeItemWidget(item);
 	delete item;
+	
+	// TODO: Remove stored file path.
+	// FIXME: Clear and rewrite the file contents for now.
+	QFile playlist;
+	playlist.setFileName("filepaths.conf");
+	playlist.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	int size = ui->mediaListWidget->count();
+	QTextStream textStream(&playlist);
+	for (int i = 0; i < size; ++i) {
+		QListWidgetItem* item = ui->mediaListWidget->item(i);
+		QString filename = item->data(Qt::UserRole).toString();
+		textStream << filename << "\n";
+	}
+	
+	playlist.close();
 }
 
 
