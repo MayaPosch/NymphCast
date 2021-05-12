@@ -193,6 +193,9 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 
 
 // --- CONSTRUCTOR ---
+/**
+	Initialise the remote client instance with default settings.
+*/
 NymphCastClient::NymphCastClient() {
 	// Initialise the remote client instance.
 	long timeout = 2000; // 2 seconds.
@@ -210,24 +213,46 @@ NymphCastClient::~NymphCastClient() {
 
 
 // --- SET CLIENT ID ---
+/**
+	Set the callback to call when a remote application sends data.
+	
+	@param id A unique string ID.
+*/
 void NymphCastClient::setClientId(std::string id) {
 	clientId = id;
 }
 
 
 // --- SET APPLICATION CALLBACK ---
+/**
+	Set the callback to call when a remote application sends data.
+	
+	@param function The callback function.
+*/
 void NymphCastClient::setApplicationCallback(AppMessageFunction function) {
 	appMessageFunction = function;
 }
 
 
 // --- SET STATUS UPDATE FUNCTION ---
+/**
+	Set callback to call when the remote sends a status update on e.g. playback.
+	
+	@param function The callback function.
+*/
 void NymphCastClient::setStatusUpdateCallback(StatusUpdateFunction function) {
 	statusUpdateFunction = function;
 }
 
 
 // --- GET APPLICATION LIST ---
+/**
+	Obtain a list of application available on the remote.
+	
+	@param handle The handle for the remote server.
+	
+	@return A string containing the application list, separated by newlines (\n).
+*/
 std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	// Request the application list from the remote receiver.
 	// string app_list()
@@ -249,6 +274,15 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 
 
 // --- SEND APPLICATION MESSAGE ---
+/**
+	Send a string to an application on the remote.
+	
+	@param handle The handle for the remote server.
+	@param appId ID of the remote application.
+	@param message Message to send to the remote application.
+	
+	@return String with any response from the remote.
+*/
 std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string appId, 
 																		std::string message) {
 	// string app_send(uint32 appId, string data)
@@ -273,6 +307,15 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 
 // --- LOAD RESOURCE ---
 // Obtain the named file data for either the appId or global if left empty.
+/**
+	Load a specific resource from a remote application. E.g. an image.
+	
+	@param handle 	The handle for the remote server.
+	@param appId 	ID of the remote application.
+	@param name 	The name of the resource.
+	
+	@return A string containing the (binary) data, if successful.
+*/
 std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, std::string name) {
 	// string app_loadResource(string appId, string name)
 	std::vector<NymphType*> values;
@@ -309,6 +352,11 @@ bool isDuplicate(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
 
 
 // --- FIND SERVERS ---
+/**
+	Find remote NymphCast servers using a NyanSD query.
+	
+	@return A vector with any found remotes.
+*/
 std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	// Perform a NyanSD service discovery run for NymphCast receivers.
 	std::vector<NYSD_query> queries;
@@ -344,6 +392,11 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 
 
 // --- FIND SHARES ---
+/**
+	Find any NymphCast Media Servers on the network using a NyanSD query.
+	
+	@return Vector containing any found media server instances.
+*/
 std::vector<NymphCastRemote> NymphCastClient::findShares() {
 	// Perform NyanSD service discovery query for NymphCast media servers.
 	std::vector<NYSD_query> queries;
@@ -372,6 +425,14 @@ std::vector<NymphCastRemote> NymphCastClient::findShares() {
 
 
 // --- CONNECT SERVER ---
+/**
+	Attempt to connect to the specified remote NymphCast server.
+	
+	@param ip		The IP address of the target server.
+	@param handle 	The new handle for the remote server.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 	std::string serverip = "127.0.0.1";
 	if (!ip.empty()) {
@@ -431,6 +492,13 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 
 
 // --- DISCONNECT SERVER ---
+/**
+	Disconnect from the remote server.
+	
+	@param handle The handle for the remote server.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::disconnectServer(uint32_t handle) {
 	// TODO: don't shutdown entire remote server.
 	
@@ -457,6 +525,13 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 
 
 // --- GET SHARES ---
+/**
+	Attempt to obtain the list of shared media files from a NymphCast Media Server.
+	
+	@param mediaserver	Information on the target media server instance.
+	
+	@return Vector with the list of available files, if successful.
+*/
 std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserver) {
 	std::vector<NymphMediaFile> files;
 	
@@ -506,6 +581,16 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 
 
 // --- PLAY SHARE ---
+/**
+	Instruct a Media Server instance to play back a specific shared file on the target remote servers.
+	
+	If multiple receivers are specified, the first one becomes the Master receiver, with the remaining receivers configured as Slave receivers to that one Master receiver. This allows for synchronous playback.
+	
+	@param file			Definition of the shared 
+	@param receivers 	Vector of remote servers to play the content back on.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers) {
 	if (receivers.empty()) { return false; }
 	
@@ -560,6 +645,14 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 // --- ADD SLAVES ---
 // Send a list of slave remotes which the target remote will mirror its playback status on.
 // This includes audio and video playback.
+/**
+	Configure a Master remote to use the provided Slave remotes for synchronous playback of content.
+	
+	@param handle 	The handle for the remote server.
+	@param remotes 	Vector of remotes to configure as Slaves.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes) {
 	NymphArray* sArr = new NymphArray;
 	for (int i = 0; i < remotes.size(); ++i) {
@@ -590,6 +683,14 @@ bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> re
 
 
 // --- CAST FILE ---
+/**
+	Stream file to remote. Use the provided file path to open the media file and stream its contents to the remote.
+	
+	@param handle The handle for the remote server.
+	@param filename The (relative) path to the media file.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	// Empty filename not handled by `!file.exists()` below.
 	if (filename.length() == 0 ) {
@@ -644,6 +745,14 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 
 
 // --- CAST URL ---
+/**
+	Send the provided URL to the remote, which will attempt to play back any media content found.
+	
+	@param handle 	The handle for the remote server.
+	@param url		URL to play back from.
+	
+	@return True if the operation succeeded.
+*/
 bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 	// uint8 playback_url(string)
 	std::vector<NymphType*> values;
@@ -667,7 +776,14 @@ bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
 
 
 // --- VOLUME SET ---
-// Volume is set within a range of 0 - 128.
+/**
+	Set the volume on the target remote. Volume is set within a range of 0 - 128.
+	
+	@param handle 	The handle for the remote server.
+	@param volume	Target volume level.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
 	// uint8 volume_set(uint8 volume)
 	std::vector<NymphType*> values;
@@ -691,6 +807,13 @@ uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
 
 
 // --- VOLUME UP ---
+/**
+	Increase the volume on the remote server.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::volumeUp(uint32_t handle) {
 	// uint8 volume_up()
 	std::vector<NymphType*> values;
@@ -713,6 +836,13 @@ uint8_t NymphCastClient::volumeUp(uint32_t handle) {
 
 
 // --- VOLUME DOWN ---
+/**
+	Decrease the volume on the remote server.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 	// uint8 volume_down()
 	std::vector<NymphType*> values;
@@ -735,6 +865,13 @@ uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 
 
 // --- PLAYBACK START ---
+/**
+	Start or resume playback on the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackStart(uint32_t handle) {
 	// uint8 playback_start()
 	std::vector<NymphType*> values;
@@ -757,6 +894,13 @@ uint8_t NymphCastClient::playbackStart(uint32_t handle) {
 
 
 // --- PLAYBACK STOP ---
+/**
+	Stop playback on the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackStop(uint32_t handle) {
 	// uint8 playback_stop()
 	std::vector<NymphType*> values;
@@ -779,6 +923,13 @@ uint8_t NymphCastClient::playbackStop(uint32_t handle) {
 
 
 // --- PLAYBACK PAUSE ---
+/**
+	Pause playback on the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackPause(uint32_t handle) {
 	// uint8 playback_pause()
 	std::vector<NymphType*> values;
@@ -801,6 +952,13 @@ uint8_t NymphCastClient::playbackPause(uint32_t handle) {
 
 
 // --- PLAYBACK REWIND ---
+/**
+	Rewind playback on the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
 	// uint8 playback_rewind()
 	std::vector<NymphType*> values;
@@ -823,6 +981,13 @@ uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
 
 
 // --- PLAYBACK FORWARD ---
+/**
+	Forward playback on the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 	// uint8 playback_forward()
 	std::vector<NymphType*> values;
@@ -845,7 +1010,14 @@ uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 
 
 // --- PLAYBACK SEEK ---
-// Seek to specific byte offset in the file.
+/**
+	Seek to specific byte offset in the file.
+	
+	@param handle 	The handle for the remote server.
+	@param location	New offset in the file, in bytes.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 	// uint8 playback_seek(array)
 	std::vector<NymphType*> values;
@@ -874,7 +1046,14 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 
 
 // --- PLAYBACK SEEK ---
-// Seek to percentage of the media file length.
+/**
+	Seek to percentage of the media file length.
+	
+	@param handle 		The handle for the remote server.
+	@param percentage	New percentage in the file of media length.
+	
+	@return 0 if the operation succeeded.
+*/
 uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
 	// uint8 playback_seek(array)
 	std::vector<NymphType*> values;
@@ -903,6 +1082,13 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
 
 
 // --- PLAYBACK STATUS ---
+/**
+	Request the playback status from the remote.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return A NymphPlaybackStatus struct with playback information.
+*/
 NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	NymphPlaybackStatus status;
 	status.error = true;
