@@ -450,4 +450,8 @@ enum NymphEvents {
 extern const uint32_t nymph_seek_event;
 
 
+#include <Poco/Condition.h>
+extern Poco::Condition gCon;
+
+
 #endif
