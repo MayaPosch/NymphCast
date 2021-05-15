@@ -351,7 +351,22 @@ void SdlRenderer::run_event_loop() {
 	SDL_Event event;
 	while (run_events) {
 		SDL_PollEvent(&event);
-		SDL_Delay(200);
+		
+		// Check for quit events.
+		switch (event.type) {
+			case SDL_QUIT:
+				gCon.signal();
+				run_events = false;
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+					gCon.signal();
+					run_events = false;
+					break;
+            }
+		}
+		
+		//SDL_Delay(200);
 	}
 }
 

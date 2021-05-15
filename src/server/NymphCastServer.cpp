@@ -2210,9 +2210,6 @@ int main(int argc, char** argv) {
 	
 	playerStarted = false;
 	
-	// Install signal handler to terminate the server.
-	signal(SIGINT, signal_handler);
-	
 	// Set further global variables.
 	// FIXME: refactor.
 	if (display_disable) {
@@ -2224,6 +2221,11 @@ int main(int argc, char** argv) {
 		std::cerr << "Failed to init SDL. Aborting..." << std::endl;
 		return 0;
 	}
+	
+	// Install signal handler to terminate the server.
+	// Note: SDL will install its own signal handler. It's paramount that our signal handler is
+	// 			therefore installed after its, to override it.
+	signal(SIGINT, signal_handler);
 	
 	// Start server on port 4004.
 	NymphRemoteClient::start(4004);
