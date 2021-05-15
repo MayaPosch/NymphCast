@@ -553,7 +553,13 @@
   </action>
   <action name="actionConnect">
    <property name="text">
-    <string>Connect</string>
+    <string>Connect...</string>
+   </property>
+   <property name="iconText">
+    <string>Connect to server</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect to remote server</string>
    </property>
   </action>
   <action name="actionAbout">
