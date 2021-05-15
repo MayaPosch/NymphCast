@@ -1870,14 +1870,24 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
+	// Set apps folder. Ensure the path ends with a slash.
 	appsFolder = "apps/";
 	if (!sarge.getFlag("apps", appsFolder)) {
 		std::cout << "Setting app folder to default location." << std::endl;
 	}
 	
+	if (appsFolder.back() != '/') {
+		appsFolder.append("/");
+	}
+	
+	// Set wallpapers folder. Ensure the path ends with a flash.
 	std::string wallpapersFolder = "wallpapers/";
 	if (!sarge.getFlag("wallpaper", wallpapersFolder)) {
 		std::cout << "Setting wallpapers folder to default location." << std::endl;
+	}
+
+	if (wallpapersFolder.back() != '/') {
+		wallpapersFolder.append("/");
 	}
 	
 	// Read in the configuration.
