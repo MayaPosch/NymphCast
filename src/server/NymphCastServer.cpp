@@ -1471,23 +1471,28 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	castingUrl = true;
-	castUrl = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string url = ((NymphString*) msg->parameters()[0])->getValue();
+	bool ret = streamTrack(url);
 	
-	std::vector<NymphType*> values;
-	values.push_back(new NymphString(castUrl));
-	if (serverMode == NCS_MODE_MASTER) {
-		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
-			std::string result;
-			NymphType* returnValue = 0;
-			if (!NymphRemoteServer::callMethod(rm.handle, "playback_url", values, returnValue, result)) {
-				// TODO:
+	NymphUint8* retval = new NymphUint8(1);
+	if (ret) {
+		std::vector<NymphType*> values;
+		values.push_back(new NymphString(url));
+		if (serverMode == NCS_MODE_MASTER) {
+			for (int i = 0; i < slave_remotes.size(); ++i) {
+				NymphCastRemote& rm = slave_remotes[i];
+				std::string result;
+				NymphType* returnValue = 0;
+				if (!NymphRemoteServer::callMethod(rm.handle, "playback_url", values, returnValue, result)) {
+					// TODO:
+				}
 			}
 		}
+		
+		retval->setValue(0);
 	}
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(retval);
 	return returnMsg;
 }
 	
