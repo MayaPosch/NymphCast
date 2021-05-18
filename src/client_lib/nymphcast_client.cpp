@@ -391,6 +391,18 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 }
 
 
+bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
+	for (uint32_t j = 0; j < remotes.size(); ++j) {
+		if (remotes[j].name == rm.name &&
+			remotes[j].port == rm.port) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+
 // --- FIND SHARES ---
 /**
 	Find any NymphCast Media Servers on the network using a NyanSD query.
@@ -416,6 +428,12 @@ std::vector<NymphCastRemote> NymphCastClient::findShares() {
 		rm.ipv6 = responses[i].ipv6;
 		rm.name = responses[i].hostname;
 		rm.port = responses[i].port;
+		
+		// Check for duplicates.
+		if (isDuplicate(remotes, rm) || isDuplicateName(remotes, rm)) {
+			std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			continue;
+		}
 		
 		remotes.push_back(rm);
 	}
