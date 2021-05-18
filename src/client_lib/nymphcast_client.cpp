@@ -419,7 +419,7 @@ std::vector<NymphCastRemote> NymphCastClient::findShares() {
 	query.protocol = NYSD_PROTOCOL_ALL;
 	query.filter = "nymphcast_mediaserver";
 	queries.push_back(query);
-	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
+	if (!NyanSD::sendQuery(4005, queries, responses)) { return remotes; }
 	
 	// Process responses.
 	for (int i = 0; i < responses.size(); ++i) {
