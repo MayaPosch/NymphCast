@@ -320,7 +320,7 @@ void MainWindow::connectServer() {
 	if (ip.isEmpty()) { return; }	
 	
 	// Connect to localhost NymphRPC server, standard port.
-	if (!client.connectServer(ip.toStdString(), serverHandle)) {
+	if (!client.connectServer(ip.toStdString(), 0, serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return;
 	}
@@ -338,7 +338,7 @@ void MainWindow::connectServerIP(std::string ip) {
 	if (connected) { return; }
 	
 	// Connect to localhost NymphRPC server, standard port.
-	if (!client.connectServer(ip, serverHandle)) {
+	if (!client.connectServer(ip, 0, serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return;
 	}
