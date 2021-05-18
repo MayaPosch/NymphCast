@@ -451,10 +451,15 @@ std::vector<NymphCastRemote> NymphCastClient::findShares() {
 	
 	@return True if the operation succeeded.
 */
-bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
+bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &handle) {
 	std::string serverip = "127.0.0.1";
+	uint32_t serverport = 4004;
 	if (!ip.empty()) {
 		serverip = ip;
+	}
+	
+	if (port > 0) {
+		serverport = port;
 	}
 		
 	// Register callback and send message with its ID to the server. Then wait
@@ -475,7 +480,7 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t &handle) {
 		
 	// Connect to the remote server.
 	std::string result;
-	if (!NymphRemoteServer::connect(serverip, 4004, handle, 0, result)) {
+	if (!NymphRemoteServer::connect(serverip, serverport, handle, 0, result)) {
 		std::cout << "Connecting to remote server failed: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
@@ -556,7 +561,7 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 	// Establish new connection to mediaserver.
 	uint32_t mshandle;
 	std::string result;
-	if (!NymphRemoteServer::connect(mediaserver.ipv4, 4004, mshandle, 0, result)) {
+	if (!NymphRemoteServer::connect(mediaserver.ipv4, mediaserver.port, mshandle, 0, result)) {
 		std::cout << "Connecting to remote server failed: " << result << std::endl;
 		return files;
 	}

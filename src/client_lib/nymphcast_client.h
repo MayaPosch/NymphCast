@@ -87,7 +87,7 @@ public:
 
 	std::vector<NymphCastRemote> findServers();
 	std::vector<NymphCastRemote> findShares();
-	bool connectServer(std::string ip, uint32_t &handle);
+	bool connectServer(std::string ip, uint32_t port, uint32_t &handle);
 	bool disconnectServer(uint32_t handle);
 	
 	std::vector<NymphMediaFile> getShares(NymphCastRemote mediaserver);
