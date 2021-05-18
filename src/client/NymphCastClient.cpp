@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 	
 	// Set up client library.
 	uint32_t handle = 0;
-	if (!client.connectServer(serverip, handle)) {
+	if (!client.connectServer(serverip, 0, handle)) {
 		std::cerr << "Failed to connect to server '" << serverip << "'" << std::endl;
 		return 1;
 	}
