@@ -620,7 +620,7 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	// Establish new connection to mediaserver.
 	uint32_t mshandle;
 	std::string result;
-	if (!NymphRemoteServer::connect(file.mediaserver.ipv4, 4004, mshandle, 0, result)) {
+	if (!NymphRemoteServer::connect(file.mediaserver.ipv4, file.mediaserver.port, mshandle, 0, result)) {
 		std::cout << "Connecting to remote server failed: " << result << std::endl;
 		return false;
 	}
