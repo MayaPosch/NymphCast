@@ -355,13 +355,20 @@ void SdlRenderer::run_event_loop() {
 		// Check for quit events.
 		switch (event.type) {
 			case SDL_QUIT:
-				gCon.signal();
+				av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
 				run_events = false;
+				gCon.signal();
 				break;
 			case SDL_KEYDOWN:
 				if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
 					gCon.signal();
 					run_events = false;
+				
+					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
+					SDL_Delay(1000);
+					exit(1);
+					
 					break;
             }
 		}
