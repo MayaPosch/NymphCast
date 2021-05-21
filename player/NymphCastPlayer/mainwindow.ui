@@ -352,6 +352,9 @@
              </item>
              <item>
               <widget class="QToolButton" name="disconnectToolButton">
+               <property name="toolTip">
+                <string>Disconnect from selected remote.</string>
+               </property>
                <property name="text">
                 <string>...</string>
                </property>
