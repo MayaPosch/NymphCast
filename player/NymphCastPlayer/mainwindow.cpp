@@ -288,7 +288,10 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 		
 		ui->volumeSlider->setValue(status.volume);
 		
-		if (playingTrack) {
+		if (singleCast) {
+			singleCast = false;
+		}
+		else if (playingTrack) {
             playingTrack = false;
             std::cout << "Status: Playing track, check autoplay..." << std::endl;
 			// We finished playing the currently selected track.
@@ -437,6 +440,7 @@ void MainWindow::castFile() {
 	if (client.castFile(serverHandle, filename.toStdString())) {
 		// Playing back file now. Update status.
 		playingTrack = true;
+		singleCast = true;
 	}
 	else {
 		// TODO: Display error.

@@ -75,6 +75,7 @@ private:
 	bool connected = false;
 	bool muted = false;
 	bool playingTrack = false;
+	bool singleCast = false;
     QStandardItemModel sharesModel;
 	
     QByteArray loadResource(const QUrl &name);
