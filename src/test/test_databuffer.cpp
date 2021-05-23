@@ -83,6 +83,8 @@ int main() {
 	
 	// The test file data is 100 bytes. We read 10 byte chunks
 	uint8_t bytes[8];
+	uint8_t expected = 0;
+	bool abort = false;
 	while (!DataBuffer::isEof()) {
 		uint32_t read = DataBuffer::read(8, bytes);
 		if (read == 0) {
@@ -93,9 +95,25 @@ int main() {
 		std::cout << "Read " << read << "\t- ";
 		for (uint32_t i = 0; i < 8; ++i) {
 			std::cout << (uint16_t) bytes[i] << " ";
+			
+			if (expected++ != bytes[i]) {
+				abort = true;
+			}
 		}
 		
 		std::cout << std::endl;
+		if (abort) {
+			std::cout << "Detected mismatch. Aborting read..." << std::endl;
+			break;
+		}
+	}
+	
+	std::cout << std::endl << "Test result: ";
+	if (abort) {
+		std::cout << "Failed." << std::endl;
+	}
+	else {
+		std::cout << "Success." << std::endl;
 	}
 	
 	std::cout << "Shutting down..." << std::endl;
