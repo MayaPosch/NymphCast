@@ -11,6 +11,16 @@
 #undef main
 #endif
 
+class SdlRenderer {
+	static std::atomic<bool> run_events;
+	
+public:
+	static bool init();
+	static void quit();
+	static void run_event_loop();
+	static void stop_event_loop();
+};
+
 
 int main() {
 	// Start the ScreenSaver, let it run for a bit, then terminate it.

@@ -1,7 +1,7 @@
 
 
 
-CPPFLAGS := -std=c++17 -g3 -O0 
+CPPFLAGS := -std=c++17 -g3 -O0 -pthread
 SDL_FLAGS := `sdl2-config --cflags`
 SDL_LIBS := `sdl2-config --libs` -lSDL2_image
 
