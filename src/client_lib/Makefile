@@ -18,6 +18,12 @@ ARCH := android-aarch64/
 ifdef OS
 TOOLCHAIN_POSTFIX := .cmd
 endif
+else ifdef ANDROIDX86
+TOOLCHAIN_PREFIX := i686-linux-android-
+ARCH := android-i686/
+ifdef OS
+TOOLCHAIN_POSTFIX := .cmd
+endif
 endif
 
 ifdef ANDROID
@@ -28,6 +34,11 @@ RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROID64
 GCC := aarch64-linux-android21-clang++$(TOOLCHAIN_POSTFIX)
+MAKEDIR = mkdir -p
+RM = rm
+AR = $(TOOLCHAIN_PREFIX)ar
+else ifdef ANDROIDX86
+GCC := i686-linux-android21-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
@@ -64,8 +75,10 @@ endif
 ifdef OS
 ifndef ANDROID
 ifndef ANDROID64
+ifndef ANDROIDX86
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8
 	LIBS += -lws2_32
+endif
 endif
 endif
 endif
