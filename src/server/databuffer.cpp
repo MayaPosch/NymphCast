@@ -390,6 +390,11 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 // --- WRITE ---
 // Write data into the buffer.
 uint32_t DataBuffer::write(std::string &data) {
+#ifdef DEBUG
+	std::cout << "DataBuffer::write: len " << data.length() << std::endl;
+	std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
+#endif
+
 	// First check whether we can perform a straight copy. For this we need enough available bytes
 	// at the end of the buffer. Else we have to attempt to write the remainder into the front of
 	// the buffer.
@@ -405,13 +410,11 @@ uint32_t DataBuffer::write(std::string &data) {
 	// we can write up till there, otherwise to the end of the buffer.
 	uint32_t bytesSingleWrite = 0;
 	if (back < index) { bytesSingleWrite = index - back; }
-	else if (back == index) { bytesSingleWrite = free; }
 	else { bytesSingleWrite = end - back; }
 	
 	if (data.length() <= bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Write whole chunk at back. Single write: " << bytesSingleWrite << std::endl;
-		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
 		// Enough space to write the data in one go.
 		memcpy(back, data.data(), data.length());
@@ -427,7 +430,6 @@ uint32_t DataBuffer::write(std::string &data) {
 	else if (bytesSingleWrite > 0 && free == bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Partial write at back. Single write: " << bytesSingleWrite << std::endl;
-		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
 		// Only enough space in buffer to write to the back. Write what we can, then return.
 		memcpy(back, data.data(), bytesSingleWrite);
@@ -443,12 +445,10 @@ uint32_t DataBuffer::write(std::string &data) {
 	else if (bytesSingleWrite > 0 && free > bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Partial write at back, rest at front. Single write: " << bytesSingleWrite << std::endl;
-		std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
 		// Write to the back, then the rest at the front.
 		memcpy(back, data.data(), bytesSingleWrite);
 		bytesWritten = bytesSingleWrite;
-		back += bytesWritten;
 		unread += bytesWritten;
 		free -= bytesWritten;
 		
@@ -456,21 +456,25 @@ uint32_t DataBuffer::write(std::string &data) {
 		
 		// Write remainder at the front.
 		uint32_t bytesToWrite = data.length() - bytesWritten;
-		if (bytesToWrite >= unread) {
+#ifdef DEBUG
+	std::cout << "Write remainder: " << bytesToWrite << std::endl;
+	std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
+#endif
+		if (bytesToWrite <= free) {
 			// Write the remaining bytes we have.
 			memcpy(back, data.data() + bytesWritten, bytesToWrite);
-			index += bytesToWrite;
 			bytesWritten += bytesToWrite;
 			unread += bytesToWrite;
 			free -= bytesToWrite;
+			back += bytesToWrite;
 		}
 		else {
 			// Write the unread bytes still available in the buffer.
 			memcpy(back, data.data() + bytesWritten, free);
-			index += free;
 			bytesWritten += free;
 			unread += free;
 			free += 0;
+			back += free;
 		}
 	}
 	else {
