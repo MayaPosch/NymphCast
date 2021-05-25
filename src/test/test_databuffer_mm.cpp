@@ -183,16 +183,6 @@ int test_reset()
 // --- SEEKING HANDLER ---
 void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
-		// Send message to client indicating that we're seeking in the file.
-		/* std::vector<NymphType*> values;
-		values.push_back(new NymphUint64(offset));
-		std::string result;
-		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(session, "MediaSeekCallback", values, result)) {
-			std::cerr << "Calling media seek callback failed: " << result << std::endl;
-			return;
-		} */
-		
 		const int size_write = 3;
 		const int size_read  = size_write;
 
