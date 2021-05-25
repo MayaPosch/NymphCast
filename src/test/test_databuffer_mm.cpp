@@ -250,7 +250,7 @@ int test_seek()
 
 			if ( Ns != 2 )
 			{
-				std::cout << "*** Test seek: seek(DB_SEEK_END, 0): '" << Ns << "', expected '" << 1 << "'\n";
+				std::cout << "*** Test seek: seek(DB_SEEK_END, 0): '" << Ns << "', expected '" << 2 << "'\n";
 				return EXIT_FAILURE;
 			}
 		}
@@ -273,7 +273,7 @@ int test_seek()
 		}
 
 		// verify buffer is empty: suggestion: add public method `size()`:
-		std::cout << "\n*** Test seek: seek(experting empty buffer) ***\n";
+		std::cout << "\n*** Test seek: seek(expecting empty buffer) ***\n";
 		{
 #if 0
 			if ( 0 != DataBuffer::size() )
