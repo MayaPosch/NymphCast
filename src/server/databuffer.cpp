@@ -226,9 +226,14 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		// Wait for response.
 		std::unique_lock<std::mutex> lk(seekRequestMutex);
 		using namespace std::chrono_literals;
-		while (!seekRequestPending) {
+		while (seekRequestPending) {
 			std::cv_status stat = seekRequestCV.wait_for(lk, 150ms);
-			if (stat == std::cv_status::timeout) { return -1; }
+			if (stat == std::cv_status::timeout) {
+#ifdef DEBUG
+				std::cout << "Time-out on seek request. Returning -1." << std::endl;
+#endif
+				return -1; 
+			}
 		}
 		
 		state = DBS_IDLE;
@@ -501,6 +506,9 @@ uint32_t DataBuffer::write(std::string &data) {
 	
 	// If we're in seeking mode, signal that we're done.
 	if (state == DBS_SEEKING) {
+#ifdef DEBUG
+		std::cout << "In seeking mode. Notifying seeking routine." << std::endl;
+#endif
 		seekRequestPending = false;
 		seekRequestCV.notify_one();
 	}
