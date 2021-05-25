@@ -275,11 +275,19 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		requestData();
 	}
 	
-	if (unread == 0 && eof) {
+	if (unread == 0) {
+		if (eof) {
 #ifdef DEBUG
-		std::cout << "Reached EOF." << std::endl;
+			std::cout << "Reached EOF." << std::endl;
 #endif
-		return 0;
+			return 0;
+		}
+		else {
+#ifdef DEBUG
+			std::cout << "Read failed due to empty buffer." << std::endl;
+#endif
+			return 0;
+		}
 	}
 	
 	bufferMutex.lock();
