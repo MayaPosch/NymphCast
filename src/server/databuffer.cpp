@@ -198,6 +198,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	
 #ifdef DEBUG
 	std::cout << "New offset: " << new_offset << std::endl;
+	std::cout << "ByteIndex: " << byteIndex << std::endl;
 #endif
 
 	// Ensure that the new offset isn't past the end of the file. If so, return -1.
@@ -251,6 +252,8 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		//unreadLow += new_offset - byteIndexLow;
 		//unreadHigh -= unread - oldUnread;
 	} */
+	
+	byteIndex = new_offset;
 	
 	return new_offset;
 }
@@ -319,6 +322,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		memcpy(bytes, index, len);
 		index += len;		// Advance read pointer.
 		bytesRead += len;
+		byteIndex += len;
 		unread -= len;		// Unread bytes decreases by read byte count.
 		free += len;		// Read bytes become free for overwriting.
 		
@@ -336,6 +340,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		memcpy(bytes, index, bytesSingleRead);
 		index += bytesSingleRead;		// Advance read pointer.
 		bytesRead += bytesSingleRead;
+		byteIndex += bytesSingleRead;
 		unread -= bytesSingleRead;		// Unread bytes decreases by read byte count.
 		free += bytesSingleRead;		// Read bytes become free for overwriting.
 		
@@ -353,6 +358,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		memcpy(bytes, index, bytesSingleRead);
 		index += bytesSingleRead;		// Advance read pointer.
 		bytesRead += bytesSingleRead;
+		byteIndex += bytesSingleRead;
 		unread -= bytesSingleRead;		// Unread bytes decreases by read byte count.
 		free += bytesSingleRead;		// Read bytes become free for overwriting.
 		
@@ -368,6 +374,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			memcpy(bytes + bytesRead, index, bytesToRead);
 			index += bytesToRead;
 			bytesRead += bytesToRead;
+			byteIndex += bytesToRead;
 			unread -= bytesToRead;
 			free += bytesToRead;
 		}
@@ -376,6 +383,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			memcpy(bytes + bytesRead, index, unread);
 			index += unread;
 			bytesRead += unread;
+			byteIndex += unread;
 			unread -= 0;
 			free += unread;
 		}
