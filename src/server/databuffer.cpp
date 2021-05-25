@@ -194,7 +194,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	int64_t new_offset = -1;
 	if 		(mode == DB_SEEK_START)		{ new_offset = offset; }
 	else if (mode == DB_SEEK_CURRENT) 	{ new_offset = byteIndex + offset; }
-	else if (mode == DB_SEEK_END)		{ new_offset = filesize - offset; }
+	else if (mode == DB_SEEK_END)		{ new_offset = filesize - offset - 1; }
 	
 #ifdef DEBUG
 	std::cout << "New offset: " << new_offset << std::endl;
