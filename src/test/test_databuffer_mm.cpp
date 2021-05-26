@@ -114,6 +114,8 @@ int test_wraparound()
 			}
 		}
 	}
+	
+	std::cout << "\n* * * Wraparound tests completed successfully * * *\n";
 
 	return EXIT_SUCCESS;
 }
@@ -175,6 +177,8 @@ int test_reset()
 			return EXIT_FAILURE;
 		}
 	}
+	
+	std::cout << "\n* * * Reset tests completed successfully * * *\n";
 
 	return EXIT_SUCCESS;
 }
@@ -220,8 +224,8 @@ int test_seek()
 		DataBuffer::setFileSize(Nw);
 
 		// seek start:
+		std::cout << "\n*** Test seek: seek(DB_SEEK_START) ***\n";													
 		{
-			std::cout << "\n*** Test seek: seek(DB_SEEK_START) ***\n";
 			const int64_t Ns = DataBuffer::seek(DB_SEEK_START, 1);
 
 			if ( Ns != 1 )
@@ -255,8 +259,8 @@ int test_seek()
 			}
 		}
 
-		// seek begin, read data:
-		std::cout << "\n*** Test seek: seek(DB_SEEK_START, read data) ***\n";
+		// seek begin, read data, verify empty:
+		std::cout << "\n*** Test seek: seek(DB_SEEK_START), read data, verify buffer is empty ***\n";
 		{
 			std::vector<uint8_t> bytes(size_read, to_char(99));
 
@@ -270,34 +274,35 @@ int test_seek()
 				print("*** ", bytes, "\n");
 				return EXIT_FAILURE;
 			}
-		}
 
-		// verify buffer is empty: suggestion: add public method `size()`:
-		std::cout << "\n*** Test seek: seek(expecting empty buffer) ***\n";
-		{
+			// verify buffer is empty now: suggestion: add public method `size()`:
+			{
 #if 0
-			if ( 0 != DataBuffer::size() )
-			{
-				std::cout << "*** Test seek: expecting empty buffer***\n";
-				return EXIT_FAILURE;
-			}
+				if ( 0 != DataBuffer::size() )
+				{
+					std::cout << "*** Test seek: expecting empty buffer***\n";
+					return EXIT_FAILURE;
+				}
 #else
-			std::vector<uint8_t> bytes(size_read, to_char(99));
+				std::vector<uint8_t> bytes(size_read, to_char(99));
 
-			const uint32_t Nr = DataBuffer::read(size_read, bytes.data());
+				const uint32_t Nr = DataBuffer::read(size_read, bytes.data());
 
-			if ( Nr != 0 || bytes[0] != to_char(99))
-			{
-				std::cout << "*** Test seek: expecting empty buffer***\n";
-				return EXIT_FAILURE;
-			}
+				if ( Nr != 0 || bytes[0] != to_char(99))
+				{
+					std::cout << "*** Test seek: expecting empty buffer***\n";
+					return EXIT_FAILURE;
+				}
 #endif
+			}
 		}
-	}
+	} // seek start, read data, verify empty
 
 	// TODO: other kind of tests:
 	{
 	}
+	
+	std::cout << "\n* * * Seek tests completed successfully * * *\n";
 
 	return EXIT_SUCCESS;
 }
