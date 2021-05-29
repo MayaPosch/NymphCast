@@ -36,7 +36,6 @@ INCLUDEPATH += litehtml/ litehtml/include litehtml/include/litehtml litehtml/src
 				litehtml/src/gumbo/include/gumbo
 
 SOURCES += \
-        appbrowser.cpp \
         container_qpainter.cpp \
         litehtml/src/background.cpp \
         litehtml/src/box.cpp \
@@ -92,7 +91,6 @@ SOURCES += \
         qlitehtmlwidget.cpp
 
 HEADERS += \
-        appbrowser.h \
         container_qpainter.h \
         container_qpainter_p.h \
         litehtml/include/litehtml.h \
@@ -168,7 +166,7 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
+LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoDataSQLite
 
 win32:LIBS += -lws2_32
 

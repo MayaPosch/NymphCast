@@ -24,22 +24,7 @@
     <normaloff>:/img/img/nymphcast_logo_no_text.png</normaloff>:/img/img/nymphcast_logo_no_text.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_6">
-    <property name="spacing">
-     <number>0</number>
-    </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
      <widget class="QTabWidget" name="sharesiTab">
       <property name="currentIndex">
@@ -49,7 +34,96 @@
        <attribute name="title">
         <string>Player</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMinimumSize</enum>
+          </property>
+          <item>
+           <widget class="QComboBox" name="playerRemotesComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="currentText">
+             <string>Select Remote...</string>
+            </property>
+            <property name="placeholderText">
+             <string>Select Remote...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="playerRefreshRemotesButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/repeat.png</normaloff>:/icons/icons/repeat.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="playerEditRemotesButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>40</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="spacing">
@@ -58,49 +132,85 @@
           <item>
            <widget class="QListWidget" name="mediaListWidget"/>
           </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
-            <property name="spacing">
-             <number>0</number>
+           <widget class="QCheckBox" name="singlePlayCheckBox">
+            <property name="text">
+             <string>Single</string>
             </property>
-            <property name="leftMargin">
-             <number>5</number>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="repeatQueueCheckBox">
+            <property name="text">
+             <string>Repeat</string>
             </property>
-            <item>
-             <widget class="QPushButton" name="addButton">
-              <property name="text">
-               <string>Add</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="removeButton">
-              <property name="text">
-               <string>Remove</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="singlePlayCheckBox">
-              <property name="text">
-               <string>Single Play</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="removeButton">
+            <property name="text">
+             <string>Remove</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/minus.png</normaloff>:/icons/icons/minus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addButton">
+            <property name="text">
+             <string>Add</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/add.png</normaloff>:/icons/icons/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QSlider" name="positionSlider">
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="durationLabel">
+            <property name="text">
+             <string>0:00 / 0:00</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -223,24 +333,268 @@
           </item>
          </layout>
         </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Shares</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMinimumSize</enum>
+          </property>
           <item>
-           <widget class="QSlider" name="positionSlider">
-            <property name="maximum">
-             <number>100</number>
+           <widget class="QComboBox" name="sharesRemotesComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+            <property name="placeholderText">
+             <string>Select remote...</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="durationLabel">
+           <widget class="QPushButton" name="sharesRefreshRemotesButton">
             <property name="text">
-             <string>0:00 / 0:00</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/repeat.png</normaloff>:/icons/icons/repeat.png</iconset>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="sharesEditRemotesButton">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>40</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <item>
+           <widget class="QPushButton" name="sharesScanButton">
+            <property name="text">
+             <string>Scan for shares</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="sharesTreeView"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="sharesPlayButton">
+            <property name="text">
+             <string>Play selected file</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Apps (GUI)</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QComboBox" name="appsGuiRemotesComboBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="placeholderText">
+               <string>Selected remote...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="appsGuiRefreshRemotesButton">
+              <property name="baseSize">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/replace.png</normaloff>:/icons/icons/replace.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="appsGuiEditRemotesButton">
+              <property name="minimumSize">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>40</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLiteHtmlWidget" name="appTabGuiTextBrowser"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="appTabGuiHomeButton">
+            <property name="text">
+             <string>Home</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="appsTab">
+       <attribute name="title">
+        <string>Apps</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <item>
+           <widget class="QComboBox" name="appsRemotesComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="placeholderText">
+             <string>Selected remote...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="appsRefreshRemotesButton">
+            <property name="baseSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/replace.png</normaloff>:/icons/icons/replace.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="appsEditRemotesButton">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>40</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="updateRemoteAppsButton">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="remoteAppsComboBox"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="startAppButton">
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QPlainTextEdit" name="remoteAppTextEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="remoteAppLineEdit"/>
           </item>
          </layout>
         </item>
@@ -390,106 +744,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Apps (GUI)</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_9">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_8">
-          <item>
-           <widget class="QLiteHtmlWidget" name="appTabGuiTextBrowser"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="appTabGuiHomeButton">
-            <property name="text">
-             <string>Home</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="appsTab">
-       <attribute name="title">
-        <string>Apps</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="title">
-           <string>Remote apps</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QPushButton" name="updateRemoteAppsButton">
-               <property name="text">
-                <string>Refresh</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="remoteAppsComboBox"/>
-             </item>
-             <item>
-              <widget class="QPushButton" name="startAppButton">
-               <property name="text">
-                <string>Start</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <item>
-              <widget class="QPlainTextEdit" name="remoteAppTextEdit">
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="remoteAppLineEdit"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Shares</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_11">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_10">
-          <item>
-           <widget class="QPushButton" name="sharesScanButton">
-            <property name="text">
-             <string>Scan for shares</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTreeView" name="sharesTreeView"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="sharesPlayButton">
-            <property name="text">
-             <string>Play selected file</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -507,15 +761,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_file"/>
-    <addaction name="separator"/>
     <addaction name="actionQuit"/>
-   </widget>
-   <widget class="QMenu" name="menuPlayback">
-    <property name="title">
-     <string>Playback</string>
-    </property>
-    <addaction name="actionSelect_file"/>
    </widget>
    <widget class="QMenu" name="menuServer">
     <property name="title">
@@ -538,7 +784,6 @@
     <addaction name="actionURL"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuPlayback"/>
    <addaction name="menuServer"/>
    <addaction name="menuCast"/>
    <addaction name="menuAbout"/>

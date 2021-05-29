@@ -16,8 +16,13 @@ namespace Ui {
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 	
+	struct NCRemoteInstance {
+		NymphCastRemote remote;
+		bool connected = false;
+		uint32_t handle;
+	};
+	
 public:
-    static uint32_t serverHandle;
 	static NymphCastClient client;
     
 	explicit MainWindow(QWidget *parent = nullptr);
@@ -64,15 +69,17 @@ private slots:
     void scanForShares();
     void playSelectedShare();
 	
+	// All tabs.
+	void openRemotesDialog();
+	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
 	
 private:
 	Ui::MainWindow *ui;
 	
-	std::vector<NymphCastRemote> remotes;
+	std::vector<NCRemoteInstance> remotes;
     std::vector<std::vector<NymphMediaFile> > mediaFiles;
-	bool connected = false;
 	bool muted = false;
 	bool playingTrack = false;
 	bool singleCast = false;
@@ -80,6 +87,13 @@ private:
 	
     QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
+	bool playerIsConnected();
+	bool playerEnsureConnected(uint32_t &id);
+	bool sharesIsConnected();
+	bool appsEnsureConnected(uint32_t &id);
+	bool appsGuiEnsureConnected(uint32_t &id);
+	bool connectRemote(NCRemoteInstance &instance);
+	bool disconnectRemote(NCRemoteInstance &instance);
 };
 
 #endif // MAINWINDOW_H

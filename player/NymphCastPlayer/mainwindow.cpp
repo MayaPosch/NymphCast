@@ -85,7 +85,6 @@ int start_logger(const char* app_name) {
 
 
 // Static declarations
-uint32_t MainWindow::serverHandle;
 NymphCastClient MainWindow::client;
 
 	
@@ -133,6 +132,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	// Tabs
     // Player tab.
+	connect(ui->playerEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
+	connect(ui->playerRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
     connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
@@ -150,15 +151,21 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->disconnectToolButton, SIGNAL(clicked()), this, SLOT(remoteDisconnectSelected()));
 	
 	// Apps tab.
+	connect(ui->appsEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
+	connect(ui->appsRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
 	connect(ui->updateRemoteAppsButton, SIGNAL(clicked()), this, SLOT(appsListRefresh()));
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
     
     // Apps (GUI) tab.
+	connect(ui->appsGuiEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
+	connect(ui->appsGuiRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
     //connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     
     // Shares tab.
+	connect(ui->sharesEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
+	connect(ui->sharesRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->sharesScanButton, SIGNAL(clicked()), this, SLOT(scanForShares()));
     connect(ui->sharesPlayButton, SIGNAL(clicked()), this, SLOT(playSelectedShare()));
     
@@ -243,6 +250,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	playlist.close();
 #endif
+
+	// Obtain initial list of available remotes.
+	remoteListRefresh();
 }
 
 MainWindow::~MainWindow() {
@@ -316,7 +326,7 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 
 
 void MainWindow::connectServer() {
-	if (connected) { return; }
+	/* if (connected) { return; }
 	
 	// Ask for the IP address of the server.
 	QString ip = QInputDialog::getText(this, tr("NymphCast Receiver"), tr("Please provide the NymphCast receiver IP address."));
@@ -332,15 +342,15 @@ void MainWindow::connectServer() {
 	ui->remoteLabel->setText("Connected to " + ip);
 	
 	// Successful connect.
-	connected = true;
+	connected = true; */
 }
 
 
 // --- CONNECT SERVER IP ---
 void MainWindow::connectServerIP(std::string ip) {
-	if (connected) { return; }
+	/* if (connected) { return; }
 	
-	// Connect to localhost NymphRPC server, standard port.
+	// Connect to NymphRPC server, standard port.
 	if (!client.connectServer(ip, 0, serverHandle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return;
@@ -350,19 +360,51 @@ void MainWindow::connectServerIP(std::string ip) {
 	ui->remoteLabel->setText("Connected to " + QString::fromStdString(ip));
 	
 	// Successful connect.
-	connected = true;
+	connected = true; */
+}
+
+
+// --- CONNECT REMOTE ---
+bool MainWindow::connectRemote(NCRemoteInstance &instance) {
+	if (instance.connected) { return true; }
+	
+	// Connect to NymphRPC server, standard port.
+	if (!client.connectServer(instance.remote.ipv4, 0, instance.handle)) {
+		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
+		return false;
+	}
+	
+	// TODO: update server name label.
+	//ui->remoteLabel->setText("Connected to " + QString::fromStdString(instance.remote.ipv4));
+	
+	// Successful connect.
+	instance.connected = true;
+	
+	return true;
+}
+
+
+// --- DISCONNECT REMOTE ---
+bool MainWindow::disconnectRemote(NCRemoteInstance &instance) {
+	if (!instance.connected) { return true; }
+	
+	client.disconnectServer(instance.handle);
+	
+	instance.connected = false;
+	
+	return true;
 }
 
 
 // --- DISCONNECT SERVER ---
 void MainWindow::disconnectServer() {
-	if (!connected) { return; }
+	/* if (!connected) { return; }
 	
 	client.disconnectServer(serverHandle);
 	
 	ui->remoteLabel->setText("Disconnected.");
 	
-	connected = false;
+	connected = false; */
 }
 
 
@@ -370,27 +412,40 @@ void MainWindow::disconnectServer() {
 // Refresh the list of remote servers on the network.
 void MainWindow::remoteListRefresh() {
 	// Get the current list.
-	remotes = client.findServers();
+	std::vector<NymphCastRemote> list = client.findServers();
 	
 	// Update the list with any changed items.
-	// Target the 'remotesListWidget' widget.
 	ui->remotesListWidget->clear(); // FIXME: just resetting the whole thing for now.
-	for (uint32_t i = 0; i < remotes.size(); ++i) {
-		//new QListWidgetItem(remotes[i].ipv4 + " (" + remotes[i].name + ")", ui->remotesListWidget);
+	ui->playerRemotesComboBox->clear();
+	ui->sharesRemotesComboBox->clear();
+	ui->appsGuiRemotesComboBox->clear();
+	ui->appsRemotesComboBox->clear();
+	for (uint32_t i = 0; i < list.size(); ++i) {
 		QListWidgetItem *newItem = new QListWidgetItem;
-		newItem->setText(QString::fromStdString(remotes[i].ipv4 + " (" + remotes[i].name + ")"));
-		//newItem->setData(Qt::UserRole, QVariant(QString::fromStdString(remotes[i].ipv4)));
+		newItem->setText(QString::fromStdString(list[i].ipv4 + " (" + list[i].name + ")"));
 		newItem->setData(Qt::UserRole, QVariant(i));
 		ui->remotesListWidget->insertItem(i, newItem);
+		ui->playerRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
+													" (" + list[i].name + ")"), QVariant(i));
+		ui->sharesRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
+													" (" + list[i].name + ")"), QVariant(i));
+		ui->appsGuiRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
+													" (" + list[i].name + ")"), QVariant(i));
+		ui->appsRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
+													" (" + list[i].name + ")"), QVariant(i));
+													
+		// Add remote to 'remotes' list.
+		NCRemoteInstance nci;
+		nci.remote = list[i];
+		remotes.push_back(nci);
 	}
-	
 }
 
 
 // --- REMOTE CONNECT SELECTED ---
 // Connect to the selected remote server.
 void MainWindow::remoteConnectSelected() {
-	if (connected) { return; }
+	/* if (connected) { return; }
 	
 	//QListWidgetItem* item = ui->remotesListWidget->currentItem();
 	//QString ip = item->data(Qt::UserRole).toString();
@@ -417,7 +472,7 @@ void MainWindow::remoteConnectSelected() {
 		slaves.push_back(remotes[ref]);
 	}
 	
-	client.addSlaves(serverHandle, slaves);
+	client.addSlaves(serverHandle, slaves); */
 }
 
 
@@ -425,19 +480,20 @@ void MainWindow::remoteConnectSelected() {
 void MainWindow::remoteDisconnectSelected() {
 	// FIXME: Redirect to the plain disconnectServer() function for now.
 	// With the multi-server functionality implemented, this should disconnect the selected remote.
-	disconnectServer();
+	//disconnectServer();
 }
 
 
 // --- CAST FILE ---
 void MainWindow::castFile() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
 	// Open file.
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
 	if (filename.isEmpty()) { return; }
 	
-	if (client.castFile(serverHandle, filename.toStdString())) {
+	if (client.castFile(remotes[ncid].handle, filename.toStdString())) {
 		// Playing back file now. Update status.
 		playingTrack = true;
 		singleCast = true;
@@ -450,13 +506,14 @@ void MainWindow::castFile() {
 
 // --- CAST URL ---
 void MainWindow::castUrl() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
 	// Open file.
 	QString url = QInputDialog::getText(this, tr("Cast URL"), tr("Copy in the URL to cast."));
 	if (url.isEmpty()) { return; }
 	
-	client.castUrl(serverHandle, url.toStdString());
+	client.castUrl(remotes[ncid].handle, url.toStdString());
 }
 
 
@@ -519,14 +576,83 @@ void MainWindow::removeFile() {
 }
 
 
+// --- PLAYER IS CONNECTED ---
+// Return true if the currently selected remote in the Player tab is connected.
+bool MainWindow::playerIsConnected() {
+	if (ui->playerRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	int index = ui->playerRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[index].connected) {
+		if (!connectRemote(remotes[index])) { return false; }
+	}
+	
+	return true;
+}
+
+
+// --- SHARES IS CONNECTED ---
+// Return true if the currently selected remote in the Player tab is connected.
+bool MainWindow::sharesIsConnected() {
+	if (ui->sharesRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->sharesRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	int index = ui->sharesRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[index].connected) {
+		if (!connectRemote(remotes[index])) { return false; }
+	}
+	
+	return true;
+}
+
+
 // --- PLAY ---
 void MainWindow::play() {
-	if (!connected) { return; }
+	// TODO: Play selected track back on selected remote. Connect if necessary.
+	// Immediately fail if:
+	// * No remotes available.
+	// * No remote or group selected.
+	
+	// Get currently selected remote, connect if necessary.
+	if (ui->playerRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return;
+	}
+	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return;
+	}
+	
+	// Obtain selected ID.
+	int index = ui->playerRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[index].connected) {
+		if (!connectRemote(remotes[index])) { return; }
+	}
 	
 	// Start playing the currently selected track if it isn't already playing. 
 	// Else pause or unpause playback.
 	if (playingTrack) {
-		client.playbackStart(serverHandle);
+		client.playbackStart(remotes[index].handle);
 	}
 	else {
 		QListWidgetItem* item = ui->mediaListWidget->currentItem();
@@ -537,7 +663,7 @@ void MainWindow::play() {
 		
 		QString filename = item->data(Qt::UserRole).toString();
 		
-        if (client.castFile(serverHandle, filename.toStdString())) {
+        if (client.castFile(remotes[index].handle, filename.toStdString())) {
             // Playing back file now. Update status.
            playingTrack = true;
         }
@@ -548,63 +674,68 @@ void MainWindow::play() {
 
 // --- STOP ---
 void MainWindow::stop() {
-	//
-	if (!connected) { return; }
+	if (!playingTrack) { return; }
+	
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
     
     playingTrack = false;
-	client.playbackStop(serverHandle);
+	client.playbackStop(remotes[ncid].handle);
 }
 
 
 // --- PAUSE ---
 void MainWindow::pause() {
-	//
-	if (!connected) { return; }
+	if (!playingTrack) { return; }
 	
-	client.playbackPause(serverHandle);
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
+	
+	client.playbackPause(remotes[ncid].handle);
 }
 
 
 // --- FORWARD ---
 void MainWindow::forward() {
-	//
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
-	client.playbackForward(serverHandle);
+	client.playbackForward(remotes[ncid].handle);
 }
 
 
 // --- REWIND ---
 void MainWindow::rewind() {
-	//
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
-	client.playbackRewind(serverHandle);
+	client.playbackRewind(remotes[ncid].handle);
 }
 
 
 // --- SEEK ---
 void MainWindow::seek() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
 	// Read out location on seek bar.
 	uint8_t location = ui->positionSlider->value();
 	
-	client.playbackSeek(serverHandle, location);
+	client.playbackSeek(remotes[ncid].handle, location);
 }
 
 
 // --- MUTE ---
 void MainWindow::mute() {
-	//
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
 	
 	if (!muted) {
-		client.volumeSet(serverHandle, 0);
+		client.volumeSet(remotes[ncid].handle, 0);
 		muted = true;
 	}
 	else {
-		client.volumeSet(serverHandle, ui->volumeSlider->value());
+		client.volumeSet(remotes[ncid].handle, ui->volumeSlider->value());
 		muted = false;
 	}
 }
@@ -612,20 +743,95 @@ void MainWindow::mute() {
 
 // --- ADJUST VOLUME ---
 void MainWindow::adjustVolume() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
+	
 	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
 	
-	client.volumeSet(serverHandle, value);
+	client.volumeSet(remotes[ncid].handle, value);
+}
+
+
+// --- PLAYER ENSURE CONNECTED ---
+bool MainWindow::playerEnsureConnected(uint32_t &id) {
+	// Get currently selected remote, connect if necessary.
+	if (ui->playerRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	id = ui->playerRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[id].connected) {
+		if (!connectRemote(remotes[id])) { return false; }
+	}
+	
+	return true;
+}
+
+
+// --- APPS ENSURE CONNECTED ---
+bool MainWindow::appsEnsureConnected(uint32_t &id) {
+	// Get currently selected remote, connect if necessary.
+	if (ui->appsRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->appsRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	id = ui->appsRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[id].connected) {
+		if (!connectRemote(remotes[id])) { return false; }
+	}
+	
+	return true;
+}
+
+
+// --- APPS GUI ENSURE CONNECTED ---
+bool MainWindow::appsGuiEnsureConnected(uint32_t &id) {
+	// Get currently selected remote, connect if necessary.
+	if (ui->appsGuiRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->appsGuiRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	id = ui->appsGuiRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[id].connected) {
+		if (!connectRemote(remotes[id])) { return false; }
+	}
+	
+	return true;
 }
 
 
 // --- APPS LIST REFRESH ---
 void MainWindow::appsListRefresh() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!appsEnsureConnected(ncid)) { return; }
 	
 	// Get list of apps from the remote server.
-	std::string appList = client.getApplicationList(serverHandle);
+	std::string appList = client.getApplicationList(remotes[ncid].handle);
 	
 	// Update local list.
 	ui->remoteAppsComboBox->clear();
@@ -636,7 +842,8 @@ void MainWindow::appsListRefresh() {
 
 // --- SEND COMMAND ---
 void MainWindow::sendCommand() {
-	if (!connected) { return; }
+	uint32_t ncid;
+	if (!appsEnsureConnected(ncid)) { return; }
 	
 	// Read the data in the line edit and send it to the remote app.
 	// Get the appID from the currently selected item in the app list combobox.
@@ -652,7 +859,7 @@ void MainWindow::sendCommand() {
 	// Clear the input field.
 	ui->remoteAppLineEdit->clear();
 	
-	std::string response = client.sendApplicationMessage(serverHandle, appId, message);
+	std::string response = client.sendApplicationMessage(remotes[ncid].handle, appId, message);
 	
 	// Append the response to the output field.
 	ui->remoteAppTextEdit->appendPlainText(QString::fromStdString(response));
@@ -662,10 +869,11 @@ void MainWindow::sendCommand() {
 
 // --- APPS HOME ---
 void MainWindow::appsHome() {
-    if (!connected) { return; }
+	uint32_t ncid;
+    if (!appsGuiEnsureConnected(ncid)) { return; }
     
     // Request the starting Apps page from the remote.
-    QString page = QString::fromStdString(client.loadResource(serverHandle, std::string(), 
+    QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, std::string(), 
                                                                                "apps.html"));
     
     
@@ -679,6 +887,9 @@ void MainWindow::anchorClicked(const QUrl &link) {
 	// Debug
 	std::cout << "anchorClicked: " << link.path().toStdString() << std::endl;
 	
+	uint32_t ncid;
+    if (!appsGuiEnsureConnected(ncid)) { return; }
+	
     // Parse URL string for the command desired.
     QStringList list = link.path().split("/", QString::SkipEmptyParts);
     
@@ -690,7 +901,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
         if (list.size() < 2) { return; }
         
         // Try to load the index page for the specified app.
-        QString page = QString::fromStdString(client.loadResource(serverHandle, 
+        QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, 
                                                                   list[1].toStdString(), 
                                                                    "index.html"));
         
@@ -706,8 +917,9 @@ void MainWindow::anchorClicked(const QUrl &link) {
         // Assume the first entry contains an app name, followed by commands.
         // TODO: validate app names here.
 		if (list.size() < 2) { return; }
-		std::string response = client.sendApplicationMessage(serverHandle, list[0].toStdString(), 
-																			list[1].toStdString());
+		std::string response = client.sendApplicationMessage(remotes[ncid].handle, 
+																list[0].toStdString(), 
+																list[1].toStdString());
 		// TODO: use response.
     }
 }
@@ -715,6 +927,9 @@ void MainWindow::anchorClicked(const QUrl &link) {
 
 // --- LOAD RESOURCE ---
 QByteArray MainWindow::loadResource(const QUrl &name) {
+	uint32_t ncid;
+    if (!appsGuiEnsureConnected(ncid)) { return QByteArray(); }
+	
     // Parse the URL for the desired resource.
     QFileInfo dir(name.path());
     QString qAppId = dir.path();
@@ -727,7 +942,7 @@ QByteArray MainWindow::loadResource(const QUrl &name) {
     
     std::string appId = qAppId.toStdString();
     
-    QByteArray page = QByteArray::fromStdString(client.loadResource(serverHandle, appId, filename));
+    QByteArray page = QByteArray::fromStdString(client.loadResource(remotes[ncid].handle, appId, filename));
     return page;
 }
 
@@ -773,8 +988,7 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
-	// FIXME: use selected remote(s) as check & input here.
-    //if (!connected) { return; }
+    if (!sharesIsConnected()) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
@@ -789,19 +1003,27 @@ void MainWindow::playSelectedShare() {
     
     QMap<int, QVariant> data = sharesModel.itemData(indexes[0]);
     QList<QVariant> ids = data[Qt::UserRole].toList();
+	
+	// TODO: use the selected remote or group from the combobox.
     
     // Obtain list of target receivers.
     QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
     std::vector<NymphCastRemote> receivers;
 	for (int i = 0; i < items.size(); ++i) {
         int ref = items[i]->data(Qt::UserRole).toInt();
-		receivers.push_back(remotes[ref]);
+		receivers.push_back(remotes[ref].remote);
 	}
     
     // Play file via media server.
     if (!client.playShare(mediaFiles[ids[0].toInt()][ids[1].toInt()], receivers)) {
          //
     }
+}
+
+
+// --- OPEN REMOTES DIALOG ---
+void MainWindow::openRemotesDialog() {
+	//
 }
 
 
