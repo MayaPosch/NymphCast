@@ -163,15 +163,16 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     //connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     
+    using namespace std::placeholders; 
+    ui->appTabGuiTextBrowser->setResourceHandler(std::bind(&MainWindow::loadResource, this, _1));
+    
     // Shares tab.
 	connect(ui->sharesEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
 	connect(ui->sharesRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->sharesScanButton, SIGNAL(clicked()), this, SLOT(scanForShares()));
     connect(ui->sharesPlayButton, SIGNAL(clicked()), this, SLOT(playSelectedShare()));
-    
-    using namespace std::placeholders; 
-    ui->appTabGuiTextBrowser->setResourceHandler(std::bind(&MainWindow::loadResource, this, _1));
 	
+	// General NC library.
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
 	
@@ -914,13 +915,31 @@ void MainWindow::anchorClicked(const QUrl &link) {
         ui->appTabGuiTextBrowser->setHtml(page);
     }
     else {
-        // Assume the first entry contains an app name, followed by commands.
-        // TODO: validate app names here.
+		// If the first entry contains the string 'requestText', request text input from the user.
+		// This string is appended to the end of the command string to the app.
 		if (list.size() < 2) { return; }
+		std::string cmdStr;
+		std::string appStr;
+		if (list[0] == "requestText") {
+			if (list.size() < 3) { return; }
+			QString txt = QInputDialog::getText(this, tr("Input text"), tr("Text input requested by app."));
+			appStr = list[1].toStdString();
+			cmdStr = list[2].toStdString() + txt.toStdString();
+		}
+		else {
+			// Assume the first entry contains an app name, followed by commands.
+			appStr = list[0].toStdString();
+			cmdStr = list[1].toStdString();
+		}
+		
+		// TODO: validate app names here.
+		
 		std::string response = client.sendApplicationMessage(remotes[ncid].handle, 
-																list[0].toStdString(), 
-																list[1].toStdString());
+																appStr, 
+																cmdStr);
 		// TODO: use response.
+		// Response contains the new HTML to display. Load this into the view.
+		
     }
 }
 
