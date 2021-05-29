@@ -924,12 +924,22 @@ void MainWindow::anchorClicked(const QUrl &link) {
 			if (list.size() < 3) { return; }
 			QString txt = QInputDialog::getText(this, tr("Input text"), tr("Text input requested by app."));
 			appStr = list[1].toStdString();
-			cmdStr = list[2].toStdString() + txt.toStdString();
+			
+			// Merge index 2 until the end into a single space-separated string.
+			for (uint32_t i = 2; i < list.size(); i++) {
+				cmdStr += list[i].toStdString() + " ";
+			}
+			
+			cmdStr += txt.toStdString();
 		}
 		else {
 			// Assume the first entry contains an app name, followed by commands.
 			appStr = list[0].toStdString();
-			cmdStr = list[1].toStdString();
+			
+			// TODO: merge index 2 until the end into a single space-separated string.
+			for (uint32_t i = 1; i < list.size(); i++) {
+				cmdStr += list[i].toStdString() + " ";
+			}
 		}
 		
 		// TODO: validate app names here.
