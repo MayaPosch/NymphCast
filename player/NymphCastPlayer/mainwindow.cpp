@@ -937,9 +937,9 @@ void MainWindow::anchorClicked(const QUrl &link) {
 		std::string response = client.sendApplicationMessage(remotes[ncid].handle, 
 																appStr, 
 																cmdStr);
-		// TODO: use response.
+																
 		// Response contains the new HTML to display. Load this into the view.
-		
+		ui->appTabGuiTextBrowser->setHtml(QString::fromStdString(response));
     }
 }
 
