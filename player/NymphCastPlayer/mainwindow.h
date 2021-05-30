@@ -90,6 +90,7 @@ private:
 	bool playerIsConnected();
 	bool playerEnsureConnected(uint32_t &id);
 	bool sharesIsConnected();
+	bool sharesEnsureConnected(uint32_t &id);
 	bool appsEnsureConnected(uint32_t &id);
 	bool appsGuiEnsureConnected(uint32_t &id);
 	bool connectRemote(NCRemoteInstance &instance);
