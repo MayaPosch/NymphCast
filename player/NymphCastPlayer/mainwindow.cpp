@@ -778,6 +778,30 @@ bool MainWindow::playerEnsureConnected(uint32_t &id) {
 }
 
 
+// --- SHARES ENSURE CONNECTED ---
+bool MainWindow::sharesEnsureConnected(uint32_t &id) {
+	// Get currently selected remote, connect if necessary.
+	if (ui->sharesRemotesComboBox->count() == 0) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	else if (ui->sharesRemotesComboBox->currentIndex() == -1) {
+		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		return false;
+	}
+	
+	// Obtain selected ID.
+	id = ui->sharesRemotesComboBox->currentIndex();
+	
+	// Ensure the remote is connected.
+	if (!remotes[id].connected) {
+		if (!connectRemote(remotes[id])) { return false; }
+	}
+	
+	return true;
+}
+
+
 // --- APPS ENSURE CONNECTED ---
 bool MainWindow::appsEnsureConnected(uint32_t &id) {
 	// Get currently selected remote, connect if necessary.
@@ -943,7 +967,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 		}
 		
 		// TODO: validate app names here.
-		
+		// TODO: Use client method that returns HTML.
 		std::string response = client.sendApplicationMessage(remotes[ncid].handle, 
 																appStr, 
 																cmdStr);
@@ -1017,7 +1041,8 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
-    if (!sharesIsConnected()) { return; }
+	uint32_t ncid;
+    if (!sharesEnsureConnected(ncid)) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
@@ -1033,11 +1058,12 @@ void MainWindow::playSelectedShare() {
     QMap<int, QVariant> data = sharesModel.itemData(indexes[0]);
     QList<QVariant> ids = data[Qt::UserRole].toList();
 	
-	// TODO: use the selected remote or group from the combobox.
+	// TODO: use a group from the combobox.
     
     // Obtain list of target receivers.
     QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
     std::vector<NymphCastRemote> receivers;
+	receivers.push_back(remotes[ncid].remote);
 	for (int i = 0; i < items.size(); ++i) {
         int ref = items[i]->data(Qt::UserRole).toInt();
 		receivers.push_back(remotes[ref].remote);
