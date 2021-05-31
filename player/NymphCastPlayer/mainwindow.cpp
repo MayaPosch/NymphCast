@@ -960,10 +960,12 @@ void MainWindow::anchorClicked(const QUrl &link) {
 			// Assume the first entry contains an app name, followed by commands.
 			appStr = list[0].toStdString();
 			
-			// TODO: merge index 2 until the end into a single space-separated string.
+			// TODO: merge commands until the end into a single space-separated string.
 			for (uint32_t i = 1; i < list.size(); i++) {
 				cmdStr += list[i].toStdString() + " ";
 			}
+			
+			cmdStr.pop_back(); // Remove last space character.
 		}
 		
 		// TODO: validate app names here.
