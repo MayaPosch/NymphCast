@@ -1,0 +1,27 @@
+<rml>
+	<head>
+		<title>NymphCast</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 300dp;
+				height: 225dp;
+
+				margin: auto;
+			}
+			
+			div#title_bar div#icon
+			{
+				decorator: image( icon-invader );
+			}
+		</style>
+	</head>
+	<body template="window" onload="load logo">
+		<button onclick="goto start_game; close logo">Start Game</button><br />
+		<button onclick="goto high_score; close logo">High Scores</button><br />
+		<button onclick="goto options; close logo">Options</button><br />
+		<button onclick="goto help; close logo">Help</button><br />
+		<button onclick="exit">Exit</button>
+	</body>
+</rml>
