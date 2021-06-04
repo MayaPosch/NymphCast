@@ -161,10 +161,10 @@ bool SdlRenderer::initGui(std::string document) {
 	rmlDocument = rmlContext->LoadDocument("assets/" + document);
 	if (rmlDocument) {
 		rmlDocument->Show();
-		av_log(NULL, AV_LOG_INFO, "Initial RML Document loaded");
+		av_log(NULL, AV_LOG_INFO, "Initial RML Document loaded\n");
 	}
 	else {
-		av_log(NULL, AV_LOG_FATAL, "Failed to load RML Document: nullptr.");
+		av_log(NULL, AV_LOG_FATAL, "Failed to load RML Document: nullptr.\n");
 	}
 	
 	return true;
@@ -197,6 +197,7 @@ void SdlRenderer::quit() {
 
 // --- QUIT GUI ---
 void SdlRenderer::quitGui() {
+	av_log(NULL, AV_LOG_INFO, "Shutting down RmlUI...\n");
 	Rml::Shutdown();
 	
 	delete rmlSystemInterface;
@@ -468,75 +469,78 @@ void SdlRenderer::stop_event_loop() {
 
 // --- RUN GUI LOOP ---
 void SdlRenderer::run_gui_loop() {
+	av_log(NULL, AV_LOG_INFO, "Start GUI event loop...\n");
 	run_events = true;
-	while (!run_events) {
+	while (run_events) {
 		SDL_Event event;
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-		SDL_RenderClear(renderer);
+		//SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		//SDL_RenderClear(renderer);
 
-		rmlContext->Render();
-		SDL_RenderPresent(renderer);
+		SDL_PollEvent(&event);
+		switch (event.type) {
+			case SDL_QUIT:
+				run_events = false;
+				break;
 
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					run_events = false;
-					break;
-
-				case SDL_MOUSEMOTION:
-					rmlContext->ProcessMouseMove(event.motion.x, 
-												event.motion.y, 
-												rmlSystemInterface->GetKeyModifiers());
-					break;
-				case SDL_MOUSEBUTTONDOWN:
-					rmlContext->ProcessMouseButtonDown(
-										rmlSystemInterface->TranslateMouseButton(event.button.button), 
-										rmlSystemInterface->GetKeyModifiers());
-					break;
-
-				case SDL_MOUSEBUTTONUP:
-					rmlContext->ProcessMouseButtonUp(
-										rmlSystemInterface->TranslateMouseButton(event.button.button), 
-										rmlSystemInterface->GetKeyModifiers());
-					break;
-
-				case SDL_MOUSEWHEEL:
-					rmlContext->ProcessMouseWheel(float(event.wheel.y), 
-										rmlSystemInterface->GetKeyModifiers());
-					break;
-
-				case SDL_KEYDOWN: {
-					if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
-						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
-						gCon.signal();
-						run_events = false;
-				
-						// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
-						SDL_Delay(1000);
-						exit(1);
-					
-						break;
-					}
-					
-					// Intercept F8 key stroke to toggle RmlUi's visual debugger tool
-					if (event.key.keysym.sym == SDLK_F8) {
-						Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
-						break;
-					}
-
-					rmlContext->ProcessKeyDown(rmlSystemInterface->TranslateKey(event.key.keysym.sym), 
+			case SDL_MOUSEMOTION:
+				rmlContext->ProcessMouseMove(event.motion.x, 
+											event.motion.y, 
 											rmlSystemInterface->GetKeyModifiers());
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				rmlContext->ProcessMouseButtonDown(
+									rmlSystemInterface->TranslateMouseButton(event.button.button), 
+									rmlSystemInterface->GetKeyModifiers());
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				rmlContext->ProcessMouseButtonUp(
+									rmlSystemInterface->TranslateMouseButton(event.button.button), 
+									rmlSystemInterface->GetKeyModifiers());
+				break;
+
+			case SDL_MOUSEWHEEL:
+				rmlContext->ProcessMouseWheel(float(event.wheel.y), 
+									rmlSystemInterface->GetKeyModifiers());
+				break;
+
+			case SDL_KEYDOWN: {
+				if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
+					gCon.signal();
+					run_events = false;
+			
+					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
+					SDL_Delay(1000);
+					exit(1);
+				
+					break;
+				}
+				
+				// Intercept F8 key stroke to toggle RmlUi's visual debugger tool
+				if (event.key.keysym.sym == SDLK_F8) {
+					av_log(NULL, AV_LOG_INFO, "Toggling debugger...\n");
+					Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
 					break;
 				}
 
-				default:
-					break;
+				rmlContext->ProcessKeyDown(rmlSystemInterface->TranslateKey(event.key.keysym.sym), 
+										rmlSystemInterface->GetKeyModifiers());
+				break;
 			}
+
+			default:
+				break;
 		}
 		
 		rmlContext->Update();
+
+		rmlContext->Render();
+		SDL_RenderPresent(renderer);
 	}
+	
+	av_log(NULL, AV_LOG_INFO, "Stopped GUI event loop.\n");
 }
 
 
