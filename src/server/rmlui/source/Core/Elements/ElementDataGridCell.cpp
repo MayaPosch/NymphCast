@@ -26,10 +26,10 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGridCell.h"
-#include "../../../Include/RmlUi/Core/Event.h"
-#include "../../../Include/RmlUi/Core/Property.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGrid.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGridCell.h"
+#include "../../../include/RmlUi/Core/Event.h"
+#include "../../../include/RmlUi/Core/Property.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGrid.h"
 
 namespace Rml {
 

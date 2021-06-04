@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_DECORATORGRADIENT_H
 #define RMLUI_CORE_DECORATORGRADIENT_H
 
-#include "../../Include/RmlUi/Core/Decorator.h"
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
-#include "../../Include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Decorator.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/Property.h"
 
 namespace Rml {
 

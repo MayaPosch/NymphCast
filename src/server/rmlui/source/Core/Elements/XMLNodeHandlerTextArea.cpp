@@ -27,11 +27,11 @@
  */
 
 #include "XMLNodeHandlerTextArea.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControlTextArea.h"
-#include "../../../Include/RmlUi/Core/Core.h"
-#include "../../../Include/RmlUi/Core/Factory.h"
-#include "../../../Include/RmlUi/Core/SystemInterface.h"
-#include "../../../Include/RmlUi/Core/XMLParser.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControlTextArea.h"
+#include "../../../include/RmlUi/Core/Core.h"
+#include "../../../include/RmlUi/Core/Factory.h"
+#include "../../../include/RmlUi/Core/SystemInterface.h"
+#include "../../../include/RmlUi/Core/XMLParser.h"
 
 namespace Rml {
 

@@ -30,8 +30,8 @@
 #define RMLUI_CORE_MEMORY_H
 
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/Traits.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Traits.h"
 
 namespace Rml {
 

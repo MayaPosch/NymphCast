@@ -27,7 +27,7 @@
  */
 
 #include "DataView.h"
-#include "../../Include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Element.h"
 #include <algorithm>
 
 namespace Rml {

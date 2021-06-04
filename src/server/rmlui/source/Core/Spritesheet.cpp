@@ -26,9 +26,9 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Spritesheet.h"
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Spritesheet.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/Log.h"
 
 namespace Rml {
 

@@ -29,10 +29,10 @@
 #include "WidgetScroll.h"
 #include "Clock.h"
 #include "LayoutDetails.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Event.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Property.h"
 
 namespace Rml {
 

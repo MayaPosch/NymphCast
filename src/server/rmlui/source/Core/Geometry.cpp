@@ -26,12 +26,12 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Geometry.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/RenderInterface.h"
+#include "../../include/RmlUi/Core/Geometry.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/RenderInterface.h"
 #include "GeometryDatabase.h"
 #include <utility>
 

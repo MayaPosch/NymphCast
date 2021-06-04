@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ContextInstancer.h"
+#include "../../include/RmlUi/Core/ContextInstancer.h"
 
 namespace Rml {
 

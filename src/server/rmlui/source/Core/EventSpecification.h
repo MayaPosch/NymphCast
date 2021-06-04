@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_EVENTSPECIFICATION_H
 #define RMLUI_CORE_EVENTSPECIFICATION_H
 
-#include "../../Include/RmlUi/Core/Header.h"
-#include "../../Include/RmlUi/Core/Event.h"
-#include "../../Include/RmlUi/Core/ID.h"
+#include "../../include/RmlUi/Core/Header.h"
+#include "../../include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/ID.h"
 
 namespace Rml {
 

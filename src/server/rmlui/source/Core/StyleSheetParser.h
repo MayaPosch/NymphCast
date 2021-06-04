@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_STYLESHEETPARSER_H
 #define RMLUI_CORE_STYLESHEETPARSER_H
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/StyleSheetTypes.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/StyleSheetTypes.h"
 
 namespace Rml {
 

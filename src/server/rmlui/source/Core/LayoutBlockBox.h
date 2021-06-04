@@ -30,8 +30,8 @@
 #define RMLUI_CORE_LAYOUTBLOCKBOX_H
 
 #include "LayoutLineBox.h"
-#include "../../Include/RmlUi/Core/Box.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Box.h"
+#include "../../include/RmlUi/Core/Types.h"
 
 namespace Rml {
 

@@ -27,12 +27,12 @@
  */
 
 #include "DecoratorGradient.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/Geometry.h"
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../Include/RmlUi/Core/Math.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Geometry.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/Math.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
 
 /*
 Gradient decorator usage in CSS:

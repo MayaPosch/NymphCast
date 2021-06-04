@@ -27,7 +27,7 @@
  */
 
 #include "StyleSheetNodeSelectorNthLastOfType.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/ElementText.h"
 
 namespace Rml {
 

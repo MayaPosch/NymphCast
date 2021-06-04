@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/DataVariable.h"
+#include "../../include/RmlUi/Core/DataVariable.h"
 
 namespace Rml {
 

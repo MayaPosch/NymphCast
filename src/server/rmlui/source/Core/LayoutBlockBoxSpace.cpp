@@ -29,8 +29,8 @@
 #include "LayoutBlockBoxSpace.h"
 #include "LayoutBlockBox.h"
 #include "LayoutEngine.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementScroll.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementScroll.h"
 #include <float.h>
 
 namespace Rml {

@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/RenderInterface.h"
+#include "../../include/RmlUi/Core/RenderInterface.h"
 #include "TextureDatabase.h"
 
 namespace Rml {

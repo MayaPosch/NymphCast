@@ -27,12 +27,12 @@
  */
 
 
-#include "../../Include/RmlUi/SVG/ElementSVG.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/ElementInstancer.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/Plugin.h"
+#include "../../include/RmlUi/SVG/ElementSVG.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/ElementInstancer.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Plugin.h"
 
 namespace Rml {
 namespace SVG {

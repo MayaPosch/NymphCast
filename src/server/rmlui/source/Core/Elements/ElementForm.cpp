@@ -26,10 +26,10 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementForm.h"
-#include "../../../Include/RmlUi/Core/Dictionary.h"
-#include "../../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControl.h"
+#include "../../../include/RmlUi/Core/Elements/ElementForm.h"
+#include "../../../include/RmlUi/Core/Dictionary.h"
+#include "../../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControl.h"
 
 namespace Rml {
 

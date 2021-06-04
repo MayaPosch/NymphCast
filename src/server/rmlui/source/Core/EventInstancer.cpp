@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/EventInstancer.h"
+#include "../../include/RmlUi/Core/EventInstancer.h"
 
 namespace Rml {
 

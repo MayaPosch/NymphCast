@@ -29,8 +29,8 @@
 #ifndef RMLUI_DEBUGGER_ELEMENTINFO_H
 #define RMLUI_DEBUGGER_ELEMENTINFO_H
 
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/EventListener.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/EventListener.h"
 
 namespace Rml {
 namespace Debugger {

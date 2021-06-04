@@ -26,13 +26,13 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/TypeConverter.h"
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
-#include "../../Include/RmlUi/Core/StyleSheetTypes.h"
-#include "../../Include/RmlUi/Core/Animation.h"
-#include "../../Include/RmlUi/Core/Transform.h"
-#include "../../Include/RmlUi/Core/TransformPrimitive.h"
-#include "../../Include/RmlUi/Core/PropertyDictionary.h"
+#include "../../include/RmlUi/Core/TypeConverter.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/StyleSheetTypes.h"
+#include "../../include/RmlUi/Core/Animation.h"
+#include "../../include/RmlUi/Core/Transform.h"
+#include "../../include/RmlUi/Core/TransformPrimitive.h"
+#include "../../include/RmlUi/Core/PropertyDictionary.h"
 #include "TransformUtilities.h"
 
 namespace Rml {

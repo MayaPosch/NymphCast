@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/PropertyDictionary.h"
-#include "../../Include/RmlUi/Core/ID.h"
+#include "../../include/RmlUi/Core/PropertyDictionary.h"
+#include "../../include/RmlUi/Core/ID.h"
 
 namespace Rml {
 

@@ -29,10 +29,10 @@
 #ifndef RMLUI_CORE_POOL_H
 #define RMLUI_CORE_POOL_H
 
-#include "../../Include/RmlUi/Core/Header.h"
-#include "../../Include/RmlUi/Core/Debug.h"
-#include "../../Include/RmlUi/Core/Traits.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Header.h"
+#include "../../include/RmlUi/Core/Debug.h"
+#include "../../include/RmlUi/Core/Traits.h"
+#include "../../include/RmlUi/Core/Types.h"
 
 namespace Rml {
 

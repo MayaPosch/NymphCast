@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/DataQuery.h"
-#include "../../../Include/RmlUi/Core/Elements/DataSource.h"
+#include "../../../include/RmlUi/Core/Elements/DataQuery.h"
+#include "../../../include/RmlUi/Core/Elements/DataSource.h"
 #include <algorithm>
 
 namespace Rml {

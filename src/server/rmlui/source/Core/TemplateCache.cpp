@@ -29,7 +29,7 @@
 #include "TemplateCache.h"
 #include "StreamFile.h"
 #include "Template.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Log.h"
 
 namespace Rml {
 

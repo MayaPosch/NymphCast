@@ -26,13 +26,13 @@
  *
  */
 
-#include "../../Include/RmlUi/Lottie/ElementLottie.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/PropertyIdSet.h"
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/SystemInterface.h"
-#include "../../Include/RmlUi/Core/FileInterface.h"
+#include "../../include/RmlUi/Lottie/ElementLottie.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/PropertyIdSet.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/SystemInterface.h"
+#include "../../include/RmlUi/Core/FileInterface.h"
 #include <cmath>
 #include <rlottie.h>
 

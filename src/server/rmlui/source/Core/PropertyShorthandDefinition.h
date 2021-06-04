@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_PROPERTYSHORTHANDDEFINITION_H
 #define RMLUI_CORE_PROPERTYSHORTHANDDEFINITION_H
 
-#include "../../Include/RmlUi/Core/ID.h"
+#include "../../include/RmlUi/Core/ID.h"
 
 namespace Rml {
 

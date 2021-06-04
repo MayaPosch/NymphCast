@@ -27,7 +27,7 @@
  */
 
 #include "ContextInstancerDefault.h"
-#include "../../Include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Context.h"
 
 namespace Rml {
 

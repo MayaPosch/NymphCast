@@ -30,13 +30,13 @@
 #include "DataExpression.h"
 #include "DataModel.h"
 #include "XMLParseTools.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/DataVariable.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/SystemInterface.h"
-#include "../../Include/RmlUi/Core/Variant.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/DataVariable.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/SystemInterface.h"
+#include "../../include/RmlUi/Core/Variant.h"
 
 namespace Rml {
 

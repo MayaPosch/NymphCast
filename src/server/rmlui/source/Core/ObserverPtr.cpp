@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ObserverPtr.h"
+#include "../../include/RmlUi/Core/ObserverPtr.h"
 #include "Pool.h"
 
 namespace Rml {

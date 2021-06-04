@@ -27,12 +27,12 @@
  */
 
 #include "ElementDecoration.h"
-#include "../../Include/RmlUi/Core/Decorator.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
-#include "../../Include/RmlUi/Core/StyleSheet.h"
+#include "../../include/RmlUi/Core/Decorator.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/StyleSheet.h"
 
 namespace Rml {
 

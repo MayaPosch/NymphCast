@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_DATACONTROLLER_H
 #define RMLUI_CORE_DATACONTROLLER_H
 
-#include "../../Include/RmlUi/Core/Header.h"
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/Traits.h"
+#include "../../include/RmlUi/Core/Header.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Traits.h"
 
 namespace Rml {
 

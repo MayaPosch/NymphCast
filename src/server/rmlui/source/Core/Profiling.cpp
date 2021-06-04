@@ -27,7 +27,7 @@
  */
 
   
-#include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Profiling.h"
 
 #ifdef RMLUI_ENABLE_PROFILING
 #include <TracyClient.cpp>

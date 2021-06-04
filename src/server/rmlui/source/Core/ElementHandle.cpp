@@ -27,10 +27,10 @@
  */
 
 #include "ElementHandle.h"
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/Property.h"
-#include "../../Include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Event.h"
 
 namespace Rml {
 

@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Tween.h"
-#include "../../Include/RmlUi/Core/Math.h"
+#include "../../include/RmlUi/Core/Tween.h"
+#include "../../include/RmlUi/Core/Math.h"
 #include <utility>
 
 namespace Rml {

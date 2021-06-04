@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_LAYOUTTABLEDETAILS_H
 #define RMLUI_CORE_LAYOUTTABLEDETAILS_H
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/ComputedValues.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/ComputedValues.h"
 #include <float.h>
 
 namespace Rml {

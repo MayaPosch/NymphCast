@@ -27,14 +27,14 @@
  */
 
 #include "DocumentHeader.h"
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/Stream.h"
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/XMLNodeHandler.h"
-#include "../../Include/RmlUi/Core/URL.h"
-#include "../../Include/RmlUi/Core/XMLParser.h"
-#include "../../Include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Stream.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/XMLNodeHandler.h"
+#include "../../include/RmlUi/Core/URL.h"
+#include "../../include/RmlUi/Core/XMLParser.h"
+#include "../../include/RmlUi/Core/Factory.h"
 
 namespace Rml {
 

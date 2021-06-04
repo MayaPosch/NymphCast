@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_GEOMETRYBACKGROUNDBORDER_H
 #define RMLUI_CORE_GEOMETRYBACKGROUNDBORDER_H
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/Vertex.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Vertex.h"
 
 namespace Rml {
 

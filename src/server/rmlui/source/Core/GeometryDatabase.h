@@ -30,7 +30,7 @@
 #define RMLUI_CORE_GEOMETRYDATABASE_H
 
 #include <stdint.h>
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Types.h"
 
 namespace Rml {
 

@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/DataFormatter.h"
-#include "../../../Include/RmlUi/Core/StringUtilities.h"
+#include "../../../include/RmlUi/Core/Elements/DataFormatter.h"
+#include "../../../include/RmlUi/Core/StringUtilities.h"
 
 namespace Rml {
 

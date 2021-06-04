@@ -30,10 +30,10 @@
 #include "LayoutBlockBox.h"
 #include "LayoutEngine.h"
 #include "LayoutInlineBoxText.h"
-#include "../../Include/RmlUi/Core/Property.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/Profiling.h"
 #include <stack>
 
 namespace Rml {

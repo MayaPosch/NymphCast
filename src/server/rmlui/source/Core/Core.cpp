@@ -26,16 +26,16 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/FileInterface.h"
-#include "../../Include/RmlUi/Core/FontEngineInterface.h"
-#include "../../Include/RmlUi/Core/Plugin.h"
-#include "../../Include/RmlUi/Core/RenderInterface.h"
-#include "../../Include/RmlUi/Core/SystemInterface.h"
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/FileInterface.h"
+#include "../../include/RmlUi/Core/FontEngineInterface.h"
+#include "../../include/RmlUi/Core/Plugin.h"
+#include "../../include/RmlUi/Core/RenderInterface.h"
+#include "../../include/RmlUi/Core/SystemInterface.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/Types.h"
 
 #include "EventSpecification.h"
 #include "FileInterfaceDefault.h"

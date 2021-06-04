@@ -26,10 +26,10 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControlSelect.h"
-#include "../../../Include/RmlUi/Core/ElementText.h"
-#include "../../../Include/RmlUi/Core/Event.h"
-#include "../../../Include/RmlUi/Core/ElementUtilities.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControlSelect.h"
+#include "../../../include/RmlUi/Core/ElementText.h"
+#include "../../../include/RmlUi/Core/Event.h"
+#include "../../../include/RmlUi/Core/ElementUtilities.h"
 #include "WidgetDropDown.h"
 
 namespace Rml {

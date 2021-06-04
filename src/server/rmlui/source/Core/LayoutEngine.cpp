@@ -32,9 +32,9 @@
 #include "LayoutInlineBoxText.h"
 #include "LayoutTable.h"
 #include "Pool.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include <cstddef>
 #include <float.h>
 

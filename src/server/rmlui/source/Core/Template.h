@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_TEMPLATE_H
 #define RMLUI_CORE_TEMPLATE_H
 
-#include "../../Include/RmlUi/Core/StreamMemory.h"
+#include "../../include/RmlUi/Core/StreamMemory.h"
 #include "DocumentHeader.h"
 
 namespace Rml {

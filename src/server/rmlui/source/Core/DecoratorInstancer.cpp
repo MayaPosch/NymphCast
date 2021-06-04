@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/StyleSheet.h"
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/StyleSheet.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
 
 namespace Rml {
 

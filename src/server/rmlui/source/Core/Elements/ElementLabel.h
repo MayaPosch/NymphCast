@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_ELEMENTS_ELEMENTLABEL_H
 #define RMLUI_CORE_ELEMENTS_ELEMENTLABEL_H
 
-#include "../../../Include/RmlUi/Core/Header.h"
-#include "../../../Include/RmlUi/Core/Element.h"
-#include "../../../Include/RmlUi/Core/EventListener.h"
+#include "../../../include/RmlUi/Core/Header.h"
+#include "../../../include/RmlUi/Core/Element.h"
+#include "../../../include/RmlUi/Core/EventListener.h"
 
 
 namespace Rml {

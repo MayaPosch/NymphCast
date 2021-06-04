@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_FONTEFFECTSHADOW_H
 #define RMLUI_CORE_FONTEFFECTSHADOW_H
 
-#include "../../Include/RmlUi/Core/FontEffect.h"
-#include "../../Include/RmlUi/Core/FontEffectInstancer.h"
+#include "../../include/RmlUi/Core/FontEffect.h"
+#include "../../include/RmlUi/Core/FontEffectInstancer.h"
 
 namespace Rml {
 

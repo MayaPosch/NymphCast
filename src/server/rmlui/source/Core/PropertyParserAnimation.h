@@ -32,7 +32,7 @@
 #define RMLUI_CORE_PROPERTYPARSERANIMATION_H
 
 
-#include "../../Include/RmlUi/Core/PropertyParser.h"
+#include "../../include/RmlUi/Core/PropertyParser.h"
 
 namespace Rml {
 

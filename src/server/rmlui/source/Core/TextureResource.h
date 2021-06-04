@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_TEXTURERESOURCE_H
 #define RMLUI_CORE_TEXTURERESOURCE_H
 
-#include "../../Include/RmlUi/Core/Traits.h"
-#include "../../Include/RmlUi/Core/Texture.h"
+#include "../../include/RmlUi/Core/Traits.h"
+#include "../../include/RmlUi/Core/Texture.h"
 
 namespace Rml {
 

@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_PROPERTYPARSERTRANSFORM_H
 #define RMLUI_CORE_PROPERTYPARSERTRANSFORM_H
 
-#include "../../Include/RmlUi/Core/PropertyParser.h"
+#include "../../include/RmlUi/Core/PropertyParser.h"
 #include "PropertyParserNumber.h"
 
 namespace Rml {

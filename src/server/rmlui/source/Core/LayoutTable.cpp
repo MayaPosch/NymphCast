@@ -30,8 +30,8 @@
 #include "LayoutTableDetails.h"
 #include "LayoutDetails.h"
 #include "LayoutEngine.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include <algorithm>
 #include <numeric>
 

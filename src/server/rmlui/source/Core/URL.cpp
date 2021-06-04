@@ -26,9 +26,9 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/URL.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/URL.h"
 #include <string.h>
 
 namespace Rml {

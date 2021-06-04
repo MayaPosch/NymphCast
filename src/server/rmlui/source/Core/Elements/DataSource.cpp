@@ -26,10 +26,10 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/DataSource.h"
-#include "../../../Include/RmlUi/Core/Elements/DataSourceListener.h"
-#include "../../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../../Include/RmlUi/Core/Log.h"
+#include "../../../include/RmlUi/Core/Elements/DataSource.h"
+#include "../../../include/RmlUi/Core/Elements/DataSourceListener.h"
+#include "../../../include/RmlUi/Core/StringUtilities.h"
+#include "../../../include/RmlUi/Core/Log.h"
 #include <algorithm>
 
 namespace Rml {

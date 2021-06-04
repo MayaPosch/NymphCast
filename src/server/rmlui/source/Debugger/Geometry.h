@@ -29,7 +29,7 @@
 #ifndef RMLUI_DEBUGGER_GEOMETRY_H
 #define RMLUI_DEBUGGER_GEOMETRY_H
 
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Types.h"
 
 namespace Rml {
 

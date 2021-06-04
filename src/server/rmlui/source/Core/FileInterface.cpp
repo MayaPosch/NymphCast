@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/FileInterface.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/FileInterface.h"
+#include "../../include/RmlUi/Core/Log.h"
 
 namespace Rml {
 

@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_CLOCK_H
 #define RMLUI_CORE_CLOCK_H
 
-#include "../../Include/RmlUi/Core/Header.h"
+#include "../../include/RmlUi/Core/Header.h"
 
 namespace Rml {
 

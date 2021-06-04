@@ -26,14 +26,14 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/StreamMemory.h"
-#include "../../Include/RmlUi/Core/StyleSheet.h"
-#include "../../Include/RmlUi/Core/StyleSheetContainer.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/StreamMemory.h"
+#include "../../include/RmlUi/Core/StyleSheet.h"
+#include "../../include/RmlUi/Core/StyleSheetContainer.h"
 #include "DocumentHeader.h"
 #include "ElementStyle.h"
 #include "EventDispatcher.h"

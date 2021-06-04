@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ElementInstancer.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/ElementInstancer.h"
+#include "../../include/RmlUi/Core/ElementText.h"
 #include "XMLParseTools.h"
 #include "Pool.h"
 

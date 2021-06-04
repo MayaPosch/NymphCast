@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_LAYOUTINLINEBOX_H
 #define RMLUI_CORE_LAYOUTINLINEBOX_H
 
-#include "../../Include/RmlUi/Core/Box.h"
-#include "../../Include/RmlUi/Core/ComputedValues.h"
+#include "../../include/RmlUi/Core/Box.h"
+#include "../../include/RmlUi/Core/ComputedValues.h"
 
 namespace Rml {
 

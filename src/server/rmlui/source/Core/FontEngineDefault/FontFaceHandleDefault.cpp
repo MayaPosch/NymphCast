@@ -27,7 +27,7 @@
  */
 
 #include "FontFaceHandleDefault.h"
-#include "../../../Include/RmlUi/Core/StringUtilities.h"
+#include "../../../include/RmlUi/Core/StringUtilities.h"
 #include "../TextureLayout.h"
 #include "FontProvider.h"
 #include "FontFaceLayer.h"

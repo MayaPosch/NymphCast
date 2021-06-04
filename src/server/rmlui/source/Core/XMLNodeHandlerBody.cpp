@@ -28,9 +28,9 @@
 
 #include "XMLNodeHandlerBody.h"
 #include "XMLParseTools.h"
-#include "../../Include/RmlUi/Core/XMLParser.h"
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/XMLParser.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/Factory.h"
 
 namespace Rml {
 

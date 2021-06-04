@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Debugger/Debugger.h"
-#include "../../Include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Debugger/Debugger.h"
+#include "../../include/RmlUi/Core/Core.h"
 #include "DebuggerPlugin.h"
 
 namespace Rml {

@@ -27,10 +27,10 @@
  */
 
 #include "EventDispatcher.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Event.h"
-#include "../../Include/RmlUi/Core/EventListener.h"
-#include "../../Include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/EventListener.h"
+#include "../../include/RmlUi/Core/Factory.h"
 #include "EventSpecification.h"
 #include <algorithm>
 #include <limits>

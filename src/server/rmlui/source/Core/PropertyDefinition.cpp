@@ -26,9 +26,9 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
 
 namespace Rml {
 

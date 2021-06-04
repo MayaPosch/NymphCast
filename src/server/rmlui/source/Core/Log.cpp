@@ -26,10 +26,10 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/SystemInterface.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/SystemInterface.h"
 
 #include <stdarg.h>
 #ifdef RMLUI_PLATFORM_WIN32

@@ -29,7 +29,7 @@
 #ifndef RMLUI_DEBUGGER_ELEMENTCONTEXTHOOK_H
 #define RMLUI_DEBUGGER_ELEMENTCONTEXTHOOK_H
 
-#include "../../Include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
 
 namespace Rml {
 namespace Debugger {

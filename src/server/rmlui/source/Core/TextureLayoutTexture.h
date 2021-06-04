@@ -29,7 +29,7 @@
 #ifndef TEXTURELAYOUTTEXTURE_H
 #define TEXTURELAYOUTTEXTURE_H
 
-#include "../../Include/RmlUi/Core/Texture.h"
+#include "../../include/RmlUi/Core/Texture.h"
 #include "TextureLayoutRow.h"
 
 namespace Rml {

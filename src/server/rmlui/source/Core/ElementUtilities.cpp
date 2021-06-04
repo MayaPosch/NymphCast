@@ -26,14 +26,14 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementScroll.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/FontEngineInterface.h"
-#include "../../Include/RmlUi/Core/RenderInterface.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementScroll.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/FontEngineInterface.h"
+#include "../../include/RmlUi/Core/RenderInterface.h"
 #include "DataController.h"
 #include "DataModel.h"
 #include "DataView.h"

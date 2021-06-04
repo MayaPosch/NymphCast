@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Log.h"
+#include "../../../include/RmlUi/Core/Log.h"
 #include "FontFace.h"
 #include "FontFaceHandleDefault.h"
 #include "FreeTypeInterface.h"

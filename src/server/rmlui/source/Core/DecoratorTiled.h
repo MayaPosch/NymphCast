@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_DECORATORTILED_H
 #define RMLUI_CORE_DECORATORTILED_H
 
-#include "../../Include/RmlUi/Core/ComputedValues.h"
-#include "../../Include/RmlUi/Core/Decorator.h"
-#include "../../Include/RmlUi/Core/Vertex.h"
+#include "../../include/RmlUi/Core/ComputedValues.h"
+#include "../../include/RmlUi/Core/Decorator.h"
+#include "../../include/RmlUi/Core/Vertex.h"
 
 namespace Rml {
 

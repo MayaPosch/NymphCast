@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControlInput.h"
-#include "../../../Include/RmlUi/Core/Event.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControlInput.h"
+#include "../../../include/RmlUi/Core/Event.h"
 #include "InputTypeButton.h"
 #include "InputTypeCheckbox.h"
 #include "InputTypeRadio.h"

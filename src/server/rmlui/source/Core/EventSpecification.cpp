@@ -27,7 +27,7 @@
  */
 
 #include "EventSpecification.h"
-#include "../../Include/RmlUi/Core/ID.h"
+#include "../../include/RmlUi/Core/ID.h"
 
 
 namespace Rml {

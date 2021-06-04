@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_IDNAMEMAP_H
 #define RMLUI_CORE_IDNAMEMAP_H
 
-#include "../../Include/RmlUi/Core/Header.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Header.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include <algorithm>
 
 namespace Rml {

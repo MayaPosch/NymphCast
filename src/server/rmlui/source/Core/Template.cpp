@@ -28,8 +28,8 @@
 
 #include "Template.h"
 #include "XMLParseTools.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/XMLParser.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/XMLParser.h"
 #include <string.h>
 
 namespace Rml {

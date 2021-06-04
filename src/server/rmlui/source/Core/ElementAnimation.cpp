@@ -29,11 +29,11 @@
 #include "ElementAnimation.h"
 #include "ElementStyle.h"
 #include "TransformUtilities.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
-#include "../../Include/RmlUi/Core/Transform.h"
-#include "../../Include/RmlUi/Core/TransformPrimitive.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/Transform.h"
+#include "../../include/RmlUi/Core/TransformPrimitive.h"
 
 namespace Rml {
 

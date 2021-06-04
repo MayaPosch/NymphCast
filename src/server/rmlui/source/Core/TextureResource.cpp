@@ -28,9 +28,9 @@
 
 #include "TextureResource.h"
 #include "TextureDatabase.h"
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/RenderInterface.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/RenderInterface.h"
+#include "../../include/RmlUi/Core/Profiling.h"
 
 namespace Rml {
 

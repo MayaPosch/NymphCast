@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControl.h"
-#include "../../../Include/RmlUi/Core/ComputedValues.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControl.h"
+#include "../../../include/RmlUi/Core/ComputedValues.h"
 
 namespace Rml {
 

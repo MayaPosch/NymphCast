@@ -29,8 +29,8 @@
 #ifndef RMLUI_DEBUGGER_DEBUGGERPLUGIN_H
 #define RMLUI_DEBUGGER_DEBUGGERPLUGIN_H
 
-#include "../../Include/RmlUi/Core/EventListener.h"
-#include "../../Include/RmlUi/Core/Plugin.h"
+#include "../../include/RmlUi/Core/EventListener.h"
+#include "../../include/RmlUi/Core/Plugin.h"
 
 namespace Rml {
 

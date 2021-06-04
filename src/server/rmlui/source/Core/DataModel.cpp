@@ -27,8 +27,8 @@
  */
 
 #include "DataModel.h"
-#include "../../Include/RmlUi/Core/DataTypeRegister.h"
-#include "../../Include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/DataTypeRegister.h"
+#include "../../include/RmlUi/Core/Element.h"
 #include "DataController.h"
 #include "DataView.h"
 

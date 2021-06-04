@@ -27,10 +27,10 @@
  */
 
 #include "XMLParseTools.h"
-#include "../../Include/RmlUi/Core/StreamMemory.h"
-#include "../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/StreamMemory.h"
+#include "../../include/RmlUi/Core/ElementDocument.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include "TemplateCache.h"
 #include "Template.h"
 #include <ctype.h>

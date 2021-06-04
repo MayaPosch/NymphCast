@@ -27,7 +27,7 @@
  */
 
 #include "StyleSheetNodeSelectorFirstOfType.h"
-#include "../../Include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Element.h"
 
 namespace Rml {
 

@@ -29,13 +29,13 @@
 #include "LayoutInlineBoxText.h"
 #include "LayoutEngine.h"
 #include "LayoutLineBox.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/FontEngineInterface.h"
-#include "../../Include/RmlUi/Core/Log.h"
-#include "../../Include/RmlUi/Core/Property.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/FontEngineInterface.h"
+#include "../../include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Profiling.h"
 
 namespace Rml {
 

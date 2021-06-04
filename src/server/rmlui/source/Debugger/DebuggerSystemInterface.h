@@ -29,7 +29,7 @@
 #ifndef RMLUI_DEBUGGER_DEBUGGERSYSTEMINTERFACE_H
 #define RMLUI_DEBUGGER_DEBUGGERSYSTEMINTERFACE_H
 
-#include "../../Include/RmlUi/Core/SystemInterface.h"
+#include "../../include/RmlUi/Core/SystemInterface.h"
 
 namespace Rml {
 namespace Debugger {

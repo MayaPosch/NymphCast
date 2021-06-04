@@ -27,10 +27,10 @@
  */
 
 #include "DecoratorTiledVertical.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Geometry.h"
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../Include/RmlUi/Core/Texture.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Geometry.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/Texture.h"
 
 namespace Rml {
 

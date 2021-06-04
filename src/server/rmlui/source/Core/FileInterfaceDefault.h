@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_FILEINTERFACEDEFAULT_H
 #define RMLUI_CORE_FILEINTERFACEDEFAULT_H
 
-#include "../../Include/RmlUi/Core/FileInterface.h"
+#include "../../include/RmlUi/Core/FileInterface.h"
 
 #ifndef RMLUI_NO_FILE_INTERFACE_DEFAULT
 

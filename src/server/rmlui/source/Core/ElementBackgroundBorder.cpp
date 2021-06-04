@@ -27,10 +27,10 @@
  */
 
 #include "ElementBackgroundBorder.h"
-#include "../../Include/RmlUi/Core/Box.h"
-#include "../../Include/RmlUi/Core/ComputedValues.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/Box.h"
+#include "../../include/RmlUi/Core/ComputedValues.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
 
 namespace Rml {
 

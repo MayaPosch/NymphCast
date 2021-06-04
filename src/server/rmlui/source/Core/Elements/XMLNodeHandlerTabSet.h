@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_ELEMENTS_XMLNODEHANDLERTABSET_H
 #define RMLUI_CORE_ELEMENTS_XMLNODEHANDLERTABSET_H
 
-#include "../../../Include/RmlUi/Core/XMLNodeHandler.h"
+#include "../../../include/RmlUi/Core/XMLNodeHandler.h"
 
 namespace Rml {
 

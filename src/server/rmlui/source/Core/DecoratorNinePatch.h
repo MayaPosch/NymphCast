@@ -29,10 +29,10 @@
 #ifndef RMLUI_CORE_DECORATORNINEPATCH_H
 #define RMLUI_CORE_DECORATORNINEPATCH_H
 
-#include "../../Include/RmlUi/Core/Decorator.h"
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
-#include "../../Include/RmlUi/Core/Property.h"
-#include "../../Include/RmlUi/Core/Spritesheet.h"
+#include "../../include/RmlUi/Core/Decorator.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Spritesheet.h"
 
 namespace Rml {
 

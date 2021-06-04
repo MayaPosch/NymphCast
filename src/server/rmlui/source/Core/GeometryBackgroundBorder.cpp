@@ -27,8 +27,8 @@
  */
 
 #include "GeometryBackgroundBorder.h"
-#include "../../Include/RmlUi/Core/Box.h"
-#include "../../Include/RmlUi/Core/Math.h"
+#include "../../include/RmlUi/Core/Box.h"
+#include "../../include/RmlUi/Core/Math.h"
 #include <algorithm>
 #include <float.h>
 

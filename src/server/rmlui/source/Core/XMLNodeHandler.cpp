@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/XMLNodeHandler.h"
+#include "../../include/RmlUi/Core/XMLNodeHandler.h"
 
 namespace Rml {
 

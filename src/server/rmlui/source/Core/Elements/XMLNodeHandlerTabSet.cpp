@@ -27,10 +27,10 @@
  */
 
 #include "XMLNodeHandlerTabSet.h"
-#include "../../../Include/RmlUi/Core/Log.h"
-#include "../../../Include/RmlUi/Core/Factory.h"
-#include "../../../Include/RmlUi/Core/XMLParser.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementTabSet.h"
+#include "../../../include/RmlUi/Core/Log.h"
+#include "../../../include/RmlUi/Core/Factory.h"
+#include "../../../include/RmlUi/Core/XMLParser.h"
+#include "../../../include/RmlUi/Core/Elements/ElementTabSet.h"
 
 namespace Rml {
 

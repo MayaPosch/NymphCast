@@ -27,7 +27,7 @@
  */
 
 #include "StyleSheetFactory.h"
-#include "../../Include/RmlUi/Core/StyleSheetContainer.h"
+#include "../../include/RmlUi/Core/StyleSheetContainer.h"
 #include "StyleSheetNode.h"
 #include "StreamFile.h"
 #include "StyleSheetNodeSelectorNthChild.h"
@@ -41,7 +41,7 @@
 #include "StyleSheetNodeSelectorOnlyChild.h"
 #include "StyleSheetNodeSelectorOnlyOfType.h"
 #include "StyleSheetNodeSelectorEmpty.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/Log.h"
 
 namespace Rml {
 

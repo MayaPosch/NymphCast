@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGridExpandButton.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGridRow.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGridExpandButton.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGridRow.h"
 
 namespace Rml {
 

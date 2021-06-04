@@ -27,8 +27,8 @@
  */
 
 #include "DecoratorTiledInstancer.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
-#include "../../Include/RmlUi/Core/Spritesheet.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/Spritesheet.h"
 
 namespace Rml {
 

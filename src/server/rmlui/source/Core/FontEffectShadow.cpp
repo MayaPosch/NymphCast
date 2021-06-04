@@ -27,7 +27,7 @@
  */
 
 #include "FontEffectShadow.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
 
 namespace Rml {
 

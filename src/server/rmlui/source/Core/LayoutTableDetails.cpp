@@ -27,7 +27,7 @@
  */
 
 #include "LayoutTableDetails.h"
-#include "../../Include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Element.h"
 #include <algorithm>
 #include <float.h>
 

@@ -27,9 +27,9 @@
  */
 
 #include "InputTypeRadio.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControlInput.h"
-#include "../../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementForm.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControlInput.h"
+#include "../../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../../include/RmlUi/Core/Elements/ElementForm.h"
 
 namespace Rml {
 

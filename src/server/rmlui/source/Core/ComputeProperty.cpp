@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Property.h"
+#include "../../include/RmlUi/Core/Property.h"
 #include "ComputeProperty.h"
 
 namespace Rml {

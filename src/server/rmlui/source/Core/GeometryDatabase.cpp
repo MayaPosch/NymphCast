@@ -27,7 +27,7 @@
  */
 
 #include "GeometryDatabase.h"
-#include "../../Include/RmlUi/Core/Geometry.h"
+#include "../../include/RmlUi/Core/Geometry.h"
 #include <algorithm>
 
 

@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_DECORATORTILEDINSTANCER_H
 #define RMLUI_CORE_DECORATORTILEDINSTANCER_H
 
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
 #include "DecoratorTiled.h"
 
 namespace Rml {

@@ -27,8 +27,8 @@
  */
 
 #include "StyleSheetNode.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Profiling.h"
 #include "StyleSheetFactory.h"
 #include "StyleSheetNodeSelector.h"
 #include <algorithm>

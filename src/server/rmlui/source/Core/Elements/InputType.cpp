@@ -27,7 +27,7 @@
  */
 
 #include "InputType.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementFormControlInput.h"
+#include "../../../include/RmlUi/Core/Elements/ElementFormControlInput.h"
 
 namespace Rml {
 

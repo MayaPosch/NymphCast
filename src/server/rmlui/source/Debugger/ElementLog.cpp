@@ -30,8 +30,8 @@
 #include "CommonSource.h"
 #include "BeaconSource.h"
 #include "LogSource.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Factory.h"
 #include <limits.h>
 
 namespace Rml {

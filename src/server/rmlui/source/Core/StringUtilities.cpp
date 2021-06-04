@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/Log.h"
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>

@@ -27,11 +27,11 @@
  */
 
 #include "PropertyParserDecorator.h"
-#include "../../Include/RmlUi/Core/DecoratorInstancer.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/PropertySpecification.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/StyleSheetTypes.h"
+#include "../../include/RmlUi/Core/DecoratorInstancer.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/PropertySpecification.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/StyleSheetTypes.h"
 
 namespace Rml {
 

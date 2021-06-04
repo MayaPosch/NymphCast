@@ -26,8 +26,8 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Math.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Math.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>

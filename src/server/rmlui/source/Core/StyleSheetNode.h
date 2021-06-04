@@ -29,9 +29,9 @@
 #ifndef RMLUI_CORE_STYLESHEETNODE_H
 #define RMLUI_CORE_STYLESHEETNODE_H
 
-#include "../../Include/RmlUi/Core/PropertyDictionary.h"
-#include "../../Include/RmlUi/Core/StyleSheet.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/PropertyDictionary.h"
+#include "../../include/RmlUi/Core/StyleSheet.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include <tuple>
 
 namespace Rml {

@@ -29,10 +29,10 @@
 
 #include "PropertyParserAnimation.h"
 #include "PropertyShorthandDefinition.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
-#include "../../Include/RmlUi/Core/PropertyIdSet.h"
-#include "../../Include/RmlUi/Core/StringUtilities.h"
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/PropertyIdSet.h"
+#include "../../include/RmlUi/Core/StringUtilities.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
 
 
 namespace Rml {

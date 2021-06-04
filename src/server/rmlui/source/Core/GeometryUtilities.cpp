@@ -26,11 +26,11 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/FontEngineInterface.h"
-#include "../../Include/RmlUi/Core/Geometry.h"
-#include "../../Include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/Core.h"
+#include "../../include/RmlUi/Core/FontEngineInterface.h"
+#include "../../include/RmlUi/Core/Geometry.h"
+#include "../../include/RmlUi/Core/Types.h"
 #include "GeometryBackgroundBorder.h"
 
 namespace Rml {

@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_XMLNODEHANDLERDEFAULT_H
 #define RMLUI_CORE_XMLNODEHANDLERDEFAULT_H
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/XMLNodeHandler.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/XMLNodeHandler.h"
 
 namespace Rml {
 

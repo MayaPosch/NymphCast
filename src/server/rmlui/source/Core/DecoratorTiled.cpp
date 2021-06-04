@@ -27,11 +27,11 @@
  */
 
 #include "DecoratorTiled.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/Math.h"
-#include "../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Math.h"
+#include "../../include/RmlUi/Core/GeometryUtilities.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
 #include <algorithm>
 
 namespace Rml {

@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/StreamMemory.h"
+#include "../../include/RmlUi/Core/StreamMemory.h"
 #include <string.h>
 #include <stdio.h>
 

@@ -26,14 +26,14 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/ElementScroll.h"
+#include "../../include/RmlUi/Core/ElementScroll.h"
 #include "LayoutDetails.h"
 #include "WidgetScroll.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementUtilities.h"
-#include "../../Include/RmlUi/Core/Event.h"
-#include "../../Include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/ElementUtilities.h"
+#include "../../include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/Factory.h"
 
 namespace Rml {
 

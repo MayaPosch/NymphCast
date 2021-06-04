@@ -30,10 +30,10 @@
 #include "Template.h"
 #include "TemplateCache.h"
 #include "XMLParseTools.h"
-#include "../../Include/RmlUi/Core/Dictionary.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/XMLParser.h"
+#include "../../include/RmlUi/Core/Dictionary.h"
+#include "../../include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Factory.h"
+#include "../../include/RmlUi/Core/XMLParser.h"
 
 namespace Rml {
 

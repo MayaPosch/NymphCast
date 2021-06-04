@@ -26,7 +26,7 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/Variant.h"
+#include "../../include/RmlUi/Core/Variant.h"
 #include <string.h>
 
 namespace Rml {

@@ -26,16 +26,16 @@
  *
  */
 
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGrid.h"
-#include "../../../Include/RmlUi/Core/Elements/DataSource.h"
-#include "../../../Include/RmlUi/Core/Math.h"
-#include "../../../Include/RmlUi/Core/XMLParser.h"
-#include "../../../Include/RmlUi/Core/Event.h"
-#include "../../../Include/RmlUi/Core/ElementDocument.h"
-#include "../../../Include/RmlUi/Core/Factory.h"
-#include "../../../Include/RmlUi/Core/Property.h"
-#include "../../../Include/RmlUi/Core/Elements/DataFormatter.h"
-#include "../../../Include/RmlUi/Core/Elements/ElementDataGridRow.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGrid.h"
+#include "../../../include/RmlUi/Core/Elements/DataSource.h"
+#include "../../../include/RmlUi/Core/Math.h"
+#include "../../../include/RmlUi/Core/XMLParser.h"
+#include "../../../include/RmlUi/Core/Event.h"
+#include "../../../include/RmlUi/Core/ElementDocument.h"
+#include "../../../include/RmlUi/Core/Factory.h"
+#include "../../../include/RmlUi/Core/Property.h"
+#include "../../../include/RmlUi/Core/Elements/DataFormatter.h"
+#include "../../../include/RmlUi/Core/Elements/ElementDataGridRow.h"
 
 namespace Rml {
 

@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_EVENTDISPATCHER_H
 #define RMLUI_CORE_EVENTDISPATCHER_H
 
-#include "../../Include/RmlUi/Core/Types.h"
-#include "../../Include/RmlUi/Core/Event.h"
+#include "../../include/RmlUi/Core/Types.h"
+#include "../../include/RmlUi/Core/Event.h"
 
 namespace Rml {
 

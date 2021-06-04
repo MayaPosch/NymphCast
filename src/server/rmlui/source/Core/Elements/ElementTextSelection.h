@@ -29,7 +29,7 @@
 #ifndef RMLUI_CORE_ELEMENTS_ELEMENTTEXTSELECTION_H
 #define RMLUI_CORE_ELEMENTS_ELEMENTTEXTSELECTION_H
 
-#include "../../../Include/RmlUi/Core/Element.h"
+#include "../../../include/RmlUi/Core/Element.h"
 
 namespace Rml {
 

@@ -26,9 +26,9 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/StyleSheetSpecification.h"
-#include "../../Include/RmlUi/Core/PropertyIdSet.h"
-#include "../../Include/RmlUi/Core/PropertyDefinition.h"
+#include "../../include/RmlUi/Core/StyleSheetSpecification.h"
+#include "../../include/RmlUi/Core/PropertyIdSet.h"
+#include "../../include/RmlUi/Core/PropertyDefinition.h"
 #include "PropertyParserNumber.h"
 #include "PropertyParserAnimation.h"
 #include "PropertyParserRatio.h"

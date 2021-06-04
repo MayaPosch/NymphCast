@@ -27,8 +27,8 @@
  */
 
 #include "StyleSheetNodeSelectorNthChild.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/Log.h"
+#include "../../include/RmlUi/Core/ElementText.h"
+#include "../../include/RmlUi/Core/Log.h"
 
 namespace Rml {
 

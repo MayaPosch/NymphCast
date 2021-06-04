@@ -27,7 +27,7 @@
  */
 
 #include "DataControllerDefault.h"
-#include "../../Include/RmlUi/Core/Element.h"
+#include "../../include/RmlUi/Core/Element.h"
 #include "DataController.h"
 #include "DataExpression.h"
 #include "DataModel.h"

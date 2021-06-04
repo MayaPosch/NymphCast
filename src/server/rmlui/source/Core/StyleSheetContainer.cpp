@@ -26,11 +26,11 @@
  *
  */
 
-#include "../../Include/RmlUi/Core/StyleSheetContainer.h"
-#include "../../Include/RmlUi/Core/Context.h"
-#include "../../Include/RmlUi/Core/PropertyDictionary.h"
-#include "../../Include/RmlUi/Core/Profiling.h"
-#include "../../Include/RmlUi/Core/StyleSheet.h"
+#include "../../include/RmlUi/Core/StyleSheetContainer.h"
+#include "../../include/RmlUi/Core/Context.h"
+#include "../../include/RmlUi/Core/PropertyDictionary.h"
+#include "../../include/RmlUi/Core/Profiling.h"
+#include "../../include/RmlUi/Core/StyleSheet.h"
 #include "ComputeProperty.h"
 #include "StyleSheetParser.h"
 #include "Utilities.h"
