@@ -7,7 +7,7 @@ echo "PACKAGE: $PACKAGE"
 # Install the dependencies.
 if [ -x "$(command -v apt)" ]; then
 	sudo apt update
-	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
+	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libglew-dev
 elif [ -x "$(command -v apk)" ]; then
 	sudo apk update
 	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
