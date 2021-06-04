@@ -62,6 +62,7 @@ using namespace Poco;
 #include "nyansd.h"
 
 #include "nc_apps.h"
+#include "gui.h"
 
 
 // Global objects.
@@ -87,6 +88,7 @@ const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
 int seek_by_bytes = -1;
 float seek_interval = 10;
 int display_disable;
+bool gui_enable;
 int borderless;
 int alwaysontop;
 int startup_volume = 100;
@@ -291,7 +293,14 @@ void finishPlayback() {
 	
 	// Start the Screensaver here for now.
 	if (!display_disable) {
-		ScreenSaver::start(15);
+		if (gui_enable) {
+			// TODO: Return to GUI.
+			
+		}
+		else {
+			// Start screensaver.
+			ScreenSaver::start(15);
+		}
 	}
 }
 
@@ -558,7 +567,13 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	// Stop screensaver.
 	if (!video_disable) {
-		ScreenSaver::stop();
+		if (gui_enable) {
+			// TODO: stop the GUI.
+			
+		}
+		else {
+			ScreenSaver::stop();
+		}
 	}
 	
 	returnMsg->setResultValue(new NymphUint8(0));
@@ -1119,6 +1134,11 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
 	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
 	
+	// Get the desired output format.
+	// 0 - CLI	- Text with tab (\t) separators and \n terminator.
+	// 1 - HTML	- HTML format.
+	//uint8_t format = ((NymphUint8*) msg->parameters()[1])->getValue();
+	
 	// Find the application details.
 	std::string result = "";
 	NymphCastApp app = nc_apps.findApp(appId);
@@ -1286,6 +1306,9 @@ int main(int argc, char** argv) {
 	is_full_screen = config.getValue<bool>("fullscreen", false);
 	display_disable = config.getValue<bool>("disable_video", false);
 	
+	// Check for 'gui_enable' boolean value. If on, use the RmlUi-based GUI instead of the
+	// screensaver mode.
+	gui_enable = config.getValue<bool>("gui_enable", false);
 	
 	// Open the 'apps.ini' file and parse it.
 	nc_apps.setAppsFolder(appsFolder);
@@ -1633,8 +1656,15 @@ int main(int argc, char** argv) {
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
 	if (!display_disable) {
-		ScreenSaver::setDataPath(wallpapersFolder);
-		ScreenSaver::start(15);
+		if (gui_enable) {
+			// Start the GUI with the default document.
+			Gui::init("index.rml");
+			Gui::start();
+		}
+		else {
+			ScreenSaver::setDataPath(wallpapersFolder);
+			ScreenSaver::start(15);
+		}
 	}
 	
 	
@@ -1646,7 +1676,13 @@ int main(int argc, char** argv) {
 	
 	// Stop screensaver if it's running.
 	if (!display_disable) {
-		ScreenSaver::stop();
+		if (gui_enable) {
+			Gui::stop();
+			Gui::quit();
+		}
+		else {
+			ScreenSaver::stop();
+		}
 	}
 	
 	// Clean-up
