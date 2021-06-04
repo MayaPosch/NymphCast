@@ -35,20 +35,23 @@ VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on \
 			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags`
-LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData -lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc -lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript -lstdc++fs `sdl2-config --libs`
+LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
+		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
+		-Lrmlui/lib-$(TARGET) -lrmlui -lstdc++fs `sdl2-config --libs` -lfreetype
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
-CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
+CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO) -DRMLUI_STATIC_LIB
 LDFLAGS := -Wl,--gc-sections $(PLATFORM_LDFLAGS) $(LIB)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
 	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
-	LDFLAGS += -lws2_32
+	LDFLAGS += -lws2_32 -lglew32 -lopengl32
 	OUTPUT := $(OUTPUT).exe
 else
-	LDFLAGS += -pthread -latomic
+	LDFLAGS += -pthread -latomic -lGLEW -lGL
 endif
 
 SOURCES := $(wildcard *.cpp) \
@@ -90,6 +93,9 @@ makedir:
 	
 angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
+	
+rmlui:
+	make -C rmlui/ static
 
 obj/$(TARGET_BIN)%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -97,16 +103,23 @@ obj/$(TARGET_BIN)%.o: %.cpp
 obj/$(TARGET_BIN)%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(CFLAGS)
 	
-bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS)
+bin/$(TARGET_BIN)$(OUTPUT): angelscript rmlui $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 
-clean:
+clean: clean-objects clean-angelscript clean-rmlui
+
+clean-objects:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
+	
+clean-angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ clean
 	
-.PHONY: all clean angelscript makedir
+clean-rmlui:
+	make -C rmlui/ clean
+	
+.PHONY: all clean angelscript makedir rmlui
 	
 .PHONY: install
 install:
