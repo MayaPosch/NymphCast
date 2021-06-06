@@ -72,14 +72,15 @@ bool SdlRenderer::init() {
 		
 		// Obtain dimensions of primary display.
 		SDL_DisplayMode dm;
-		screen_width = dm.w;
-		screen_height = dm.h;
 		if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
 			av_log(NULL, AV_LOG_FATAL, "Couldn't get current display mode: %s\n", SDL_GetError());
 			return false;
 		}
 		
 		av_log(NULL, AV_LOG_WARNING, "Creating window with dimensions %dx%d.\n", dm.w, dm.h);
+		
+		screen_width = dm.w;
+		screen_height = dm.h;
 		
 		window = SDL_CreateWindow("NymphCast", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
 															dm.w, dm.h, flags);
@@ -523,6 +524,7 @@ void SdlRenderer::run_gui_loop() {
 			
 					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
 					SDL_Delay(1000);
+					quitGui(); // FIXME: just hangs the application...
 					exit(1);
 				
 					break;
