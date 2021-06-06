@@ -20,10 +20,16 @@
 		</style>
 	</head>
 	<body template="window">
-		<button onclick="goto start_game; close logo">Start Game</button><br />
-		<button onclick="goto high_score; close logo">High Scores</button><br />
-		<button onclick="goto options; close logo">Options</button><br />
-		<button onclick="goto help; close logo">Help</button><br />
-		<button onclick="exit">Exit</button>
+		<img src="nymphcast_logo_cropped.png">
+		<tabset>
+			<tab><img src="cinema-film.png" />Video</tab>
+				<panel>
+					Welcome to the first tab!
+				</panel>
+			<tab><img src="music-library.png" />Audio</tab>
+				<panel>
+					Welcome to the second tab!
+				</panel>
+		</tabset>
 	</body>
 </rml>
