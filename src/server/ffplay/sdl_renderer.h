@@ -31,6 +31,7 @@ class SdlRenderer {
 	static RmlUiSDL2Renderer* rmlRenderer;
 	static RmlUiSDL2SystemInterface* rmlSystemInterface;
 	static Rml::ElementDocument* rmlDocument;
+	static std::string docName;
 	
 	static void fill_rectangle(int x, int y, int w, int h);
 	static int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, 
@@ -40,6 +41,7 @@ class SdlRenderer {
 public:
 	static bool init();
 	static bool initGui(std::string document);
+	static bool reloadGui();
 	static void quit();
 	static void quitGui();
 	static void resizeWindow(int width, int height);

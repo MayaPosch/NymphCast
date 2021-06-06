@@ -29,6 +29,7 @@ Rml::Context* SdlRenderer::rmlContext = 0;
 RmlUiSDL2Renderer* SdlRenderer::rmlRenderer = 0;
 RmlUiSDL2SystemInterface* SdlRenderer::rmlSystemInterface = 0;
 Rml::ElementDocument* SdlRenderer::rmlDocument = 0;
+std::string SdlRenderer::docName;
 
 
 bool SdlRenderer::init() {
@@ -158,6 +159,7 @@ bool SdlRenderer::initGui(std::string document) {
 
 	Rml::Debugger::Initialise(rmlContext);
 	
+	docName = document;
 	rmlDocument = rmlContext->LoadDocument("assets/" + document);
 	if (rmlDocument) {
 		rmlDocument->Show();
@@ -166,6 +168,14 @@ bool SdlRenderer::initGui(std::string document) {
 	else {
 		av_log(NULL, AV_LOG_FATAL, "Failed to load RML Document: nullptr.\n");
 	}
+	
+	return true;
+}
+
+
+bool SdlRenderer::reloadGui() {
+	rmlContext->UnloadDocument(rmlDocument);
+	rmlDocument = rmlContext->LoadDocument("assets/" + docName);
 	
 	return true;
 }
@@ -522,6 +532,13 @@ void SdlRenderer::run_gui_loop() {
 				if (event.key.keysym.sym == SDLK_F8) {
 					av_log(NULL, AV_LOG_INFO, "Toggling debugger...\n");
 					Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
+					break;
+				}
+				
+				// Intercept F5 key stroke to trigger reload of the document.
+				if (event.key.keysym.sym == SDLK_F5) {
+					av_log(NULL, AV_LOG_INFO, "Triggered document reload...\n");
+					reloadGui();
 					break;
 				}
 
