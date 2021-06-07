@@ -1,11 +1,50 @@
 <rml>
 	<head>
 		<title>NymphCast</title>
-		<link type="text/template" href="window.rml" />
 		<style>
-			body {
-				width: 300dp;
-				height: 225dp;
+		/* Force the tabset element to a fixed size. */
+		tabset
+		{
+			display: block;
+			width: 100%;
+			height: 100%;
+		}
+
+		/* Display the tab container as a block element 20 pixels high; it will
+		   be positioned at the top of the tabset. */
+		tabset tabs
+		{
+			display: block;
+			height: 20px;
+		}
+
+		/* Force each tab to only take up 100 pixels across the tabs element. */
+		tabset tab
+		{
+			display: inline-block;
+			width: 100px;
+		}
+
+		/* Display the panel container as a block element 180 pixels high; it will
+		   be positioned below the tab container and take up the rest of the space
+		   in the tabset. */
+		tabset panels
+		{
+			display: block;
+			height: 180px;
+		}
+
+		/* Fix each panel to take up exactly the panelled space. */
+		tabset panels panel
+		{
+			display: block;
+			width: 100%;
+			height: 100%;
+		}
+
+			/* body {
+				width: 100%;
+				height: 100%;
 				
 				margin: auto;
 			}
@@ -16,19 +55,19 @@
 			
 			div#content {
 				text-align: left;
-			}
+			} */
 		</style>
 	</head>
-	<body template="window">
-		<img src="nymphcast_logo_cropped.png">
+	<body>
+		<img src="nymphcast_logo_cropped.png" />
 		<tabset>
-			<tab><img src="cinema-film.png" />Video</tab>
+			<tab><img src="cinema-film.png" height="100" width="100" />Video</tab>
 				<panel>
-					Welcome to the first tab!
+					Welcome to the video tab!
 				</panel>
-			<tab><img src="music-library.png" />Audio</tab>
+			<tab><img src="music-library.png" height="100" width="100" />Audio</tab>
 				<panel>
-					Welcome to the second tab!
+					Welcome to the audio tab!
 				</panel>
 		</tabset>
 	</body>
