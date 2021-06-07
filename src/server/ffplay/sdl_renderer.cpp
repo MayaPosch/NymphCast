@@ -524,7 +524,7 @@ void SdlRenderer::run_gui_loop() {
 			
 					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
 					SDL_Delay(1000);
-					quitGui(); // FIXME: just hangs the application...
+					//quitGui(); // FIXME: just hangs the application...
 					exit(1);
 				
 					break;
