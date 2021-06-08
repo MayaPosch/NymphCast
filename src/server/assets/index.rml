@@ -16,10 +16,10 @@
 			height: 120px;
 		}
 
-		/* Force each tab to only take up 100 pixels across the tabs element. */
+		/* Force each tab to only take up 200 pixels across the tabs element. */
 		tabset tab {
 			display: inline-block;
-			width: 100px;
+			width: 200px;
 		}
 
 		/* Display the panel container as a block element 180 pixels high; it will
@@ -27,7 +27,7 @@
 		   in the tabset. */
 		tabset panels {
 			display: block;
-			height: 180px;
+			height: 100%;
 		}
 
 		/* Fix each panel to take up exactly the panelled space. */
