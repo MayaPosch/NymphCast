@@ -482,9 +482,6 @@ void SdlRenderer::run_gui_loop() {
 	while (run_events) {
 		SDL_Event event;
 
-		//SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-		//SDL_RenderClear(renderer);
-
 		SDL_PollEvent(&event);
 		switch (event.type) {
 			case SDL_QUIT:
