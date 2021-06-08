@@ -15,23 +15,12 @@
 #include <GL/glew.h>
 
 
+// Static definitions.
+std::thread* Gui::sdl = 0;
+
+
 bool Gui::init(std::string document) {
 	SdlRenderer::initGui(document);
-	
-	/* GLenum err = glewInit();
-
-	if (err != GLEW_OK) {
-		fprintf(stderr, "GLEW ERROR: %s\n", glewGetErrorString(err));
-		return false;
-	}
-	
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	glMatrixMode(GL_PROJECTION | GL_MODELVIEW);
-	glLoadIdentity();
-	glOrtho(0, window_width, window_height, 0, 0, 1);
-
-	RmlUiSDL2Renderer Renderer(SdlRenderer::renderer, SdlRenderer::window);
-	RmlUiSDL2SystemInterface SystemInterface; */
 	
 	return true;
 }
@@ -39,7 +28,7 @@ bool Gui::init(std::string document) {
 
 // --- START ---
 bool Gui::start() {
-	SdlRenderer::run_gui_loop();
+	sdl = new std::thread(SdlRenderer::run_gui_loop);
 	
 	return true;
 }
@@ -48,6 +37,12 @@ bool Gui::start() {
 // --- STOP ---
 bool Gui::stop() {
 	SdlRenderer::stop_gui_loop();
+	
+	// Wait for thread to rejoin.
+	sdl->join();
+	
+	// Delete thread object.
+	delete sdl;
 	
 	return true;
 }

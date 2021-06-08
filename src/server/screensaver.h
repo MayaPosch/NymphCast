@@ -7,6 +7,7 @@
 #include <atomic>
 #include <vector>
 #include <string>
+#include <thread>
 
 #include "chronotrigger.h"
 
@@ -19,6 +20,7 @@ class ScreenSaver {
 	static std::vector<std::string> images;
 	static int imageId;
 	static std::string dataPath;
+	static std::thread* sdl;
 	
 	static void changeImage(int);
 	static void cleanUp();

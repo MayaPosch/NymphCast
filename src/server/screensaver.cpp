@@ -2,7 +2,6 @@
 
 #include "screensaver.h"
 
-#include <thread>
 #include <filesystem> 		// C++17
 #include <iostream>
 
@@ -19,6 +18,7 @@ ChronoTrigger ScreenSaver::sdl_ct;
 std::vector<std::string> ScreenSaver::images;
 int ScreenSaver::imageId = 0;
 std::string ScreenSaver::dataPath;
+std::thread* ScreenSaver::sdl = 0;
 
 
 
@@ -65,7 +65,7 @@ void ScreenSaver::start(uint32_t changeSecs) {
 	active = true;
 	
 	// Start SDL loop.
-	SdlRenderer::run_event_loop();
+	sdl = new std::thread(SdlRenderer::run_event_loop);
 }
 
 
@@ -76,6 +76,12 @@ void ScreenSaver::stop() {
 	
 	// Stop SDL event loop.
 	SdlRenderer::stop_event_loop();
+	
+	// Wait for thread to exit.
+	sdl->join();
+	
+	// Delete thread object.
+	delete sdl;
 	
 	std::cout << "Stopping timer..." << std::endl;
 	

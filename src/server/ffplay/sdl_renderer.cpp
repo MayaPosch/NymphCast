@@ -174,6 +174,7 @@ bool SdlRenderer::initGui(std::string document) {
 }
 
 
+// --- RELOAD GUI ---
 bool SdlRenderer::reloadGui() {
 	rmlContext->UnloadDocument(rmlDocument);
 	rmlDocument = rmlContext->LoadDocument("assets/" + docName);
@@ -459,10 +460,6 @@ void SdlRenderer::run_event_loop() {
 					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
 					gCon.signal();
 					run_events = false;
-				
-					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
-					SDL_Delay(1000);
-					exit(1);
 					
 					break;
             }
@@ -521,11 +518,6 @@ void SdlRenderer::run_gui_loop() {
 					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
 					gCon.signal();
 					run_events = false;
-			
-					// FIXME: total hack. Used to make the application quit while in ScreenSaver mode.
-					SDL_Delay(1000);
-					//quitGui(); // FIXME: just hangs the application...
-					exit(1);
 				
 					break;
 				}

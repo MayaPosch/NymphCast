@@ -12,10 +12,11 @@
 
 
 #include <string>
+#include <thread>
 
 
 class Gui {
-	//
+	static std::thread* sdl;
 	
 public:
 	static bool init(std::string document);
