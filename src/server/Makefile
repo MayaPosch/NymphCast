@@ -34,11 +34,19 @@ VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on \
-			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags`
+			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags` \
+			-I gui/core -I gui/core/animations  -I gui/core/components  -I gui/core/guis \
+			-I gui/core/math  -I gui/core/renderers  -I gui/core/resources  -I gui/core/utils \
+			-I gui/app -I gui/app/animations -I gui/app/components -I gui/app/guis \
+			-I gui/app/scrapers -I gui/app/views -I gui/app/gamelist \
+			`pkg-config --cflags freetype2` `pkg-config --cflags eigen3` \
+			-I gui/core/nanosvg
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
 		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
-		-Lrmlui/lib-$(TARGET) -lrmlui -lstdc++fs `sdl2-config --libs` -lfreetype
+		-Lrmlui/lib-$(TARGET) -lrmlui -lstdc++fs `sdl2-config --libs` -lfreetype \
+			`pkg-config --libs freetype2` `pkg-config --libs eigen3` -lcurl -lvlc -lfreeimage \
+			-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO) -DRMLUI_STATIC_LIB
@@ -48,11 +56,15 @@ LDFLAGS := -Wl,--gc-sections $(PLATFORM_LDFLAGS) $(LIB)
 # The OS variable is only set on Windows.
 ifdef OS
 	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
-	LDFLAGS += -lws2_32 -lglew32 -lopengl32
+	LDFLAGS += -lws2_32 -lglew32 -lopengl32 -lwinmm -lole32
 	OUTPUT := $(OUTPUT).exe
 else
 	LDFLAGS += -pthread -latomic -lGLEW -lGL
 endif
+
+# Check which version of OpenGL or OpenGL ES to use.
+# TODO: implement
+CPPFLAGS += -DUSE_OPENGL_14
 
 SOURCES := $(wildcard *.cpp) \
 			$(wildcard ffplay/*.cpp) \
@@ -61,7 +73,23 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard angelscript/add_on/scriptarray/*.cpp) \
 			$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
 			$(wildcard angelscript/json/*.cpp) \
-			$(wildcard angelscript/regexp/*.cpp)
+			$(wildcard angelscript/regexp/*.cpp) \
+			$(wildcard gui/core/*.cpp) \
+			$(wildcard gui/core/animations/*.cpp) \
+			$(wildcard gui/core/components/*.cpp) \
+			$(wildcard gui/core/guis/*.cpp) \
+			$(wildcard gui/core/math/*.cpp) \
+			$(wildcard gui/core/renderers/*.cpp) \
+			$(wildcard gui/core/resources/*.cpp) \
+			$(wildcard gui/core/utils/*.cpp) \
+			$(wildcard gui/core/nanosvg/src/*.cpp) \
+			$(wildcard gui/app/*.cpp) \
+			$(wildcard gui/app/components/*.cpp) \
+			$(wildcard gui/app/guis/*.cpp) \
+			$(wildcard gui/app/scrapers/*.cpp) \
+			$(wildcard gui/app/views/*.cpp) \
+			$(wildcard gui/app/views/gamelist/*.cpp) \
+			$(wildcard gui/app/pugixml/src/*.cpp)
 C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
@@ -89,6 +117,19 @@ makedir:
 	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/add_on/scriptdictionary
 	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/json
 	$(MAKEDIR) obj/$(TARGET_BIN)angelscript/regexp
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/animations
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/components
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/guis
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/math
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/renderers
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/resources
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/utils
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/core/nanosvg/src
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/components
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/guis
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/scrapers
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/views/gamelist
+	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/pugixml/src
 	$(MAKEDIR) bin/$(TARGET)
 	
 angelscript:
@@ -103,7 +144,7 @@ obj/$(TARGET_BIN)%.o: %.cpp
 obj/$(TARGET_BIN)%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(CFLAGS)
 	
-bin/$(TARGET_BIN)$(OUTPUT): angelscript rmlui $(OBJECTS) $(C_OBJECTS)
+bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS)
 	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
