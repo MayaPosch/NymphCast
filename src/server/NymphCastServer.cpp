@@ -294,8 +294,9 @@ void finishPlayback() {
 	// Start the Screensaver here for now.
 	if (!display_disable) {
 		if (gui_enable) {
-			// TODO: Return to GUI.
-			
+			// Return to GUI.
+			Gui::active = true;
+			Gui::resumeCv.notify_one();
 		}
 		else {
 			// Start screensaver.
@@ -350,7 +351,7 @@ struct CastClient {
 std::map<int, CastClient> clients;
 
 
-struct NymphCastRemote {
+struct NymphCastSlaveRemote {
 	std::string name;
 	std::string ipv4;
 	std::string ipv6;
@@ -367,7 +368,7 @@ enum NcsMode {
 };
 
 NcsMode serverMode = NCS_MODE_STANDALONE;
-std::vector<NymphCastRemote> slave_remotes;
+std::vector<NymphCastSlaveRemote> slave_remotes;
 uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 
 
@@ -509,7 +510,7 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 		std::cout << "# of slave remotes: " << slave_remotes.size() << std::endl;
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			// Disconnect from slave remote.
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::cout << "Disconnecting slave: " << rm.name << std::endl;
 			std::string result;
 			if (!NymphRemoteServer::disconnect(rm.handle, result)) {
@@ -604,7 +605,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	std::vector<NymphType*> remotes = ((NymphArray*) msg->parameters()[0])->getValues();
 	for (int i = 0; i < remotes.size(); ++i) {
 		NymphStruct* ns = (NymphStruct*) remotes[i];
-		NymphCastRemote remote;
+		NymphCastSlaveRemote remote;
 		NymphType* value = 0;
 		((NymphStruct*) remotes[i])->getValue("name", value);
 		remote.name = ((NymphString*) value)->getValue();
@@ -620,13 +621,13 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	// Validate that each slave remote is accessible and determine latency.
 	for (int i = 0; i < slave_remotes.size(); ++i) {
 		// Establish RPC connection to remote. Starts the PTP-like handshake.
-		NymphCastRemote& rm = slave_remotes[i];
+		NymphCastSlaveRemote& rm = slave_remotes[i];
 		std::string result;
 		if (!NymphRemoteServer::connect(rm.ipv4, 4004, rm.handle, 0, result)) {
 			// Failed to connect, error out. Disconnect from any already connected slaves.
 			std::cerr << "Slave connection error: " << result << std::endl;
 			for (; i >= 0; --i) {
-				NymphCastRemote& drm = slave_remotes[i];
+				NymphCastSlaveRemote& drm = slave_remotes[i];
 				NymphRemoteServer::disconnect(drm.handle, result);
 			}
 			
@@ -722,7 +723,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		NymphBoolean* doneBool = new NymphBoolean(done);
 		
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			then = slaveLatencyMax - rm.delay;
 		
 			// Prepare data vector.
@@ -817,7 +818,7 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	values.push_back(new NymphUint8(volume));
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::string result;
 			NymphType* returnValue = 0;
 			if (!NymphRemoteServer::callMethod(rm.handle, "volume_set", values, returnValue, result)) {
@@ -841,7 +842,7 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -870,7 +871,7 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -899,7 +900,7 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -926,7 +927,7 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -953,7 +954,7 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -980,7 +981,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
-			NymphCastRemote& rm = slave_remotes[i];
+			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::vector<NymphType*> values;
 			std::string result;
 			NymphType* returnValue = 0;
@@ -1075,7 +1076,7 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 		values.push_back(new NymphString(url));
 		if (serverMode == NCS_MODE_MASTER) {
 			for (int i = 0; i < slave_remotes.size(); ++i) {
-				NymphCastRemote& rm = slave_remotes[i];
+				NymphCastSlaveRemote& rm = slave_remotes[i];
 				std::string result;
 				NymphType* returnValue = 0;
 				if (!NymphRemoteServer::callMethod(rm.handle, "playback_url", values, returnValue, result)) {
@@ -1242,9 +1243,9 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 
 
 // --- LOG FUNCTION ---
-void logFunction(int level, std::string logStr) {
+void logFunction(int level, std::string logStr);/* {
 	std::cout << level << " - " << logStr << std::endl;
-}
+}*/
 
 
 int main(int argc, char** argv) {

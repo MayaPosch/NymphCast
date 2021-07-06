@@ -30,6 +30,8 @@
 
 #include "INIReader.h"
 
+#include "nymphcast_client.h"
+
 // Forward declarations.
 bool streamTrack(std::string url);
 
@@ -50,11 +52,11 @@ struct NymphCastApp {
 };
 
 
-enum NymphRemoteStatus {
+/* enum NymphRemoteStatus {
 	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
 	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
 	NYMPH_PLAYBACK_STATUS_PAUSED = 3
-};
+}; */
 
 
 class NCApps {
