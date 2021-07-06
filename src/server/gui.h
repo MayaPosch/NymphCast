@@ -13,12 +13,26 @@
 
 #include <string>
 #include <thread>
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
+
+#include "gui/core/Window.h"
+
+#include "nymphcast_client.h"
 
 
 class Gui {
 	static std::thread* sdl;
+	static std::atomic<bool> running;
+	static Window window;
 	
 public:
+	static NymphCastClient client;
+	static std::condition_variable resumeCv;
+	static std::mutex resumeMtx;
+	static std::atomic<bool> active;
+	
 	static bool init(std::string document);
 	static bool start();
 	static bool stop();
