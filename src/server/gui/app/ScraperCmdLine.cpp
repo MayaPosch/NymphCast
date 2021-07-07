@@ -17,6 +17,8 @@ void handle_interrupt_signal(int /*p*/)
 {
 #ifdef sleep
 	sleep(50);
+#elif defined usleep
+	usleep(50);
 #else
 	_sleep(50);
 #endif
