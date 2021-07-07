@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path id="outline" d="M62,19 L62,32 A13,13 90 0,1 49,45 L15,45 A13,13 90 0,1 2,32 L2,19"  fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+ <line id="outline2" x1="1" y1="19" x2="63" y2="19" stroke="#fff" stroke-width="2"/>
+ <path id="button_lt" d="m2 19v13a13 13 0 0 0 13 13h34a13 13 0 0 0 13-13v-13h-60zm19.939453 4.433594h4.101563v13.921875h4.289062v3.210937h-8.390625v-17.132812zm9.667969 0h10.453125v3.222656h-3.1875v13.910156h-4.078125v-13.910156h-3.1875v-3.222656z" fill="#fff"/>
+</svg>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <circle id="outline_east" cx="50" cy="32" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+ <circle id="outline_south" cx="32" cy="50" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+ <circle id="outline_north" cx="32" cy="14" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+ <circle id="outline_west" cx="14" cy="32" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+ <path id="button_east" d="m50 22a10 10 0 0 0-10 10 10 10 0 0 0 10 10 10 10 0 0 0 10-10 10 10 0 0 0-10-10zm-1.695312 4.265625h3.382812l2.84375 11.46875h-2.75l-0.632812-2.796875h-2.304688l-0.632812 2.796875h-2.742188l2.835938-11.46875zm1.695312 3.5c-0.083333 0.401042-0.304687 1.403646-0.664062 3.007813h1.34375l-0.679688-3.007813z" fill="#fff"/>
+</svg>

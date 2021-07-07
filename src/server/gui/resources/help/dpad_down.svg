@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path id="outline_up" d="M22,23.5 L22,6 A4,4 90 0,1 26,2 L38,2 A4,4 90 0,1 42,6 L42,23.5"  fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+ <path id="outline_right" d="M40.5,22 L58,22 A4,4 90 0,1 62,26 L62,38 A4,4 90 0,1 58,42 L40.5,42" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+ <path id="outline_down" d="M22,40.5 L22,58 A4,4 90 0,0 26,62 L38,62 A4,4 90 0,0 42,58 L42,40.5"  fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+ <path id="outline_left" d="M23.5,22 L6,22 A4,4 90 0,0 2,26 L2,38 A4,4 90 0,0 6,42 L23.5,42" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+ <polygon id="dpad_up" points="27,14 37,14 32,6.2" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+ <polygon id="dpad_right" points="50,27 50,37 57.8,32" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+ <polygon id="dpad_down" points="27,50 37,50 32,57.8" fill="#fff" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+ <polygon id="dpad_left" points="14,27 14,37 6.2,32" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+ <circle id="dpad_thumb" cx="32" cy="32" r="5" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2"/>
+</svg>
