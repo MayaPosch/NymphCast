@@ -465,10 +465,9 @@ void SystemData::deleteSystems()
 
 std::string SystemData::getConfigPath(bool forWrite) {
 	std::string path = Utils::FileSystem::getHomePath() + "/.emulationstation/es_systems.cfg";
-	//std::string path = "views.cfg";
 	if (forWrite || Utils::FileSystem::exists(path))  { return path; }
 
-	return "/etc/emulationstation/views.cfg";
+	return "/etc/emulationstation/es_systems.cfg";
 }
 
 bool SystemData::isVisible()
