@@ -59,7 +59,7 @@ ifdef OS
 	LDFLAGS += -lws2_32 -lglew32 -lopengl32 -lwinmm -lole32
 	OUTPUT := $(OUTPUT).exe
 else
-	LDFLAGS += -pthread -latomic -lGLEW -lGL
+	LDFLAGS += -pthread -latomic -lGLEW -lGL -lasound
 endif
 
 # Check which version of OpenGL or OpenGL ES to use.
