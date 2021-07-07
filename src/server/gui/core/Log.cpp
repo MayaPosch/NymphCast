@@ -60,13 +60,13 @@ Log::~Log()
 {
 	os << std::endl;
 
-	if(getOutput() == NULL)
+	/* if(getOutput() == NULL)
 	{
 		// not open yet, print to stdout
 		std::cerr << "ERROR - tried to write to log file before it was open! The following won't be logged:\n";
 		std::cerr << os.str();
 		return;
-	}
+	} */
 
 	//fprintf(getOutput(), "%s", os.str().c_str());
 	std::cout << os.str();
