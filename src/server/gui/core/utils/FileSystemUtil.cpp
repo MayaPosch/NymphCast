@@ -182,7 +182,7 @@ namespace Utils
 					homePath = getGenericPath(envHome);
 			}
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 			// on Windows we need to check HOMEDRIVE and HOMEPATH
 			if(!homePath.length())
 			{
@@ -191,7 +191,7 @@ namespace Utils
 				if(envHomeDrive && envHomePath)
 					homePath = getGenericPath(std::string(envHomeDrive) + "/" + envHomePath);
 			}
-#endif // _WIN32
+#endif // _MSC_VER
 
 			// no homepath found, fall back to current working directory
 			if(!homePath.length())
