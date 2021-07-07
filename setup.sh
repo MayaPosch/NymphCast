@@ -7,13 +7,13 @@ echo "PACKAGE: $PACKAGE"
 # Install the dependencies.
 if [ -x "$(command -v apt)" ]; then
 	sudo apt update
-	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libglew-dev
+	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libglew-dev pkg-config libeigen3-dev libfreetype-dev libfreeimage-dev rapidjson-dev
 elif [ -x "$(command -v apk)" ]; then
 	sudo apk update
-	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
+	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev eigen-dev freetype freeimage rapidjson pkgconf
 elif [ -x "$(command -v pacman)" ]; then
 	sudo pacman -Syy 
-	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg
+	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg eigen freetype2 freeimage rapidjson pkg-config 
 fi
 
 if [ ! -z "${UPDATE}" ]; then
