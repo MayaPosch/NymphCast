@@ -27,6 +27,8 @@ class Gui {
 	static std::atomic<bool> running;
 	static Window window;
 	
+	static bool verifyHomeFolderExists();
+	
 public:
 	static NymphCastClient client;
 	static std::condition_variable resumeCv;

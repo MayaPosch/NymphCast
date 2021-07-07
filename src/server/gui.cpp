@@ -44,6 +44,9 @@ std::atomic<bool> Gui::active;
 
 bool Gui::init(std::string document) {
 	//SdlRenderer::initGui(document);
+	
+	// If ~/.emulationstation doesn't exist and cannot be created, return false;
+	if (!verifyHomeFolderExists()) { return false; }
 
 	if (!SystemData::loadConfig(&window)) {
 		LOG(LogError) << "Error while parsing systems configuration file!";
@@ -76,6 +79,24 @@ bool Gui::init(std::string document) {
 			}));
 	} */
 	
+	return true;
+}
+
+
+// --- VERIFY HOME FOLDER EXISTS ---
+bool Gui::verifyHomeFolderExists() {
+	//make sure the config directory exists
+	std::string home = Utils::FileSystem::getHomePath();
+	std::string configDir = home + "/.emulationstation";
+	if (!Utils::FileSystem::exists(configDir)) {
+		std::cout << "Creating config directory \"" << configDir << "\"\n";
+		Utils::FileSystem::createDirectory(configDir);
+		if (!Utils::FileSystem::exists(configDir)) {
+			std::cerr << "Config directory could not be created!\n";
+			return false;
+		}
+	}
+
 	return true;
 }
 
