@@ -2,6 +2,8 @@
 
 #include "utils/FileSystemUtil.h"
 
+#include <Log.h>
+
 #include <sys/stat.h>
 #include <string.h>
 #include <map>
@@ -30,7 +32,8 @@ namespace Utils
 	namespace FileSystem
 	{
 		static std::string homePath = "";
-		static std::string exePath  = "";
+		//static std::string exePath  = "";
+		static std::string exePath  = "../..";
 		static std::map<std::string, bool> mPathExistsIndex = std::map<std::string, bool>();
 
 //////////////////////////////////////////////////////////////////////////
@@ -164,38 +167,44 @@ namespace Utils
 
 //////////////////////////////////////////////////////////////////////////
 
-		std::string getHomePath()
-		{
+		std::string getHomePath() {
 			// only construct the homepath once
-			if(homePath.length())
+			if (homePath.length()) {
 				return homePath;
+			}
 
 			// check if "getExePath()/.emulationstation/es_systems.cfg" exists
-			if(Utils::FileSystem::exists(getExePath() + "/.emulationstation/es_systems.cfg"))
+			LOG(LogInfo) << "Checking exe path: " << getExePath();
+			if (Utils::FileSystem::exists(getExePath() + "/.emulationstation/es_systems.cfg")) {
+				LOG(LogInfo) << "Setting Home Path to exe path.";
 				homePath = getExePath();
+			}
 
 			// check for HOME environment variable
-			if(!homePath.length())
-			{
+			if (!homePath.length()) {
 				const char* envHome = getenv("HOME");
-				if(envHome)
+				if (envHome) {
+					LOG(LogInfo) << "Setting Home Path to home path.";
 					homePath = getGenericPath(envHome);
+				}
 			}
 
 #if defined(_MSC_VER)
 			// on Windows we need to check HOMEDRIVE and HOMEPATH
-			if(!homePath.length())
-			{
+			if (!homePath.length()) {
 				const char* envHomeDrive = getenv("HOMEDRIVE");
 				const char* envHomePath  = getenv("HOMEPATH");
-				if(envHomeDrive && envHomePath)
+				if (envHomeDrive && envHomePath) {
+					LOG(LogInfo) << "Setting Home Path to envHomeDrive path.";
 					homePath = getGenericPath(std::string(envHomeDrive) + "/" + envHomePath);
+				}
 			}
 #endif // _MSC_VER
 
 			// no homepath found, fall back to current working directory
-			if(!homePath.length())
+			if (!homePath.length()) {
 				homePath = getCWDPath();
+			}
 
 			// return constructed homepath
 			return homePath;

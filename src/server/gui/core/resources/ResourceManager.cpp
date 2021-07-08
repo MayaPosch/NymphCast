@@ -1,5 +1,6 @@
 #include "ResourceManager.h"
 
+#include <Log.h>
 #include "utils/FileSystemUtil.h"
 #include <fstream>
 
@@ -29,6 +30,7 @@ std::string ResourceManager::getResourcePath(const std::string& path) const
 
 		// check in homepath
 		test = Utils::FileSystem::getHomePath() + "/.emulationstation/resources/" + &path[2];
+		LOG(LogInfo) << "Loading resource " << path << " from: " << test;
 		if(Utils::FileSystem::exists(test))
 			return test;
 
