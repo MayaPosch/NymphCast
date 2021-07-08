@@ -15,12 +15,10 @@ std::ostream& out = std::cout;
 
 void handle_interrupt_signal(int /*p*/)
 {
-#ifdef sleep
-	sleep(50);
-#elif defined usleep
-	usleep(50);
-#else
+#ifdef _WIN32
 	_sleep(50);
+#else
+	sleep(50);
 #endif
 
 	LOG(LogInfo) << "Interrupt received during scrape...";
