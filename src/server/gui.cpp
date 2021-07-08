@@ -105,7 +105,7 @@ bool Gui::verifyHomeFolderExists() {
 bool Gui::start() {
 	//sdl = new std::thread(SdlRenderer::run_gui_loop);
 	
-	LOG(LogInfo) << "NymphCast GUI - v" << __VERSION;
+	LOG(LogInfo) << "NymphCast GUI - " << __VERSION;
 	
 	SystemScreenSaver screensaver(&window);
 	PowerSaver::init();
