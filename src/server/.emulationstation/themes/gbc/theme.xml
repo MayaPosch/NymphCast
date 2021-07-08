@@ -1,0 +1,14 @@
+<theme>
+	
+	<formatVersion>4</formatVersion>
+	<include>./../spare.xml</include>
+	
+	<view name="system, basic, detailed">
+
+		<image name="logo">
+			<path>./system.svg</path>
+		</image>
+
+	</view>
+	
+</theme>
