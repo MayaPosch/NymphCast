@@ -75,6 +75,8 @@ public:
 
 private:
 	static SystemData* loadSystem(pugi::xml_node system);
+	
+	static std::string loggerName;
 
 	bool mIsCollectionSystem;
 	bool mIsGameSystem;

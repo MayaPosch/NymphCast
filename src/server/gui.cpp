@@ -24,6 +24,8 @@
 #include "gui/core/utils/FileSystemUtil.h"
 #include "gui/core/utils/ProfilingUtil.h"
 #include "gui/app/views/ViewController.h"
+#include "CollectionSystemManager.h"
+#include "MameNames.h"
 
 #include <SDL_events.h>
 #include <SDL_main.h>
@@ -47,6 +49,18 @@ bool Gui::init(std::string document) {
 	
 	// If ~/.emulationstation doesn't exist and cannot be created, return false;
 	if (!verifyHomeFolderExists()) { return false; }
+	
+	SystemScreenSaver screensaver(&window);
+	PowerSaver::init();
+	ViewController::init(&window);
+	CollectionSystemManager::init(&window);
+	MameNames::init();
+	window.pushGui(ViewController::get());
+	
+	if (!window.init()) {
+		LOG(LogError) << "Window failed to initialize!";
+		return false;
+	}
 
 	if (!SystemData::loadConfig(&window)) {
 		LOG(LogError) << "Error while parsing systems configuration file!";
@@ -106,21 +120,9 @@ bool Gui::start() {
 	//sdl = new std::thread(SdlRenderer::run_gui_loop);
 	
 	LOG(LogInfo) << "NymphCast GUI - " << __VERSION;
-	
-	SystemScreenSaver screensaver(&window);
-	PowerSaver::init();
-	ViewController::init(&window);
-	//CollectionSystemManager::init(&window);
-	//MameNames::init();
-	window.pushGui(ViewController::get());
 
 	bool splashScreen = Settings::getInstance()->getBool("SplashScreen");
 	bool splashScreenProgress = Settings::getInstance()->getBool("SplashScreenProgress");
-	
-	if(!window.init()) {
-		LOG(LogError) << "Window failed to initialize!";
-		return false;
-	}
 
 	if (splashScreen) {
 		std::string progressText = "Loading...";

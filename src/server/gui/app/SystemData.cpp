@@ -19,6 +19,11 @@ using namespace Utils;
 
 #include "../gui.h"
 
+#include <nymph/nymph_logger.h>
+#include <Poco/NumberFormatter.h>
+
+std::string SystemData::loggerName = "SystemData";
+
 std::vector<SystemData*> SystemData::sSystemVector;
 
 SystemData::SystemData(const std::string& name, const std::string& fullName, SystemEnvironmentData* envData, const std::string& themeFolder, bool CollectionSystem) :
@@ -278,58 +283,67 @@ SystemData* SystemData::loadSystem(pugi::xml_node system)
 }
 
 //creates systems from information located in a config file
-bool SystemData::loadConfig(Window* window)
-{
+bool SystemData::loadConfig(Window* window) {
 	deleteSystems();
 
 	std::string path = getConfigPath(false);
 
-	LOG(LogInfo) << "Loading system config file " << path << "...";
+	//LOG(LogInfo) << "Loading system config file " << path << "...";
+	NYMPH_LOG_INFORMATION("Loading system config file " + path + "...");
 
-	if (!Utils::FileSystem::exists(path))
-	{
-		LOG(LogError) << "es_systems.cfg file does not exist!";
+	if (!Utils::FileSystem::exists(path)) {
+		//LOG(LogError) << "es_systems.cfg file does not exist!";
+		NYMPH_LOG_ERROR("es_systems.cfg file does not exist!");
 		writeExampleConfig(getConfigPath(true));
 		return false;
 	}
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result res = doc.load_file(path.c_str());
+	
+	NYMPH_LOG_DEBUG("Loaded config file.");
 
-	if(!res)
-	{
-		LOG(LogError) << "Could not parse es_systems.cfg file!";
-		LOG(LogError) << res.description();
+	if (!res) {
+		//LOG(LogError) << "Could not parse es_systems.cfg file!";
+		NYMPH_LOG_ERROR("Could not parse es_systems.cfg file!");
+		//LOG(LogError) << res.description();
+		NYMPH_LOG_ERROR(res.description());
 		return false;
 	}
+	
+	NYMPH_LOG_DEBUG("Reading system list...");
 
 	//actually read the file
 	pugi::xml_node systemList = doc.child("systemList");
+	
+	NYMPH_LOG_DEBUG("Read system list.");
 
-	if(!systemList)
-	{
-		LOG(LogError) << "es_systems.cfg is missing the <systemList> tag!";
+	if (!systemList) {
+		//LOG(LogError) << "es_systems.cfg is missing the <systemList> tag!";
+		NYMPH_LOG_ERROR("es_systems.cfg is missing the <systemList> tag!");
 		return false;
 	}
 
 	std::vector<std::string> systemsNames;
-
 	int systemCount = 0;
 	for (pugi::xml_node system = systemList.child("system"); system; system = system.next_sibling("system"))
 	{
 		systemsNames.push_back(system.child("fullname").text().get());
 		systemCount++;
 	}
+	
+	NYMPH_LOG_INFORMATION("Found " + Poco::NumberFormatter::format(systemCount) + " system(s).");
 
-	int currentSystem = 0;
 
 	typedef SystemData* SystemDataPtr;
 
 	ThreadPool* pThreadPool = NULL;
 	SystemDataPtr* systems = NULL;
-
-	if (std::thread::hardware_concurrency() > 2 && Settings::getInstance()->getBool("ThreadedLoading"))
-	{
+	NYMPH_LOG_DEBUG("Settings value...");
+	bool threadedLoading = Settings::getInstance()->getBool("ThreadedLoading");
+	NYMPH_LOG_DEBUG("Threaded loading: " + Poco::NumberFormatter::format(threadedLoading));
+	if (std::thread::hardware_concurrency() > 2 && threadedLoading) {
+		NYMPH_LOG_DEBUG("Threaded loading begin...");
 		pThreadPool = new ThreadPool();
 
 		systems = new SystemDataPtr[systemCount];
@@ -338,52 +352,53 @@ bool SystemData::loadConfig(Window* window)
 
 		pThreadPool->queueWorkItem([] { CollectionSystemManager::get()->loadCollectionSystems(true); });
 	}
+	
+	NYMPH_LOG_DEBUG("Loading systems...");
 
 	int processedSystem = 0;
-
+	int currentSystem = 0;
 	for (pugi::xml_node system = systemList.child("system"); system; system = system.next_sibling("system"))
 	{
-		if (pThreadPool != NULL)
-		{
-			pThreadPool->queueWorkItem([system, currentSystem, systems, &processedSystem]
-			{
+		if (pThreadPool != NULL) {
+			pThreadPool->queueWorkItem([system, currentSystem, systems, &processedSystem] {
 				systems[currentSystem] = loadSystem(system);
 				processedSystem++;
 			});
 		}
-		else
-		{
+		else {
 			std::string fullname = system.child("fullname").text().get();
-
-			if (window != NULL)
-				window->renderLoadingScreen(fullname, systemCount == 0 ? 0 : (float)currentSystem / (float)(systemCount + 1));
+			if (window != NULL) {
+				NYMPH_LOG_DEBUG("Render loading screen...");
+				window->renderLoadingScreen(fullname, systemCount == 0 ? 0 : 
+							(float)currentSystem / (float)(systemCount + 1));
+			}
 
 			std::string nm = system.child("name").text().get();
 
 			SystemData* pSystem = loadSystem(system);
-			if (pSystem != nullptr)
+			if (pSystem != nullptr) {
 				sSystemVector.push_back(pSystem);
+			}
 		}
 
 		currentSystem++;
 	}
+	
+	NYMPH_LOG_DEBUG("Loaded systems.");
 
-	if (pThreadPool != NULL)
-	{
-		if (window != NULL)
-		{
-			pThreadPool->wait([window, &processedSystem, systemCount, &systemsNames]
-			{
+	if (pThreadPool != NULL) {
+		if (window != NULL) {
+			pThreadPool->wait([window, &processedSystem, systemCount, &systemsNames] {
 				int px = processedSystem - 1;
 				if (px >= 0 && px < systemsNames.size())
 					window->renderLoadingScreen(systemsNames.at(px), (float)px / (float)(systemCount + 1));
 			}, 10);
 		}
-		else
+		else {
 			pThreadPool->wait();
+		}
 
-		for (int i = 0; i < systemCount; i++)
-		{
+		for (int i = 0; i < systemCount; i++) {
 			SystemData* pSystem = systems[i];
 			if (pSystem != nullptr)
 				sSystemVector.push_back(pSystem);
@@ -392,18 +407,21 @@ bool SystemData::loadConfig(Window* window)
 		delete[] systems;
 		delete pThreadPool;
 
-		if (window != NULL)
+		if (window != NULL) {
 			window->renderLoadingScreen("Favorites", systemCount == 0 ? 0 : currentSystem / systemCount);
+		}
 
 		CollectionSystemManager::get()->updateSystemsList();
 	}
-	else
-	{
-		if (window != NULL)
+	else {
+		if (window != NULL) {
 			window->renderLoadingScreen("Favorites", systemCount == 0 ? 0 : currentSystem / systemCount);
+		}
 
 		CollectionSystemManager::get()->loadCollectionSystems();
 	}
+	
+	NYMPH_LOG_DEBUG("Updated system list.");
 
 	return true;
 }
