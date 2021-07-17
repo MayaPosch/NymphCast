@@ -18,7 +18,6 @@
 #include "gui/core/PowerSaver.h"
 #include "gui/core/InputManager.h"
 #include "gui/app/SystemData.h"
-#include "gui/app/SystemScreenSaver.h"
 #include "gui/core/guis/GuiDetectDevice.h"
 #include "gui/core/guis/GuiMsgBox.h"
 #include "gui/core/utils/FileSystemUtil.h"
@@ -38,6 +37,7 @@
 std::thread* Gui::sdl = 0;
 std::atomic<bool> Gui::running = false;
 Window Gui::window;
+SystemScreenSaver* Gui::screensaver = 0;
 NymphCastClient Gui::client;
 std::condition_variable Gui::resumeCv;
 std::mutex Gui::resumeMtx;
@@ -50,7 +50,7 @@ bool Gui::init(std::string document) {
 	// If ~/.emulationstation doesn't exist and cannot be created, return false;
 	if (!verifyHomeFolderExists()) { return false; }
 	
-	SystemScreenSaver screensaver(&window);
+	screensaver = new SystemScreenSaver(&window);
 	PowerSaver::init();
 	ViewController::init(&window);
 	CollectionSystemManager::init(&window);
@@ -241,6 +241,10 @@ bool Gui::stop() {
 // --- QUIT ---
 bool Gui::quit() {
 	//SdlRenderer::quitGui();
+	
+	if (screensaver) {
+		delete screensaver;
+	}
 	
 	return true;
 }

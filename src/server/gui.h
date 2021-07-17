@@ -18,6 +18,7 @@
 #include <mutex>
 
 #include "gui/core/Window.h"
+#include "gui/app/SystemScreenSaver.h"
 
 #include "nymphcast_client.h"
 
@@ -26,6 +27,7 @@ class Gui {
 	static std::thread* sdl;
 	static std::atomic<bool> running;
 	static Window window;
+	static SystemScreenSaver* screensaver;
 	
 	static bool verifyHomeFolderExists();
 	
