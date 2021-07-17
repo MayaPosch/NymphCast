@@ -62,6 +62,17 @@ bool Gui::init(std::string document) {
 		return false;
 	}
 
+	bool splashScreen = Settings::getInstance()->getBool("SplashScreen");
+	bool splashScreenProgress = Settings::getInstance()->getBool("SplashScreenProgress");
+	if (splashScreen) {
+		std::string progressText = "Loading...";
+		if (splashScreenProgress) {
+			progressText = "Loading system config...";
+		}
+		
+		window.renderLoadingScreen(progressText);
+	}
+
 	if (!SystemData::loadConfig(&window)) {
 		LOG(LogError) << "Error while parsing systems configuration file!";
 		return false;
@@ -73,25 +84,6 @@ bool Gui::init(std::string document) {
 	}
 	
 	active = false;
-	
-	/* if (!loadSystemConfigFile(splashScreen && splashScreenProgress ? &window : nullptr, &errorMsg)) {
-		// something went terribly wrong
-		if (errorMsg == NULL) {
-			LOG(LogError) << "Unknown error occured while parsing system config file.";
-			if(!scrape_cmdline)
-				Renderer::deinit();
-			return 1;
-		}
-
-		// we can't handle es_systems.cfg file problems inside ES itself, so display the error message then quit
-		window.pushGui(new GuiMsgBox(&window,
-			errorMsg,
-			"QUIT", [] {
-				SDL_Event* quit = new SDL_Event();
-				quit->type = SDL_QUIT;
-				SDL_PushEvent(quit);
-			}));
-	} */
 	
 	return true;
 }

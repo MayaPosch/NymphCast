@@ -245,6 +245,8 @@ SystemData* SystemData::loadSystem(pugi::xml_node system)
 
 	// theme folder
 	themeFolder = system.child("theme").text().as_string(name.c_str());
+	
+	NYMPH_LOG_INFORMATION("Theme folder for system '" + name +"': '" + themeFolder + "'");
 
 	//validate
 	if (name.empty() || path.empty() || extensions.empty() || cmd.empty())
@@ -288,7 +290,6 @@ bool SystemData::loadConfig(Window* window) {
 
 	std::string path = getConfigPath(false);
 
-	//LOG(LogInfo) << "Loading system config file " << path << "...";
 	NYMPH_LOG_INFORMATION("Loading system config file " + path + "...");
 
 	if (!Utils::FileSystem::exists(path)) {
@@ -549,14 +550,20 @@ std::string SystemData::getThemePath() const
 
 	// first, check game folder
 	std::string localThemePath = mRootFolder->getPath() + "/theme.xml";
-	if(Utils::FileSystem::exists(localThemePath))
+	NYMPH_LOG_INFORMATION("Checking local theme path: " + localThemePath + "...");
+	if (Utils::FileSystem::exists(localThemePath)) {
+		NYMPH_LOG_INFORMATION("Selected local theme path: " + localThemePath + ".");
 		return localThemePath;
+	}
 
 	// not in game folder, try system theme in theme sets
+	NYMPH_LOG_INFORMATION("Theme folder: " + mThemeFolder + "...");
 	localThemePath = ThemeData::getThemeFromCurrentSet(mThemeFolder);
-
-	if (Utils::FileSystem::exists(localThemePath))
+	NYMPH_LOG_INFORMATION("Checking alternate local theme path: " + localThemePath + "...");
+	if (Utils::FileSystem::exists(localThemePath)) {
+		NYMPH_LOG_INFORMATION("Selected alternate local theme path: " + localThemePath + ".");
 		return localThemePath;
+	}
 
 	// not system theme, try default system theme in theme set
 	localThemePath = Utils::FileSystem::getParent(Utils::FileSystem::getParent(localThemePath)) + "/theme.xml";
@@ -627,8 +634,11 @@ void SystemData::loadTheme()
 	mTheme = std::make_shared<ThemeData>();
 
 	std::string path = getThemePath();
+	
+	NYMPH_LOG_INFORMATION("Loading theme from path: '" + path + "'...");
 
 	if(!Utils::FileSystem::exists(path)) // no theme available for this platform
+		NYMPH_LOG_WARNING("No theme for this system.");
 		return;
 
 	try

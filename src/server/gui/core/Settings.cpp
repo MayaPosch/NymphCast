@@ -99,7 +99,7 @@ void Settings::setDefaults()
 	#endif
 
 	mStringMap["TransitionStyle"] = "fade";
-	mStringMap["ThemeSet"] = "";
+	mStringMap["ThemeSet"] = "spare";
 	mStringMap["ScreenSaverBehavior"] = "dim";
 	mStringMap["Scraper"] = "TheGamesDB";
 	mStringMap["GamelistViewStyle"] = "automatic";

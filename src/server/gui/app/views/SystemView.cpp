@@ -41,6 +41,8 @@ void SystemView::populate()
 			Entry e;
 			e.name = (*it)->getName();
 			e.object = *it;
+			
+			LOG(LogInfo) << "Loading system: " << e.name;
 
 			// make logo
 			const ThemeData::ThemeElement* logoElem = theme->getElement("system", "logo", "image");
@@ -48,6 +50,9 @@ void SystemView::populate()
 			{
 				std::string path = logoElem->get<std::string>("path");
 				std::string defaultPath = logoElem->has("default") ? logoElem->get<std::string>("default") : "";
+				
+				LOG(LogInfo) << "System path, defaultPath: " << path << ", " << defaultPath;
+				
 				if((!path.empty() && ResourceManager::getInstance()->fileExists(path))
 				   || (!defaultPath.empty() && ResourceManager::getInstance()->fileExists(defaultPath)))
 				{
