@@ -220,6 +220,11 @@ std::vector<FileData*> FileData::getFilesRecursive(unsigned int typeMask, bool d
 }
 
 std::string FileData::getKey() {
+	if (mType == MEDIA) {
+		return mPath;
+	}
+	
+	// Return local file path for local files only.
 	return getFileName();
 }
 
