@@ -214,6 +214,10 @@ bool Gui::start() {
 	}
 	
 	window.deinit();
+
+	MameNames::deinit();
+	CollectionSystemManager::deinit();
+	SystemData::deleteSystems();
 	
 	active = false;
 	
