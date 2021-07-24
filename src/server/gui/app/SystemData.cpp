@@ -641,12 +641,13 @@ void SystemData::loadTheme()
 	
 	NYMPH_LOG_INFORMATION("Loading theme from path: '" + path + "'...");
 
-	if(!Utils::FileSystem::exists(path)) // no theme available for this platform
+	// no theme available for this platform
+	if (!Utils::FileSystem::exists(path)) {
 		NYMPH_LOG_WARNING("No theme for this system.");
 		return;
+	}
 
-	try
-	{
+	try {
 		// build map with system variables for theme to use,
 		std::map<std::string, std::string> sysData;
 		sysData.insert(std::pair<std::string, std::string>("system.name", getName()));
@@ -654,11 +655,12 @@ void SystemData::loadTheme()
 		sysData.insert(std::pair<std::string, std::string>("system.fullName", getFullName()));
 
 		mTheme->loadFile(sysData, path);
-	} catch(ThemeException& e)
-	{
+	} catch(ThemeException& e) {
 		LOG(LogError) << e.what();
 		mTheme = std::make_shared<ThemeData>(); // reset to empty
 	}
+	
+	NYMPH_LOG_INFORMATION("Loaded theme from path: '" + path + "'.");
 }
 
 void SystemData::writeMetaData() {
