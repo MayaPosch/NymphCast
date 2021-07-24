@@ -232,6 +232,8 @@ void ThemeData::loadFile(std::map<std::string, std::string> sysDataMap, const st
 
 	if(!Utils::FileSystem::exists(path))
 		throw error << "File does not exist!";
+	
+	LOG(LogInfo) << "Parsing Theme file from: " << path;
 
 	mVersion = 0;
 	mResolution = { 1, 1 };
@@ -295,6 +297,8 @@ void ThemeData::parseIncludes(const pugi::xml_node& root)
 		error << "    from included file \"" << relPath << "\":\n    ";
 
 		mPaths.push_back(path);
+		
+		LOG(LogInfo) << "Parsing include file: " << path;
 
 		pugi::xml_document includeDoc;
 		pugi::xml_parse_result result = includeDoc.load_file(path.c_str());
@@ -377,6 +381,7 @@ void ThemeData::parseViews(const pugi::xml_node& root)
 
 			if (std::find(sSupportedViews.cbegin(), sSupportedViews.cend(), viewKey) != sSupportedViews.cend())
 			{
+				LOG(LogInfo) << "Adding view: " + viewKey;
 				ThemeView& view = mViews.insert(std::pair<std::string, ThemeView>(viewKey, ThemeView())).first->second;
 				parseView(node, view);
 			}
