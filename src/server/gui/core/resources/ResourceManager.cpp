@@ -30,22 +30,25 @@ std::string ResourceManager::getResourcePath(const std::string& path) const
 
 		// check in homepath
 		test = Utils::FileSystem::getHomePath() + "/.emulationstation/resources/" + &path[2];
-		LOG(LogInfo) << "Loading resource " << path << " from: " << test;
+		LOG(LogInfo) << "Try loading resource " << path << " from: " << test;
 		if(Utils::FileSystem::exists(test))
 			return test;
 
 		// check in exepath
 		test = Utils::FileSystem::getExePath() + "/resources/" + &path[2];
+		LOG(LogInfo) << "Try loading resource " << path << " from: " << test;
 		if(Utils::FileSystem::exists(test))
 			return test;
 
 		// check in cwd
 		test = Utils::FileSystem::getCWDPath() + "/resources/" + &path[2];
+		LOG(LogInfo) << "Try loading resource " << path << " from: " << test;
 		if(Utils::FileSystem::exists(test))
 			return test;
 	}
 
 	// not a resource, return unmodified path
+	LOG(LogInfo) << "Failed loading resource " << path << ".";
 	return path;
 }
 

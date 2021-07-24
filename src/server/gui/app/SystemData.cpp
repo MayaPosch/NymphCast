@@ -76,9 +76,13 @@ void SystemData::setIsGameSystemStatus()
 void SystemData::populateFolder(FileData* folder) {
 	const std::string& folderPath = folder->getPath();
 	
+	NYMPH_LOG_INFORMATION("Populate folder: '" + folderPath + "'");
+	
 	// If the folder name matches one of the predefined names, call the associated function.
 	// This can be used to e.g. load remote shares.
 	if (folderPath == "nc_shares") {
+		NYMPH_LOG_INFORMATION("Scanning for NymphCast MediaServer shares...");
+		
 		// TODO: add all shares to a single list for now. Separate into sources & audio/video.
 		// Scan for media server instances on the network.
 		std::vector<NymphCastRemote> mediaservers = Gui::client.findShares();
@@ -91,7 +95,7 @@ void SystemData::populateFolder(FileData* folder) {
 			std::vector<NymphMediaFile> files = Gui::client.getShares(mediaservers[i]);
 			if (files.empty()) { continue; }
 			
-			//
+			NYMPH_LOG_INFORMATION("Adding " + Poco::NumberFormatter::format(files.size()) + " shared files.");
 			for (uint32_t j = 0; j < files.size(); ++j) {
 				//
 				FileData* newGame = new FileData(MEDIA, files[j], this);

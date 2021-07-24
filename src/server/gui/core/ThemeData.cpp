@@ -560,15 +560,22 @@ bool ThemeData::hasView(const std::string& view)
 
 const ThemeData::ThemeElement* ThemeData::getElement(const std::string& view, const std::string& element, const std::string& expectedType) const
 {
+	LOG(LogInfo) << "Get Element: " << view << ", " << element << ", " << expectedType;
+	
+	//std::map<std::string, ThemeView>::iterator viewIt = mViews.find(view);
 	auto viewIt = mViews.find(view);
-	if(viewIt == mViews.cend())
+	if (viewIt == mViews.cend()) {
+		LOG(LogWarning) << "View not found.";
 		return NULL; // not found
+	}
 
 	auto elemIt = viewIt->second.elements.find(element);
-	if(elemIt == viewIt->second.elements.cend()) return NULL;
+	if (elemIt == viewIt->second.elements.cend()) {
+		LOG(LogWarning) << "Element not found.";
+		return NULL;
+	}
 
-	if(elemIt->second.type != expectedType && !expectedType.empty())
-	{
+	if (elemIt->second.type != expectedType && !expectedType.empty()) {
 		LOG(LogWarning) << " requested mismatched theme type for [" << view << "." << element << "] - expected \""
 			<< expectedType << "\", got \"" << elemIt->second.type << "\"";
 		return NULL;

@@ -25,19 +25,17 @@ SystemView::SystemView(Window* window) : IList<SystemViewData, SystemData*>(wind
 	populate();
 }
 
-void SystemView::populate()
-{
+void SystemView::populate() {
 	mEntries.clear();
 
-	for(auto it = SystemData::sSystemVector.cbegin(); it != SystemData::sSystemVector.cend(); it++)
-	{
+	for (auto it = SystemData::sSystemVector.cbegin(); it != SystemData::sSystemVector.cend(); it++) {
 		const std::shared_ptr<ThemeData>& theme = (*it)->getTheme();
 
-		if(mViewNeedsReload)
+		if(mViewNeedsReload) {
 			getViewElements(theme);
+		}
 
-		if((*it)->isVisible())
-		{
+		if ((*it)->isVisible()) {
 			Entry e;
 			e.name = (*it)->getName();
 			e.object = *it;
@@ -46,16 +44,15 @@ void SystemView::populate()
 
 			// make logo
 			const ThemeData::ThemeElement* logoElem = theme->getElement("system", "logo", "image");
-			if(logoElem)
-			{
+			if (logoElem) {
 				std::string path = logoElem->get<std::string>("path");
 				std::string defaultPath = logoElem->has("default") ? logoElem->get<std::string>("default") : "";
 				
 				LOG(LogInfo) << "System path, defaultPath: " << path << ", " << defaultPath;
 				
 				if((!path.empty() && ResourceManager::getInstance()->fileExists(path))
-				   || (!defaultPath.empty() && ResourceManager::getInstance()->fileExists(defaultPath)))
-				{
+				   || (!defaultPath.empty() && 
+						ResourceManager::getInstance()->fileExists(defaultPath))) {
 					ImageComponent* logo = new ImageComponent(mWindow, false, false);
 					logo->setMaxSize(mCarousel.logoSize * mCarousel.logoScale);
 					logo->applyTheme(theme, "system", "logo", ThemeFlags::PATH | ThemeFlags::COLOR);
@@ -63,9 +60,10 @@ void SystemView::populate()
 					e.data.logo = std::shared_ptr<GuiComponent>(logo);
 				}
 			}
-			if (!e.data.logo)
-			{
+			
+			if (!e.data.logo) {
 				// no logo in theme; use text
+				LOG(LogInfo) << "No logo in theme, using text.";
 				TextComponent* text = new TextComponent(mWindow,
 					(*it)->getName(),
 					Font::get(FONT_SIZE_LARGE),
@@ -75,31 +73,37 @@ void SystemView::populate()
 				text->applyTheme((*it)->getTheme(), "system", "logoText", ThemeFlags::FONT_PATH | ThemeFlags::FONT_SIZE | ThemeFlags::COLOR | ThemeFlags::FORCE_UPPERCASE | ThemeFlags::LINE_SPACING | ThemeFlags::TEXT);
 				e.data.logo = std::shared_ptr<GuiComponent>(text);
 
-				if (mCarousel.type == VERTICAL || mCarousel.type == VERTICAL_WHEEL)
-				{
+				if (mCarousel.type == VERTICAL || mCarousel.type == VERTICAL_WHEEL) {
 					text->setHorizontalAlignment(mCarousel.logoAlignment);
 					text->setVerticalAlignment(ALIGN_CENTER);
-				} else {
+				} 
+				else {
 					text->setHorizontalAlignment(ALIGN_CENTER);
 					text->setVerticalAlignment(mCarousel.logoAlignment);
 				}
 			}
 
-			if (mCarousel.type == VERTICAL || mCarousel.type == VERTICAL_WHEEL)
-			{
-				if (mCarousel.logoAlignment == ALIGN_LEFT)
+			if (mCarousel.type == VERTICAL || mCarousel.type == VERTICAL_WHEEL) {
+				if (mCarousel.logoAlignment == ALIGN_LEFT) {
 					e.data.logo->setOrigin(0, 0.5);
-				else if (mCarousel.logoAlignment == ALIGN_RIGHT)
+				}
+				else if (mCarousel.logoAlignment == ALIGN_RIGHT) {
 					e.data.logo->setOrigin(1.0, 0.5);
-				else
+				}
+				else {
 					e.data.logo->setOrigin(0.5, 0.5);
-			} else {
-				if (mCarousel.logoAlignment == ALIGN_TOP)
+				}
+			} 
+			else {
+				if (mCarousel.logoAlignment == ALIGN_TOP) {
 					e.data.logo->setOrigin(0.5, 0);
-				else if (mCarousel.logoAlignment == ALIGN_BOTTOM)
+				}
+				else if (mCarousel.logoAlignment == ALIGN_BOTTOM) {
 					e.data.logo->setOrigin(0.5, 1);
-				else
+				}
+				else {
 					e.data.logo->setOrigin(0.5, 0.5);
+				}
 			}
 
 			Vector2f denormalized = mCarousel.logoSize * e.data.logo->getOrigin();
@@ -120,11 +124,10 @@ void SystemView::populate()
 			this->add(e);
 		}
 	}
-	if (mEntries.size() == 0)
-	{
+	
+	if (mEntries.size() == 0) {
 		// Something is wrong, there is not a single system to show, check if UI mode is not full
-		if (!UIModeController::getInstance()->isUIModeFull())
-		{
+		if (!UIModeController::getInstance()->isUIModeFull()) {
 			Settings::getInstance()->setString("UIMode", "Full");
 			mWindow->pushGui(new GuiMsgBox(mWindow, "The selected UI mode has nothing to show,\n returning to UI mode: FULL", "OK", nullptr));
 		}

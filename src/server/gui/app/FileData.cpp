@@ -38,11 +38,12 @@ FileData::FileData(FileType type, const std::string& path, SystemEnvironmentData
 
 FileData::FileData(FileType type, NymphMediaFile file, SystemData* system) : 
 	file(file), mType(type), mParent(NULL), 
-	mSystem(system), metadata(type == GAME ? GAME_METADATA : FOLDER_METADATA) // metadata is REALLY set in the constructor! 
+	mSystem(system), metadata(type == MEDIA ? GAME_METADATA : FOLDER_METADATA) // metadata is REALLY set in the constructor! 
 	{
 	// metadata needs at least a name field (since that's what getName() will return)
 	if (metadata.get("name").empty()) {
-		metadata.set("name", getDisplayName());
+		//metadata.set("name", getDisplayName());
+		metadata.set("name", file.name);
 	}
 	
 	mSystemName = system->getName();

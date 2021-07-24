@@ -76,18 +76,16 @@ int ViewController::getSystemId(SystemData* system)
 	return (int)(std::find(sysVec.cbegin(), sysVec.cend(), system) - sysVec.cbegin());
 }
 
-void ViewController::goToSystemView(SystemData* system)
-{
+void ViewController::goToSystemView(SystemData* system) {
 	// Tell any current view it's about to be hidden
-	if (mCurrentView)
-	{
+	if (mCurrentView) {
 		mCurrentView->onHide();
 	}
 
 	mState.viewing = SYSTEM_SELECT;
 	mState.system = system;
 
-	auto systemList = getSystemListView();
+	std::shared_ptr<SystemView> systemList = getSystemListView();
 	systemList->setPosition(getSystemId(system) * (float)Renderer::getScreenWidth(), systemList->getPosition().y());
 
 	systemList->goToSystem(system, false);
@@ -114,12 +112,10 @@ void ViewController::goToPrevGameList()
 	goToGameList(system->getPrev());
 }
 
-void ViewController::goToGameList(SystemData* system)
-{
-	if(mState.viewing == SYSTEM_SELECT)
-	{
+void ViewController::goToGameList(SystemData* system) {
+	if(mState.viewing == SYSTEM_SELECT) {
 		// move system list
-		auto sysList = getSystemListView();
+		std::shared_ptr<SystemView> sysList = getSystemListView();
 		float offX = sysList->getPosition().x();
 		int sysId = getSystemId(system);
 		sysList->setPosition(sysId * (float)Renderer::getScreenWidth(), sysList->getPosition().y());
@@ -130,15 +126,15 @@ void ViewController::goToGameList(SystemData* system)
 	mState.viewing = GAME_LIST;
 	mState.system = system;
 
-	if (mCurrentView)
-	{
+	if (mCurrentView) {
 		mCurrentView->onHide();
 	}
+	
 	mCurrentView = getGameListView(system);
-	if (mCurrentView)
-	{
+	if (mCurrentView) {
 		mCurrentView->onShow();
 	}
+	
 	playViewTransition();
 }
 
