@@ -293,73 +293,8 @@ void FileData::sort(const SortType& type)
 
 
 // --- REMOTE TO LOCAL IP ---
+// Defined in NyanSD.
 bool remoteToLocalIP(Poco::Net::SocketAddress &sa, uint32_t &ipv4, std::string &ipv6);
-/* {
-	std::map<unsigned, Poco::Net::NetworkInterface> map = Poco::Net::NetworkInterface::map(true, false);
-	std::map<unsigned, Poco::Net::NetworkInterface>::const_iterator it = map.begin();
-	std::map<unsigned, Poco::Net::NetworkInterface>::const_iterator end = map.end();
-
-	bool isIPv6 = true;
-	if (sa.family() == Poco::Net::IPAddress::IPv4) { isIPv6 = false; }
-	
-	std::string addr = sa.toString();
-	LOG(LogInfo) << "Sender was IP: " << addr;
-	if (isIPv6) {
-		addr.erase(addr.find_last_of(':') + 1);
-	}
-	else {
-		addr.erase(addr.find_last_of('.') + 1);
-	}
-	
-	LOG(LogInfo) << "LAN base IP: " << addr;
-	for (; it != end; ++it) {
-		const std::size_t count = it->second.addressList().size();
-		for (int i = 0; i < count; ++i) {
-			std::string ip = it->second.address(i).toString();
-			LOG(LogInfo) << "Checking IP: " << ip;
-			if (addr.compare(0, addr.length(), ip, 0, addr.length()) == 0) {
-				LOG(LogInfo) << "Found IP: " << ip;
-				if (isIPv6) {
-					ipv6 = it->second.address(i).toString();
-					
-					// Remove trailing '%<if>' section on certain OSes.
-					std::string::size_type st = ipv6.find_last_of('%');
-					if (st != std::string::npos) { ipv6.erase(st); }
-					
-					// Find first IPv4 address on this network interface.
-					for (int j = 0; j < count; ++j) {
-						if (it->second.address(j).af() == AF_INET) {
-							ipv4 = NyanSD::ipv4_stringToUint(it->second.address(j).toString());
-							return true;
-						}
-					}
-				}
-				else {
-					ipv4 = NyanSD::ipv4_stringToUint(it->second.address(i).toString());
-					
-					// Find first IPv6 address on this network interface.
-					for (int j = 0; j < count; ++j) {
-						if (it->second.address(j).af() == AF_INET6) {
-							ipv6 = it->second.address(j).toString();
-							
-							// Remove trailing '%<if>' section on certain OSes.
-							std::string::size_type st = ipv6.find_last_of('%');
-							if (st != std::string::npos) { ipv6.erase(st); }
-					
-							return true;
-						}
-					}
-				}
-				
-				return false;
-			}
-		}
-	}
-	
-	LOG(LogWarning) << "LAN IP not found on interfaces.";
-	
-	return false;
-}*/
 
 
 // --- LAUNCH GAME ---
