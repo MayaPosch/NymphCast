@@ -84,7 +84,7 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 		if(config->isMappedTo("a", input))
 		{
 			FileData* cursor = getCursor();
-			if(cursor->getType() == GAME)
+			if(cursor->getType() == GAME || cursor->getType() == MEDIA)
 			{
 				Sound::getFromTheme(getTheme(), getName(), "launch")->play();
 				launch(cursor);
