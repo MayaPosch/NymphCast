@@ -1678,7 +1678,7 @@ int main(int argc, char** argv) {
 		gMutex.lock();
 		gCon.wait(gMutex);
 	}
-	else if (gui_enable) {
+	else if (init_success && gui_enable) {
 		// Blocking function, returns when exiting the GUI.
 		Gui::start();
 	}
