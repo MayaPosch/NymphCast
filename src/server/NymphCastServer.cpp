@@ -1656,11 +1656,15 @@ int main(int argc, char** argv) {
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
+	bool init_success = true;
 	if (!display_disable) {
 		if (gui_enable) {
 			// Start the GUI with the default document.
-			Gui::init("index.rml");
-			Gui::start();
+			if (!Gui::init("index.rml")) {
+				// Handle error.
+				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
+				init_success = false;
+			}
 		}
 		else {
 			ScreenSaver::setDataPath(wallpapersFolder);
@@ -1670,8 +1674,14 @@ int main(int argc, char** argv) {
 	
 	
 	// Wait for the condition to be signalled.
-	gMutex.lock();
-	gCon.wait(gMutex);
+	if (init_success && !gui_enable) {
+		gMutex.lock();
+		gCon.wait(gMutex);
+	}
+	else if (gui_enable) {
+		// Blocking function, returns when exiting the GUI.
+		Gui::start();
+	}
 	
 	std::cout << "Shutting down..." << std::endl;
 	
