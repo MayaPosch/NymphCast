@@ -30,8 +30,6 @@
 #include <SDL_main.h>
 #include <SDL_timer.h>
 
-//#include <GL/glew.h>
-
 
 // Static definitions.
 std::thread* Gui::sdl = 0;
@@ -45,10 +43,14 @@ std::atomic<bool> Gui::active;
 
 
 bool Gui::init(std::string document) {
-	//SdlRenderer::initGui(document);
-	
 	// If ~/.emulationstation doesn't exist and cannot be created, return false;
-	if (!verifyHomeFolderExists()) { return false; }
+	if (!verifyHomeFolderExists()) {
+		// Set home path.
+		// TODO: Use this setting if home folder doesn't contain the .emulationstation folder?
+		std::string exepath = Utils::FileSystem::getCWDPath();
+		Utils::FileSystem::setExePath(exepath);
+	}
+	
 	
 	screensaver = new SystemScreenSaver(&window);
 	PowerSaver::init();
@@ -95,12 +97,14 @@ bool Gui::verifyHomeFolderExists() {
 	std::string home = Utils::FileSystem::getHomePath();
 	std::string configDir = home + "/.emulationstation";
 	if (!Utils::FileSystem::exists(configDir)) {
-		std::cout << "Creating config directory \"" << configDir << "\"\n";
+		/* std::cout << "Creating config directory \"" << configDir << "\"\n";
 		Utils::FileSystem::createDirectory(configDir);
 		if (!Utils::FileSystem::exists(configDir)) {
 			std::cerr << "Config directory could not be created!\n";
 			return false;
-		}
+		} */
+		
+		return false;
 	}
 
 	return true;
@@ -109,8 +113,6 @@ bool Gui::verifyHomeFolderExists() {
 
 // --- START ---
 bool Gui::start() {
-	//sdl = new std::thread(SdlRenderer::run_gui_loop);
-	
 	LOG(LogInfo) << "NymphCast GUI - " << __VERSION;
 
 	bool splashScreen = Settings::getInstance()->getBool("SplashScreen");
@@ -134,8 +136,6 @@ bool Gui::start() {
 	}
 
 	//choose which GUI to open depending on if an input configuration already exists
-	//if(errorMsg == NULL)
-	//{
 	if (Utils::FileSystem::exists(InputManager::getConfigPath()) && 
 				InputManager::getInstance()->getNumConfiguredDevices() > 0) {
 		ViewController::get()->goToStart();
@@ -143,7 +143,6 @@ bool Gui::start() {
 	else {
 		window.pushGui(new GuiDetectDevice(&window, true, [] { ViewController::get()->goToStart(); }));
 	}
-	//}
 
 	// flush any queued events before showing the UI and starting the input handling loop
 	const Uint32 event_list[] = {
@@ -157,6 +156,8 @@ bool Gui::start() {
 
 	int lastTime = SDL_GetTicks();
 	int ps_time = SDL_GetTicks();
+	
+	//sdl = new std::thread(SdlRenderer::run_gui_loop);
 	
 	active = true;
 
