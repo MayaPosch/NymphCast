@@ -102,10 +102,10 @@ else
 	CONFDIR := /etc
 endif
 
-SED_REPLACE := -e 's:@BIN@:$(DESTDIR)$(PREFIX)/bin/$(TARGET_BIN)$(OUTPUT):g' \
-	-e 's:@CONFIG@:$(DESTDIR)$(CONFDIR)/nymphcast/nymphcast_config.ini:g' \
-	-e 's:@APPS@:$(DESTDIR)$(PREFIX)/share/nymphcast/apps/:g' \
-	-e 's:@WALLPAPERS@:$(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/:g'
+SED_REPLACE := -e 's:@BIN@:$(PREFIX)/bin/$(OUTPUT):g' \
+	-e 's:@CONFIG@:$(CONFDIR)/nymphcast/nymphcast_config.ini:g' \
+	-e 's:@APPS@:$(PREFIX)/share/nymphcast/apps/:g' \
+	-e 's:@WALLPAPERS@:$(PREFIX)/share/nymphcast/wallpapers/:g'
 
 all: makedir bin/$(TARGET_BIN)$(OUTPUT)
 
