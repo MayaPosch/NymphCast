@@ -185,6 +185,7 @@ install-systemd:
 install-openrc:
 	install -d $(DESTDIR)$(CONFDIR)/init.d/	
 	sed ${SED_REPLACE} openrc/nymphcast > $(DESTDIR)$(CONFDIR)/init.d/nymphcast
+	chmod 0755 $(DESTDIR)$(CONFDIR)/init.d/nymphcast
 
 
 # Construct an archive for Raspbian: audio-only, or full.
