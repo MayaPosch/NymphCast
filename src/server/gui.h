@@ -37,7 +37,7 @@ public:
 	static std::mutex resumeMtx;
 	static std::atomic<bool> active;
 	
-	static bool init(std::string document);
+	static bool init();
 	static bool start();
 	static bool stop();
 	static bool quit();

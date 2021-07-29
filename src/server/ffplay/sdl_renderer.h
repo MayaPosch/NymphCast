@@ -40,10 +40,12 @@ class SdlRenderer {
 	
 public:
 	static bool init();
-	static bool initGui(std::string document);
-	static bool reloadGui();
+	/* static bool initGui(std::string document);
+	static bool reloadGui(); */
 	static void quit();
-	static void quitGui();
+	//static void quitGui();
+	static void showWindow();
+	static void hideWindow();
 	static void resizeWindow(int width, int height);
 	static void set_default_window_size(int width, int height, AVRational sar);
 	static void set_fullscreen(bool fullscreen);
@@ -51,8 +53,8 @@ public:
 	static void image_display(std::string image);
 	static void run_event_loop();
 	static void stop_event_loop();
-	static void run_gui_loop();
-	static void stop_gui_loop();
+	//static void run_gui_loop();
+	//static void stop_gui_loop();
 	static void video_audio_display(VideoState *s);
 	static void video_image_display(VideoState *is);
 };

@@ -89,6 +89,7 @@ int seek_by_bytes = -1;
 float seek_interval = 10;
 int display_disable;
 bool gui_enable;
+bool screensaver_enable;
 int borderless;
 int alwaysontop;
 int startup_volume = 100;
@@ -295,12 +296,18 @@ void finishPlayback() {
 	if (!display_disable) {
 		if (gui_enable) {
 			// Return to GUI.
+			SdlRenderer::hideWindow();
 			Gui::active = true;
 			Gui::resumeCv.notify_one();
 		}
-		else {
+		else if (screensaver_enable) {
 			// Start screensaver.
+			SdlRenderer::showWindow();
 			ScreenSaver::start(15);
+		}
+		else {
+			// Hide window.
+			SdlRenderer::hideWindow();
 		}
 	}
 }
@@ -569,11 +576,14 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// Stop screensaver.
 	if (!video_disable) {
 		if (gui_enable) {
-			// TODO: stop the GUI.
-			
+			// Should just work.
+		}
+		else if (screensaver_enable) {
+			ScreenSaver::stop();
 		}
 		else {
-			ScreenSaver::stop();
+			// Show window.
+			SdlRenderer::showWindow();
 		}
 	}
 	
@@ -1306,6 +1316,7 @@ int main(int argc, char** argv) {
 	
 	is_full_screen = config.getValue<bool>("fullscreen", false);
 	display_disable = config.getValue<bool>("disable_video", false);
+	screensaver_enable = config.getValue<bool>("enable_screensaver", false);
 	
 	// Check for 'gui_enable' boolean value. If on, use the RmlUi-based GUI instead of the
 	// screensaver mode.
@@ -1660,14 +1671,15 @@ int main(int argc, char** argv) {
 	if (!display_disable) {
 		if (gui_enable) {
 			// Start the GUI with the default document.
-			if (!Gui::init("index.rml")) {
+			if (!Gui::init()) {
 				// Handle error.
 				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
 				init_success = false;
 			}
 		}
-		else {
+		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);
+			SdlRenderer::showWindow();
 			ScreenSaver::start(15);
 		}
 	}
@@ -1691,7 +1703,7 @@ int main(int argc, char** argv) {
 			Gui::stop();
 			Gui::quit();
 		}
-		else {
+		else if (screensaver_enable) {
 			ScreenSaver::stop();
 		}
 	}

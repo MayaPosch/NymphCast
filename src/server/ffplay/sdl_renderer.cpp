@@ -103,7 +103,7 @@ bool SdlRenderer::init() {
 			return false;
 		}
 		
-		SDL_ShowWindow(window);
+		//SDL_ShowWindow(window);
 	}
 	
 	return true;
@@ -112,7 +112,7 @@ bool SdlRenderer::init() {
 
 // --- INIT GUI ---
 // GUI-related initialisation.
-bool SdlRenderer::initGui(std::string document) {
+/* bool SdlRenderer::initGui(std::string document) {
 	//
 	GLenum err = glewInit();
 
@@ -180,7 +180,7 @@ bool SdlRenderer::reloadGui() {
 	rmlDocument = rmlContext->LoadDocument("assets/" + docName);
 	
 	return true;
-}
+} */
 
 
 // --- QUIT ---
@@ -208,12 +208,28 @@ void SdlRenderer::quit() {
 
 
 // --- QUIT GUI ---
-void SdlRenderer::quitGui() {
+/* void SdlRenderer::quitGui() {
 	av_log(NULL, AV_LOG_INFO, "Shutting down RmlUI...\n");
 	Rml::Shutdown();
 	
 	delete rmlSystemInterface;
 	delete rmlRenderer;
+} */
+
+
+// --- SHOW WINDOW ---
+void SdlRenderer::showWindow() {
+	if (window) {
+		SDL_ShowWindow(window);
+	}
+}
+
+
+// --- HIDE WINDOW ---
+void SdlRenderer::hideWindow() {
+	if (window) {
+		SDL_HideWindow(window);
+	}
 }
 
 
@@ -476,7 +492,7 @@ void SdlRenderer::stop_event_loop() {
 
 
 // --- RUN GUI LOOP ---
-void SdlRenderer::run_gui_loop() {
+/* void SdlRenderer::run_gui_loop() {
 	av_log(NULL, AV_LOG_INFO, "Start GUI event loop...\n");
 	run_events = true;
 	while (run_events) {
@@ -555,7 +571,7 @@ void SdlRenderer::run_gui_loop() {
 // --- STOP GUI LOOP ---
 void SdlRenderer::stop_gui_loop() {
 	run_events = false;
-}
+} */
 
 
 // --- VIDEO IMAGE DISPLAY ---

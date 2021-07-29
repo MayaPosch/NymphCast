@@ -42,7 +42,7 @@ std::mutex Gui::resumeMtx;
 std::atomic<bool> Gui::active;
 
 
-bool Gui::init(std::string document) {
+bool Gui::init() {
 	// If ~/.emulationstation doesn't exist and cannot be created, return false;
 	if (!verifyHomeFolderExists()) {
 		// Set home path.
