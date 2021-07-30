@@ -40,7 +40,7 @@ The current development version is v0.1-alpha5. Version 0.1 will be the first re
 **Timeline for the v0.1 release:**
 
 - [x] Begin implementation.
-- [ ] Implemented all features.
+- [x] Implemented all features.
 - [ ] Validated features.
 - [ ] Feature freeze.
 - [ ] Beta testing start.
@@ -131,8 +131,8 @@ If pre-compiled releases for your target device or operating system are currentl
   
 ### **Running NymphCast** ###
 
-The **server binary** can be started with just a configuration file.
-To start the server, execute the binary (from the `bin/` folder) to have it start listening on port 4004: 
+The **server binary** can be started with only the configuration flag specified.
+To start the server, execute the binary (from the `bin/<platform>` folder) to have it start listening on port 4004, with the appropriate configuration file (see Usage Scenarios for a list):
 
 `./nymphcast_server -c nymphcast_config.ini`.
  
