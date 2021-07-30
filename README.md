@@ -11,9 +11,22 @@ NymphCast requires at least the server application to run on a target device, wh
 
 Client-side core functionality is provided through the NymphCast library.
 
+## Usage Scenarios ##
+
+NymphCast can be used in a number of scenarios:
+
+- **NymphCast Audio** :arrow_right: Audio-only receiver mode.
+	+ Profile: `nymphcast_audio_config.ini`
+- **NymphCast Video** :arrow_right: Audio & Video receiver mode.
+	+ Profile: `nymphcast_video_config.ini`
+- **NymphCast ScreenSaver** :arrow_right: Like NymphCast Video, but with image-based ScreenSaver when not playing content.
+	+ Profile: `nymphcast_screensaver_config.ini`
+- **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled.
+	+ Profile: 'nymphcast_gui_config.ini`
+
 ## Features & Status ##
 
-The current development version is v0.1-alpha4. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
+The current development version is v0.1-alpha5. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
 
 
 - [x] Streaming media content (files) between client and server.
@@ -22,11 +35,12 @@ The current development version is v0.1-alpha4. Version 0.1 will be the first re
 - [x] Run AngelScript-based apps with a custom API for external communication.
 - [x] Multi-cast media content to multiple servers with good synchronization.
 - [x] Playback of media content shared on the local network.
+- [x] Stand-alone GUI mode.
 
 **Timeline for the v0.1 release:**
 
 - [x] Begin implementation.
-- [x] Implemented all features.
+- [ ] Implemented all features.
 - [ ] Validated features.
 - [ ] Feature freeze.
 - [ ] Beta testing start.
@@ -40,7 +54,7 @@ The NymphCast project consists out of multiple components:
 
 Component | Purpose | Status
 ---|---|---
-NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha4
+NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha5
 NymphCast Client SDK | Software Development Kit for developing NymphCast clients. | v0.1-alpha4
 NymphCast Client | CLI-based NymphCast client. | v0.1-alpha4
 NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-alpha4
@@ -162,6 +176,7 @@ To build the corresponding client-related parts of NymphCast, in addition to a C
 ### **Server Dependencies** ###
 
 * [NymphRPC](https://github.com/MayaPosch/NymphRPC)
+* LibNymphCast (see client library & SDK sections)
 * [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
 * LibSDL2
 * LibSDL2_Image
@@ -170,7 +185,7 @@ To build the corresponding client-related parts of NymphCast, in addition to a C
 On **Debian** & derivatives:
 
 ```
-sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev
+sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libfreetype-dev libfreeimage-dev rapidjson-dev pkg-config
 ``` 
 and 
 ```
@@ -180,13 +195,13 @@ sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-de
 On **Arch** & derivatives:
 
 ```
-sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg
+sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkgconf
 ```
 
 On **Alpine** & derivatives:
 
 ```
-sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev
+sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype2 freeimage rapidjson pkg-config
 ```
 
 
@@ -207,6 +222,7 @@ Else, use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 2. Install NymphRPC with `sudo make install`.
+3. Change to `NymphCast/src/client_library` and execute `make` and `sudo make install`.
 4. Change to `NymphCast/src/server` and execute `make` command.
 5. Use `sudo make install` to install the server and associated files.
 6. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
@@ -255,7 +271,7 @@ The current server and client documentation is hosted at the [Nyanko website](ht
 
 An SDK has been made available in the `src/client_lib/` folder. The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
 
-To use the SDK, the Makefile in the SDK folder can be executed with a simple `make` command, after which a library file can be found in the `src/client_lib/lib` folder. 
+To use the SDK, the Makefile in the SDK folder can be executed with a simple `make` command, after which a library file can be found in the `src/client_lib/lib` folder. This can be installed (on Linux) with `make install`.
 
 **Note:** to compile the SDK, both [NymphRPC](https://github.com/MayaPosch/NymphRPC) and LibPOCO (1.5+) must be installed.
 
@@ -273,4 +289,5 @@ NymphCast is a fully open source project. The full, 3-clause BSD-licensed source
 ## Donate ##
 
 NymphCast is fully free, but its development relies on your support. If you appreciate the project, your contribution, [Ko-Fi](https://ko-fi.com/mayaposch) or [donation](http://nyanko.ws/nymphcast.php#donate) will help to support the continued development.
+
 
