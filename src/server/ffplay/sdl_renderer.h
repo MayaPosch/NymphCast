@@ -10,15 +10,6 @@
 
 #include <SDL2/SDL_image.h>
 
-#include "../rmlui/include/RmlUi/Core.h"
-#include "../rmlui/include/RmlUi/Core/Input.h"
-#include "../rmlui/include/RmlUi/Debugger/Debugger.h"
-//#include <Shell.h>
-//#include <ShellFileInterface.h>
-
-#include "SystemInterfaceSDL2.h"
-#include "RenderInterfaceSDL2.h"
-
 
 class SdlRenderer {
 	static SDL_Window* window;
@@ -27,10 +18,6 @@ class SdlRenderer {
 	//static SDL_RendererInfo renderer_info;
 	//static SDL_AudioDeviceID audio_dev;
 	static std::atomic<bool> run_events;
-	static Rml::Context* rmlContext;
-	static RmlUiSDL2Renderer* rmlRenderer;
-	static RmlUiSDL2SystemInterface* rmlSystemInterface;
-	static Rml::ElementDocument* rmlDocument;
 	static std::string docName;
 	
 	static void fill_rectangle(int x, int y, int w, int h);
@@ -40,10 +27,7 @@ class SdlRenderer {
 	
 public:
 	static bool init();
-	/* static bool initGui(std::string document);
-	static bool reloadGui(); */
 	static void quit();
-	//static void quitGui();
 	static void showWindow();
 	static void hideWindow();
 	static void resizeWindow(int width, int height);
@@ -53,8 +37,6 @@ public:
 	static void image_display(std::string image);
 	static void run_event_loop();
 	static void stop_event_loop();
-	//static void run_gui_loop();
-	//static void stop_gui_loop();
 	static void video_audio_display(VideoState *s);
 	static void video_image_display(VideoState *is);
 };

@@ -6,13 +6,6 @@
 #include "types.h"
 
 
-#ifdef RMLUI_PLATFORM_WIN32
-#include <windows.h>
-#endif
-
-#include <GL/glew.h>
-
-
 // Globals
 SDL_AudioDeviceID audio_dev;
 SDL_RendererInfo renderer_info = {0};
@@ -25,10 +18,6 @@ SDL_Texture* SdlRenderer::texture = 0;
 //SDL_RendererInfo SdlRenderer::renderer_info = {0};
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
-Rml::Context* SdlRenderer::rmlContext = 0;
-RmlUiSDL2Renderer* SdlRenderer::rmlRenderer = 0;
-RmlUiSDL2SystemInterface* SdlRenderer::rmlSystemInterface = 0;
-Rml::ElementDocument* SdlRenderer::rmlDocument = 0;
 std::string SdlRenderer::docName;
 
 
@@ -102,86 +91,10 @@ bool SdlRenderer::init() {
 			av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
 			return false;
 		}
-		
-		//SDL_ShowWindow(window);
 	}
 	
 	return true;
 }
-
-
-// --- INIT GUI ---
-// GUI-related initialisation.
-/* bool SdlRenderer::initGui(std::string document) {
-	//
-	GLenum err = glewInit();
-
-	if (err != GLEW_OK) {
-		av_log(NULL, AV_LOG_FATAL, "GLEW ERROR: %s\n", glewGetErrorString(err));
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	glMatrixMode(GL_PROJECTION | GL_MODELVIEW);
-	glLoadIdentity();
-	glOrtho(0, screen_width, screen_height, 0, 0, 1);
-
-	rmlRenderer = new RmlUiSDL2Renderer(renderer, window);
-	rmlSystemInterface = new RmlUiSDL2SystemInterface;
-
-	//Rml::String root = Shell::FindSamplesRoot();
-	//ShellFileInterface FileInterface(root);
-
-	//Rml::SetFileInterface(&FileInterface);
-	Rml::SetRenderInterface(rmlRenderer);
-	Rml::SetSystemInterface(rmlSystemInterface);
-
-	if (!Rml::Initialise()) {
-		return false;
-	}
-
-	struct FontFace {
-		Rml::String filename;
-		bool fallback_face;
-	};
-	
-	FontFace font_faces[] = {
-		{ "LatoLatin-Regular.ttf",    false },
-		{ "LatoLatin-Italic.ttf",     false },
-		{ "LatoLatin-Bold.ttf",       false },
-		{ "LatoLatin-BoldItalic.ttf", false },
-		{ "NotoEmoji-Regular.ttf",    true  },
-	};
-
-	for (const FontFace& face : font_faces) {
-		Rml::LoadFontFace("assets/" + face.filename, face.fallback_face);
-	}
-
-	rmlContext = Rml::CreateContext("default", Rml::Vector2i(screen_width, screen_height));
-
-	Rml::Debugger::Initialise(rmlContext);
-	
-	docName = document;
-	rmlDocument = rmlContext->LoadDocument("assets/" + document);
-	if (rmlDocument) {
-		rmlDocument->Show();
-		av_log(NULL, AV_LOG_INFO, "Initial RML Document loaded\n");
-	}
-	else {
-		av_log(NULL, AV_LOG_FATAL, "Failed to load RML Document: nullptr.\n");
-	}
-	
-	return true;
-}
-
-
-// --- RELOAD GUI ---
-bool SdlRenderer::reloadGui() {
-	rmlContext->UnloadDocument(rmlDocument);
-	rmlDocument = rmlContext->LoadDocument("assets/" + docName);
-	
-	return true;
-} */
-
 
 // --- QUIT ---
 // Clean up SDL resources and terminate SDL.
@@ -205,16 +118,6 @@ void SdlRenderer::quit() {
 	IMG_Quit();
 	SDL_Quit();
 }
-
-
-// --- QUIT GUI ---
-/* void SdlRenderer::quitGui() {
-	av_log(NULL, AV_LOG_INFO, "Shutting down RmlUI...\n");
-	Rml::Shutdown();
-	
-	delete rmlSystemInterface;
-	delete rmlRenderer;
-} */
 
 
 // --- SHOW WINDOW ---
@@ -489,89 +392,6 @@ void SdlRenderer::run_event_loop() {
 void SdlRenderer::stop_event_loop() {
 	run_events = false;
 }
-
-
-// --- RUN GUI LOOP ---
-/* void SdlRenderer::run_gui_loop() {
-	av_log(NULL, AV_LOG_INFO, "Start GUI event loop...\n");
-	run_events = true;
-	while (run_events) {
-		SDL_Event event;
-
-		SDL_PollEvent(&event);
-		switch (event.type) {
-			case SDL_QUIT:
-				run_events = false;
-				break;
-
-			case SDL_MOUSEMOTION:
-				rmlContext->ProcessMouseMove(event.motion.x, 
-											event.motion.y, 
-											rmlSystemInterface->GetKeyModifiers());
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				rmlContext->ProcessMouseButtonDown(
-									rmlSystemInterface->TranslateMouseButton(event.button.button), 
-									rmlSystemInterface->GetKeyModifiers());
-				break;
-
-			case SDL_MOUSEBUTTONUP:
-				rmlContext->ProcessMouseButtonUp(
-									rmlSystemInterface->TranslateMouseButton(event.button.button), 
-									rmlSystemInterface->GetKeyModifiers());
-				break;
-
-			case SDL_MOUSEWHEEL:
-				rmlContext->ProcessMouseWheel(float(event.wheel.y), 
-									rmlSystemInterface->GetKeyModifiers());
-				break;
-
-			case SDL_KEYDOWN: {
-				if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
-					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
-					gCon.signal();
-					run_events = false;
-				
-					break;
-				}
-				
-				// Intercept F8 key stroke to toggle RmlUi's visual debugger tool
-				if (event.key.keysym.sym == SDLK_F8) {
-					av_log(NULL, AV_LOG_INFO, "Toggling debugger...\n");
-					Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
-					break;
-				}
-				
-				// Intercept F5 key stroke to trigger reload of the document.
-				if (event.key.keysym.sym == SDLK_F5) {
-					av_log(NULL, AV_LOG_INFO, "Triggered document reload...\n");
-					reloadGui();
-					break;
-				}
-
-				rmlContext->ProcessKeyDown(rmlSystemInterface->TranslateKey(event.key.keysym.sym), 
-										rmlSystemInterface->GetKeyModifiers());
-				break;
-			}
-
-			default:
-				break;
-		}
-		
-		rmlContext->Update();
-
-		rmlContext->Render();
-		SDL_RenderPresent(renderer);
-	}
-	
-	av_log(NULL, AV_LOG_INFO, "Stopped GUI event loop.\n");
-}
-
-
-// --- STOP GUI LOOP ---
-void SdlRenderer::stop_gui_loop() {
-	run_events = false;
-} */
 
 
 // --- VIDEO IMAGE DISPLAY ---

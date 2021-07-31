@@ -39,27 +39,27 @@ INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_o
 			-I gui/core/math  -I gui/core/renderers  -I gui/core/resources  -I gui/core/utils \
 			-I gui/app -I gui/app/animations -I gui/app/components -I gui/app/guis \
 			-I gui/app/scrapers -I gui/app/views -I gui/app/gamelist \
-			`pkg-config --cflags freetype2` `pkg-config --cflags eigen3` \
+			`pkg-config --cflags freetype2` \
 			-I gui/core/nanosvg
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
 		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
-		-Lrmlui/lib-$(TARGET) -lrmlui -lstdc++fs `sdl2-config --libs` -lfreetype \
-			`pkg-config --libs freetype2` `pkg-config --libs eigen3` -lcurl -lvlc -lfreeimage \
+		-lstdc++fs `sdl2-config --libs` -lfreetype \
+			`pkg-config --libs freetype2` -lcurl -lvlc -lfreeimage \
 			-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
-CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO) -DRMLUI_STATIC_LIB
+CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
 LDFLAGS := -Wl,--gc-sections $(PLATFORM_LDFLAGS) $(LIB)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
 	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
-	LDFLAGS += -lws2_32 -lglew32 -lopengl32 -lwinmm -lole32
+	LDFLAGS += -lws2_32 -lopengl32 -lwinmm -lole32
 	OUTPUT := $(OUTPUT).exe
 else
-	LDFLAGS += -pthread -latomic -lGLEW -lGL -lasound
+	LDFLAGS += -pthread -latomic -lGL -lasound
 endif
 
 # Check which version of OpenGL or OpenGL ES to use.
@@ -134,9 +134,6 @@ makedir:
 	
 angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
-	
-rmlui:
-	make -C rmlui/ static
 
 obj/$(TARGET_BIN)%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -149,7 +146,7 @@ bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 
-clean: clean-objects clean-angelscript clean-rmlui
+clean: clean-objects clean-angelscript
 
 clean-objects:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
@@ -157,10 +154,7 @@ clean-objects:
 clean-angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ clean
 	
-clean-rmlui:
-	make -C rmlui/ clean
-	
-.PHONY: all clean angelscript makedir rmlui
+.PHONY: all clean angelscript makedir
 	
 .PHONY: install
 install:
@@ -173,8 +167,6 @@ install:
 	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
-
-#install -m 644 avahi/nymphcast.service $(DESTDIR)$(CONFDIR)/avahi/services/
 
 .PHONY: install-systemd
 install-systemd:
