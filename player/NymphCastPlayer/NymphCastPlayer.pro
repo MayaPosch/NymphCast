@@ -174,7 +174,13 @@ RESOURCES     = resources.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
+else: unix:!android {
+	isEmpty(PREFIX) {
+		PREFIX = /usr/local
+	}
+	target.path = $$PREFIX/bin
+}
+
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
