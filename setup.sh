@@ -7,13 +7,13 @@ echo "PACKAGE: $PACKAGE"
 # Install the dependencies.
 if [ -x "$(command -v apt)" ]; then
 	sudo apt update
-	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev libglew-dev pkg-config libeigen3-dev libfreetype-dev libfreeimage-dev rapidjson-dev
+	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
 elif [ -x "$(command -v apk)" ]; then
 	sudo apk update
-	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev eigen-dev freetype freeimage rapidjson pkgconf
+	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev vlc-dev
 elif [ -x "$(command -v pacman)" ]; then
 	sudo pacman -Syy 
-	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg eigen freetype2 freeimage rapidjson pkg-config 
+	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
 fi
 
 if [ ! -z "${UPDATE}" ]; then
@@ -37,6 +37,13 @@ fi
 
 # Remove NymphRPC folder.
 rm -rf NymphRPC
+
+# Build NymphCast client library.
+make -C src/client_lib/ clean
+make -C src/client_lib/
+
+# Install client library
+sudo make -C src/client_lib/ install
 
 # Build NymphCast server.
 if [ -f "src/server/bin/nymphcast_server" ]; then
