@@ -201,7 +201,7 @@ sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype freeima
 On **Alpine** & derivatives:
 
 ```
-sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype2 freeimage rapidjson pkg-config
+sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev vlc-dev eigen-dev curl-dev alsa-lib-dev glew-dev nymphrpc-dev pkg-config
 ```
 
 
