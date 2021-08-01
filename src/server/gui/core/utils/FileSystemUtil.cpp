@@ -32,8 +32,7 @@ namespace Utils
 	namespace FileSystem
 	{
 		static std::string homePath = "";
-		//static std::string exePath  = "";
-		static std::string exePath  = "../..";
+		static std::string exePath  = "";
 		static std::map<std::string, bool> mPathExistsIndex = std::map<std::string, bool>();
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,9 +223,10 @@ namespace Utils
 
 //////////////////////////////////////////////////////////////////////////
 
-		void setExePath(const std::string& _path)
-		{
-			const size_t path_max = 32767;
+		void setExePath(const std::string& _path) {
+			exePath = _path;
+			
+			/* const size_t path_max = 32767;
 
 #if defined(_WIN32)
 			std::wstring result(path_max, 0);
@@ -244,7 +244,7 @@ namespace Utils
 			if(exePath.empty())
 				exePath = getCanonicalPath(_path);
 			if(isRegularFile(exePath))
-				exePath = getParent(exePath);
+				exePath = getParent(exePath); */
 
 		} // setExePath
 

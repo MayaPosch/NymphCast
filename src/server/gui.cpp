@@ -44,12 +44,14 @@ std::atomic<bool> Gui::active;
 
 bool Gui::init() {
 	// If ~/.emulationstation doesn't exist and cannot be created, return false;
-	if (!verifyHomeFolderExists()) {
+	//if (!verifyHomeFolderExists()) {
 		// Set home path.
-		// TODO: Use this setting if home folder doesn't contain the .emulationstation folder?
+		// Use this setting if home folder doesn't contain the .emulationstation folder?
 		std::string exepath = Utils::FileSystem::getCWDPath();
+		
+		LOG(LogInfo) << "Attempt to use CWD path: " << exepath;
 		Utils::FileSystem::setExePath(exepath);
-	}
+	//}
 	
 	
 	screensaver = new SystemScreenSaver(&window);
