@@ -34,6 +34,13 @@ Systems running the [NymphCast MediaServer](https://github.com/MayaPosch/NymphCa
 
 Please ensure that these ports are whitelisted in e.g. firewall rules if applicable.
 
+## GUI configuration ##
+
+When setting up NymphCast server for GUI mode, the necessary resource files (in the `.emulationstation` folder) are by default located under `src/server`. This can be overridden in two ways:
+
+1. Copy the `src/server/.emulationstation` folder to the home folder (`~/`) of the user running NymphCast Server.
+2. Pass the path to the folder containing the `.emulationstation` folder as a command line option.
+
 ## Features & Status ##
 
 The current development version is v0.1-alpha5. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
@@ -152,6 +159,7 @@ The server will listen on all network interfaces for incoming connections. It su
 -c	--configuration		Path to the configuration file.
 -a	--apps				Path to the NymphCast apps folder.
 -w	--wallpaper			Path to the wallpapers folder.
+-r	--resources			Path to the GUI resources folder.
 -v	--version			Output NymphCast server version and exit.
 ```
 
