@@ -48,7 +48,6 @@ std::string ResourceManager::getResourcePath(const std::string& path) const
 	}
 
 	// not a resource, return unmodified path
-	LOG(LogInfo) << "Failed loading resource " << path << ".";
 	return path;
 }
 
@@ -64,6 +63,7 @@ const ResourceData ResourceManager::getFileData(const std::string& path) const
 	}
 
 	//if the file doesn't exist, return an "empty" ResourceData
+	LOG(LogInfo) << "Failed loading resource " << path << ".";
 	ResourceData data = {NULL, 0};
 	return data;
 }
