@@ -23,6 +23,16 @@ NymphCast can be used in a number of scenarios:
 	+ Profile: `nymphcast_screensaver_config.ini`
 - **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled.
 	+ Profile: `nymphcast_gui_config.ini`
+	
+## Network ports ##
+
+**Note:** NymphCast Server uses UDP port 4004 for discovery, and TCP port 4004 for playback.
+
+All of these ports have to be reachable on a system running NymphCast Server.
+
+Systems running the [NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) need to have UDP & TCP ports 4005 reachable.
+
+Please ensure that these ports are whitelisted in e.g. firewall rules if applicable.
 
 ## Features & Status ##
 
