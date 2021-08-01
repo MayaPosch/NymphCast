@@ -36,23 +36,38 @@ std::thread* Gui::sdl = 0;
 std::atomic<bool> Gui::running = false;
 Window Gui::window;
 SystemScreenSaver* Gui::screensaver = 0;
+std::string Gui::resourceFolder;
 NymphCastClient Gui::client;
 std::condition_variable Gui::resumeCv;
 std::mutex Gui::resumeMtx;
 std::atomic<bool> Gui::active;
 
 
-bool Gui::init() {
-	// If ~/.emulationstation doesn't exist and cannot be created, return false;
-	//if (!verifyHomeFolderExists()) {
-		// Set home path.
-		// Use this setting if home folder doesn't contain the .emulationstation folder?
-		std::string exepath = Utils::FileSystem::getCWDPath();
-		
-		LOG(LogInfo) << "Attempt to use CWD path: " << exepath;
-		Utils::FileSystem::setExePath(exepath);
-	//}
+bool Gui::init(std::string resFolder) {
+	resourceFolder = resFolder;
 	
+	if (resFolder.empty()) {
+		//if (!Utils::FileSystem::exists(configDir)) {
+			//
+		//}
+		
+		// If ~/.emulationstation doesn't exist and cannot be created, return false;
+		if (!verifyHomeFolderExists()) {
+			// Clear home folder setting.
+			Utils::FileSystem::setHomePath(resFolder);
+			
+			// Set home path.
+			// Use this setting if home folder doesn't contain the .emulationstation folder?
+			std::string exepath = Utils::FileSystem::getCWDPath();
+			
+			LOG(LogInfo) << "Attempt to use CWD path: " << exepath;
+			Utils::FileSystem::setExePath(exepath);
+		}
+	}
+	else {
+		LOG(LogInfo) << "Setting exe path to: " << resFolder;
+		Utils::FileSystem::setExePath(resFolder);
+	}
 	
 	screensaver = new SystemScreenSaver(&window);
 	PowerSaver::init();
@@ -97,7 +112,10 @@ bool Gui::init() {
 bool Gui::verifyHomeFolderExists() {
 	//make sure the config directory exists
 	std::string home = Utils::FileSystem::getHomePath();
-	std::string configDir = home + "/.emulationstation";
+	std::string configDir = home + "/.emulationstation/resources";
+	
+	LOG(LogInfo) << "Checking config dir: " << configDir;
+	
 	if (!Utils::FileSystem::exists(configDir)) {
 		/* std::cout << "Creating config directory \"" << configDir << "\"\n";
 		Utils::FileSystem::createDirectory(configDir);
@@ -105,6 +123,8 @@ bool Gui::verifyHomeFolderExists() {
 			std::cerr << "Config directory could not be created!\n";
 			return false;
 		} */
+		
+		LOG(LogInfo) << "Config dir doesn't exist.";
 		
 		return false;
 	}

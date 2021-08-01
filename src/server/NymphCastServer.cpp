@@ -1265,6 +1265,7 @@ int main(int argc, char** argv) {
 	sarge.setArgument("a", "apps", "Custom NymphCast apps location.", true);
 	sarge.setArgument("w", "wallpaper", "Custom NymphCast wallpaper location.", true);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
+	sarge.setArgument("r", "resources", "Path to GUI resource folder.", true);
 	sarge.setArgument("v", "version", "Output the NymphCast version and exit.", false);
 	sarge.setDescription("NymphCast receiver application. For use with NymphCast clients. More details: http://nyanko.ws/nymphcast.php.");
 	sarge.setUsage("nymphcast_server <options>");
@@ -1305,6 +1306,11 @@ int main(int argc, char** argv) {
 
 	if (wallpapersFolder.back() != '/') {
 		wallpapersFolder.append("/");
+	}
+	
+	std::string resourceFolder = "";
+	if (!sarge.getFlag("resources", resourceFolder)) {
+		std::cout << "Setting resource folder to default location." << std::endl;
 	}
 	
 	// Read in the configuration.
@@ -1671,7 +1677,7 @@ int main(int argc, char** argv) {
 	if (!display_disable) {
 		if (gui_enable) {
 			// Start the GUI with the default document.
-			if (!Gui::init()) {
+			if (!Gui::init(resourceFolder)) {
 				// Handle error.
 				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
 				init_success = false;

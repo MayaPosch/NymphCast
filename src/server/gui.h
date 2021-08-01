@@ -28,6 +28,7 @@ class Gui {
 	static std::atomic<bool> running;
 	static Window window;
 	static SystemScreenSaver* screensaver;
+	static std::string resourceFolder;
 	
 	static bool verifyHomeFolderExists();
 	
@@ -37,7 +38,7 @@ public:
 	static std::mutex resumeMtx;
 	static std::atomic<bool> active;
 	
-	static bool init();
+	static bool init(std::string resFolder);
 	static bool start();
 	static bool stop();
 	static bool quit();
