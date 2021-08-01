@@ -312,6 +312,12 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
                 // Next track.
                 int crow = ui->mediaListWidget->currentRow();
                 if (++crow == ui->mediaListWidget->count()) {
+					if (ui->repeatQueueCheckBox->isChecked() == false) {
+						// Don't repeat playlist. End playback.
+						std::cout << "Repeat Queue checkbox is false. End playback." << std::endl;
+						return;
+					}
+					
                     // Restart at top.
                     crow = 0;
                 }
