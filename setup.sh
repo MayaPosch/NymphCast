@@ -14,6 +14,10 @@ elif [ -x "$(command -v apk)" ]; then
 elif [ -x "$(command -v pacman)" ]; then
 	sudo pacman -Syy 
 	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
+elif [ -x "$(command -v brew)" ]; then
+	brew update
+	brew install sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkg-config curl 
+	brew install --cask vlc
 fi
 
 if [ ! -z "${UPDATE}" ]; then
