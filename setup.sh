@@ -5,7 +5,11 @@ echo "UPDATE: $UPDATE"
 echo "PACKAGE: $PACKAGE"
 
 # Install the dependencies.
-if [ -x "$(command -v apt)" ]; then
+if [ -x "$(command -v brew)" ]; then
+	brew update
+	brew install sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkg-config curl 
+	brew install --cask vlc
+elif [ -x "$(command -v apt)" ]; then
 	sudo apt update
 	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
 elif [ -x "$(command -v apk)" ]; then
@@ -14,10 +18,6 @@ elif [ -x "$(command -v apk)" ]; then
 elif [ -x "$(command -v pacman)" ]; then
 	sudo pacman -Syy 
 	sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
-elif [ -x "$(command -v brew)" ]; then
-	brew update
-	brew install sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkg-config curl 
-	brew install --cask vlc
 fi
 
 if [ ! -z "${UPDATE}" ]; then
