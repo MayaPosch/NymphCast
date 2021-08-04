@@ -10,7 +10,7 @@
 	#include <unistd.h>
 	#include <fcntl.h>
 	#include <alsa/asoundlib.h>
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	#include <Windows.h>
 	#include <endpointvolume.h>
 	//#include <mmeapi.h>
@@ -30,7 +30,7 @@ class VolumeControl
     snd_mixer_t* mixerHandle;
     snd_mixer_elem_t* mixerElem;
     snd_mixer_selem_id_t* mixerSelemId;
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	HMIXER mixerHandle;
 	MIXERCONTROL mixerControl;
 	IAudioEndpointVolume * endpointVolume;

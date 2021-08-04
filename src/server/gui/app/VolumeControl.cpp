@@ -3,8 +3,9 @@
 #include "math/Misc.h"
 #include "Log.h"
 #include "Settings.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <mmdeviceapi.h>
+//#include <mmeapi.h>
 #endif
 
 #if defined(__linux__)
@@ -25,7 +26,7 @@ VolumeControl::VolumeControl()
 	#error TODO: Not implemented for MacOS yet!!!
 #elif defined(__linux__)
 	, mixerIndex(0), mixerHandle(nullptr), mixerElem(nullptr), mixerSelemId(nullptr)
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	, mixerHandle(nullptr), endpointVolume(nullptr)
 #endif
 {
@@ -41,7 +42,7 @@ VolumeControl::VolumeControl(const VolumeControl & right):
 	#error TODO: Not implemented for MacOS yet!!!
 #elif defined(__linux__)
 	, mixerIndex(0), mixerHandle(nullptr), mixerElem(nullptr), mixerSelemId(nullptr)
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	, mixerHandle(nullptr), endpointVolume(nullptr)
 #endif
 {
@@ -150,7 +151,7 @@ void VolumeControl::init()
 			LOG(LogError) << "VolumeControl::init() - Failed to open ALSA mixer!";
 		}
 	}
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	//get windows version information
 	OSVERSIONINFOEXA osVer = {sizeof(OSVERSIONINFO)};
 	::GetVersionExA(reinterpret_cast<LPOSVERSIONINFOA>(&osVer));
@@ -238,7 +239,7 @@ void VolumeControl::deinit()
 		mixerHandle = nullptr;
 		mixerElem = nullptr;
 	}
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	if (mixerHandle != nullptr) {
 		mixerClose(mixerHandle);
 		mixerHandle = nullptr;
@@ -287,7 +288,7 @@ int VolumeControl::getVolume() const
 			LOG(LogError) << "VolumeControl::getVolume() - Failed to get volume range!";
 		}
 	}
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	if (mixerHandle != nullptr)
 	{
 		//Windows older than Vista. use mixer API. get volume from line control
@@ -372,7 +373,7 @@ void VolumeControl::setVolume(int volume)
 			LOG(LogError) << "VolumeControl::setVolume() - Failed to get volume range!";
 		}
 	}
-#elif defined(WIN32) || defined(_WIN32)
+#elif defined(_MSC_VER)
 	if (mixerHandle != nullptr)
 	{
 		//Windows older than Vista. use mixer API. get volume from line control
