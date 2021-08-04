@@ -33,7 +33,7 @@ class Gui {
 	static bool verifyHomeFolderExists();
 	
 public:
-	static NymphCastClient client;
+	static NymphCastClient* client;
 	static std::condition_variable resumeCv;
 	static std::mutex resumeMtx;
 	static std::atomic<bool> active;

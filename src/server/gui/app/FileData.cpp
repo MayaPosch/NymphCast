@@ -329,7 +329,7 @@ void FileData::launchGame(Window* window) {
 		
 		std::vector<NymphCastRemote> receivers;
 		receivers.push_back(receiver);
-		if (!Gui::client.playShare(file, receivers)) {
+		if (!Gui::client->playShare(file, receivers)) {
 			LOG(LogError) << "Failed to play back file...";
 		}
 		else {

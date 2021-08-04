@@ -37,7 +37,7 @@ std::atomic<bool> Gui::running = false;
 Window Gui::window;
 SystemScreenSaver* Gui::screensaver = 0;
 std::string Gui::resourceFolder;
-NymphCastClient Gui::client;
+NymphCastClient* Gui::client = 0;
 std::condition_variable Gui::resumeCv;
 std::mutex Gui::resumeMtx;
 std::atomic<bool> Gui::active;
@@ -45,6 +45,8 @@ std::atomic<bool> Gui::active;
 
 bool Gui::init(std::string resFolder) {
 	resourceFolder = resFolder;
+	
+	client = new NymphCastClient;
 	
 	if (resFolder.empty()) {
 		//if (!Utils::FileSystem::exists(configDir)) {
@@ -271,6 +273,10 @@ bool Gui::quit() {
 	
 	if (screensaver) {
 		delete screensaver;
+	}
+	
+	if (client) {
+		delete client;
 	}
 	
 	return true;

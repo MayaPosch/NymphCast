@@ -85,14 +85,14 @@ void SystemData::populateFolder(FileData* folder) {
 		
 		// TODO: add all shares to a single list for now. Separate into sources & audio/video.
 		// Scan for media server instances on the network.
-		std::vector<NymphCastRemote> mediaservers = Gui::client.findShares();
+		std::vector<NymphCastRemote> mediaservers = Gui::client->findShares();
 		if (mediaservers.empty()) {
 			LOG(LogInfo) << "No media servers found.";
 			return;
 		}
 		
 		for (uint32_t i = 0; i < mediaservers.size(); ++i) {
-			std::vector<NymphMediaFile> files = Gui::client.getShares(mediaservers[i]);
+			std::vector<NymphMediaFile> files = Gui::client->getShares(mediaservers[i]);
 			if (files.empty()) { continue; }
 			
 			NYMPH_LOG_INFORMATION("Adding " + Poco::NumberFormatter::format(files.size()) + " shared files.");

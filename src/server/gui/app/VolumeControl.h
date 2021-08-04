@@ -31,8 +31,8 @@ class VolumeControl
     snd_mixer_elem_t* mixerElem;
     snd_mixer_selem_id_t* mixerSelemId;
 #elif defined(WIN32) || defined(_WIN32)
-	//HMIXER mixerHandle;
-	//MIXERCONTROL mixerControl;
+	HMIXER mixerHandle;
+	MIXERCONTROL mixerControl;
 	IAudioEndpointVolume * endpointVolume;
 #endif
 
