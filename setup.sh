@@ -11,7 +11,7 @@ if [ -x "$(command -v brew)" ]; then
 	brew install --cask vlc
 elif [ -x "$(command -v apt)" ]; then
 	sudo apt update
-	sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
+	sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
 elif [ -x "$(command -v apk)" ]; then
 	sudo apk update
 	sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev vlc-dev
@@ -50,11 +50,7 @@ make -C src/client_lib/
 sudo make -C src/client_lib/ install
 
 # Build NymphCast server.
-if [ -f "src/server/bin/nymphcast_server" ]; then
-	rm src/server/bin/nymphcast_server
-fi
-
-make -C src/server/ clean
+#make -C src/server/ clean
 make -C src/server/
 
 # Copy the wallpaper files into the bin folder.
