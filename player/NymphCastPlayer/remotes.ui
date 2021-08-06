@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>RemotesDialog</class>
+ <widget class="QDialog" name="RemotesDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>279</width>
-    <height>600</height>
+    <width>355</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Manage remote receivers</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -23,7 +23,11 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QListWidget" name="remotesListWidget"/>
+         <widget class="QListWidget" name="remotesListWidget">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label">
@@ -52,7 +56,37 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="addToGroupButton">
+            <property name="text">
+             <string>Add to group</string>
+            </property>
+           </widget>
+          </item>
          </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Groups</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Active group:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="groupsComboBox"/>
         </item>
        </layout>
       </item>
@@ -62,33 +96,27 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Groups</string>
+      <string>Group remotes</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QTreeWidget" name="treeWidget">
-          <column>
-           <property name="text">
-            <string notr="true">1</string>
-           </property>
-          </column>
-         </widget>
+         <widget class="QListWidget" name="groupRemotesListWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="deleteGroupRemoteButton">
             <property name="text">
-             <string>Delete item</string>
+             <string>Delete remote</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="editGroupButton">
+           <widget class="QPushButton" name="renameGroupButton">
             <property name="text">
-             <string>Edit group</string>
+             <string>Rename group</string>
             </property>
            </widget>
           </item>
@@ -125,7 +153,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>RemotesDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -141,7 +169,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>RemotesDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

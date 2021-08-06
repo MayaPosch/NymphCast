@@ -88,7 +88,8 @@ SOURCES += \
         litehtml/src/web_color.cpp \
         main.cpp \
         mainwindow.cpp \
-        qlitehtmlwidget.cpp
+        qlitehtmlwidget.cpp \
+		remotes.cpp
 
 HEADERS += \
         container_qpainter.h \
@@ -161,10 +162,12 @@ HEADERS += \
         litehtml/src/gumbo/visualc/include/strings.h \
         mainwindow.h \
         qlitehtml_global.h \
-        qlitehtmlwidget.h
+        qlitehtmlwidget.h \
+		remotes.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+		remotes.ui
 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoDataSQLite
 

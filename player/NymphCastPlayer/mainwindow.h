@@ -8,6 +8,8 @@
 
 #include <vector>
 
+#include "remotes.h"
+
 
 namespace Ui {
 	class MainWindow;
@@ -15,12 +17,6 @@ namespace Ui {
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
-	
-	struct NCRemoteInstance {
-		NymphCastRemote remote;
-		bool connected = false;
-		uint32_t handle;
-	};
 	
 public:
 	static NymphCastClient client;
@@ -30,9 +26,6 @@ public:
 	
 private slots:
     // Menu
-	void connectServer();
-	void connectServerIP(std::string ip);
-	void disconnectServer();
 	void about();
 	void quit();
 	void castFile();
@@ -52,11 +45,6 @@ private slots:
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
 	
-    // Remotes tab.
-	void remoteListRefresh();
-	void remoteConnectSelected();
-	void remoteDisconnectSelected();
-	
     // Apps tab.
 	void appsListRefresh();	
 	void sendCommand();
@@ -70,7 +58,10 @@ private slots:
     void playSelectedShare();
 	
 	// All tabs.
+	void remoteListRefresh();
 	void openRemotesDialog();
+	void updateRemotesList();
+	void updateGroupsList(std::vector<NCRemoteGroup> &groups);
 	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
@@ -79,11 +70,15 @@ private:
 	Ui::MainWindow *ui;
 	
 	std::vector<NCRemoteInstance> remotes;
+	std::vector<NCRemoteGroup> groups;
     std::vector<std::vector<NymphMediaFile> > mediaFiles;
 	bool muted = false;
 	bool playingTrack = false;
 	bool singleCast = false;
     QStandardItemModel sharesModel;
+	QString appDataLocation;
+	int separatorIndex;
+	RemotesDialog* rd;
 	
     QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
@@ -95,6 +90,9 @@ private:
 	bool appsGuiEnsureConnected(uint32_t &id);
 	bool connectRemote(NCRemoteInstance &instance);
 	bool disconnectRemote(NCRemoteInstance &instance);
+	
+	bool loadGroups();
+	bool saveGroups();
 };
 
 #endif // MAINWINDOW_H

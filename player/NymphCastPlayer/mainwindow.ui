@@ -41,6 +41,13 @@
            <enum>QLayout::SetMinimumSize</enum>
           </property>
           <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Remote:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QComboBox" name="playerRemotesComboBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -603,150 +610,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="remoteTab">
-       <attribute name="title">
-        <string>Remote</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <item>
-         <widget class="QGroupBox" name="groupBox">
-          <property name="title">
-           <string>Remote</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QLabel" name="remoteLabel">
-               <property name="text">
-                <string>Not connected to remote.</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="refreshRemotesToolButton">
-               <property name="toolTip">
-                <string>Refresh remotes</string>
-               </property>
-               <property name="text">
-                <string>Refresh</string>
-               </property>
-               <property name="icon">
-                <iconset resource="resources.qrc">
-                 <normaloff>:/icons/icons/replay.png</normaloff>:/icons/icons/replay.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Select 1 remote or a group to connect to.</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QListWidget" name="remotesListWidget">
-             <property name="selectionMode">
-              <enum>QAbstractItemView::MultiSelection</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QToolButton" name="connectToolButton">
-               <property name="toolTip">
-                <string>Connect to selected remote</string>
-               </property>
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset resource="resources.qrc">
-                 <normaloff>:/icons/icons/connected.png</normaloff>:/icons/icons/connected.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QToolButton" name="disconnectToolButton">
-               <property name="toolTip">
-                <string>Disconnect from selected remote.</string>
-               </property>
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset resource="resources.qrc">
-                 <normaloff>:/icons/icons/disconnected.png</normaloff>:/icons/icons/disconnected.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -766,13 +629,6 @@
     </property>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuServer">
-    <property name="title">
-     <string>Server</string>
-    </property>
-    <addaction name="actionConnect"/>
-    <addaction name="actionDisconnect"/>
-   </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
      <string>About</string>
@@ -787,7 +643,6 @@
     <addaction name="actionURL"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuServer"/>
    <addaction name="menuCast"/>
    <addaction name="menuAbout"/>
   </widget>

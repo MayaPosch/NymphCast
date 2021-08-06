@@ -15,6 +15,9 @@
 #include <QStringList>
 #include <QStandardPaths>
 #include <QDir>
+#include <QDataStream>
+
+#include "remotes.h"
 
 #if defined(Q_OS_ANDROID)
 #include <QtAndroidExtras>
@@ -99,9 +102,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	qRegisterMetaType<uint32_t>("uint32_t");
 	
 	// Set application options.
-	QCoreApplication::setApplicationName("NymphCast Player");
-	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	QCoreApplication::setOrganizationName("Nyanko");
+	QCoreApplication::setApplicationName("NymphCastPlayer");
+	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	
 	// Set configured or default stylesheet. Read out current value.
 	// Skip stylesheet if file isn't found.
@@ -123,8 +126,6 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	// Set up UI connections.
 	// Menu
-	connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(connectServer()));
-	connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(disconnectServer()));
 	connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 	connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 	connect(ui->actionFile, SIGNAL(triggered()), this, SLOT(castFile()));
@@ -144,11 +145,6 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(sliderReleased()), this, SLOT(adjustVolume()));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
-    
-    // Remotes tab.
-	connect(ui->refreshRemotesToolButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
-	connect(ui->connectToolButton, SIGNAL(clicked()), this, SLOT(remoteConnectSelected()));
-	connect(ui->disconnectToolButton, SIGNAL(clicked()), this, SLOT(remoteDisconnectSelected()));
 	
 	// Apps tab.
 	connect(ui->appsEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
@@ -182,6 +178,15 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Set values.
     ui->sharesTreeView->setModel(&sharesModel);
+	
+	// Set location for user data.
+	appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	
+	// Ensure this path exists.
+	QDir dir(appDataLocation);
+	if (!dir.exists()) {
+		dir.mkpath(".");
+	}
 	
 #if defined(Q_OS_ANDROID)
     // We need to redirect stdout/stderr. This requires starting a new thread here.
@@ -237,7 +242,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 #else
 	// Reload stored file paths, if any.
 	QFile playlist;
-	playlist.setFileName("filepaths.conf");
+	playlist.setFileName(appDataLocation + "/filepaths.conf");
 	playlist.open(QIODevice::ReadOnly);
 	QTextStream textStream(&playlist);
 	QString line;
@@ -254,9 +259,20 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 
 	// Obtain initial list of available remotes.
 	remoteListRefresh();
+	
+	// Load any saved groups.
+	loadGroups();
+	
+	// Restore UI preferences.
+	ui->singlePlayCheckBox->setChecked(settings.value("ui/singlePlayCheckBox", true).toBool());
+	ui->repeatQueueCheckBox->setChecked(settings.value("ui/repeatQueueCheckBox", false).toBool());
 }
 
 MainWindow::~MainWindow() {
+	QSettings settings;
+	settings.setValue("ui/singlePlayCheckBox", ui->singlePlayCheckBox->isChecked());
+	settings.value("ui/repeatQueueCheckBox", ui->repeatQueueCheckBox->isChecked());
+	
 	delete ui;
 }
 
@@ -332,45 +348,6 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 }
 
 
-void MainWindow::connectServer() {
-	/* if (connected) { return; }
-	
-	// Ask for the IP address of the server.
-	QString ip = QInputDialog::getText(this, tr("NymphCast Receiver"), tr("Please provide the NymphCast receiver IP address."));
-	if (ip.isEmpty()) { return; }	
-	
-	// Connect to localhost NymphRPC server, standard port.
-	if (!client.connectServer(ip.toStdString(), 0, serverHandle)) {
-		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
-		return;
-	}
-	
-	// Update server name label.
-	ui->remoteLabel->setText("Connected to " + ip);
-	
-	// Successful connect.
-	connected = true; */
-}
-
-
-// --- CONNECT SERVER IP ---
-void MainWindow::connectServerIP(std::string ip) {
-	/* if (connected) { return; }
-	
-	// Connect to NymphRPC server, standard port.
-	if (!client.connectServer(ip, 0, serverHandle)) {
-		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
-		return;
-	}
-	
-	// TODO: update server name label.
-	ui->remoteLabel->setText("Connected to " + QString::fromStdString(ip));
-	
-	// Successful connect.
-	connected = true; */
-}
-
-
 // --- CONNECT REMOTE ---
 bool MainWindow::connectRemote(NCRemoteInstance &instance) {
 	if (instance.connected) { return true; }
@@ -403,18 +380,6 @@ bool MainWindow::disconnectRemote(NCRemoteInstance &instance) {
 }
 
 
-// --- DISCONNECT SERVER ---
-void MainWindow::disconnectServer() {
-	/* if (!connected) { return; }
-	
-	client.disconnectServer(serverHandle);
-	
-	ui->remoteLabel->setText("Disconnected.");
-	
-	connected = false; */
-}
-
-
 // --- REMOTE LIST REFRESH ---
 // Refresh the list of remote servers on the network.
 void MainWindow::remoteListRefresh() {
@@ -422,7 +387,6 @@ void MainWindow::remoteListRefresh() {
 	std::vector<NymphCastRemote> list = client.findServers();
 	
 	// Update the list with any changed items.
-	ui->remotesListWidget->clear(); // FIXME: just resetting the whole thing for now.
 	ui->playerRemotesComboBox->clear();
 	ui->sharesRemotesComboBox->clear();
 	ui->appsGuiRemotesComboBox->clear();
@@ -431,7 +395,6 @@ void MainWindow::remoteListRefresh() {
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(list[i].ipv4 + " (" + list[i].name + ")"));
 		newItem->setData(Qt::UserRole, QVariant(i));
-		ui->remotesListWidget->insertItem(i, newItem);
 		ui->playerRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
 													" (" + list[i].name + ")"), QVariant(i));
 		ui->sharesRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
@@ -446,48 +409,19 @@ void MainWindow::remoteListRefresh() {
 		nci.remote = list[i];
 		remotes.push_back(nci);
 	}
-}
-
-
-// --- REMOTE CONNECT SELECTED ---
-// Connect to the selected remote server.
-void MainWindow::remoteConnectSelected() {
-	/* if (connected) { return; }
 	
-	//QListWidgetItem* item = ui->remotesListWidget->currentItem();
-	//QString ip = item->data(Qt::UserRole).toString();
-	QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
+	// Insert group separator for the relevant combo boxes.
+	ui->playerRemotesComboBox->insertSeparator(remotes.size());
+	ui->sharesRemotesComboBox->insertSeparator(remotes.size());
+	separatorIndex = remotes.size();
 	
-	if (items.size() == 0) { 
-		QMessageBox::warning(this, tr("No selection"), tr("No remotes were selected."));
-		return; 
+	// Add groups.
+	for (uint32_t i = 0; i < groups.size(); ++i) {
+		ui->playerRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+													" (group)"), QVariant(i));
+		ui->sharesRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+													" (group)"), QVariant(i));
 	}
-	
-	// The first (index 0) remote is connected to as the master remote. Any further remotes are
-	// sent to the master remote as slave remotes.
-	
-	// Connect to the server.
-	//connectServerIP(ip.toStdString());
-	int ref = items[0]->data(Qt::UserRole).toInt();
-	connectServerIP(remotes[ref].ipv4);
-	
-	if (!connected || items.size() < 2) { return; }
-	
-	std::vector<NymphCastRemote> slaves;
-	for (int i = 1; i < items.size(); ++i) {
-        ref = items[i]->data(Qt::UserRole).toInt();
-		slaves.push_back(remotes[ref]);
-	}
-	
-	client.addSlaves(serverHandle, slaves); */
-}
-
-
-// --- REMOTE DISCONNECT SELECTED ---
-void MainWindow::remoteDisconnectSelected() {
-	// FIXME: Redirect to the plain disconnectServer() function for now.
-	// With the multi-server functionality implemented, this should disconnect the selected remote.
-	//disconnectServer();
 }
 
 
@@ -551,7 +485,7 @@ void MainWindow::addFile() {
 	
 	// Store path of added file to reload on restart. Append to file.
 	QFile playlist;
-	playlist.setFileName("filepaths.conf");
+	playlist.setFileName(appDataLocation + "/filepaths.conf");
 	playlist.open(QIODevice::WriteOnly | QIODevice::Append);
 	QTextStream textStream(&playlist);
 	textStream << filename << "\n";
@@ -633,14 +567,14 @@ bool MainWindow::sharesIsConnected() {
 
 // --- PLAY ---
 void MainWindow::play() {
-	// TODO: Play selected track back on selected remote. Connect if necessary.
+	// Play selected track back on selected remote. Connect if necessary.
 	// Immediately fail if:
 	// * No remotes available.
 	// * No remote or group selected.
 	
-	// Get currently selected remote, connect if necessary.
+	// Get currently selected remote or group, connect if necessary.
 	if (ui->playerRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		QMessageBox::warning(this, tr("No remotes found"), tr("Please refresh and try again."));
 		return;
 	}
 	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
@@ -650,6 +584,59 @@ void MainWindow::play() {
 	
 	// Obtain selected ID.
 	int index = ui->playerRemotesComboBox->currentIndex();
+	
+	// If a group is selected, pick the first remote in the group as master.
+	if (index > separatorIndex) {
+		// Get the group and set up the master & any slave receivers.
+		NCRemoteGroup& group = groups[ui->playerRemotesComboBox->currentData().toUInt()];
+		if (group.remotes.size() < 1) {
+			// Error: no remotes in group.
+			QMessageBox::warning(this, tr("No remotes"), tr("Group contains no remotes."));
+			return;
+		}
+		
+		if (!group.remotes[0].connected) {
+			if (!connectRemote(group.remotes[0])) {
+				QMessageBox::warning(this, tr("Connect fail."), tr("Unable to connect to group."));
+				return;
+			}
+		}
+		
+		// Start playing the currently selected track if it isn't already playing. 
+		// Else pause or unpause playback.
+		if (playingTrack) {
+			client.playbackStart(group.remotes[0].handle);
+		}
+		else {
+			QListWidgetItem* item = ui->mediaListWidget->currentItem();
+			if (item == 0) { 
+				QMessageBox::warning(this, tr("No file selected"), tr("Please first select a file to play."));
+				return; 
+			}
+			
+			QString filename = item->data(Qt::UserRole).toString();
+			
+			// Add the slave receivers.
+			if (group.remotes.size() > 1) {
+				std::vector<NymphCastRemote> slaves;
+				for (uint32_t i = 1; i < (uint32_t) group.remotes.size(); ++i) {
+					slaves.push_back(group.remotes[i].remote);
+				}
+				
+				if (!client.addSlaves(group.remotes[0].handle, slaves)) {
+					QMessageBox::warning(this, tr("Failed to add slaves"), tr("Please check that all remotes in the group are online."));
+					return;
+				}
+			}
+			
+			if (client.castFile(group.remotes[0].handle, filename.toStdString())) {
+				// Playing back file now. Update status.
+			   playingTrack = true;
+			}
+		}
+		
+		return;
+	}
 	
 	// Ensure the remote is connected.
 	if (!remotes[index].connected) {
@@ -956,7 +943,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 			appStr = list[1].toStdString();
 			
 			// Merge index 2 until the end into a single space-separated string.
-			for (uint32_t i = 2; i < list.size(); i++) {
+			for (int i = 2; i < list.size(); i++) {
 				cmdStr += list[i].toStdString() + " ";
 			}
 			
@@ -967,7 +954,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 			appStr = list[0].toStdString();
 			
 			// TODO: merge commands until the end into a single space-separated string.
-			for (uint32_t i = 1; i < list.size(); i++) {
+			for (int i = 1; i < list.size(); i++) {
 				cmdStr += list[i].toStdString() + " ";
 			}
 			
@@ -1049,13 +1036,13 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
-	uint32_t ncid;
-    if (!sharesEnsureConnected(ncid)) { return; }
+	//uint32_t ncid;
+    //if (!sharesEnsureConnected(ncid)) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
     if (indexes.size() == 0) {
-        QMessageBox::warning(this, tr("No file selected."), tr("No media file selected."));
+        QMessageBox::warning(this, tr("No file selected"), tr("No media files present."));
         return;
     }
     else if (indexes.size() > 1) {
@@ -1066,15 +1053,30 @@ void MainWindow::playSelectedShare() {
     QMap<int, QVariant> data = sharesModel.itemData(indexes[0]);
     QList<QVariant> ids = data[Qt::UserRole].toList();
 	
-	// TODO: use a group from the combobox.
-    
-    // Obtain list of target receivers.
-    QList<QListWidgetItem*> items = ui->remotesListWidget->selectedItems();
+	int index = ui->sharesRemotesComboBox->currentIndex();
+	
     std::vector<NymphCastRemote> receivers;
-	receivers.push_back(remotes[ncid].remote);
-	for (int i = 0; i < items.size(); ++i) {
-        int ref = items[i]->data(Qt::UserRole).toInt();
-		receivers.push_back(remotes[ref].remote);
+	if (index > separatorIndex) {
+		// Get the group and set up the master & any slave receivers.
+		NCRemoteGroup& group = groups[ui->sharesRemotesComboBox->currentData().toUInt()];
+		if (group.remotes.size() < 1) {
+			// Error: no remotes in group.
+			QMessageBox::warning(this, tr("No remotes"), tr("Group contains no remotes."));
+			return;
+		}
+			
+		// Add the receivers.
+		for (uint32_t i = 0; i < (uint32_t) group.remotes.size(); ++i) {
+			receivers.push_back(group.remotes[i].remote);
+		}
+	}
+	else if (index < separatorIndex) {
+		uint32_t ncid = ui->sharesRemotesComboBox->currentIndex();
+		receivers.push_back(remotes[ncid].remote);
+	}
+	else {
+		// Separator was selected?!
+		return;
 	}
     
     // Play file via media server.
@@ -1086,7 +1088,68 @@ void MainWindow::playSelectedShare() {
 
 // --- OPEN REMOTES DIALOG ---
 void MainWindow::openRemotesDialog() {
-	//
+	rd = new RemotesDialog;
+	connect(rd, SIGNAL(updateRemotesList()), this, SLOT(updateRemotesList()));
+	connect(rd, SIGNAL(saveGroupsList(std::vector<NCRemoteGroup>&)),
+				this, SLOT(updateGroupsList(std::vector<NCRemoteGroup>&)));
+	
+	// Set data.
+	rd->setRemoteList(remotes);
+	rd->updateGroupsList(groups);
+	
+	// Execute dialog.
+	rd->exec();
+	
+	delete rd;
+}
+
+
+// --- UPDATE REMOTES LIST ---
+void MainWindow::updateRemotesList() {
+	rd->setRemoteList(remotes);
+}
+
+
+// --- UPDATE GROUPS LIST ---
+void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
+	this->groups = groups;
+	
+	// Update remotes combo boxes.
+	// Only update the combo boxes on the Player & Shares tabs as these use groups.
+	ui->playerRemotesComboBox->clear();
+	ui->sharesRemotesComboBox->clear();
+	ui->appsGuiRemotesComboBox->clear();
+	ui->appsRemotesComboBox->clear();
+	for (uint32_t i = 0; i < remotes.size(); ++i) {
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(QString::fromStdString(remotes[i].remote.ipv4 + " (" + remotes[i].remote.name + ")"));
+		newItem->setData(Qt::UserRole, QVariant(i));
+		ui->playerRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+													" (" + remotes[i].remote.name + ")"), QVariant(i));
+		ui->sharesRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+													" (" + remotes[i].remote.name + ")"), QVariant(i));
+		ui->appsGuiRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+													" (" + remotes[i].remote.name + ")"), QVariant(i));
+		ui->appsRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+													" (" + remotes[i].remote.name + ")"), QVariant(i));
+	}
+	
+	// Insert group separator for the relevant combo boxes.
+	ui->playerRemotesComboBox->insertSeparator(remotes.size());
+	ui->sharesRemotesComboBox->insertSeparator(remotes.size());
+	separatorIndex = remotes.size();
+	
+	// Add groups.
+	for (uint32_t i = 0; i < groups.size(); ++i) {
+		ui->playerRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+													" (group)"), QVariant(i));
+		ui->sharesRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+													" (group)"), QVariant(i));
+	}
+	
+	
+	// Save new groups to disk.
+	saveGroups();
 }
 
 
@@ -1099,4 +1162,87 @@ void MainWindow::about() {
 // --- QUIT ---
 void MainWindow::quit() {
 	exit(0);
+}
+
+
+// --- LOAD GROUPS ---
+// Load the remote groups from file, if exists.
+bool MainWindow::loadGroups() {
+	// Open the groups file.
+	QFile file(appDataLocation + "/groups.bin");
+	if (!file.exists()) { return false; }
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::warning(this, tr("Error loading groups"), tr("Error reading the groups.bin file!"));
+		return false;
+	}
+	
+	// Read in the groups.
+	QDataStream ds(&file);
+	// First read in the number of groups.
+	quint32 numGroups;
+	ds >> numGroups;
+	// Read group name, then the number of remotes in the group, followed by the remotes.
+	for (uint32_t i = 0; i < numGroups; ++i) {
+		QString gname;
+		quint32 numRemotes;
+		ds >> gname;
+		ds >> numRemotes;
+		
+		NCRemoteGroup rg;
+		rg.name = gname.toStdString();
+		
+		for (uint32_t j = 0; j < numRemotes; ++j) {
+			QString rname;
+			QString ipv4;
+			QString ipv6;
+			quint16 port;
+			
+			ds >> rname;
+			ds >> ipv4;
+			ds >> ipv6;
+			ds >> port;
+			
+			NymphCastRemote ncr;
+			ncr.name = rname.toStdString();
+			ncr.ipv4 = ipv4.toStdString();
+			ncr.ipv6 = ipv6.toStdString();
+			ncr.port = (uint16_t) port;
+			
+			NCRemoteInstance nci;
+			nci.remote = ncr;
+			
+			rg.remotes.push_back(nci);
+		}
+	}
+	
+	return true;
+}
+
+
+// --- SAVE GROUPS ---
+// Save the remote groups to file.
+bool MainWindow::saveGroups() {
+	// Open the groups file.
+	QFile file(appDataLocation + "/groups.bin");
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		QMessageBox::warning(this, tr("Error saving groups"), tr("Error opening the groups.bin file!"));
+		return false;
+	}
+	
+	// Write the groups.
+	QDataStream ds(&file);
+	ds << (quint32) groups.size(); // Number of groups.
+	for (uint32_t i = 0; i < groups.size(); ++i) {
+		// Write group name, then the number of remotes in the group, followed by the remotes.
+		ds << QString::fromStdString(groups[i].name);
+		ds << (quint32) groups[i].remotes.size();
+		for (uint32_t j = 0; j < groups[i].remotes.size(); ++j) {
+			ds << QString::fromStdString(groups[i].remotes[j].remote.name);
+			ds << QString::fromStdString(groups[i].remotes[j].remote.ipv4);
+			ds << QString::fromStdString(groups[i].remotes[j].remote.ipv6);
+			ds << (quint16) groups[i].remotes[j].remote.port;
+		}
+	}
+	
+	return true;
 }
