@@ -2,11 +2,11 @@
 
 # What is NymphCast? #
 
-NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device.
+NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device, or directly on the receiver.
 
 In addition, the server supports powerful NymphCast apps written in AngelScript to extend the overall NymphCast functionality with e.g. 3rd party audio / video streaming protocol support on the server side, and cross-platform control panels served to the client application that integrate with the overall client experience.  
 
-NymphCast requires at least the server application to run on a target device, while the full functionality is provided in conjunction with a  remote control device: 
+NymphCast requires in all but the GUI mode that at least the server application runs on a target device, while the full functionality is provided in conjunction with a  remote control device: 
 ![NymphCast diagram](doc/nymphcast.png)
 
 Client-side core functionality is provided through the NymphCast library.
@@ -45,26 +45,25 @@ When setting up NymphCast server for GUI mode, the necessary resource files (in 
 
 The current development version is v0.1-alpha5. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
 
+Category | Status | Description | Notes
+---|----|---|---
+Streaming |90% | Streaming media files from client to server | Meta-info & playback status reporting in progress.
+Playback | 50% | Subtitle & stream selection support | Implemented on server, implementation missing on client side & in SDK.
+Streaming | 100% | Streaming from URLs | 
+Playback | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
+Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation and other bugs remain.
+Streaming | 100% | Streaming from NymphCast MediaServer instances | 
+SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
 
-- [x] Streaming media content (files) between client and server.
-- [x] Streaming online content by passing a URL to the server.
-- [x] Support all mainstream audio and video codecs using ffmpeg.
-- [x] Run AngelScript-based apps with a custom API for external communication.
-- [x] Multi-cast media content to multiple servers with good synchronization.
-- [x] Playback of media content shared on the local network.
-- [x] Stand-alone GUI mode.
 
-**Timeline for the v0.1 release:**
+The following features are considered **experimental** and will exist as a potential v0.2 preview in v0.1-release:
 
-- [x] Begin implementation.
-- [x] Implemented all features.
-- [ ] Validated features.
-- [ ] Feature freeze.
-- [ ] Beta testing start.
-- [ ] Release candidates.
-- [ ] Release.
+Category | Status | Description | Notes
+---|----|---|---
+Apps | 25% | NymphCast Apps | AngelScript-based apps. Currently implemented as CLI-based interface with limited runtime APIs. GUI implementation is highly experimental.
 
-## Components ##
+
+## NymphCast Ecosystem ##
 
 
 The NymphCast project consists out of multiple components:
@@ -72,21 +71,19 @@ The NymphCast project consists out of multiple components:
 Component | Purpose | Status
 ---|---|---
 NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha5
-NymphCast Client SDK | Software Development Kit for developing NymphCast clients. | v0.1-alpha4
+[LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1-alpha5
 NymphCast Client | CLI-based NymphCast client. | v0.1-alpha4
 NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-alpha4
-NymphCast Player Android | Native Android-based NymphCast client. | v0.1-alpha0
 [NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-alpha0
 
 ### **NymphCast Player Client** ###
 
-The NymphCast Player provides NymphCast client functionality. It is also a demonstration platform for the NymphCast SDK (see details on the SDK later in this document). It is designed to run on any OS that is supported by the Qt framework.
+The NymphCast Player provides NymphCast client functionality in a graphical (Qt-based) format. It is also a demonstration platform for the NymphCast SDK (see details on the SDK later in this document). It is designed to run on any OS that is supported by the Qt framework.
 
-![](art/NymphCastPlayer_screenshot_player_tab_alpha3.jpg) ![](art/NymphCastPlayer_screenshot_remotes_tab_alpha3.jpg)![](art/NymphCastPlayer_screenshot_apps_index_cropped_alpha3.jpg)
 
 ### **Server Platforms** ###
 
-The server should work on any platform that is supported by a C++17 toolchain and the LibPoco dependency. This includes Windows, MacOS, Linux and BSD.
+The server should work on any platform that is supported by a C++17 toolchain and the LibPoco & ffmpeg (libAV) dependencies. This includes Windows, MacOS, Linux and BSD.
 
 FFmpeg and SDL2 libraries are used for audio and video playback. Both of which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms. **System requirements** also depend on whether only audio or also video playback is required. The latter can be disabled, which drops any graphical output requirement.
 
@@ -94,11 +91,11 @@ FFmpeg and SDL2 libraries are used for audio and video playback. Both of which a
 
 ### **Client Platforms** ###
 
-For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support. Essentially, this means any mainstream desktop OS including Linux, Windows, BSD and MacOS should qualify, along with mobile platforms. Currently Android is also supported, with iOS support planned.
+For the Qt-based NymphCast Player, a target platform needs to support LibPoco and have a C++ compiler which supports C++17 (&lt;filesystem&gt; header supported) or better, along with Qt5 support. Essentially, this means any mainstream desktop OS including Linux, Windows, BSD and MacOS should qualify, along with mobile platforms. Currently Android is also supported via Qt's mobile support, with iOS support planned.
 
-For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required.
+For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required. All clients require the use of libnymphcast (see SDK section) as dependency.
 
-Mobile platforms are a work in progress. An Android client (native Java with JNI) is in development.
+Note that all mobile platforms are a work in progress due to the limitations and peculiarities of these platforms.
 
 <a id="id-rs"></a>
 ## Repository Structure ##
@@ -106,11 +103,9 @@ Mobile platforms are a work in progress. An Android client (native Java with JNI
 The repository currently contains the NymphCast server, client SDK and NymphCast Player client sources.
 
 	/
-	|- android	(Android client app)
 	|- player 	(the NymphCast demonstration client)
 	|- src/
-	|	|- client 		(basic NymphCast client, for testing)
-	|	|- client_lib 	(NymphCast SDK files)
+	|	|- client 		(basic CLI NymphCast client)
 	|	|- server		(the NymphCast server and NymphCast app files)
 	|- tools	(shell scripts for creating releases, in progress)
 
@@ -118,7 +113,7 @@ The repository currently contains the NymphCast server, client SDK and NymphCast
 <a id="id-gs"></a>
 ## Getting Started ##
 
-To start using NymphCast, you need a device on which the server will be running (most likely a SBC or other Linux system). NymphCast is offered as binaries for selected distros, and as source code for use and development on a variety of platforms.
+To start using NymphCast, you need a device on which the server will be running (most likely an SBC or other Linux system). NymphCast is offered as binaries for selected distros, and as source code for use and development on a variety of platforms.
 
 ### **Releases** ###
 
@@ -149,9 +144,11 @@ If pre-compiled releases for your target device or operating system are currentl
 ### **Running NymphCast** ###
 
 The **server binary** can be started with only the configuration flag specified.
-To start the server, execute the binary (from the `bin/<platform>` folder) to have it start listening on port 4004, with the appropriate configuration file (see Usage Scenarios for a list):
+To start the server, execute the binary (from the `bin/<platform>/` folder) to have it start listening on port 4004, with the appropriate configuration file (see Usage Scenarios for a list). 
 
-`./nymphcast_server -c nymphcast_config.ini`.
+E.g. for an audio-only configuration:
+
+`./nymphcast_server -c nymphcast_audio_config.ini`.
  
 The server will listen on all network interfaces for incoming connections. It supports the following options:
 ```
@@ -193,21 +190,21 @@ To build the corresponding client-related parts of NymphCast, in addition to a C
 
 ### **Server Dependencies** ###
 
-* [NymphRPC](https://github.com/MayaPosch/NymphRPC)
-* LibNymphCast (see client library & SDK sections)
-* [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
-* LibSDL2
-* LibSDL2_Image
-* LibPOCO (1.5+)
+- [NymphRPC](https://github.com/MayaPosch/NymphRPC)
+- LibNymphCast (see client library & SDK sections)
+- [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
+- LibSDL2
+- LibSDL2_Image
+- LibPOCO (1.5+)
+- libFreeType
+- libFreeImage
+- RapidJson
+- Pkg-config
 
 On **Debian** & derivatives:
 
 ```
-sudo apt -y install libsdl2-image-dev libsdl2-dev libpoco-dev libfreetype-dev libfreeimage-dev rapidjson-dev pkg-config
-``` 
-and 
-```
-sudo apt -y install libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev
+sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
 ```
 
 On **Arch** & derivatives:
@@ -271,6 +268,7 @@ On **Android**:
 3. Ensure dependency libraries along with their headers are installed in the Android NDK, under `<ANDROID_SDK>/ndk/<VERSION>/toolchains/llvm/prebuilt/<HOST_OS>/sysroot/usr/lib/<TARGET>` where `TARGET` is the target Android platform (ARMv7, AArch64, x86, x86_64). Header files are placed in the accompanying `usr/include` folder.
 4. Open the Qt project in a Qt Creator instance which has been configured for building for Android targets, and build the project.
 5. An APK is produced, which can be loaded on any supported Android device.
+
 
 Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
 
