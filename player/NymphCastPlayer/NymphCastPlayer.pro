@@ -169,7 +169,7 @@ FORMS += \
         mainwindow.ui \
 		remotes.ui
 
-LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoDataSQLite
+LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 
 win32:LIBS += -lws2_32
 
