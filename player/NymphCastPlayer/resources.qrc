@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/icons">
+    <file>icons/cinema-film.png</file>
+    <file>icons/music-library.png</file>
+    <file>icons/subtitles.png</file>
     <file>icons/replace.png</file>
     <file>icons/minus.png</file>
     <file>icons/add.png</file>
