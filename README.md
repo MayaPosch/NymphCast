@@ -48,7 +48,7 @@ The current development version is v0.1-alpha5. Version 0.1 will be the first re
 Category | Status | Description | Notes
 ---|----|---|---
 Streaming |90% | Streaming media files from client to server | Meta-info & playback status reporting in progress.
-Playback | 50% | Subtitle & stream selection support | Implemented on server, implementation missing on client side & in SDK.
+Playback | 75% | Subtitle & stream selection support | Implemented but untested.
 Streaming | 100% | Streaming from URLs | 
 Playback | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
 Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation and other bugs remain.
