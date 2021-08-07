@@ -43,11 +43,22 @@ fi
 rm -rf NymphRPC
 
 # Build NymphCast client library.
-make -C src/client_lib/ clean
-make -C src/client_lib/
+#make -C src/client_lib/ clean
+#make -C src/client_lib/
+if [ -f "/usr/lib/libnymphcast.so" ]; then
+	echo "LibNymphCast dynamic library found in /usr/lib. Skipping installation."
+else
+	# Obtain current version of LibNymphCast
+	git clone --depth 1 https://github.com/MayaPosch/libnymphcast.git
+	
+	# Build libnymphcast and install it.
+	echo "Installing LibNymphCast..."
+	make -C libnymphcast/ lib
+	sudo make -C libnymphcast/ install
+fi
 
 # Install client library
-sudo make -C src/client_lib/ install
+#sudo make -C src/client_lib/ install
 
 # Build NymphCast server.
 #make -C src/server/ clean
