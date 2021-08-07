@@ -285,7 +285,7 @@ The current server and client documentation is hosted at the [Nyanko website](ht
 <a id="id-sdk"></a>
 ## SDK ##
 
-An SDK has been made available in the `src/client_lib/` folder. The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
+An SDK has been made available in the [LibNymphCast repository](https://github.com/MayaPosch/libnymphcast). The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
 
 To use the SDK, the Makefile in the SDK folder can be executed with a simple `make` command, after which a library file can be found in the `src/client_lib/lib` folder. This can be installed (on Linux) with `make install`.
 
