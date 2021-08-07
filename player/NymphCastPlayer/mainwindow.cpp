@@ -145,6 +145,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(sliderReleased()), this, SLOT(adjustVolume()));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
+	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
+	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
+	connect(ui->cycleVideoButton, SIGNAL(clicked()), this, SLOT(cycleVideo()));
 	
 	// Apps tab.
 	connect(ui->appsEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
@@ -288,6 +291,8 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 	if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
+		ui->remoteStatusLabel->setText("Playing...");
+		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
 		ui->stopToolButton->setEnabled(true);
@@ -306,6 +311,8 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 	}
 	else {
         std::cout << "Status: Set not playing..." << std::endl;
+		ui->remoteStatusLabel->setText("Not playing...");
+		
 		// Remote player is not active.
 		ui->playToolButton->setEnabled(true);
 		ui->stopToolButton->setEnabled(false);
@@ -744,6 +751,33 @@ void MainWindow::adjustVolume() {
 	if (value < 0 || value > 128) { return; }
 	
 	client.volumeSet(remotes[ncid].handle, value);
+}
+
+
+// --- CYCLE 
+void MainWindow::cycleSubtitles() {
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
+	
+	client.cycleSubtitles(remotes[ncid].handle);
+}
+
+
+// --- CYCLE 
+void MainWindow::cycleAudio() {
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
+	
+	client.cycleAudio(remotes[ncid].handle);
+}
+
+
+// --- CYCLE 
+void MainWindow::cycleVideo() {
+	uint32_t ncid;
+	if (!playerEnsureConnected(ncid)) { return; }
+	
+	client.cycleVideo(remotes[ncid].handle);
 }
 
 

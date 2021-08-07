@@ -42,6 +42,9 @@ private slots:
 	void seek();
 	void mute();
 	void adjustVolume();
+	void cycleSubtitles();
+	void cycleAudio();
+	void cycleVideo();
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
 	

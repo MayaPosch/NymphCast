@@ -24,7 +24,7 @@
     <normaloff>:/img/img/nymphcast_logo_no_text.png</normaloff>:/img/img/nymphcast_logo_no_text.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_5">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <widget class="QTabWidget" name="sharesiTab">
       <property name="currentIndex">
@@ -43,7 +43,7 @@
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Remote:</string>
+             <string>Remote</string>
             </property>
            </widget>
           </item>
@@ -126,6 +126,24 @@
             </property>
             <property name="text">
              <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Status:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="remoteStatusLabel">
+            <property name="text">
+             <string>No remote selected.</string>
             </property>
            </widget>
           </item>
@@ -228,6 +246,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QToolButton" name="beginToolButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -296,6 +317,9 @@
           </item>
           <item>
            <widget class="QToolButton" name="endToolButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -343,6 +367,64 @@
           </item>
          </layout>
         </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QPushButton" name="cycleSubtitleButton">
+            <property name="accessibleName">
+             <string>Subtitles</string>
+            </property>
+            <property name="text">
+             <string>Subtitles</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/subtitles.png</normaloff>:/icons/icons/subtitles.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="cycleAudioButton">
+            <property name="text">
+             <string>Audio streams</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/music-library.png</normaloff>:/icons/icons/music-library.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="cycleVideoButton">
+            <property name="text">
+             <string>Video streams</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/cinema-film.png</normaloff>:/icons/icons/cinema-film.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
@@ -355,6 +437,13 @@
           <property name="sizeConstraint">
            <enum>QLayout::SetMinimumSize</enum>
           </property>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Remote</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QComboBox" name="sharesRemotesComboBox">
             <property name="sizePolicy">
@@ -439,6 +528,13 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Remote</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QComboBox" name="appsGuiRemotesComboBox">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -516,6 +612,13 @@
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Remote</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QComboBox" name="appsRemotesComboBox">
             <property name="sizePolicy">
