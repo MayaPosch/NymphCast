@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>355</width>
-    <height>680</height>
+    <width>282</width>
+    <height>508</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Manage remote receivers</string>
+   <string>Manage receiver groups</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
@@ -32,7 +32,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Multi-select to create group.</string>
+           <string>Multi-select to add multiple remotes to group.</string>
           </property>
          </widget>
         </item>
@@ -52,14 +52,14 @@
           <item>
            <widget class="QPushButton" name="createGroupButton">
             <property name="text">
-             <string>Create group</string>
+             <string>New group</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="addToGroupButton">
             <property name="text">
-             <string>Add to group</string>
+             <string>Add</string>
             </property>
            </widget>
           </item>
@@ -109,7 +109,7 @@
           <item>
            <widget class="QPushButton" name="deleteGroupRemoteButton">
             <property name="text">
-             <string>Delete remote</string>
+             <string>Delete</string>
             </property>
            </widget>
           </item>
