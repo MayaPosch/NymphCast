@@ -219,8 +219,8 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("playing", new NymphBoolean(true));
 		response->addPair("duration", new NymphUint64(file_meta.duration));
 		response->addPair("position", new NymphDouble(file_meta.position));
-		response->addPair("title", new NymphString());
-		response->addPair("artist", new NymphString());
+		response->addPair("title", new NymphString(file_meta.title));
+		response->addPair("artist", new NymphString(file_meta.artist));
 		response->addPair("volume", new NymphUint8(ffplay.getVolume()));
 	}
 	else {
@@ -1033,6 +1033,84 @@ NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- CYCLE AUDIO ---
+// uint8 cycle_audio()
+NymphMessage* cycle_audio(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastSlaveRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_audio", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_a;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
+	return returnMsg;
+}
+
+
+// --- CYCLE VIDEO ---
+// uint8 cycle_video()
+NymphMessage* cycle_video(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastSlaveRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_video", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_v;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
+	return returnMsg;
+}
+
+
+// --- CYCLE SUBTITLE ---
+// uint8 cycle_subtitle()
+NymphMessage* cycle_subtitle(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	if (serverMode == NCS_MODE_MASTER) {
+		for (int i = 0; i < slave_remotes.size(); ++i) {
+			NymphCastSlaveRemote& rm = slave_remotes[i];
+			std::vector<NymphType*> values;
+			std::string result;
+			NymphType* returnValue = 0;
+			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_subtitle", values, returnValue, result)) {
+				// TODO:
+			}
+		}
+	}
+	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_t;
+	SDL_PushEvent(&event);
+	
+	returnMsg->setResultValue(new NymphUint8(0));
+	return returnMsg;
+}
+
+
 enum {
 	NYMPH_SEEK_TYPE_BYTES = 1,
 	NYMPH_SEEK_TYPE_PERCENTAGE = 2
@@ -1506,6 +1584,30 @@ int main(int argc, char** argv) {
 	NymphMethod playbackForwardFunction("playback_forward", parameters, NYMPH_UINT8);
 	playbackForwardFunction.setCallback(playback_forward);
 	NymphRemoteClient::registerMethod("playback_forward", playbackForwardFunction);
+	
+	// uint8 cycle_audio()
+	// Cycle audio channel.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod cycleAudioFunction("cycle_audio", parameters, NYMPH_UINT8);
+	cycleAudioFunction.setCallback(cycle_audio);
+	NymphRemoteClient::registerMethod("cycle_audio", cycleAudioFunction);
+	
+	// uint8 cycle_video()
+	// Cycle video channel.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod cycleVideoFunction("cycle_video", parameters, NYMPH_UINT8);
+	cycleVideoFunction.setCallback(cycle_video);
+	NymphRemoteClient::registerMethod("cycle_video", cycleVideoFunction);
+	
+	// uint8 cycle_subtitle()
+	// Cycle audio channel.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod cycleSubtitleFunction("cycle_subtitle", parameters, NYMPH_UINT8);
+	cycleSubtitleFunction.setCallback(cycle_subtitle);
+	NymphRemoteClient::registerMethod("cycle_subtitle", cycleSubtitleFunction);
 	
 	// PlaybackSeek
 	// uint8 playback_seek(uint64)

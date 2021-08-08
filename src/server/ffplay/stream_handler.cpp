@@ -9,6 +9,7 @@
 #include "video_renderer.h"
 #include "sdl_renderer.h"
 #include "player.h"
+#include "ffplay.h"
 
 #include "stream_handler.h"
 
@@ -552,6 +553,11 @@ int StreamHandler::read_thread(void *arg) {
 
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0))) {
         window_title = av_asprintf("%s - %s", t->value, input_filename);
+		file_meta.title = t->value;
+	}
+
+    if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
+        file_meta.artist = t->value;
 	}
 
     /* if seeking requested, we execute it */
