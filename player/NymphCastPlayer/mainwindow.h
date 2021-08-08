@@ -32,6 +32,7 @@ private slots:
 	void castUrl();
 	
     // Player tab
+	void playerRemoteChanged(int index);
 	void addFile();
 	void removeFile();	
 	void play();
@@ -47,6 +48,7 @@ private slots:
 	void cycleVideo();
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
+	void updatePlayerUI(NymphPlaybackStatus status);
 	
     // Apps tab.
 	void appsListRefresh();	

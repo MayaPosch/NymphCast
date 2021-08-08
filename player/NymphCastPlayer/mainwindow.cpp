@@ -135,6 +135,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     // Player tab.
 	connect(ui->playerEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
 	connect(ui->playerRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
+	connect(ui->playerRemotesComboBox, SIGNAL(currentIndexChanged(int)), 
+															this, SLOT(playerRemoteChanged(int)));
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
     connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
@@ -159,7 +161,6 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->appsGuiEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
 	connect(ui->appsGuiRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
-    //connect(ui->appTabGuiTextBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     
     using namespace std::placeholders; 
@@ -288,10 +289,36 @@ void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus statu
 
 
 // --- SET PLAYING ---
-void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
+void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
+	// Check that the current remote (handle) is selected in the combobox. 
+	// If not, just store the updated status.
+	
+	// Obtain selected ID.
+	int index = ui->playerRemotesComboBox->currentIndex();
+	if (remotes[index].handle != handle) {
+		remotes[index].status = status;
+		return;
+	}
+	
+	updatePlayerUI(status);
+}
+	
+	
+// --- UPDATE PLAYER UI ---
+void MainWindow::updatePlayerUI(NymphPlaybackStatus status) {
+	// Update the UI.
+	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
+		ui->remoteStatusLabel->setText("Playing...");
+	}
+	else if (status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
+		ui->remoteStatusLabel->setText("Paused...");
+	}
+	else {
+		ui->remoteStatusLabel->setText("Stopped...");
+	}
+	
 	if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
-		ui->remoteStatusLabel->setText("Playing...");
 		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
@@ -311,7 +338,6 @@ void MainWindow::setPlaying(uint32_t /*handle*/, NymphPlaybackStatus status) {
 	}
 	else {
         std::cout << "Status: Set not playing..." << std::endl;
-		ui->remoteStatusLabel->setText("Not playing...");
 		
 		// Remote player is not active.
 		ui->playToolButton->setEnabled(true);
@@ -364,9 +390,6 @@ bool MainWindow::connectRemote(NCRemoteInstance &instance) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return false;
 	}
-	
-	// TODO: update server name label.
-	//ui->remoteLabel->setText("Connected to " + QString::fromStdString(instance.remote.ipv4));
 	
 	// Successful connect.
 	instance.connected = true;
@@ -465,6 +488,17 @@ void MainWindow::castUrl() {
 }
 
 
+// --- PLAYER REMOTE CHANGED ---
+void MainWindow::playerRemoteChanged(int index) {
+	// Make sure remote is connected and update the status display.
+	if (!remotes[index].connected) {
+		playerIsConnected();
+	}
+	
+	updatePlayerUI(remotes[index].status);
+}
+
+
 // --- ADD FILE ---
 void MainWindow::addFile() {
 	// Select file from filesystem, add to playlist.
@@ -528,7 +562,8 @@ void MainWindow::removeFile() {
 // Return true if the currently selected remote in the Player tab is connected.
 bool MainWindow::playerIsConnected() {
 	if (ui->playerRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
+		QMessageBox::warning(this, tr("No remotes available"), 
+						tr("Please check that receivers are available and refresh the list."));
 		return false;
 	}
 	else if (ui->playerRemotesComboBox->currentIndex() == -1) {

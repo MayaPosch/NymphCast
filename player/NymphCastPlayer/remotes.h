@@ -19,6 +19,7 @@ struct NCRemoteInstance {
 	NymphCastRemote remote;
 	bool connected = false;
 	uint32_t handle;
+	NymphPlaybackStatus status;
 };
 
 
