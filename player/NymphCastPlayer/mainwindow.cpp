@@ -295,8 +295,8 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	
 	// Obtain selected ID.
 	int index = ui->playerRemotesComboBox->currentIndex();
+	remotes[index].status = status;
 	if (remotes[index].handle != handle) {
-		remotes[index].status = status;
 		return;
 	}
 	
@@ -308,13 +308,13 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 void MainWindow::updatePlayerUI(NymphPlaybackStatus status) {
 	// Update the UI.
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
-		ui->remoteStatusLabel->setText("Playing...");
+		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist));
 	}
 	else if (status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
-		ui->remoteStatusLabel->setText("Paused...");
+		ui->remoteStatusLabel->setText("Paused.");
 	}
 	else {
-		ui->remoteStatusLabel->setText("Stopped...");
+		ui->remoteStatusLabel->setText("Stopped.");
 	}
 	
 	if (status.playing) {
