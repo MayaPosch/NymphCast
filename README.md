@@ -121,16 +121,11 @@ NymphCast is currently in Alpha stage. Experimental releases are available on Gi
 
 Some packages also exist for selected distros.
 
-For **pacman**-based distros (ArchLinux, Manjaro):
-
-* the server: [nymphcast-server-git](https://aur.archlinux.org/packages/nymphcast-server-git/)
-* the sdk: [nymphcast-sdk-git](https://aur.archlinux.org/packages/nymphcast-sdk-git/)
-* the player client: [nymphcast-player-git](https://aur.archlinux.org/packages/nymphcast-player-git/)
 
 For **Alpine Linux** and postmarketOS:
 
 * the server: [nymphcast-server](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-server)
-* the sdk: [nymphcast-dev](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-dev)
+* libnymphcast: [libnymphcast](https://pkgs.alpinelinux.org/packages?name=libnymphcast&branch=edge)
 * the player client: [nymphcast-client](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-client)
 
 Player client releases for **Android** and **Windows**:
@@ -191,7 +186,7 @@ To build the corresponding client-related parts of NymphCast, in addition to a C
 ### **Server Dependencies** ###
 
 - [NymphRPC](https://github.com/MayaPosch/NymphRPC)
-- LibNymphCast (see client library & SDK sections)
+- [LibNymphCast](https://github.com/MayaPosch/libnymphcast)
 - [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
 - LibSDL2
 - LibSDL2_Image
@@ -237,7 +232,7 @@ Else, use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 2. Install NymphRPC with `sudo make install`.
-3. Change to `NymphCast/src/client_library` and execute `make` and `sudo make install`.
+3. Install LibNymphCast the same way NymphRPC was installed.
 4. Change to `NymphCast/src/server` and execute `make` command.
 5. Use `sudo make install` to install the server and associated files.
 6. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
@@ -254,9 +249,7 @@ For **Windows** (x64):
 Or (building and running on Windows & other **desktop** platforms):
 
 1. Download or clone the project repository 
-2. Build the libnymphcast library in the `src/client_lib` folder using the Makefile in that folder: `make lib`.
-3. Execute `sudo make install` to install the library.
-5. Ensure the Qt5 SDK is installed.
+5. Ensure the Qt5 SDK is installed along with libPoco, NymphRPC & LibNymphCast.
 6. Create `player/NymphCastPlayer/build` folder and change into it.
 7. Execute `qmake ..` followed by `make`.
 8. The player binary is created either in the same build folder or in a `debug/` sub-folder.
@@ -264,7 +257,7 @@ Or (building and running on Windows & other **desktop** platforms):
 On **Android**:
 
 1. Download or clone the project repository.
-2. Compile the dependencies (NymphCast client SDK, NymphRPC & Poco) for the target Android platforms.
+2. Compile the dependencies (LibNymphCast, NymphRPC & Poco) for the target Android platforms.
 3. Ensure dependency libraries along with their headers are installed in the Android NDK, under `<ANDROID_SDK>/ndk/<VERSION>/toolchains/llvm/prebuilt/<HOST_OS>/sysroot/usr/lib/<TARGET>` where `TARGET` is the target Android platform (ARMv7, AArch64, x86, x86_64). Header files are placed in the accompanying `usr/include` folder.
 4. Open the Qt project in a Qt Creator instance which has been configured for building for Android targets, and build the project.
 5. An APK is produced, which can be loaded on any supported Android device.
@@ -287,13 +280,7 @@ The current server and client documentation is hosted at the [Nyanko website](ht
 
 An SDK has been made available in the [LibNymphCast repository](https://github.com/MayaPosch/libnymphcast). The player project under `player/` uses the SDK as part of a Qt5 project to implement a NymphCast client which exposes all of the NymphCast features to the user.
 
-To use the SDK, the Makefile in the SDK folder can be executed with a simple `make` command, after which a library file can be found in the `src/client_lib/lib` folder. This can be installed (on Linux) with `make install`.
-
-**Note:** to compile the SDK, both [NymphRPC](https://github.com/MayaPosch/NymphRPC) and LibPOCO (1.5+) must be installed.
-
-**Note:** For Android, one can compile for ARMv7 Android using `make lib ANDROID=1`and for AArch64 Android using `ANDROID64=1`. This requires that the Android SDK and NDK are installed and on the system path.
-
-After this the only files needed by a client project are this library file and the `nymphcast_client.h` header file. 
+After compiling LibNymphCast, a client project has to link against this library file and include the `nymphcast_client.h` header file.
 
 
 <a id="id-lic"></a>
