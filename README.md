@@ -232,10 +232,11 @@ Else, use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 2. Install NymphRPC with `sudo make install`.
-3. Install LibNymphCast the same way NymphRPC was installed.
-4. Change to `NymphCast/src/server` and execute `make` command.
-5. Use `sudo make install` to install the server and associated files.
-6. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
+3. Check-out [LibNymphCast](https://github.com/MayaPosch/libnymphcast) elsewhere and build the library with `make`.
+4. Install LibNymphCast with `sudo make install`.
+5. Change to `NymphCast/src/server` and execute `make` command.
+6. Use `sudo make install` to install the server and associated files.
+7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
 
 
 ### **Building The NymphCast Player Client** ###
