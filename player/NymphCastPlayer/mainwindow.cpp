@@ -99,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	// Register custom types.
 	qRegisterMetaType<NymphPlaybackStatus>("NymphPlaybackStatus");
+	qRegisterMetaType<NymphPlaybackStatus>("NCRemoteInstance");
+	qRegisterMetaType<NymphPlaybackStatus>("NCRemoteGroup");
 	qRegisterMetaType<uint32_t>("uint32_t");
 	
 	// Set application options.
