@@ -92,6 +92,8 @@ NymphCastClient MainWindow::client;
 
 	
 Q_DECLARE_METATYPE(NymphPlaybackStatus);
+Q_DECLARE_METATYPE(NCRemoteInstance);
+Q_DECLARE_METATYPE(NCRemoteGroup);
 
 
 MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainWindow) {
