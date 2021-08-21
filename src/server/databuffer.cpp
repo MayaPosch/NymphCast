@@ -228,7 +228,8 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		std::unique_lock<std::mutex> lk(seekRequestMutex);
 		using namespace std::chrono_literals;
 		while (seekRequestPending) {
-			std::cv_status stat = seekRequestCV.wait_for(lk, 150ms);
+			//std::cv_status stat = seekRequestCV.wait_for(lk, 150ms);
+			std::cv_status stat = seekRequestCV.wait_for(lk, 1s);
 			if (stat == std::cv_status::timeout) {
 #ifdef DEBUG
 				std::cout << "Time-out on seek request. Returning -1." << std::endl;
