@@ -154,7 +154,7 @@ void DataBuffer::requestData() {
 	// Wait until we have received data or time out.
 	std::unique_lock<std::mutex> lk(dataWaitMutex);
 	using namespace std::chrono_literals;
-	while (dataWaitCV.wait_for(lk, 150ms) != std::cv_status::timeout) {
+	while (dataWaitCV.wait_for(lk, 500ms) != std::cv_status::timeout) {
 		if (!dataRequestPending) { break; }
 	}
 }
@@ -228,7 +228,6 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		std::unique_lock<std::mutex> lk(seekRequestMutex);
 		using namespace std::chrono_literals;
 		while (seekRequestPending) {
-			//std::cv_status stat = seekRequestCV.wait_for(lk, 150ms);
 			std::cv_status stat = seekRequestCV.wait_for(lk, 1s);
 			if (stat == std::cv_status::timeout) {
 #ifdef DEBUG
