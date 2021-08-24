@@ -21,7 +21,7 @@ NymphCast can be used in a number of scenarios:
 	+ Profile: `nymphcast_video_config.ini`
 - **NymphCast ScreenSaver** :arrow_right: Like NymphCast Video, but with image-based ScreenSaver when not playing content.
 	+ Profile: `nymphcast_screensaver_config.ini`
-- **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled.
+- **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled. (experimental feature)
 	+ Profile: `nymphcast_gui_config.ini`
 	
 ## Network ports ##
@@ -47,19 +47,21 @@ The current development version is v0.1-alpha5. Version 0.1 will be the first re
 
 Category | Status | Description | Notes
 ---|----|---|---
-Streaming |90% | Streaming media files from client to server | Meta-info & playback status reporting in progress.
-Playback | 75% | Subtitle & stream selection support | Implemented but untested.
-Streaming | 100% | Streaming from URLs | 
-Playback | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
-Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation and other bugs remain.
-Streaming | 100% | Streaming from NymphCast MediaServer instances | 
-SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
+File Streaming |90% | Streaming media files from client to server | Meta-info & playback status reporting need more testing.
+Subtitles & streams | 75% | Subtitle & stream selection support | Implemented but untested.
+MediaServer | 100% | Streaming from NymphCast MediaServer instances | 
+URL Streaming | 100% | Streaming from URLs | 
+Codec support | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
 
+
+**Experimental features:**
 
 The following features are considered **experimental** and will exist as a potential v0.2 preview in v0.1-release:
 
 Category | Status | Description | Notes
 ---|----|---|---
+SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
+Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation and other bugs remain.
 Apps | 25% | NymphCast Apps | AngelScript-based apps. Currently implemented as CLI-based interface with limited runtime APIs. GUI implementation is highly experimental.
 
 
