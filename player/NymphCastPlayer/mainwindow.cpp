@@ -494,6 +494,11 @@ void MainWindow::castUrl() {
 
 // --- PLAYER REMOTE CHANGED ---
 void MainWindow::playerRemoteChanged(int index) {
+	// Check that a remote and not a group has been selected.
+	if (index >= separatorIndex) {
+		return;
+	}
+	
 	// Make sure remote is connected and update the status display.
 	if (!remotes[index].connected) {
 		playerIsConnected();
@@ -1170,8 +1175,12 @@ void MainWindow::openRemotesDialog() {
 	rd->setRemoteList(remotes);
 	rd->updateGroupsList(groups);
 	
+	std::cout << "Set data on RD dialogue." << std::endl;
+	
 	// Execute dialog.
 	rd->exec();
+	
+	std::cout << "Finished RD dialogue." << std::endl;
 	
 	delete rd;
 }
@@ -1179,6 +1188,7 @@ void MainWindow::openRemotesDialog() {
 
 // --- UPDATE REMOTES LIST ---
 void MainWindow::updateRemotesList() {
+	std::cout << "UpdateRemotesList() called." << std::endl;
 	rd->setRemoteList(remotes);
 }
 
@@ -1186,6 +1196,8 @@ void MainWindow::updateRemotesList() {
 // --- UPDATE GROUPS LIST ---
 void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
 	this->groups = groups;
+	
+	std::cout << "Called updateGroupsList." << std::endl;
 	
 	// Update remotes combo boxes.
 	// Only update the combo boxes on the Player & Shares tabs as these use groups.
@@ -1295,6 +1307,8 @@ bool MainWindow::loadGroups() {
 // --- SAVE GROUPS ---
 // Save the remote groups to file.
 bool MainWindow::saveGroups() {
+	std::cout << "SaveGroups called." << std::endl;
+	
 	// Open the groups file.
 	QFile file(appDataLocation + "/groups.bin");
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {

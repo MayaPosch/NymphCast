@@ -12,6 +12,9 @@
 #include <QInputDialog>
 #include <QCloseEvent>
 
+// Debug
+#include <iostream>
+
 
 // --- CONSTRUCTOR ---
 RemotesDialog::RemotesDialog(QWidget* parent) : QDialog(parent), ui(new Ui::RemotesDialog) {
@@ -229,6 +232,7 @@ void RemotesDialog::deleteGroup() {
 // Handle the window being closed by the user.
 void RemotesDialog::closeEvent(QCloseEvent *event) {
 	// Signal main UI with updated groups list.
+	std::cout << "Emitting closeEvent: Saving group..." << std::endl;
 	emit saveGroupsList(groups);
     event->accept();
 }
