@@ -13,7 +13,7 @@
 */
 
 
-#include "../client_lib/nymphcast_client.h"
+#include <nymphcast_client.h>
 
 #include <iostream>
 #include <fstream>
