@@ -56,6 +56,7 @@ private slots:
 	void deleteGroupRemote();
 	void renameGroup();
 	void deleteGroup();
+	void acceptClose();
 	
 signals:
 	void updateRemotesList();

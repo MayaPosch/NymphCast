@@ -28,6 +28,9 @@ RemotesDialog::RemotesDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Remo
 	connect(ui->deleteGroupRemoteButton, SIGNAL(clicked()), this, SLOT(deleteGroupRemote()));
 	connect(ui->renameGroupButton, SIGNAL(clicked()), this, SLOT(renameGroup()));
 	connect(ui->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
+	
+	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptClose()));
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
 
@@ -225,6 +228,14 @@ void RemotesDialog::deleteGroup() {
 	for (uint32_t i = 0; i < groups.size(); ++i) {
 		ui->groupsComboBox->addItem(QString::fromStdString(groups[i].name), QVariant(i));
 	}
+}
+
+
+// --- ACCEPT CLOSE ---
+void RemotesDialog::acceptClose() {
+	std::cout << "Accepting close: Saving group..." << std::endl;
+	emit saveGroupsList(groups);
+	accept();
 }
 
 
