@@ -23,6 +23,11 @@
 #include <QtAndroidExtras>
 #include <QAndroidJniEnvironment>
 #include <QtAndroid>
+#include <QStyleFactory>
+#include <QVector>
+
+const QVector<QString> permissions({"android.permission.INTERNET", 
+									"android.permission.READ_EXTERNAL_STORAGE"});
 
 class MediaItem : public QObject {
 	Q_OBJECT
@@ -197,6 +202,22 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	}
 	
 #if defined(Q_OS_ANDROID)
+	// Set the 'Android' Qt style.
+	// FIXME: looks pretty horrid during testing. Disabling for now.
+	//QApplication::setStyle(QStyleFactory::create("Android"));
+	
+	// Ensure we got all permissions.
+	for (const QString &permission : permissions){
+        QtAndroid::PermissionResult result = QtAndroid::checkPermission(permission);
+        if (result == QtAndroid::PermissionResult::Denied) {
+            QtAndroid::PermissionResultMap resultHash = 
+									QtAndroid::requestPermissionsSync(QStringList({permission}));
+            if (resultHash[permission] == QtAndroid::PermissionResult::Denied) {
+                return;
+			}
+        }
+    }
+	
     // We need to redirect stdout/stderr. This requires starting a new thread here.
     start_logger(tag);
     
