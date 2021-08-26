@@ -321,9 +321,20 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	
 	// Obtain selected ID.
 	int index = ui->playerRemotesComboBox->currentIndex();
-	remotes[index].status = status;
-	if (remotes[index].handle != handle) {
+	
+	if (index > separatorIndex) {
+		NCRemoteGroup& group = groups[ui->playerRemotesComboBox->currentData().toUInt()];
+		if (group.remotes.size() < 1) { return; }
+		
+		// FIXME: no way to update status on a remote in a group yet.
+		//group.remotes[0].status
 		return;
+	}
+	else if (index < separatorIndex) {
+		remotes[index].status = status;
+		if (remotes[index].handle != handle) {
+			return;
+		}
 	}
 	
 	updatePlayerUI(status);
