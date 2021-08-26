@@ -525,8 +525,9 @@ void MainWindow::playerRemoteChanged(int index) {
 	if (!remotes[index].connected) {
 		playerIsConnected();
 	}
-	
-	updatePlayerUI(remotes[index].status);
+	else {
+		updatePlayerUI(remotes[index].status);
+	}
 }
 
 
@@ -604,6 +605,11 @@ bool MainWindow::playerIsConnected() {
 	
 	// Obtain selected ID.
 	int index = ui->playerRemotesComboBox->currentIndex();
+	
+	// Check that a remote and not a group has been selected.
+	if (index >= separatorIndex) {
+		return false;
+	}
 	
 	// Ensure the remote is connected.
 	if (!remotes[index].connected) {
