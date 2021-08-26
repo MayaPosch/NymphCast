@@ -270,6 +270,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	// Load any saved groups.
 	loadGroups();
+	addGroupsToRemotes();
 	
 	// Restore UI preferences.
 	ui->singlePlayCheckBox->setChecked(settings.value("ui/singlePlayCheckBox", true).toBool());
@@ -1199,6 +1200,15 @@ void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
 	
 	std::cout << "Called updateGroupsList." << std::endl;
 	
+	addGroupsToRemotes();
+	
+	// Save new groups to disk.
+	saveGroups();
+}
+	
+
+// --- ADD GROUPS TO REMOTES ---
+void MainWindow::addGroupsToRemotes() {
 	// Update remotes combo boxes.
 	// Only update the combo boxes on the Player & Shares tabs as these use groups.
 	ui->playerRemotesComboBox->clear();
@@ -1231,10 +1241,6 @@ void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
 		ui->sharesRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
 													" (group)"), QVariant(i));
 	}
-	
-	
-	// Save new groups to disk.
-	saveGroups();
 }
 
 

@@ -67,6 +67,7 @@ private slots:
 	void openRemotesDialog();
 	void updateRemotesList();
 	void updateGroupsList(std::vector<NCRemoteGroup> &groups);
+	void addGroupsToRemotes();
 	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
