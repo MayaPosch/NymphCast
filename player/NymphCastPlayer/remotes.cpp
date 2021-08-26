@@ -103,7 +103,7 @@ void RemotesDialog::createGroup() {
 // --- ADD TO GROUP ---
 // Add currently selected remote(s) to the currently active group.
 void RemotesDialog::addToGroup() {
-	if (groups.size() < 1 && ui->groupsComboBox->currentIndex() == -1) { return; }
+	if (groups.size() < 1 || ui->groupsComboBox->currentIndex() == -1) { return; }
 	
 	// If no items are selected, show message.
 	QList<QListWidgetItem *> items = ui->remotesListWidget->selectedItems();
@@ -156,7 +156,7 @@ void RemotesDialog::changeActiveGroup(int index) {
 // --- DELETE GROUP REMOTE ---
 // Delete the selected remotes from the active group remote list.
 void RemotesDialog::deleteGroupRemote() {
-	if (groups.size() < 1 && ui->groupsComboBox->currentIndex() == -1) { return; }
+	if (groups.size() < 1 || ui->groupsComboBox->currentIndex() == -1) { return; }
 	
 	QList<QListWidgetItem *> items = ui->groupRemotesListWidget->selectedItems();
 	
@@ -183,7 +183,7 @@ void RemotesDialog::deleteGroupRemote() {
 // --- RENAME GROUP ---
 // Rename the currently active group.
 void RemotesDialog::renameGroup() {
-	if (groups.size() < 1 && ui->groupsComboBox->currentIndex() == -1) { return; }
+	if (groups.size() < 1 || ui->groupsComboBox->currentIndex() == -1) { return; }
 	
 	bool ok;
     QString text = QInputDialog::getText(this, tr("Rename group"),
@@ -204,7 +204,7 @@ void RemotesDialog::renameGroup() {
 
 // --- DELETE GROUP ---
 void RemotesDialog::deleteGroup() {
-	if (groups.size() < 1 && ui->groupsComboBox->currentIndex() == -1) { return; }
+	if (groups.size() < 1 || ui->groupsComboBox->currentIndex() == -1) { return; }
 	
 	// Delete the currently active group.
 	if (QMessageBox::question(this, tr("Confirm group delete"), 
