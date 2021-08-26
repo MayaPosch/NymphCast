@@ -144,6 +144,13 @@ void RemotesDialog::addToGroup() {
 // --- CHANGE ACTIVE GROUP ---
 // If a valid active group is selected, change the contents of the 'Group remotes' list box.
 void RemotesDialog::changeActiveGroup(int index) {
+	// Check for valid index.
+	if (index == -1) {
+		// Clear the group remotes list and return.
+		ui->groupRemotesListWidget->clear();
+		return;
+	}
+	
 	// Update UI.
 	ui->groupRemotesListWidget->clear();
 	std::vector<NCRemoteInstance>& rem = groups[index].remotes;
