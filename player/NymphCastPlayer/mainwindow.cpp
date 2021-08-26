@@ -1228,6 +1228,7 @@ void MainWindow::openRemotesDialog() {
 // --- UPDATE REMOTES LIST ---
 void MainWindow::updateRemotesList() {
 	std::cout << "UpdateRemotesList() called." << std::endl;
+	remoteListRefresh();
 	rd->setRemoteList(remotes);
 }
 
