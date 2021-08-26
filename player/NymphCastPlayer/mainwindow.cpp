@@ -1303,6 +1303,7 @@ bool MainWindow::loadGroups() {
 			nci.remote = ncr;
 			
 			rg.remotes.push_back(nci);
+			groups.push_back(rg);
 		}
 	}
 	
