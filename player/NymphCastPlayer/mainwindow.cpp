@@ -462,6 +462,7 @@ void MainWindow::remoteListRefresh() {
 	std::vector<NymphCastRemote> list = client.findServers();
 	
 	// Update the list with any changed items.
+	remotes.clear();
 	ui->playerRemotesComboBox->clear();
 	ui->sharesRemotesComboBox->clear();
 	ui->appsGuiRemotesComboBox->clear();
