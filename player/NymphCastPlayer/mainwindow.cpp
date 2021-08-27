@@ -416,6 +416,11 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status) {
                 ui->mediaListWidget->setCurrentRow(crow);
                 play();
             }
+			else if (ui->repeatQueueCheckBox->isChecked() == true) {
+				// Play the currently selected song. If it's the same item as last play, it repeats.
+				std::cout << "Play currently selected track (again)." << std::endl;
+				play();
+			}
 		}
 	}
 }
@@ -880,7 +885,7 @@ bool MainWindow::playerEnsureConnected(uint32_t &handle) {
 	}
 	
 	// Obtain selected ID.
-	uint32_t index = ui->playerRemotesComboBox->currentIndex();
+	int32_t index = ui->playerRemotesComboBox->currentIndex();
 	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
 	
 	if (index > separatorIndex) {
@@ -915,7 +920,7 @@ bool MainWindow::sharesEnsureConnected(uint32_t &handle) {
 	}
 	
 	// Obtain selected ID.
-	uint32_t index = ui->sharesRemotesComboBox->currentIndex();
+	int32_t index = ui->sharesRemotesComboBox->currentIndex();
 	uint32_t id = ui->sharesRemotesComboBox->currentData().toUInt();
 	
 	if (index > separatorIndex) {
