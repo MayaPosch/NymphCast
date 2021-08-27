@@ -559,6 +559,9 @@ int StreamHandler::read_thread(void *arg) {
     if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
         file_meta.artist = t->value;
 	}
+    else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
+        file_meta.artist = t->value;
+	}
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
