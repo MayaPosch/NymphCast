@@ -133,6 +133,7 @@ std::atomic<uint32_t> audio_volume = 100;
 // --- Globals ---
 FileMetaInfo file_meta;
 std::atomic<bool> playerStarted = false;
+std::atomic<bool> playerPaused = false;
 std::atomic<bool> castingUrl = false;		// We're either casting data or streaming when playing.
 std::string castUrl;
 Poco::Thread avThread;
@@ -214,8 +215,14 @@ NymphStruct* getPlaybackStatus() {
 	// * artist of the media, if available.
 	NymphStruct* response = new NymphStruct;
 	if (playerStarted) {
-		// TODO: distinguish between playing and paused for the player.
-		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+		// Distinguish between playing and paused for the player.
+		if (playerPaused) {
+			response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PAUSED));
+		}
+		else {
+			response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+		}
+		
 		response->addPair("playing", new NymphBoolean(true));
 		response->addPair("duration", new NymphUint64(file_meta.duration));
 		response->addPair("position", new NymphDouble(file_meta.position));
@@ -952,6 +959,8 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_SPACE;
 	SDL_PushEvent(&event);
 	
+	playerPaused = false;
+	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
@@ -979,6 +988,8 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_ESCAPE;
 	SDL_PushEvent(&event);
 	
+	playerPaused = false;
+	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
@@ -1005,6 +1016,8 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_p;
 	SDL_PushEvent(&event);
+	
+	playerPaused = true;
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
