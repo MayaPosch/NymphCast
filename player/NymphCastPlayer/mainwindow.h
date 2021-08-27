@@ -89,9 +89,9 @@ private:
     QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
 	bool playerIsConnected();
-	bool playerEnsureConnected(uint32_t &id);
+	bool playerEnsureConnected(uint32_t &handle);
 	bool sharesIsConnected();
-	bool sharesEnsureConnected(uint32_t &id);
+	bool sharesEnsureConnected(uint32_t &handle);
 	bool appsEnsureConnected(uint32_t &id);
 	bool appsGuiEnsureConnected(uint32_t &id);
 	bool connectRemote(NCRemoteInstance &instance);

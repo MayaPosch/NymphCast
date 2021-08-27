@@ -494,14 +494,14 @@ void MainWindow::remoteListRefresh() {
 
 // --- CAST FILE ---
 void MainWindow::castFile() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
 	// Open file.
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
 	if (filename.isEmpty()) { return; }
 	
-	if (client.castFile(remotes[ncid].handle, filename.toStdString())) {
+	if (client.castFile(handle, filename.toStdString())) {
 		// Playing back file now. Update status.
 		playingTrack = true;
 		singleCast = true;
@@ -514,14 +514,14 @@ void MainWindow::castFile() {
 
 // --- CAST URL ---
 void MainWindow::castUrl() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
 	// Open file.
 	QString url = QInputDialog::getText(this, tr("Cast URL"), tr("Copy in the URL to cast."));
 	if (url.isEmpty()) { return; }
 	
-	client.castUrl(remotes[ncid].handle, url.toStdString());
+	client.castUrl(handle, url.toStdString());
 }
 
 
@@ -760,11 +760,11 @@ void MainWindow::play() {
 void MainWindow::stop() {
 	if (!playingTrack) { return; }
 	
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
     
+	client.playbackStop(handle);
     playingTrack = false;
-	client.playbackStop(remotes[ncid].handle);
 }
 
 
@@ -772,54 +772,54 @@ void MainWindow::stop() {
 void MainWindow::pause() {
 	if (!playingTrack) { return; }
 	
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.playbackPause(remotes[ncid].handle);
+	client.playbackPause(handle);
 }
 
 
 // --- FORWARD ---
 void MainWindow::forward() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.playbackForward(remotes[ncid].handle);
+	client.playbackForward(handle);
 }
 
 
 // --- REWIND ---
 void MainWindow::rewind() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.playbackRewind(remotes[ncid].handle);
+	client.playbackRewind(handle);
 }
 
 
 // --- SEEK ---
 void MainWindow::seek() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
 	// Read out location on seek bar.
 	uint8_t location = ui->positionSlider->value();
 	
-	client.playbackSeek(remotes[ncid].handle, location);
+	client.playbackSeek(handle, location);
 }
 
 
 // --- MUTE ---
 void MainWindow::mute() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
 	if (!muted) {
-		client.volumeSet(remotes[ncid].handle, 0);
+		client.volumeSet(handle, 0);
 		muted = true;
 	}
 	else {
-		client.volumeSet(remotes[ncid].handle, ui->volumeSlider->value());
+		client.volumeSet(handle, ui->volumeSlider->value());
 		muted = false;
 	}
 }
@@ -827,45 +827,45 @@ void MainWindow::mute() {
 
 // --- ADJUST VOLUME ---
 void MainWindow::adjustVolume() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
 	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
 	
-	client.volumeSet(remotes[ncid].handle, value);
+	client.volumeSet(handle, value);
 }
 
 
-// --- CYCLE 
+// --- CYCLE SUBTITLES ---
 void MainWindow::cycleSubtitles() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.cycleSubtitles(remotes[ncid].handle);
+	client.cycleSubtitles(handle);
 }
 
 
-// --- CYCLE 
+// --- CYCLE AUDIO ---
 void MainWindow::cycleAudio() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.cycleAudio(remotes[ncid].handle);
+	client.cycleAudio(handle);
 }
 
 
-// --- CYCLE 
+// --- CYCLE VIDEO ---
 void MainWindow::cycleVideo() {
-	uint32_t ncid;
-	if (!playerEnsureConnected(ncid)) { return; }
+	uint32_t handle;
+	if (!playerEnsureConnected(handle)) { return; }
 	
-	client.cycleVideo(remotes[ncid].handle);
+	client.cycleVideo(handle);
 }
 
 
 // --- PLAYER ENSURE CONNECTED ---
-bool MainWindow::playerEnsureConnected(uint32_t &id) {
+bool MainWindow::playerEnsureConnected(uint32_t &handle) {
 	// Get currently selected remote, connect if necessary.
 	if (ui->playerRemotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
@@ -877,11 +877,22 @@ bool MainWindow::playerEnsureConnected(uint32_t &id) {
 	}
 	
 	// Obtain selected ID.
-	id = ui->playerRemotesComboBox->currentIndex();
+	uint32_t index = ui->playerRemotesComboBox->currentIndex();
+	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
 	
-	// Ensure the remote is connected.
-	if (!remotes[id].connected) {
-		if (!connectRemote(remotes[id])) { return false; }
+	if (index > separatorIndex) {
+		NCRemoteGroup& group = groups[id];
+		handle = group.remotes[0].handle;
+		if (!group.remotes[0].connected) {
+			if (!connectRemote(group.remotes[0])) { return false; }
+		}
+	}
+	else {
+		// Ensure the remote is connected.
+		handle = remotes[id].handle;
+		if (!remotes[id].connected) {
+			if (!connectRemote(remotes[id])) { return false; }
+		}
 	}
 	
 	return true;
@@ -889,7 +900,7 @@ bool MainWindow::playerEnsureConnected(uint32_t &id) {
 
 
 // --- SHARES ENSURE CONNECTED ---
-bool MainWindow::sharesEnsureConnected(uint32_t &id) {
+bool MainWindow::sharesEnsureConnected(uint32_t &handle) {
 	// Get currently selected remote, connect if necessary.
 	if (ui->sharesRemotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
@@ -901,11 +912,22 @@ bool MainWindow::sharesEnsureConnected(uint32_t &id) {
 	}
 	
 	// Obtain selected ID.
-	id = ui->sharesRemotesComboBox->currentIndex();
+	uint32_t index = ui->sharesRemotesComboBox->currentIndex();
+	uint32_t id = ui->sharesRemotesComboBox->currentData().toUInt();
 	
-	// Ensure the remote is connected.
-	if (!remotes[id].connected) {
-		if (!connectRemote(remotes[id])) { return false; }
+	if (index > separatorIndex) {
+		NCRemoteGroup& group = groups[id];
+		handle = group.remotes[0].handle;
+		if (!group.remotes[0].connected) {
+			if (!connectRemote(group.remotes[0])) { return false; }
+		}
+	}
+	else {
+		// Ensure the remote is connected.
+		handle = remotes[id].handle;
+		if (!remotes[id].connected) {
+			if (!connectRemote(remotes[id])) { return false; }
+		}
 	}
 	
 	return true;
@@ -1153,8 +1175,8 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
-	//uint32_t ncid;
-    //if (!sharesEnsureConnected(ncid)) { return; }
+	//uint32_t handle;
+    //if (!sharesEnsureConnected(handle)) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
