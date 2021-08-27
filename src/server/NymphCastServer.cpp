@@ -244,6 +244,20 @@ NymphStruct* getPlaybackStatus() {
 }
 
 
+// --- SEND STATUS UPDATE ---
+void sendStatusUpdate(uint32_t handle) {
+	// Call the status update callback with the current playback status.
+	std::vector<NymphType*> values;
+	values.push_back(getPlaybackStatus());
+	NymphBoolean* resVal = 0;
+	std::string result;
+	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
+		std::cerr << "Calling media status callback failed: " << result << std::endl;
+		return;
+	}
+}
+
+
 // --- SEEKING HANDLER ---
 void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
@@ -792,6 +806,10 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 			std::cerr << "Calling media status callback failed: " << result << std::endl;
 		}
 	}
+	else {
+		// Send status update to client.
+		sendStatusUpdate(DataBuffer::getSessionHandle());
+	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
 	if (done) {
@@ -961,6 +979,9 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	
 	playerPaused = false;
 	
+	// Send status update to client.
+	sendStatusUpdate(DataBuffer::getSessionHandle());
+	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
 }
@@ -1018,6 +1039,9 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	SDL_PushEvent(&event);
 	
 	playerPaused = true;
+	
+	// Send status update to client.
+	sendStatusUpdate(DataBuffer::getSessionHandle());
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
