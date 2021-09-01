@@ -126,6 +126,13 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	}
 	
 	QString sFile = settings.value("stylesheet", "default.css").toString();
+	
+	if (!QFile::exists(sFile)) {
+		// Use stylesheet from resource bundle.
+		std::cout << "Using stylesheet from resources." << std::endl;
+		sFile = ":/css/default.css";
+	}
+	
 	QFile file(sFile);
 	if (file.exists()) {
 		file.open(QIODevice::ReadOnly);
