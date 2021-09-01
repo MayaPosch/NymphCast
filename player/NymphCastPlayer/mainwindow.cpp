@@ -411,6 +411,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		
 		if (singleCast) {
 			singleCast = false;
+			playingTrack = false;
 		}
 		else if (playingTrack) {
             playingTrack = false;
