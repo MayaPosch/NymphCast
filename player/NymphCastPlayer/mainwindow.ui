@@ -55,6 +55,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Select remote or group</string>
+            </property>
             <property name="currentText">
              <string>Select Remote...</string>
             </property>
@@ -88,6 +91,9 @@
               <width>20</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Refresh remotes</string>
             </property>
             <property name="text">
              <string/>
@@ -123,6 +129,9 @@
               <width>20</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Edit groups</string>
             </property>
             <property name="text">
              <string>...</string>
@@ -169,6 +178,9 @@
           </property>
           <item>
            <widget class="QCheckBox" name="singlePlayCheckBox">
+            <property name="toolTip">
+             <string>Stop after playing current file</string>
+            </property>
             <property name="text">
              <string>Single</string>
             </property>
@@ -179,6 +191,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="repeatQueueCheckBox">
+            <property name="toolTip">
+             <string>Repeat single file or playlist</string>
+            </property>
             <property name="text">
              <string>Repeat</string>
             </property>
@@ -199,6 +214,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="removeButton">
+            <property name="toolTip">
+             <string>Remove selected file from playlist</string>
+            </property>
             <property name="text">
              <string>Remove</string>
             </property>
@@ -210,6 +228,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="addButton">
+            <property name="toolTip">
+             <string>Add file to playlist</string>
+            </property>
             <property name="text">
              <string>Add</string>
             </property>
@@ -436,6 +457,9 @@
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
            <widget class="QPushButton" name="sharesScanButton">
+            <property name="toolTip">
+             <string>Scan for shares</string>
+            </property>
             <property name="text">
              <string>Scan for shares</string>
             </property>
@@ -464,6 +488,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>Select remote or group</string>
+              </property>
               <property name="placeholderText">
                <string>Select remote...</string>
               </property>
@@ -471,6 +498,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="sharesRefreshRemotesButton">
+              <property name="toolTip">
+               <string>Refresh remotes</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -500,6 +530,9 @@
                 <height>0</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>Edit groups</string>
+              </property>
               <property name="text">
                <string>...</string>
               </property>
@@ -509,6 +542,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="sharesPlayButton">
+            <property name="toolTip">
+             <string>Play selected file</string>
+            </property>
             <property name="text">
              <string>Play selected file</string>
             </property>
@@ -542,6 +578,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>Select remote</string>
+              </property>
               <property name="placeholderText">
                <string>Selected remote...</string>
               </property>
@@ -554,6 +593,9 @@
                 <width>20</width>
                 <height>0</height>
                </size>
+              </property>
+              <property name="toolTip">
+               <string>Refresh remotes</string>
               </property>
               <property name="text">
                <string/>
@@ -584,6 +626,9 @@
                 <height>0</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>Edit groups</string>
+              </property>
               <property name="text">
                <string>...</string>
               </property>
@@ -596,6 +641,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="appTabGuiHomeButton">
+            <property name="toolTip">
+             <string>App home</string>
+            </property>
             <property name="text">
              <string>Home</string>
             </property>
@@ -627,6 +675,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Select remote</string>
+            </property>
             <property name="placeholderText">
              <string>Selected remote...</string>
             </property>
@@ -639,6 +690,9 @@
               <width>20</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Refresh remotes</string>
             </property>
             <property name="text">
              <string/>
@@ -669,6 +723,9 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Edit groups</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -680,16 +737,26 @@
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QPushButton" name="updateRemoteAppsButton">
+            <property name="toolTip">
+             <string>Refresh app list</string>
+            </property>
             <property name="text">
              <string>Refresh</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="remoteAppsComboBox"/>
+           <widget class="QComboBox" name="remoteAppsComboBox">
+            <property name="toolTip">
+             <string>Select remote app</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="startAppButton">
+            <property name="toolTip">
+             <string>Start app</string>
+            </property>
             <property name="text">
              <string>Start</string>
             </property>
