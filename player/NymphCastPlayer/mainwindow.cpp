@@ -115,6 +115,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	QCoreApplication::setApplicationName("NymphCastPlayer");
 	QCoreApplication::setApplicationVersion("v0.1-alpha");
 	
+	// Set location for user data.
+	appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	
 	// Set configured or default stylesheet. Read out current value.
 	// Skip stylesheet if file isn't found.
 	QSettings settings;
@@ -191,9 +194,6 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Set values.
     ui->sharesTreeView->setModel(&sharesModel);
-	
-	// Set location for user data.
-	appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	
 	// Ensure this path exists.
 	QDir dir(appDataLocation);
@@ -323,11 +323,16 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	int index = ui->playerRemotesComboBox->currentIndex();
 	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
 	
+	bool init = false;
 	if (index > separatorIndex) {
 		NCRemoteGroup& group = groups[ui->playerRemotesComboBox->currentData().toUInt()];
 		if (group.remotes.size() < 1) { return; }
 		
-		// FIXME: no way to update status on a remote in a group yet.
+		if (group.remotes[0].init) {
+			init = true;
+			group.remotes[0].init = false;
+		}
+		
 		group.remotes[0].status = status;
 		if (groups[id].remotes[0].handle != handle) {
 			return;
@@ -338,14 +343,19 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 		if (remotes[index].handle != handle) {
 			return;
 		}
+		
+		if (remotes[index].init) {
+			init = true;
+			remotes[index].init = false;
+		}
 	}
 	
-	updatePlayerUI(status);
+	updatePlayerUI(status, init);
 }
 	
 	
 // --- UPDATE PLAYER UI ---
-void MainWindow::updatePlayerUI(NymphPlaybackStatus status) {
+void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 	// Update the UI.
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
 		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist));
@@ -357,7 +367,18 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status) {
 		ui->remoteStatusLabel->setText("Stopped.");
 	}
 	
-	if (status.playing) {
+	if (init) {
+		// Initial callback for this remote on connect. Just set safe defaults.
+		std::cout << "Initial remote status callback on connect." << std::endl;
+		ui->playToolButton->setEnabled(true);
+		ui->stopToolButton->setEnabled(false);
+		
+		ui->durationLabel->setText("0:00 / 0:00");
+		ui->positionSlider->setValue(0);
+		
+		ui->volumeSlider->setValue(status.volume);
+	}
+	else if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
 		
 		// Remote player is active. Read out 'status.status' to get the full status.
@@ -536,17 +557,32 @@ void MainWindow::castUrl() {
 
 // --- PLAYER REMOTE CHANGED ---
 void MainWindow::playerRemoteChanged(int index) {
-	// Check that a remote and not a group has been selected.
-	if (index >= separatorIndex) {
+	if (index < 0) {
 		return;
 	}
 	
+	// Obtain selected ID.
+	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
+	
 	// Make sure remote is connected and update the status display.
-	if (!remotes[index].connected) {
-		playerIsConnected();
+	if (index > separatorIndex) {
+		NCRemoteGroup& group = groups[id];
+		if (group.remotes.size() < 1) { return; }
+		
+		if (!group.remotes[0].connected) {
+			playerIsConnected();
+		}
+		else {
+			updatePlayerUI(group.remotes[0].status);
+		}
 	}
-	else {
-		updatePlayerUI(remotes[index].status);
+	else if (index < separatorIndex) {
+		if (!remotes[index].connected) {
+			playerIsConnected();
+		}
+		else {
+			updatePlayerUI(remotes[index].status);
+		}
 	}
 }
 
@@ -772,8 +808,8 @@ void MainWindow::stop() {
 	uint32_t handle;
 	if (!playerEnsureConnected(handle)) { return; }
     
-	client.playbackStop(handle);
     playingTrack = false;
+	client.playbackStop(handle);
 }
 
 

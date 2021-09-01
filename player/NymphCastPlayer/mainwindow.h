@@ -48,7 +48,7 @@ private slots:
 	void cycleVideo();
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
-	void updatePlayerUI(NymphPlaybackStatus status);
+	void updatePlayerUI(NymphPlaybackStatus status, bool init = false);
 	
     // Apps tab.
 	void appsListRefresh();	
