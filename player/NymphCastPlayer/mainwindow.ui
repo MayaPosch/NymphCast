@@ -171,10 +171,10 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <property name="spacing">
-           <number>0</number>
+           <number>6</number>
           </property>
           <property name="leftMargin">
-           <number>5</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QCheckBox" name="singlePlayCheckBox">
