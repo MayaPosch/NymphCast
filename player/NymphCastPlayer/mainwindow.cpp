@@ -364,11 +364,13 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 // --- UPDATE PLAYER UI ---
 void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 	// Update the UI.
+	bool paused = false;
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
 		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist));
 	}
 	else if (status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
 		ui->remoteStatusLabel->setText("Paused.");
+		paused = true;
 	}
 	else {
 		ui->remoteStatusLabel->setText("Stopped.");
@@ -379,11 +381,20 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		std::cout << "Initial remote status callback on connect." << std::endl;
 		ui->playToolButton->setEnabled(true);
 		ui->stopToolButton->setEnabled(false);
+		ui->pauseToolButton->setEnabled(false);
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
 		
 		ui->volumeSlider->setValue(status.volume);
+	}
+	else if (paused) {
+		std::cout << "Paused playback..." << std::endl;
+		
+		// Remote player is paused. Resume using play button.
+		ui->playToolButton->setEnabled(true);
+		ui->stopToolButton->setEnabled(true);
+		ui->pauseToolButton->setEnabled(false);
 	}
 	else if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
@@ -391,6 +402,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
 		ui->stopToolButton->setEnabled(true);
+		ui->pauseToolButton->setEnabled(true);
 		
 		// Set position & duration.
 		QTime position(0, 0);
@@ -410,6 +422,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		// Remote player is not active.
 		ui->playToolButton->setEnabled(true);
 		ui->stopToolButton->setEnabled(false);
+		ui->pauseToolButton->setEnabled(false);
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
