@@ -194,6 +194,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// General NC library.
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
+			
+	// Set up playback controls.
+	ui->pauseToolButton->setVisible(false);
 	
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
@@ -380,8 +383,10 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		// Initial callback for this remote on connect. Just set safe defaults.
 		std::cout << "Initial remote status callback on connect." << std::endl;
 		ui->playToolButton->setEnabled(true);
+		ui->playToolButton->setVisible(true);
 		ui->stopToolButton->setEnabled(false);
 		ui->pauseToolButton->setEnabled(false);
+		ui->pauseToolButton->setVisible(false);
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
@@ -393,16 +398,20 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		
 		// Remote player is paused. Resume using play button.
 		ui->playToolButton->setEnabled(true);
+		ui->playToolButton->setVisible(true);
 		ui->stopToolButton->setEnabled(true);
 		ui->pauseToolButton->setEnabled(false);
+		ui->pauseToolButton->setVisible(false);
 	}
 	else if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
 		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
+		ui->playToolButton->setVisible(false);
 		ui->stopToolButton->setEnabled(true);
 		ui->pauseToolButton->setEnabled(true);
+		ui->pauseToolButton->setVisible(true);
 		
 		// Set position & duration.
 		QTime position(0, 0);
@@ -421,8 +430,10 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		
 		// Remote player is not active.
 		ui->playToolButton->setEnabled(true);
+		ui->playToolButton->setVisible(true);
 		ui->stopToolButton->setEnabled(false);
 		ui->pauseToolButton->setEnabled(false);
+		ui->pauseToolButton->setVisible(false);
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
