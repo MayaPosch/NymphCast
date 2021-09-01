@@ -53,4 +53,7 @@
     <file>img/nymphcast_logo_cropped.png</file>
     <file>img/nymphcast_logo_no_text.png</file>
   </qresource>
+  <qresource prefix="/">
+	<file>css/default.css</file>
+  </qresource>
 </RCC>
