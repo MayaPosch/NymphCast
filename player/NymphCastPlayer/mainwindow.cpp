@@ -1235,6 +1235,7 @@ void MainWindow::scanForShares() {
         QStandardItem* item = new QStandardItem(QString::fromStdString(mediaservers[i].name));
         item->setSelectable(false);
         for (uint32_t j = 0; j < files.size(); ++j) {
+			if (files[j].type == FILE_TYPE_IMAGE) { continue; }
             QStandardItem* fn = new QStandardItem(QString::fromStdString(files[j].name));
             QList<QVariant> ids;
 			ids.append(QVariant(i));
