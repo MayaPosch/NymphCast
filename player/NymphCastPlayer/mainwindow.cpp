@@ -197,6 +197,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 			
 	// Set up playback controls.
 	ui->pauseToolButton->setVisible(false);
+	ui->beginToolButton->setVisible(false);
+	ui->endToolButton->setVisible(false);
 	
 	// NymphCast client SDK callbacks.
 	using namespace std::placeholders;
