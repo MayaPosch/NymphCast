@@ -556,6 +556,7 @@ int StreamHandler::read_thread(void *arg) {
 		file_meta.title = t->value;
 	}
 
+	file_meta.artist = ""; // clear old artist.
     if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
         file_meta.artist = t->value;
 	}
