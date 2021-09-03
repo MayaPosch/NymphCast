@@ -354,6 +354,9 @@ bool streamTrack(std::string url) {
 		avThread.start(ffplay);
 	}
 	
+	// Send status update to client.
+	sendStatusUpdate(DataBuffer::getSessionHandle());
+	
 	return true;
 }
 
@@ -1212,6 +1215,9 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 		
 		retval->setValue(0);
 	}
+	
+	// Send status update to client.
+	sendStatusUpdate(DataBuffer::getSessionHandle());
 	
 	returnMsg->setResultValue(retval);
 	return returnMsg;
