@@ -571,7 +571,7 @@ void MainWindow::castFile() {
 		singleCast = true;
 	}
 	else {
-		// TODO: Display error.
+		QMessageBox::warning(this, tr("Failed to cast file"), tr("The selected file could not be played back."));
 	}
 }
 
@@ -581,11 +581,18 @@ void MainWindow::castUrl() {
 	uint32_t handle;
 	if (!playerEnsureConnected(handle)) { return; }
 	
-	// Open file.
+	// Get URL.
 	QString url = QInputDialog::getText(this, tr("Cast URL"), tr("Copy in the URL to cast."));
 	if (url.isEmpty()) { return; }
 	
-	client.castUrl(handle, url.toStdString());
+	if (client.castUrl(handle, url.toStdString())) {
+		// Playing back URL now. Update status.
+		playingTrack = true;
+		singleCast = true;
+	}
+	else {
+		QMessageBox::warning(this, tr("Failed to cast URL"), tr("The URL could not be played back."));
+	}
 }
 
 
