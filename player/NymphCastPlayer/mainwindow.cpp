@@ -150,12 +150,14 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->actionFile, SIGNAL(triggered()), this, SLOT(castFile()));
 	connect(ui->actionURL, SIGNAL(triggered()), this, SLOT(castUrl()));
 	
+	// UI
+	connect(ui->editRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
+	connect(ui->refreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
+	connect(ui->remotesComboBox, SIGNAL(currentIndexChanged(int)), 
+															this, SLOT(playerRemoteChanged(int)));
+	
 	// Tabs
     // Player tab.
-	connect(ui->playerEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
-	connect(ui->playerRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
-	connect(ui->playerRemotesComboBox, SIGNAL(currentIndexChanged(int)), 
-															this, SLOT(playerRemoteChanged(int)));
 	connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFile()));
 	connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(removeFile()));
     connect(ui->beginToolButton, SIGNAL(clicked()), this, SLOT(rewind()));
@@ -171,14 +173,10 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->cycleVideoButton, SIGNAL(clicked()), this, SLOT(cycleVideo()));
 	
 	// Apps tab.
-	connect(ui->appsEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
-	connect(ui->appsRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
 	connect(ui->updateRemoteAppsButton, SIGNAL(clicked()), this, SLOT(appsListRefresh()));
 	connect(ui->remoteAppLineEdit, SIGNAL(returnPressed()), this, SLOT(sendCommand()));
     
     // Apps (GUI) tab.
-	connect(ui->appsGuiEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
-	connect(ui->appsGuiRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->appTabGuiHomeButton, SIGNAL(clicked()), this, SLOT(appsHome()));
     connect(ui->appTabGuiTextBrowser, SIGNAL(linkClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
     
@@ -186,8 +184,6 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     ui->appTabGuiTextBrowser->setResourceHandler(std::bind(&MainWindow::loadResource, this, _1));
     
     // Shares tab.
-	connect(ui->sharesEditRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
-	connect(ui->sharesRefreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
     connect(ui->sharesScanButton, SIGNAL(clicked()), this, SLOT(scanForShares()));
     connect(ui->sharesPlayButton, SIGNAL(clicked()), this, SLOT(playSelectedShare()));
 	
@@ -332,12 +328,12 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	// If not, just store the updated status.
 	
 	// Obtain selected ID.
-	int index = ui->playerRemotesComboBox->currentIndex();
-	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
+	int index = ui->remotesComboBox->currentIndex();
+	uint32_t id = ui->remotesComboBox->currentData().toUInt();
 	
 	bool init = false;
 	if (index > separatorIndex) {
-		NCRemoteGroup& group = groups[ui->playerRemotesComboBox->currentData().toUInt()];
+		NCRemoteGroup& group = groups[ui->remotesComboBox->currentData().toUInt()];
 		if (group.remotes.size() < 1) { return; }
 		
 		if (group.remotes[0].init) {
@@ -518,21 +514,12 @@ void MainWindow::remoteListRefresh() {
 	
 	// Update the list with any changed items.
 	remotes.clear();
-	ui->playerRemotesComboBox->clear();
-	ui->sharesRemotesComboBox->clear();
-	ui->appsGuiRemotesComboBox->clear();
-	ui->appsRemotesComboBox->clear();
+	ui->remotesComboBox->clear();
 	for (uint32_t i = 0; i < list.size(); ++i) {
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(list[i].ipv4 + " (" + list[i].name + ")"));
 		newItem->setData(Qt::UserRole, QVariant(i));
-		ui->playerRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
-													" (" + list[i].name + ")"), QVariant(i));
-		ui->sharesRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
-													" (" + list[i].name + ")"), QVariant(i));
-		ui->appsGuiRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
-													" (" + list[i].name + ")"), QVariant(i));
-		ui->appsRemotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
+		ui->remotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
 													" (" + list[i].name + ")"), QVariant(i));
 													
 		// Add remote to 'remotes' list.
@@ -542,15 +529,12 @@ void MainWindow::remoteListRefresh() {
 	}
 	
 	// Insert group separator for the relevant combo boxes.
-	ui->playerRemotesComboBox->insertSeparator(remotes.size());
-	ui->sharesRemotesComboBox->insertSeparator(remotes.size());
+	ui->remotesComboBox->insertSeparator(remotes.size());
 	separatorIndex = remotes.size();
 	
 	// Add groups.
 	for (uint32_t i = 0; i < groups.size(); ++i) {
-		ui->playerRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
-													" (group)"), QVariant(i));
-		ui->sharesRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+		ui->remotesComboBox->addItem(QString::fromStdString(groups[i].name + 
 													" (group)"), QVariant(i));
 	}
 }
@@ -559,7 +543,7 @@ void MainWindow::remoteListRefresh() {
 // --- CAST FILE ---
 void MainWindow::castFile() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	// Open file.
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"));
@@ -579,7 +563,7 @@ void MainWindow::castFile() {
 // --- CAST URL ---
 void MainWindow::castUrl() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	// Get URL.
 	QString url = QInputDialog::getText(this, tr("Cast URL"), tr("Copy in the URL to cast."));
@@ -603,7 +587,7 @@ void MainWindow::playerRemoteChanged(int index) {
 	}
 	
 	// Obtain selected ID.
-	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
+	uint32_t id = ui->remotesComboBox->currentData().toUInt();
 	
 	// Make sure remote is connected and update the status display.
 	if (index > separatorIndex) {
@@ -611,7 +595,7 @@ void MainWindow::playerRemoteChanged(int index) {
 		if (group.remotes.size() < 1) { return; }
 		
 		if (!group.remotes[0].connected) {
-			playerIsConnected();
+			remoteIsConnected();
 		}
 		else {
 			updatePlayerUI(group.remotes[0].status);
@@ -619,7 +603,7 @@ void MainWindow::playerRemoteChanged(int index) {
 	}
 	else if (index < separatorIndex) {
 		if (!remotes[index].connected) {
-			playerIsConnected();
+			remoteIsConnected();
 		}
 		else {
 			updatePlayerUI(remotes[index].status);
@@ -687,50 +671,26 @@ void MainWindow::removeFile() {
 }
 
 
-// --- PLAYER IS CONNECTED ---
+// --- REMOTE IS CONNECTED ---
 // Return true if the currently selected remote in the Player tab is connected.
-bool MainWindow::playerIsConnected() {
-	if (ui->playerRemotesComboBox->count() == 0) {
+bool MainWindow::remoteIsConnected() {
+	if (ui->remotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remotes available"), 
 						tr("Please check that receivers are available and refresh the list."));
 		return false;
 	}
-	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+	else if (ui->remotesComboBox->currentIndex() == -1) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
 		return false;
 	}
 	
 	// Obtain selected ID.
-	int index = ui->playerRemotesComboBox->currentIndex();
+	int index = ui->remotesComboBox->currentIndex();
 	
 	// Check that a remote and not a group has been selected.
 	if (index >= separatorIndex) {
 		return false;
 	}
-	
-	// Ensure the remote is connected.
-	if (!remotes[index].connected) {
-		if (!connectRemote(remotes[index])) { return false; }
-	}
-	
-	return true;
-}
-
-
-// --- SHARES IS CONNECTED ---
-// Return true if the currently selected remote in the Player tab is connected.
-bool MainWindow::sharesIsConnected() {
-	if (ui->sharesRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	else if (ui->sharesRemotesComboBox->currentIndex() == -1) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	
-	// Obtain selected ID.
-	int index = ui->sharesRemotesComboBox->currentIndex();
 	
 	// Ensure the remote is connected.
 	if (!remotes[index].connected) {
@@ -749,22 +709,22 @@ void MainWindow::play() {
 	// * No remote or group selected.
 	
 	// Get currently selected remote or group, connect if necessary.
-	if (ui->playerRemotesComboBox->count() == 0) {
+	if (ui->remotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remotes found"), tr("Please refresh and try again."));
 		return;
 	}
-	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+	else if (ui->remotesComboBox->currentIndex() == -1) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
 		return;
 	}
 	
 	// Obtain selected ID.
-	int index = ui->playerRemotesComboBox->currentIndex();
+	int index = ui->remotesComboBox->currentIndex();
 	
 	// If a group is selected, pick the first remote in the group as master.
 	if (index > separatorIndex) {
 		// Get the group and set up the master & any slave receivers.
-		NCRemoteGroup& group = groups[ui->playerRemotesComboBox->currentData().toUInt()];
+		NCRemoteGroup& group = groups[ui->remotesComboBox->currentData().toUInt()];
 		if (group.remotes.size() < 1) {
 			// Error: no remotes in group.
 			QMessageBox::warning(this, tr("No remotes"), tr("Group contains no remotes."));
@@ -847,7 +807,7 @@ void MainWindow::stop() {
 	if (!playingTrack) { return; }
 	
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
     
     playingTrack = false;
 	client.playbackStop(handle);
@@ -859,7 +819,7 @@ void MainWindow::pause() {
 	if (!playingTrack) { return; }
 	
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.playbackPause(handle);
 }
@@ -868,7 +828,7 @@ void MainWindow::pause() {
 // --- FORWARD ---
 void MainWindow::forward() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.playbackForward(handle);
 }
@@ -877,7 +837,7 @@ void MainWindow::forward() {
 // --- REWIND ---
 void MainWindow::rewind() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.playbackRewind(handle);
 }
@@ -886,7 +846,7 @@ void MainWindow::rewind() {
 // --- SEEK ---
 void MainWindow::seek() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	// Read out location on seek bar.
 	uint8_t location = ui->positionSlider->value();
@@ -898,7 +858,7 @@ void MainWindow::seek() {
 // --- MUTE ---
 void MainWindow::mute() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	if (!muted) {
 		client.volumeSet(handle, 0);
@@ -914,7 +874,7 @@ void MainWindow::mute() {
 // --- ADJUST VOLUME ---
 void MainWindow::adjustVolume() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
@@ -926,7 +886,7 @@ void MainWindow::adjustVolume() {
 // --- CYCLE SUBTITLES ---
 void MainWindow::cycleSubtitles() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.cycleSubtitles(handle);
 }
@@ -935,7 +895,7 @@ void MainWindow::cycleSubtitles() {
 // --- CYCLE AUDIO ---
 void MainWindow::cycleAudio() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.cycleAudio(handle);
 }
@@ -944,27 +904,27 @@ void MainWindow::cycleAudio() {
 // --- CYCLE VIDEO ---
 void MainWindow::cycleVideo() {
 	uint32_t handle;
-	if (!playerEnsureConnected(handle)) { return; }
+	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.cycleVideo(handle);
 }
 
 
 // --- PLAYER ENSURE CONNECTED ---
-bool MainWindow::playerEnsureConnected(uint32_t &handle) {
+bool MainWindow::remoteEnsureConnected(uint32_t &handle) {
 	// Get currently selected remote, connect if necessary.
-	if (ui->playerRemotesComboBox->count() == 0) {
+	if (ui->remotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
 		return false;
 	}
-	else if (ui->playerRemotesComboBox->currentIndex() == -1) {
+	else if (ui->remotesComboBox->currentIndex() == -1) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
 		return false;
 	}
 	
 	// Obtain selected ID.
-	int32_t index = ui->playerRemotesComboBox->currentIndex();
-	uint32_t id = ui->playerRemotesComboBox->currentData().toUInt();
+	int32_t index = ui->remotesComboBox->currentIndex();
+	uint32_t id = ui->remotesComboBox->currentData().toUInt();
 	
 	if (index > separatorIndex) {
 		NCRemoteGroup& group = groups[id];
@@ -979,89 +939,6 @@ bool MainWindow::playerEnsureConnected(uint32_t &handle) {
 		if (!remotes[id].connected) {
 			if (!connectRemote(remotes[id])) { return false; }
 		}
-	}
-	
-	return true;
-}
-
-
-// --- SHARES ENSURE CONNECTED ---
-bool MainWindow::sharesEnsureConnected(uint32_t &handle) {
-	// Get currently selected remote, connect if necessary.
-	if (ui->sharesRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	else if (ui->sharesRemotesComboBox->currentIndex() == -1) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	
-	// Obtain selected ID.
-	int32_t index = ui->sharesRemotesComboBox->currentIndex();
-	uint32_t id = ui->sharesRemotesComboBox->currentData().toUInt();
-	
-	if (index > separatorIndex) {
-		NCRemoteGroup& group = groups[id];
-		handle = group.remotes[0].handle;
-		if (!group.remotes[0].connected) {
-			if (!connectRemote(group.remotes[0])) { return false; }
-		}
-	}
-	else {
-		// Ensure the remote is connected.
-		handle = remotes[id].handle;
-		if (!remotes[id].connected) {
-			if (!connectRemote(remotes[id])) { return false; }
-		}
-	}
-	
-	return true;
-}
-
-
-// --- APPS ENSURE CONNECTED ---
-bool MainWindow::appsEnsureConnected(uint32_t &id) {
-	// Get currently selected remote, connect if necessary.
-	if (ui->appsRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	else if (ui->appsRemotesComboBox->currentIndex() == -1) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	
-	// Obtain selected ID.
-	id = ui->appsRemotesComboBox->currentIndex();
-	
-	// Ensure the remote is connected.
-	if (!remotes[id].connected) {
-		if (!connectRemote(remotes[id])) { return false; }
-	}
-	
-	return true;
-}
-
-
-// --- APPS GUI ENSURE CONNECTED ---
-bool MainWindow::appsGuiEnsureConnected(uint32_t &id) {
-	// Get currently selected remote, connect if necessary.
-	if (ui->appsGuiRemotesComboBox->count() == 0) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	else if (ui->appsGuiRemotesComboBox->currentIndex() == -1) {
-		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
-		return false;
-	}
-	
-	// Obtain selected ID.
-	id = ui->appsGuiRemotesComboBox->currentIndex();
-	
-	// Ensure the remote is connected.
-	if (!remotes[id].connected) {
-		if (!connectRemote(remotes[id])) { return false; }
 	}
 	
 	return true;
@@ -1071,7 +948,7 @@ bool MainWindow::appsGuiEnsureConnected(uint32_t &id) {
 // --- APPS LIST REFRESH ---
 void MainWindow::appsListRefresh() {
 	uint32_t ncid;
-	if (!appsEnsureConnected(ncid)) { return; }
+	if (!remoteEnsureConnected(ncid)) { return; }
 	
 	// Get list of apps from the remote server.
 	std::string appList = client.getApplicationList(remotes[ncid].handle);
@@ -1086,7 +963,7 @@ void MainWindow::appsListRefresh() {
 // --- SEND COMMAND ---
 void MainWindow::sendCommand() {
 	uint32_t ncid;
-	if (!appsEnsureConnected(ncid)) { return; }
+	if (!remoteEnsureConnected(ncid)) { return; }
 	
 	// Read the data in the line edit and send it to the remote app.
 	// Get the appID from the currently selected item in the app list combobox.
@@ -1113,7 +990,7 @@ void MainWindow::sendCommand() {
 // --- APPS HOME ---
 void MainWindow::appsHome() {
 	uint32_t ncid;
-    if (!appsGuiEnsureConnected(ncid)) { return; }
+    if (!remoteEnsureConnected(ncid)) { return; }
     
     // Request the starting Apps page from the remote.
     QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, std::string(), 
@@ -1131,7 +1008,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 	std::cout << "anchorClicked: " << link.path().toStdString() << std::endl;
 	
 	uint32_t ncid;
-    if (!appsGuiEnsureConnected(ncid)) { return; }
+    if (!remoteEnsureConnected(ncid)) { return; }
 	
     // Parse URL string for the command desired.
     QStringList list = link.path().split("/", QString::SkipEmptyParts);
@@ -1201,7 +1078,7 @@ void MainWindow::anchorClicked(const QUrl &link) {
 // --- LOAD RESOURCE ---
 QByteArray MainWindow::loadResource(const QUrl &name) {
 	uint32_t ncid;
-    if (!appsGuiEnsureConnected(ncid)) { return QByteArray(); }
+    if (!remoteEnsureConnected(ncid)) { return QByteArray(); }
 	
     // Parse the URL for the desired resource.
     QFileInfo dir(name.path());
@@ -1279,12 +1156,12 @@ void MainWindow::playSelectedShare() {
     QMap<int, QVariant> data = sharesModel.itemData(indexes[0]);
     QList<QVariant> ids = data[Qt::UserRole].toList();
 	
-	int index = ui->sharesRemotesComboBox->currentIndex();
+	int index = ui->remotesComboBox->currentIndex();
 	
     std::vector<NymphCastRemote> receivers;
 	if (index > separatorIndex) {
 		// Get the group and set up the master & any slave receivers.
-		NCRemoteGroup& group = groups[ui->sharesRemotesComboBox->currentData().toUInt()];
+		NCRemoteGroup& group = groups[ui->remotesComboBox->currentData().toUInt()];
 		if (group.remotes.size() < 1) {
 			// Error: no remotes in group.
 			QMessageBox::warning(this, tr("No remotes"), tr("Group contains no remotes."));
@@ -1297,7 +1174,7 @@ void MainWindow::playSelectedShare() {
 		}
 	}
 	else if (index < separatorIndex) {
-		uint32_t ncid = ui->sharesRemotesComboBox->currentIndex();
+		uint32_t ncid = ui->remotesComboBox->currentIndex();
 		receivers.push_back(remotes[ncid].remote);
 	}
 	else {
@@ -1359,34 +1236,22 @@ void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
 void MainWindow::addGroupsToRemotes() {
 	// Update remotes combo boxes.
 	// Only update the combo boxes on the Player & Shares tabs as these use groups.
-	ui->playerRemotesComboBox->clear();
-	ui->sharesRemotesComboBox->clear();
-	ui->appsGuiRemotesComboBox->clear();
-	ui->appsRemotesComboBox->clear();
+	ui->remotesComboBox->clear();
 	for (uint32_t i = 0; i < remotes.size(); ++i) {
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(remotes[i].remote.ipv4 + " (" + remotes[i].remote.name + ")"));
 		newItem->setData(Qt::UserRole, QVariant(i));
-		ui->playerRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
-													" (" + remotes[i].remote.name + ")"), QVariant(i));
-		ui->sharesRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
-													" (" + remotes[i].remote.name + ")"), QVariant(i));
-		ui->appsGuiRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
-													" (" + remotes[i].remote.name + ")"), QVariant(i));
-		ui->appsRemotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+		ui->remotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
 													" (" + remotes[i].remote.name + ")"), QVariant(i));
 	}
 	
 	// Insert group separator for the relevant combo boxes.
-	ui->playerRemotesComboBox->insertSeparator(remotes.size());
-	ui->sharesRemotesComboBox->insertSeparator(remotes.size());
+	ui->remotesComboBox->insertSeparator(remotes.size());
 	separatorIndex = remotes.size();
 	
 	// Add groups.
 	for (uint32_t i = 0; i < groups.size(); ++i) {
-		ui->playerRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
-													" (group)"), QVariant(i));
-		ui->sharesRemotesComboBox->addItem(QString::fromStdString(groups[i].name + 
+		ui->remotesComboBox->addItem(QString::fromStdString(groups[i].name + 
 													" (group)"), QVariant(i));
 	}
 }
