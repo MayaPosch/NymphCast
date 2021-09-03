@@ -1038,7 +1038,7 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_p;
 	SDL_PushEvent(&event);
 	
-	playerPaused = true;
+	playerPaused = ~playerPaused;
 	
 	// Send status update to client.
 	sendStatusUpdate(DataBuffer::getSessionHandle());
