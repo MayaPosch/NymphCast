@@ -470,6 +470,7 @@ void Ffplay::run() {
 	
 	if (is) {
 		StreamHandler::stream_close(is);
+		is = 0;
 	}
 	
 	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
