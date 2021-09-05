@@ -40,9 +40,9 @@ private slots:
 	void pause();
 	void forward();
 	void rewind();
-	void seek();
+	void seek(int value);
 	void mute();
-	void adjustVolume();
+	void adjustVolume(int value);
 	void cycleSubtitles();
 	void cycleAudio();
 	void cycleVideo();

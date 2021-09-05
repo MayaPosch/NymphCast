@@ -166,8 +166,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->stopToolButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(ui->pauseToolButton, SIGNAL(clicked()), this, SLOT(pause()));
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
-	connect(ui->volumeSlider, SIGNAL(sliderReleased()), this, SLOT(adjustVolume()));
-	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
+	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
+	connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(seek(int)));
 	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
 	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
 	connect(ui->cycleVideoButton, SIGNAL(clicked()), this, SLOT(cycleVideo()));
@@ -844,14 +844,12 @@ void MainWindow::rewind() {
 
 
 // --- SEEK ---
-void MainWindow::seek() {
+void MainWindow::seek(int value) {
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
 	
-	// Read out location on seek bar.
-	uint8_t location = ui->positionSlider->value();
-	
-	client.playbackSeek(handle, location);
+	// Seek bar is in percentages. Pick the right function with a cast.
+	client.playbackSeek(handle, (uint8_t) value);
 }
 
 
@@ -872,11 +870,10 @@ void MainWindow::mute() {
 
 
 // --- ADJUST VOLUME ---
-void MainWindow::adjustVolume() {
+void MainWindow::adjustVolume(int value) {
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
 	
-	int value = ui->volumeSlider->value();
 	if (value < 0 || value > 128) { return; }
 	
 	client.volumeSet(handle, value);
