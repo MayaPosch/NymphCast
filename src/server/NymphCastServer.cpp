@@ -594,7 +594,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// Set up a new session instance for the client.
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
-	if (it != clients.end()) {
+	if (it == clients.end()) {
 		returnMsg->setResultValue(new NymphUint8(1));
 		return returnMsg;
 	}
@@ -761,7 +761,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	// Get iterator to the session instance for the client.
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
-	if (it != clients.end()) {
+	if (it == clients.end()) {
 		returnMsg->setResultValue(new NymphUint8(1));
 		return returnMsg;
 	}
