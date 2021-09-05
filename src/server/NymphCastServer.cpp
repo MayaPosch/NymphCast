@@ -171,8 +171,9 @@ void dataRequestFunction() {
 			break;
 		}
 		
+		std::cout << "Asking for data..." << std::endl;
+		
 		// Request more data.
-		// TODO: Initial buffer size is 2 MB. Make this dynamically scale.
 		std::vector<NymphType*> values;
 		std::string result;
 		NymphBoolean* resVal = 0;
@@ -268,21 +269,21 @@ void sendStatusUpdate(uint32_t handle) {
 // --- SEND GLOBAL STATUS UPDATE ---
 // Send playback status update to all connected clients.
 void sendGlobalStatusUpdate() {
+	std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
 	std::vector<NymphType*> values;
 	values.push_back(getPlaybackStatus());
 	NymphBoolean* resVal = 0;
 	std::string result;
-	for (int i = 0; i < clients.size(); ++i) {
+	std::map<int, CastClient>::const_iterator it;
+	for (it = clients.begin(); it != clients.end(); ++it) {
+		std::cout << "Client ID: " << it->first << "/" << it->second.name << std::endl;
+		
 		// Call the status update callback with the current playback status.
-		if (!NymphRemoteClient::callCallback(clients[i].handle, "MediaStatusCallback", values, result)) {
+		if (!NymphRemoteClient::callCallback(it->first, "MediaStatusCallback", values, result)) {
 			std::cerr << "Calling media status callback failed: " << result << std::endl;
 			
 			// An error here very likely means that the client no long exists. Remove it.
-			std::map<int, CastClient>::iterator it;
-			it = clients.find(clients[i].handle);
-			if (it != clients.end()) {
-				clients.erase(it);
-			}
+			clients.erase(it);
 			
 			continue;
 		}
@@ -440,7 +441,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
 	NymphBoolean* retVal = 0;
-	if (it == clients.end()) {
+	if (it != clients.end()) {
 		// Client ID already exists, abort.
 		retVal = new NymphBoolean(false);
 	}
@@ -602,6 +603,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	NymphStruct* fileInfo = ((NymphStruct*) msg->parameters()[0]);
 	NymphType* num = 0;
 	if (!fileInfo->getValue("filesize", num)) {
+		std::cerr << "Didn't find entry 'filesize'. Aborting..." << std::endl;
 		returnMsg->setResultValue(new NymphUint8(1));
 		return returnMsg;
 	}
@@ -615,7 +617,12 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
-	DataBuffer::start();
+	if (!DataBuffer::start()) {
+		std::cerr << "Failed to start buffering. Abort." << std::endl;
+		returnMsg->setResultValue(new NymphUint8(1));
+		return returnMsg;
+	}
+		
 	it->second.sessionActive = true;
 	
 	// Stop screensaver.
