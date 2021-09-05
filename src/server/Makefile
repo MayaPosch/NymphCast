@@ -95,6 +95,10 @@ OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
 
 PREFIX ?= /usr/local
+ifdef OS
+# Assume 64-bit MSYS2
+PREFIX = /mingw64
+endif
 
 ifeq ($(PREFIX),/usr/local)
 	CONFDIR := $(PREFIX)/etc
