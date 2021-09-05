@@ -615,7 +615,6 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
-	// TODO: Initial buffer size is 1 MB. Make this dynamically scale.
 	DataBuffer::start();
 	it->second.sessionActive = true;
 	
@@ -821,15 +820,8 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		playerStarted = true;
 		avThread.start(ffplay);
 		
-		// Signal the client that we're playing now.
-		// TODO: is it okay to call this right after starting the player thread?
-		std::vector<NymphType*> values;
-		values.push_back(getPlaybackStatus());
-		std::string result;
-		NymphBoolean* resVal = 0;
-		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaStatusCallback", values, result)) {
-			std::cerr << "Calling media status callback failed: " << result << std::endl;
-		}
+		// Signal the clients that we're playing now.
+		sendGlobalStatusUpdate();
 	}
 	else {
 		// Send status update to clients.
