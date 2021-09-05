@@ -129,6 +129,12 @@ std::atomic<uint32_t> audio_volume = 100;
 #undef main
 #endif
 
+struct CastClient {
+	std::string name;
+	int handle;
+	bool sessionActive;
+	uint32_t filesize;
+};
 
 // --- Globals ---
 FileMetaInfo file_meta;
@@ -145,6 +151,7 @@ std::condition_variable dataRequestCv;
 std::mutex dataRequestMtx;
 
 NCApps nc_apps;
+std::map<int, CastClient> clients;
 // ---
 
 
@@ -254,6 +261,31 @@ void sendStatusUpdate(uint32_t handle) {
 	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
 		std::cerr << "Calling media status callback failed: " << result << std::endl;
 		return;
+	}
+}
+
+
+// --- SEND GLOBAL STATUS UPDATE ---
+// Send playback status update to all connected clients.
+void sendGlobalStatusUpdate() {
+	std::vector<NymphType*> values;
+	values.push_back(getPlaybackStatus());
+	NymphBoolean* resVal = 0;
+	std::string result;
+	for (int i = 0; i < clients.size(); ++i) {
+		// Call the status update callback with the current playback status.
+		if (!NymphRemoteClient::callCallback(clients[i].handle, "MediaStatusCallback", values, result)) {
+			std::cerr << "Calling media status callback failed: " << result << std::endl;
+			
+			// An error here very likely means that the client no long exists. Remove it.
+			std::map<int, CastClient>::iterator it;
+			it = clients.find(clients[i].handle);
+			if (it != clients.end()) {
+				clients.erase(it);
+			}
+			
+			continue;
+		}
 	}
 }
 
@@ -371,17 +403,6 @@ struct SessionParams {
 	int max_buffer;
 };
 
-
-struct CastClient {
-	std::string name;
-	bool sessionActive;
-	uint32_t filesize;
-};
-
-
-std::map<int, CastClient> clients;
-
-
 struct NymphCastSlaveRemote {
 	std::string name;
 	std::string ipv4;
@@ -426,6 +447,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	else {
 		CastClient c;
 		c.name = clientStr;
+		c.handle = session;
 		c.sessionActive = false;
 		c.filesize = 0;
 		clients.insert(std::pair<int, CastClient>(session, c));
@@ -810,8 +832,8 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	else {
-		// Send status update to client.
-		sendStatusUpdate(DataBuffer::getSessionHandle());
+		// Send status update to clients.
+		sendGlobalStatusUpdate();
 	}
 	
 	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
@@ -982,8 +1004,8 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	
 	playerPaused = false;
 	
-	// Send status update to client.
-	sendStatusUpdate(DataBuffer::getSessionHandle());
+	// Send status update to clients.
+	sendGlobalStatusUpdate();
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
@@ -1043,8 +1065,8 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	
 	playerPaused = ~playerPaused;
 	
-	// Send status update to client.
-	sendStatusUpdate(DataBuffer::getSessionHandle());
+	// Send status update to clients.
+	sendGlobalStatusUpdate();
 	
 	returnMsg->setResultValue(new NymphUint8(0));
 	return returnMsg;
