@@ -194,6 +194,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// Set up playback controls.
 	ui->pauseToolButton->setVisible(false);
 	ui->beginToolButton->setVisible(false);
+	ui->stopToolButton->setEnabled(false);
 	ui->endToolButton->setVisible(false);
 	
 	// NymphCast client SDK callbacks.
@@ -1136,8 +1137,9 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
+	
 	//uint32_t handle;
-    //if (!sharesEnsureConnected(handle)) { return; }
+    //if (!remoteEnsureConnected(handle)) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
