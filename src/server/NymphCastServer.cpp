@@ -337,14 +337,8 @@ void finishPlayback() {
 		return;
 	}
 	
-	// Call the status update callback to indicate to the client that playback stopped.
-	values.clear();
-	values.push_back(getPlaybackStatus());
-	resVal = 0;
-	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
-		std::cerr << "Calling media status callback failed: " << result << std::endl;
-		return;
-	}
+	// Call the status update callback to indicate to the clients that playback stopped.
+	sendGlobalStatusUpdate();
 	
 	// Start the Screensaver here for now.
 	if (!display_disable) {
