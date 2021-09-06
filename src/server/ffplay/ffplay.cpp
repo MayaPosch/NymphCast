@@ -332,15 +332,15 @@ int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
 
 // --- GET VOLUME ---
 uint8_t Ffplay::getVolume() {
-	if (!is) { return 0; }
+	//if (!is) { return 0; }
 	
 	return audio_volume;
-	//return is->audio_volume;
 }
 
 
 // --- SET VOLUME ---
 void Ffplay::setVolume(uint8_t volume) {
+	audio_volume = volume;
 	if (!is) { return; }
 	
 	if (volume > SDL_MIX_MAXVOLUME) {

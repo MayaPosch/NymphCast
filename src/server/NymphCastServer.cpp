@@ -236,7 +236,7 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("position", new NymphDouble(file_meta.position));
 		response->addPair("title", new NymphString(file_meta.title));
 		response->addPair("artist", new NymphString(file_meta.artist));
-		response->addPair("volume", new NymphUint8(ffplay.getVolume()));
+		response->addPair("volume", new NymphUint8(audio_volume));
 	}
 	else {
 		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
@@ -245,7 +245,7 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("position", new NymphDouble(0));
 		response->addPair("title", new NymphString());
 		response->addPair("artist", new NymphString());
-		response->addPair("volume", new NymphUint8(100));
+		response->addPair("volume", new NymphUint8(audio_volume));
 	}
 	
 	return response;
