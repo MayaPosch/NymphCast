@@ -270,15 +270,15 @@ void sendStatusUpdate(uint32_t handle) {
 // Send playback status update to all connected clients.
 void sendGlobalStatusUpdate() {
 	std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
-	std::vector<NymphType*> values;
-	values.push_back(getPlaybackStatus());
-	NymphBoolean* resVal = 0;
-	std::string result;
 	std::map<int, CastClient>::const_iterator it;
 	for (it = clients.begin(); it != clients.end(); ++it) {
 		std::cout << "Client ID: " << it->first << "/" << it->second.name << std::endl;
 		
 		// Call the status update callback with the current playback status.
+		std::vector<NymphType*> values;
+		values.push_back(getPlaybackStatus());
+		NymphBoolean* resVal = 0;
+		std::string result;
 		if (!NymphRemoteClient::callCallback(it->first, "MediaStatusCallback", values, result)) {
 			std::cerr << "Calling media status callback failed: " << result << std::endl;
 			
