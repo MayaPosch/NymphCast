@@ -405,6 +405,9 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 	else if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
 		
+		// Set to true in case we're playing from a share.
+		playingTrack = true;
+		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
 		ui->playToolButton->setVisible(false);
