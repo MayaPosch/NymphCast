@@ -270,6 +270,27 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 		std::cout << path.toStdString() << std::endl;
 	}
 	
+	QAndroidJniObject videoObj = QAndroidJniObject::callStaticObjectMethod(
+                            "com/nyanko/nymphcastplayer/NymphCast",
+							"loadVideo",
+							"(Landroid/content/Context;)Ljava/util/ArrayList;",
+							QtAndroid::androidContext().object());
+		
+	for (int i = 0; i < audioObj.callMethod<jint>("size"); ++i) {
+		// Add item to the list.
+		QAndroidJniObject track = audioObj.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
+		const QString title = track.callObjectMethod("getTitle", "()Ljava/lang/String;").toString();
+		const QString album = track.callObjectMethod("getAlbum", "()Ljava/lang/String;").toString();
+		const QString artist = track.callObjectMethod("getArtist", "()Ljava/lang/String;").toString();
+		const QString path = track.callObjectMethod("getPath", "()Ljava/lang/String;").toString();
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(artist + " - " + title);
+		newItem->setData(Qt::UserRole, QVariant(path));
+		ui->mediaListWidget->addItem(newItem);
+		
+		// Debug
+		std::cout << path.toStdString() << std::endl;
+	}
 	/* for (int i = 0; i < video.size(); ++i) {
 		// Add item to the list.
 		QListWidgetItem *newItem = new QListWidgetItem;

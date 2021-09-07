@@ -60,6 +60,37 @@ public class NymphCast {
 	}
 	
 	
+	public static ArrayList<MediaItem> loadVideo(Context appContext) {
+		ContentResolver contentResolver = appContext.getContentResolver();
+
+		Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+		//String selection = MediaStore.Video.Media.IS_MUSIC + "!= 0";
+		String sortOrder = MediaStore.Video.Media.TITLE + " ASC";
+		Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
+		
+		ArrayList<MediaItem> items = new ArrayList<MediaItem>();
+		if (cursor != null && cursor.getCount() > 0) {
+			while (cursor.moveToNext()) {
+				long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+				//Uri data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+				String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
+				String album = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.ALBUM));
+				String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.ARTIST));
+
+				Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+				
+				items.add(new MediaItem(title, album, artist, getPath(appContext, contentUri)));
+			}
+		}
+
+		if (cursor != null) {
+			cursor.close();
+		}
+		
+		return items;
+	}
+	
+	
 	/**
  * Get a file path from a Uri. This will get the the path for Storage Access
  * Framework Documents, as well as the _data field for the MediaStore and
