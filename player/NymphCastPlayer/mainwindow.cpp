@@ -276,9 +276,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 							"(Landroid/content/Context;)Ljava/util/ArrayList;",
 							QtAndroid::androidContext().object());
 		
-	for (int i = 0; i < audioObj.callMethod<jint>("size"); ++i) {
+	for (int i = 0; i < videoObj.callMethod<jint>("size"); ++i) {
 		// Add item to the list.
-		QAndroidJniObject track = audioObj.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
+		QAndroidJniObject track = videoObj.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
 		const QString title = track.callObjectMethod("getTitle", "()Ljava/lang/String;").toString();
 		const QString album = track.callObjectMethod("getAlbum", "()Ljava/lang/String;").toString();
 		const QString artist = track.callObjectMethod("getArtist", "()Ljava/lang/String;").toString();
