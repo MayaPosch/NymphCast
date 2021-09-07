@@ -26,6 +26,9 @@ endif
 export TARGET
 export GPP
 
+USYS := $(shell uname -s)
+UMCH := $(shell uname -m)
+
 TARGET_BIN := $(TARGET)/
 
 # Include the file with the versioning information ('VERSION' variable).
@@ -217,3 +220,6 @@ ar-rasp-audio: bin/$(TARGET_BIN)$(OUTPUT)
 	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
 	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
 	cd out/tmp && zip --symlinks -vr ../nymphcast_audio_raspbian.zip . && cd -
+
+package:
+	tar -C bin/$(TARGET_BIN) -cvzf bin/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT)
