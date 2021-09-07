@@ -77,7 +77,7 @@ public class NymphCast {
 				String album = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.ALBUM));
 				String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.ARTIST));
 
-				Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+				Uri contentUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
 				
 				items.add(new MediaItem(title, album, artist, getPath(appContext, contentUri)));
 			}
