@@ -377,6 +377,16 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 	else {
 		ui->remoteStatusLabel->setText("Stopped.");
 	}
+
+	// Manage muted state.
+	if (muted && status.volume > 0) { 
+		muted = false;
+		ui->soundToolButton->setIcon(QIcon(":/icons/icons/high-volume.png"));
+	}
+	else if (!muted && status.volume == 0) {
+		muted = true;
+		ui->soundToolButton->setIcon(QIcon(":/icons/icons/mute.png"));
+	}
 	
 	if (init) {
 		// Initial callback for this remote on connect. Just set safe defaults.
@@ -391,6 +401,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		ui->positionSlider->setValue(0);
 		
 		ui->volumeSlider->setValue(status.volume);
+			
 	}
 	else if (paused) {
 		std::cout << "Paused playback..." << std::endl;
