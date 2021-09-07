@@ -495,6 +495,13 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Note: this is a preview (experimental) feature.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QLiteHtmlWidget" name="appTabGuiTextBrowser"/>
@@ -518,6 +525,13 @@
         <string>Apps</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Note: this is a preview (experimental) feature.</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
