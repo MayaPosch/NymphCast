@@ -865,10 +865,12 @@ void MainWindow::mute() {
 	if (!muted) {
 		client.volumeSet(handle, 0);
 		muted = true;
+		ui->soundToolButton->setIcon(QIcon(":/icons/icons/mute.png"));
 	}
 	else {
 		client.volumeSet(handle, ui->volumeSlider->value());
 		muted = false;
+		ui->soundToolButton->setIcon(QIcon(":/icons/icons/high-volume.png"));
 	}
 }
 
