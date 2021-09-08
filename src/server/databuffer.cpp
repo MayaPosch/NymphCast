@@ -513,7 +513,10 @@ uint32_t DataBuffer::write(std::string &data) {
 	bufferMutex.unlock();
 	
 	// Trigger a data request from the client if we have space.
-	if (!eof && free > 0) {
+	if (eof) {
+		// Do nothing.
+	}
+	else if (free > 0) {
 		if (dataRequestCV != 0) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
