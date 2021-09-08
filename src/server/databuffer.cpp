@@ -516,7 +516,9 @@ uint32_t DataBuffer::write(std::string &data) {
 	if (eof) {
 		// Do nothing.
 	}
-	else if (free > 0) {
+	else if (free > 204799) {
+		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
+		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
