@@ -10,7 +10,7 @@
 */
 
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #include "databuffer.h"
 
@@ -511,6 +511,14 @@ uint32_t DataBuffer::write(std::string &data) {
 #endif
 	
 	bufferMutex.unlock();
+	
+	// Trigger a data request from the client if we have space.
+	if (!eof && free > 0) {
+		if (dataRequestCV != 0) {
+			dataRequestPending = true;
+			dataRequestCV->notify_one();
+		}
+	}
 	
 	// If we're in seeking mode, signal that we're done.
 	if (state == DBS_SEEKING) {
