@@ -512,6 +512,17 @@ uint32_t DataBuffer::write(std::string &data) {
 	
 	bufferMutex.unlock();
 	
+	// If we're in seeking mode, signal that we're done.
+	if (state == DBS_SEEKING) {
+#ifdef DEBUG
+		std::cout << "In seeking mode. Notifying seeking routine." << std::endl;
+#endif
+		seekRequestPending = false;
+		seekRequestCV.notify_one();
+		
+		return bytesWritten;
+	}
+	
 	// Trigger a data request from the client if we have space.
 	if (eof) {
 		// Do nothing.
@@ -523,15 +534,6 @@ uint32_t DataBuffer::write(std::string &data) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
 		}
-	}
-	
-	// If we're in seeking mode, signal that we're done.
-	if (state == DBS_SEEKING) {
-#ifdef DEBUG
-		std::cout << "In seeking mode. Notifying seeking routine." << std::endl;
-#endif
-		seekRequestPending = false;
-		seekRequestCV.notify_one();
 	}
 	
 	return bytesWritten;
