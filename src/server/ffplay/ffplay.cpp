@@ -14,6 +14,9 @@
 #include "ffplay.h"
 
 
+//#define DEBUG 1
+
+
 /* current context */
 int is_full_screen;
 int64_t audio_callback_time;
@@ -407,7 +410,7 @@ void Ffplay::run() {
 		input_filename = "";
 	
 		// Create internal buffer for FFmpeg.
-		size_t iBufSize = 32 * 1024; // 32 kB
+		size_t iBufSize = 1024 * 1024; // 1 MB
 		uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
 		 
 		// Allocate the AVIOContext:
