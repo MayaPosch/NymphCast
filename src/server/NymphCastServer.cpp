@@ -1477,8 +1477,8 @@ int main(int argc, char** argv) {
 	// Initialise the server.
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
-	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	// Initialise the client component (RemoteServer) for use with slave remotes.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
