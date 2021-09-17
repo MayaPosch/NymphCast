@@ -42,8 +42,8 @@ class DataBuffer {
 	static uint32_t capacity;	// Total capacity of buffer in bytes.
 	static uint32_t size;		// Total size of data in buffer in bytes.
 	static int64_t filesize;	// Size of the media file being streamed, in bytes.
-	static uint32_t unread;		// Number of unread bytes in the buffer.
-	static uint32_t free;		// Number of free bytes in the buffer.
+	static std::atomic<uint32_t> unread;		// Number of unread bytes in the buffer.
+	static std::atomic<uint32_t> free;		// Number of free bytes in the buffer.
 	static uint32_t byteIndex;		// First unread byte index into the media file data.
 	static uint32_t byteIndexLow;	// Lowest media file byte index present in the buffer.
 	static uint32_t byteIndexHigh;	// Highest media file byte index present in the buffer.
