@@ -9,7 +9,7 @@
 
 
 class Player {
-	VideoState state;
+	static VideoState* cur_stream;
 	//Config config;
 	
 	static std::atomic_bool run;
@@ -18,8 +18,12 @@ public:
 	Player();
 	bool start(Config config);
 	
+	static void setVideoState(VideoState* vs);
+	
 	static void quit();
 	static void event_loop(VideoState *cur_stream);
+	static bool process_event(SDL_Event &event);
+	static void run_updates();
 };
 
 

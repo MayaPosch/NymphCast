@@ -69,6 +69,7 @@ namespace Renderer
 	void        drawRect        (const float _x, const float _y, const float _w, const float _h, const unsigned int _color, const unsigned int _colorEnd, bool horizontalGradient = false, const Blend::Factor _srcBlendFactor = Blend::SRC_ALPHA, const Blend::Factor _dstBlendFactor = Blend::ONE_MINUS_SRC_ALPHA);
 
 	SDL_Window* getSDLWindow    ();
+	int			getWindowId		();
 	int         getWindowWidth  ();
 	int         getWindowHeight ();
 	int         getScreenWidth  ();

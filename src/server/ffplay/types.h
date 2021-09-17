@@ -452,6 +452,8 @@ extern const uint32_t nymph_seek_event;
 
 #include <Poco/Condition.h>
 extern Poco::Condition gCon;
+extern Poco::Condition playerCon;
+extern Poco::Mutex playerMutex;
 
 
 #endif

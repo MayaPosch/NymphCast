@@ -389,6 +389,8 @@ bool streamTrack(std::string url) {
 
 
 void signal_handler(int signal) {
+	std::cout << "SIGINT handler called. Shutting down..." << std::endl;
+	SdlRenderer::stop_event_loop();
 	gCon.signal();
 }
 
@@ -1804,16 +1806,16 @@ int main(int argc, char** argv) {
 		video_disable = 1;
 	}
 	
-	// Install signal handler to terminate the server.
-	// Note: SDL will install its own signal handler. It's paramount that our signal handler is
-	// 			therefore installed after its, to override it.
-	signal(SIGINT, signal_handler);
-	
 	// Initialise SDL.
 	if (!SdlRenderer::init()) {
 		std::cerr << "Failed to init SDL. Aborting..." << std::endl;
 		return 0;
 	}
+	
+	// Install signal handler to terminate the server.
+	// Note: SDL will install its own signal handler. It's paramount that our signal handler is
+	// 			therefore installed after its, to override it.
+	signal(SIGINT, signal_handler);
 	
 	// Start server on port 4004.
 	NymphRemoteClient::start(4004);
@@ -1836,9 +1838,14 @@ int main(int argc, char** argv) {
 	bool init_success = true;
 	if (!display_disable) {
 		if (gui_enable) {
-			// Start the GUI with the default document.
+			// Start the GUI with the specified resource folder.
 			if (!Gui::init(resourceFolder)) {
 				// Handle error.
+				std::cerr << "Failed to initialize the GUI. Aborting..." << std::endl;
+				init_success = false;
+			}
+			
+			if (!Gui::start()) {
 				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
 				init_success = false;
 			}
@@ -1850,18 +1857,12 @@ int main(int argc, char** argv) {
 		}
 	}
 	
-	
-	// Wait for the condition to be signalled.
-	if (init_success && !gui_enable) {
-		gMutex.lock();
-		gCon.wait(gMutex);
-	}
-	else if (init_success && gui_enable) {
-		// Blocking function, returns when exiting the GUI.
-		Gui::start();
+	// Start SDL, wait for it to exit.
+	if (init_success) {
+		SdlRenderer::run_event_loop();
 	}
 	
-	std::cout << "Shutting down..." << std::endl;
+	std::cout << "Main thread: Shutting down..." << std::endl;
 	
 	// Stop screensaver if it's running.
 	if (!display_disable) {
@@ -1884,6 +1885,8 @@ int main(int argc, char** argv) {
 	ffplay.quit();
 	avThread.join();
 	SdlRenderer::quit();
+	
+	std::cout << "Stopping SDL loop..." << std::endl;
 	
 	NyanSD::stopListener();
 	NymphRemoteClient::shutdown();

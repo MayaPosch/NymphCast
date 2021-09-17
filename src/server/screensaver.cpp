@@ -65,23 +65,23 @@ void ScreenSaver::start(uint32_t changeSecs) {
 	active = true;
 	
 	// Start SDL loop.
-	sdl = new std::thread(SdlRenderer::run_event_loop);
+	//sdl = new std::thread(SdlRenderer::run_event_loop);
 }
 
 
 void ScreenSaver::stop() {
 	if (!active) { return; }
 	
-	std::cout << "Stopping SDL loop..." << std::endl;
+	//std::cout << "Stopping SDL loop..." << std::endl;
 	
 	// Stop SDL event loop.
-	SdlRenderer::stop_event_loop();
+	//SdlRenderer::stop_event_loop();
 	
 	// Wait for thread to exit.
-	sdl->join();
+	//sdl->join();
 	
 	// Delete thread object.
-	delete sdl;
+	//delete sdl;
 	
 	std::cout << "Stopping timer..." << std::endl;
 	

@@ -833,14 +833,6 @@ fail:
 		av_log(NULL, AV_LOG_INFO, "Goto 'fail': avformat_close_input()...\n");
 		avformat_close_input(&ic);
 	}
-
-    // We always exit the player on EoF or error.
-	if (eof) {
-		SDL_Event event;
-		event.type = FF_QUIT_EVENT;
-		event.user.data1 = is;
-		SDL_PushEvent(&event);
-	}
 	
 	Player::quit();
 	
@@ -850,6 +842,10 @@ fail:
 	VideoRenderer::quit();
 	
 	SDL_DestroyMutex(wait_mutex);
+	
+	// Signal the player thread that the playback has ended.
+	playerCon.signal();
+	
 	return 0;
 }
 

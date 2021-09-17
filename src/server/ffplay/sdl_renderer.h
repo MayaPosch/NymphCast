@@ -19,6 +19,8 @@ class SdlRenderer {
 	//static SDL_AudioDeviceID audio_dev;
 	static std::atomic<bool> run_events;
 	static std::string docName;
+	static bool playerEventsActive;
+	static bool guiEventsActive;
 	
 	static void fill_rectangle(int x, int y, int w, int h);
 	static int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, 
@@ -37,6 +39,8 @@ public:
 	static void image_display(std::string image);
 	static void run_event_loop();
 	static void stop_event_loop();
+	static void playerEvents(bool active);
+	static void guiEvents(bool active);
 	static void video_audio_display(VideoState *s);
 	static void video_image_display(VideoState *is);
 };

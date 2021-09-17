@@ -26,6 +26,12 @@ unsigned sws_flags = SWS_BICUBIC;
 AVPacket flush_pkt;
 
 
+// Global objects.
+Poco::Condition playerCon;
+Poco::Mutex playerMutex;
+// ---
+
+
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
@@ -459,10 +465,13 @@ void Ffplay::run() {
 		file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
 	}
 
-	Player::event_loop(is);
+	Player::setVideoState(is);
+	SdlRenderer::playerEvents(true);
 	
-	// Shut down modules.
-	StreamHandler::quit();
+	// Wait here until playback has finished.
+	// The read thread in StreamHandler will signal this condition variable.
+	playerMutex.lock();
+	playerCon.wait(playerMutex);
 	
 	SDL_Delay(500); // wait 500 ms.
 	
@@ -478,6 +487,7 @@ void Ffplay::run() {
 	
 	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
 	
+	SdlRenderer::playerEvents(false);
 	DataBuffer::reset();	// Clears the data buffer (file data buffer).
 	finishPlayback();		// Calls handler for post-playback steps.
 }

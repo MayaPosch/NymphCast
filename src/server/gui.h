@@ -22,6 +22,8 @@
 
 #include "nymphcast_client.h"
 
+#include <SDL_events.h>
+
 
 class Gui {
 	static std::thread* sdl;
@@ -29,6 +31,8 @@ class Gui {
 	static Window window;
 	static SystemScreenSaver* screensaver;
 	static std::string resourceFolder;
+	static uint32_t windowId;
+	static bool ps_standby;
 	
 	static bool verifyHomeFolderExists();
 	
@@ -40,6 +44,8 @@ public:
 	
 	static bool init(std::string resFolder);
 	static bool start();
+	static void handleEvent(SDL_Event &event);
+	static void run_updates();
 	static bool stop();
 	static bool quit();
 };

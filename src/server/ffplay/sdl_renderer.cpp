@@ -3,7 +3,9 @@
 #include "sdl_renderer.h"
 
 #include "frame_queue.h"
+#include "player.h"
 #include "types.h"
+#include "../gui.h"
 
 
 // Globals
@@ -19,6 +21,8 @@ SDL_Texture* SdlRenderer::texture = 0;
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
 std::string SdlRenderer::docName;
+bool SdlRenderer::playerEventsActive = false;
+bool SdlRenderer::guiEventsActive = false;
 
 
 bool SdlRenderer::init() {
@@ -334,10 +338,13 @@ static void set_sdl_yuv_conversion_mode(AVFrame *frame)
 void SdlRenderer::video_display(VideoState *is) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
+    if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO) { 
         SdlRenderer::video_audio_display(is);
-    else if (is->video_st)
+	}
+    else if (is->video_st) {
         SdlRenderer::video_image_display(is);
+	}
+	
     SDL_RenderPresent(renderer);
 }
 
@@ -355,9 +362,6 @@ void SdlRenderer::image_display(std::string image) {
 	
 	SDL_RenderCopy(renderer, texture, 0, 0);
 	SDL_RenderPresent(renderer);
-	
-	//SDL_Event event;
-	//SDL_PollEvent(&event);
 }
 
 
@@ -365,32 +369,65 @@ void SdlRenderer::run_event_loop() {
 	run_events = true;
 	SDL_Event event;
 	while (run_events) {
-		SDL_PollEvent(&event);
+		while (SDL_PollEvent(&event)) {
+			if (playerEventsActive) {
+				// Pass through player processor.
+				Player::process_event(event);
+				continue;
+			}
 		
-		// Check for quit events.
-		switch (event.type) {
-			case SDL_QUIT:
-				av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
-				run_events = false;
-				gCon.signal();
-				break;
-			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
-					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
-					gCon.signal();
+			// Update GUI if active.
+			if (guiEventsActive) {
+				Gui::handleEvent(event);
+			}
+			
+			// Check for quit events.
+			switch (event.type) {
+				case SDL_QUIT:
+				case FF_QUIT_EVENT:
+					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
 					run_events = false;
-					
+					gCon.signal();
 					break;
-            }
+				case SDL_KEYDOWN:
+					if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
+						gCon.signal();
+						run_events = false;
+						
+						break;
+				}
+			}
 		}
 		
-		//SDL_Delay(200);
+		// Update player, UI, etc.
+		if (playerEventsActive) {
+			// Trigger player refresh.
+			Player::run_updates();
+		}
+		
+		// Update GUI if active.
+		if (guiEventsActive) {
+			Gui::run_updates();
+		}
 	}
 }
 
 
 void SdlRenderer::stop_event_loop() {
 	run_events = false;
+}
+
+
+// --- PLAYER EVENTS ---
+void SdlRenderer::playerEvents(bool active) {
+	playerEventsActive = active;
+}
+
+
+// --- GUI EVENTS ---
+void SdlRenderer::guiEvents(bool active) {
+	guiEventsActive = active;
 }
 
 

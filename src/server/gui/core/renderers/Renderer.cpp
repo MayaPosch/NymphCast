@@ -15,15 +15,16 @@
 namespace Renderer
 {
 	static std::stack<Rect> clipStack;
-	static SDL_Window*      sdlWindow          = nullptr;
-	static int              windowWidth        = 0;
-	static int              windowHeight       = 0;
-	static int              screenWidth        = 0;
-	static int              screenHeight       = 0;
-	static int              screenOffsetX      = 0;
-	static int              screenOffsetY      = 0;
-	static int              screenRotate       = 0;
-	static bool             initialCursorState = 1;
+	static SDL_Window*      sdlWindow          	= nullptr;
+	static int				windowId			= 0;
+	static int              windowWidth        	= 0;
+	static int              windowHeight       	= 0;
+	static int              screenWidth        	= 0;
+	static int              screenHeight       	= 0;
+	static int              screenOffsetX      	= 0;
+	static int              screenOffsetY      	= 0;
+	static int              screenRotate       	= 0;
+	static bool             initialCursorState 	= 1;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -96,6 +97,8 @@ namespace Renderer
 		}
 
 		LOG(LogInfo) << "Created window successfully.";
+		
+		windowId = SDL_GetWindowID(sdlWindow);
 
 		createContext();
 		setIcon();
@@ -276,13 +279,14 @@ namespace Renderer
 
 //////////////////////////////////////////////////////////////////////////
 
-	SDL_Window* getSDLWindow()     { return sdlWindow; }
-	int         getWindowWidth()   { return windowWidth; }
-	int         getWindowHeight()  { return windowHeight; }
-	int         getScreenWidth()   { return screenWidth; }
-	int         getScreenHeight()  { return screenHeight; }
-	int         getScreenOffsetX() { return screenOffsetX; }
-	int         getScreenOffsetY() { return screenOffsetY; }
-	int         getScreenRotate()  { return screenRotate; }
+	SDL_Window* getSDLWindow()     	{ return sdlWindow; }
+	int			getWindowId()		{ return windowId; }
+	int         getWindowWidth()   	{ return windowWidth; }
+	int         getWindowHeight()  	{ return windowHeight; }
+	int         getScreenWidth()   	{ return screenWidth; }
+	int         getScreenHeight()  	{ return screenHeight; }
+	int         getScreenOffsetX() 	{ return screenOffsetX; }
+	int         getScreenOffsetY() 	{ return screenOffsetY; }
+	int         getScreenRotate()  	{ return screenRotate; }
 
 } // Renderer::
