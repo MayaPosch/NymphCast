@@ -410,6 +410,14 @@ void SdlRenderer::run_event_loop() {
 		if (guiEventsActive) {
 			Gui::run_updates();
 		}
+		
+		// Pause for a bit to ease off on the CPU load.
+		if (!playerEventsActive && !guiEventsActive) {
+			SDL_Delay(10);
+		}
+		else {
+			SDL_Delay(10);
+		}
 	}
 }
 
