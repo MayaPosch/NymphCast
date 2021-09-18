@@ -28,7 +28,7 @@ case "$(uname -s)" in
 			sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev vlc-dev
 		elif [ -x "$(command -v pacman)" ]; then
 			sudo pacman -Syy 
-			sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
+			sudo pacman -S --noconfirm --needed git sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
 		fi
 		;;
 
@@ -37,7 +37,7 @@ case "$(uname -s)" in
 		PLATFORM="mingw"
 		if [ -x "$(command -v pacman)" ]; then
 			pacman -Syy 
-			pacman -S --noconfirm --needed mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl mingw-w64-x86_64-vlc
+			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl mingw-w64-x86_64-vlc
 		fi
 		
 		# Bail out here for now until MSYS2 support is implemented for the rest.
