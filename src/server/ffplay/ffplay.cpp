@@ -28,7 +28,6 @@ AVPacket flush_pkt;
 
 // Global objects.
 Poco::Condition playerCon;
-Poco::Mutex playerMutex;
 // ---
 
 
@@ -470,6 +469,7 @@ void Ffplay::run() {
 	
 	// Wait here until playback has finished.
 	// The read thread in StreamHandler will signal this condition variable.
+	Poco::Mutex playerMutex;
 	playerMutex.lock();
 	playerCon.wait(playerMutex);
 	
