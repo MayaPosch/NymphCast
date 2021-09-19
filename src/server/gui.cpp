@@ -42,6 +42,7 @@ std::mutex Gui::resumeMtx;
 std::atomic<bool> Gui::active;
 uint32_t Gui::windowId = 0;
 bool Gui::ps_standby;
+int Gui::lastTime;
 
 
 bool Gui::init(std::string resFolder) {
@@ -182,7 +183,7 @@ bool Gui::start() {
 		SDL_FlushEvent(ev_type);
 	} */
 
-	//int lastTime = SDL_GetTicks();
+	lastTime = SDL_GetTicks();
 	//int ps_time = SDL_GetTicks();
 	
 	//sdl = new std::thread(SdlRenderer::run_gui_loop);
@@ -265,7 +266,7 @@ bool Gui::start() {
 void Gui::handleEvent(SDL_Event &event) {
 	if (event.window.windowID != windowId) { return; }
 	
-	//int lastTime = SDL_GetTicks();
+	lastTime = SDL_GetTicks();
 	
 	// TODO: move power saver stuff.
 	//bool ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
@@ -318,7 +319,6 @@ void Gui::handleEvent(SDL_Event &event) {
 
 // --- RUN UPDATES ---
 void Gui::run_updates() {
-	int lastTime = SDL_GetTicks();
 	int curTime = SDL_GetTicks();
 	int deltaTime = curTime - lastTime;
 	lastTime = curTime;

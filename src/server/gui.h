@@ -33,6 +33,7 @@ class Gui {
 	static std::string resourceFolder;
 	static uint32_t windowId;
 	static bool ps_standby;
+	static int lastTime;
 	
 	static bool verifyHomeFolderExists();
 	
