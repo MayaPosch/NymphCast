@@ -473,6 +473,9 @@ void Ffplay::run() {
 	playerMutex.lock();
 	playerCon.wait(playerMutex);
 	
+	// Immediately disable player events since we're no longer processing them.
+	SdlRenderer::playerEvents(false);
+	
 	SDL_Delay(500); // wait 500 ms.
 	
 	if (ioContext) {
@@ -487,7 +490,6 @@ void Ffplay::run() {
 	
 	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
 	
-	SdlRenderer::playerEvents(false);
 	DataBuffer::reset();	// Clears the data buffer (file data buffer).
 	finishPlayback();		// Calls handler for post-playback steps.
 }
