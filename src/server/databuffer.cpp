@@ -510,8 +510,6 @@ uint32_t DataBuffer::write(std::string &data) {
 					<< free << ", bytesWritten: " << bytesWritten << std::endl;
 #endif
 	
-	bufferMutex.unlock();
-	
 	// If we're in seeking mode, signal that we're done.
 	if (state == DBS_SEEKING) {
 #ifdef DEBUG
@@ -519,6 +517,8 @@ uint32_t DataBuffer::write(std::string &data) {
 #endif
 		seekRequestPending = false;
 		seekRequestCV.notify_one();
+		
+		bufferMutex.unlock();
 		
 		return bytesWritten;
 	}
@@ -535,6 +535,8 @@ uint32_t DataBuffer::write(std::string &data) {
 			dataRequestCV->notify_one();
 		}
 	}
+	
+	bufferMutex.unlock();
 	
 	return bytesWritten;
 }
