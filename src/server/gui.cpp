@@ -192,8 +192,6 @@ bool Gui::start() {
 	active = true;
 	
 	// --------------
-	
-	//ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
 
 	/* running = true;
 	while (running) {
@@ -266,10 +264,8 @@ bool Gui::start() {
 void Gui::handleEvent(SDL_Event &event) {
 	if (event.window.windowID != windowId) { return; }
 	
-	lastTime = SDL_GetTicks();
-	
 	// TODO: move power saver stuff.
-	//bool ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
+	
 
 	//if (ps_standby ? SDL_WaitEventTimeout(&event, PowerSaver::getTimeout()) : SDL_PollEvent(&event)) {
 		//do {
@@ -319,6 +315,10 @@ void Gui::handleEvent(SDL_Event &event) {
 
 // --- RUN UPDATES ---
 void Gui::run_updates() {
+	// TODO: handle power saving feature in a more global manner.
+	//bool ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
+	bool ps_standby = false;
+	
 	int curTime = SDL_GetTicks();
 	int deltaTime = curTime - lastTime;
 	lastTime = curTime;
