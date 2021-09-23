@@ -672,8 +672,8 @@ void SdlRenderer::video_audio_display(VideoState *s) {
 
 void SdlRenderer::set_default_window_size(int width, int height, AVRational sar) {
 	SDL_Rect rect;
-	int max_width  = screen_width  ? screen_width  : INT_MAX;
-	int max_height = screen_height ? screen_height : INT_MAX;
+	int max_width  = screen_width  ? screen_width.load()  : INT_MAX;
+	int max_height = screen_height ? screen_height.load() : INT_MAX;
 	if (max_width == INT_MAX && max_height == INT_MAX)
 		max_height = height;
 	calculate_display_rect(&rect, 0, 0, max_width, max_height, width, height, sar);

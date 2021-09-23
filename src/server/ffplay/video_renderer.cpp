@@ -39,8 +39,8 @@ static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial
 static int video_open(VideoState *is) {
     int w,h;
 
-    w = screen_width ? screen_width : default_width;
-    h = screen_height ? screen_height : default_height;
+    w = screen_width ? screen_width.load() : default_width;
+    h = screen_height ? screen_height.load() : default_height;
 
 	//SdlRenderer::resizeWindow(w, h);
 
