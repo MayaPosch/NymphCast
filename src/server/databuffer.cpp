@@ -65,18 +65,25 @@ bool DataBuffer::init(uint32_t capacity) {
 	// Allocate new buffer and return result.
 	buffer = new uint8_t[capacity];
 	DataBuffer::capacity = capacity;
+	
 	end = buffer + capacity;
 	front = buffer;
 	back = buffer;
 	index = buffer;
-	eof = false;
+	
 	size = 0;
 	unread = 0;
 	free = capacity;
+	
 	byteIndex = 0;
 	byteIndexLow = 0;
 	byteIndexHigh = 0;
+	
+	eof = false;
+	dataRequestPending = false;
+	seekRequestPending = false;
 	state = DBS_IDLE;
+	
 	bufferMutex.unlock();
 	
 	return true;
@@ -164,19 +171,25 @@ void DataBuffer::requestData() {
 // Reset the buffer to the initialised state. This leaves the existing allocated buffer intact, 
 // but erases its contents.
 bool DataBuffer::reset() {
+	bufferMutex.lock();
 	front = buffer;
 	back = buffer;
 	size = 0;
 	index = buffer;
+	
 	unread = 0;
 	free = capacity;
+	
 	byteIndex = 0;
 	byteIndexLow = 0;
 	byteIndexHigh = 0;
+	
 	eof = false;
-	state = DBS_IDLE;
 	dataRequestPending = false;
 	seekRequestPending = false;
+	state = DBS_IDLE;
+	
+	bufferMutex.unlock();
 	
 	return true;
 }
@@ -219,9 +232,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	// Check whether we have the requested data in the buffer.
 	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
-		bufferMutex.lock();
 		reset();
-		bufferMutex.unlock();
 		byteIndexLow = new_offset;
 		byteIndexHigh = new_offset;
 		if (seekRequestCallback == 0) { return -1; }
