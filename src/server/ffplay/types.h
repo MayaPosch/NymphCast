@@ -191,7 +191,7 @@ struct VideoState {
 	SDL_Thread *read_tid;
 	AVInputFormat *iformat;
 	int abort_request;
-	int force_refresh;
+	std::atomic<int> force_refresh;
 	int paused;
 	int last_paused;
 	int queue_attachments_req;
@@ -201,7 +201,7 @@ struct VideoState {
 	int64_t seek_rel;
 	int read_pause_return;
 	AVFormatContext *ic;
-	int realtime;
+	std::atomic<int> realtime;
 
 	Clock audclk;
 	Clock vidclk;

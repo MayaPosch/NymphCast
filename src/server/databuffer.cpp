@@ -216,7 +216,9 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	// Check whether we have the requested data in the buffer.
 	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
+		bufferMutex.lock();
 		reset();
+		bufferMutex.unlock();
 		byteIndexLow = new_offset;
 		byteIndexHigh = new_offset;
 		if (seekRequestCallback == 0) { return -1; }

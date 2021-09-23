@@ -553,15 +553,15 @@ int StreamHandler::read_thread(void *arg) {
 
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0))) {
         window_title = av_asprintf("%s - %s", t->value, input_filename);
-		file_meta.title = t->value;
+		file_meta.setTitle(t->value);
 	}
 
-	file_meta.artist = ""; // clear old artist.
+	file_meta.setArtist(""); // clear old artist.
     if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
-        file_meta.artist = t->value;
+        file_meta.setArtist(t->value);
 	}
     else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
-        file_meta.artist = t->value;
+        file_meta.setArtist(t->value);
 	}
 
     /* if seeking requested, we execute it */

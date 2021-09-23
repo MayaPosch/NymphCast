@@ -43,6 +43,15 @@ struct FileMetaInfo {
 	std::string artist;
 	std::string album;
 	Poco::Mutex mutex;	// Use only with non-atomic entries.
+	
+	void setTitle(std::string t) { mutex.lock(); title = t; mutex.unlock(); }
+	std::string getTitle() { mutex.lock(); std::string t = title; mutex.unlock(); return t; }
+	
+	void setArtist(std::string a) { mutex.lock(); artist = a; mutex.unlock(); }
+	std::string getArtist() { mutex.lock(); std::string a = artist; mutex.unlock(); return a; }
+	
+	void setAlbum(std::string a) { mutex.lock(); album = a; mutex.unlock(); }
+	std::string getAlbum() { mutex.lock(); std::string a = album; mutex.unlock(); return a; }
 };
 
 

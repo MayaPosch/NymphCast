@@ -26,6 +26,7 @@
 #include <filesystem> 		// C++17
 #include <set>
 #include <fstream>
+#include <ostream>
 #include <condition_variable>
 
 namespace fs = std::filesystem;
@@ -234,8 +235,8 @@ NymphStruct* getPlaybackStatus() {
 		response->addPair("playing", new NymphBoolean(true));
 		response->addPair("duration", new NymphUint64(file_meta.duration));
 		response->addPair("position", new NymphDouble(file_meta.position));
-		response->addPair("title", new NymphString(file_meta.title));
-		response->addPair("artist", new NymphString(file_meta.artist));
+		response->addPair("title", new NymphString(file_meta.getTitle()));
+		response->addPair("artist", new NymphString(file_meta.getArtist()));
 		response->addPair("volume", new NymphUint8(audio_volume));
 	}
 	else {
@@ -1397,6 +1398,10 @@ void logFunction(int level, std::string logStr);/* {
 
 
 int main(int argc, char** argv) {
+	// Do locale initialisation here to appease Valgrind (prevent data-race reporting).
+	std::ostringstream dummy;
+	dummy << 0;
+	
 	// Parse the command line arguments.
 	Sarge sarge;
 	sarge.setArgument("h", "help", "Get this help message.", false);
