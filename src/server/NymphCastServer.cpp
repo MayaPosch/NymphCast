@@ -55,6 +55,7 @@ namespace fs = std::filesystem;
 #include <Poco/Data/SQLite/Connector.h>
 #include <Poco/Data/SQLite/SQLiteException.h>
 #include <Poco/Timestamp.h>
+#include <Poco/NumberFormatter.h>
 
 using namespace Poco;
 
@@ -78,8 +79,8 @@ const char *input_filename;
 const char *window_title;
 int default_width  = 640;
 int default_height = 480;
-int screen_width  = 0;
-int screen_height = 0;
+std::atomic<int> screen_width  = 0;
+std::atomic<int> screen_height = 0;
 int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int audio_disable;
@@ -150,6 +151,7 @@ std::string appsFolder;
 std::atomic<bool> running = true;
 std::condition_variable dataRequestCv;
 std::mutex dataRequestMtx;
+std::string loggerName = "NymphCastServer";
 
 NCApps nc_apps;
 std::map<int, CastClient> clients;
@@ -168,11 +170,13 @@ void dataRequestFunction() {
 		dataRequestCv.wait(lk);
 		
 		if (!running) { 
-			std::cout << "Shutting down data request function..." << std::endl;
+			//std::cout << "Shutting down data request function..." << std::endl;
+			NYMPH_LOG_INFORMATION("Shutting down data request function...");
 			break;
 		}
 		
-		std::cout << "Asking for data..." << std::endl;
+		//std::cout << "Asking for data..." << std::endl;
+		NYMPH_LOG_INFORMATION("Asking for data...");
 		
 		// Request more data.
 		std::vector<NymphType*> values;
@@ -270,10 +274,12 @@ void sendStatusUpdate(uint32_t handle) {
 // --- SEND GLOBAL STATUS UPDATE ---
 // Send playback status update to all connected clients.
 void sendGlobalStatusUpdate() {
-	std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
+	//std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
+	NYMPH_LOG_INFORMATION("Sending status update to all " + Poco::NumberFormatter::format(clients.size()) 
+					+ " clients.");
 	std::map<int, CastClient>::const_iterator it;
 	for (it = clients.begin(); it != clients.end(); ++it) {
-		std::cout << "Client ID: " << it->first << "/" << it->second.name << std::endl;
+		NYMPH_LOG_DEBUG("Client ID: " + Poco::NumberFormatter::format(it->first) + "/" + it->second.name);
 		
 		// Call the status update callback with the current playback status.
 		std::vector<NymphType*> values;
@@ -281,7 +287,8 @@ void sendGlobalStatusUpdate() {
 		NymphBoolean* resVal = 0;
 		std::string result;
 		if (!NymphRemoteClient::callCallback(it->first, "MediaStatusCallback", values, result)) {
-			std::cerr << "Calling media status callback failed: " << result << std::endl;
+			//std::cerr << "Calling media status callback failed: " << result << std::endl;
+			NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
 			
 			// An error here very likely means that the client no long exists. Remove it.
 			clients.erase(it);
@@ -390,7 +397,7 @@ bool streamTrack(std::string url) {
 
 
 void signal_handler(int signal) {
-	std::cout << "SIGINT handler called. Shutting down..." << std::endl;
+	NYMPH_LOG_INFORMATION("SIGINT handler called. Shutting down...");
 	SdlRenderer::stop_event_loop();
 	gCon.signal();
 }

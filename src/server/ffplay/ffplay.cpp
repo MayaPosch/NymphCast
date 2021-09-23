@@ -25,10 +25,16 @@ unsigned sws_flags = SWS_BICUBIC;
 
 AVPacket flush_pkt;
 
+#include <Poco/NumberFormatter.h>
+#include <nymph/nymph_logger.h>
+
 
 // Global objects.
 Poco::Condition playerCon;
 // ---
+
+// Static definitions.
+std::string Ffplay::loggerName = "Ffplay";
 
 
 #include <inttypes.h>
@@ -279,7 +285,8 @@ void show_help_default(const char *opt, const char *arg)
  */
 int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	uint32_t bytesRead = DataBuffer::read(buf_size, buf);
-	std::cout << "Read " << bytesRead << " bytes." << std::endl;
+	//std::cout << "Read " << bytesRead << " bytes." << std::endl;
+	NYMPH_LOG_INFORMATION("Read " + Poco::NumberFormatter::format(bytesRead) + " bytes.");
 	if (bytesRead == 0) {
 		std::cout << "EOF is " << DataBuffer::isEof() << std::endl;
 		if (DataBuffer::isEof()) { return AVERROR_EOF; }
@@ -300,39 +307,40 @@ int Ffplay::media_read(void* opaque, uint8_t* buf, int buf_size) {
  * @return  The new byte position in the file or -1 in case of failure.
  */
 int64_t Ffplay::media_seek(void* opaque, int64_t offset, int whence) {
-	std::cout << "media_seek: offset " << offset << ", whence " << whence << std::endl;
+	NYMPH_LOG_INFORMATION("media_seek: offset " + Poco::NumberFormatter::format(offset) + 
+							", whence " + Poco::NumberFormatter::format(whence));
 	
 	int64_t new_offset = AVERROR(EIO);
 	switch (whence) {
 		case SEEK_SET:	// Seek from the beginning of the file.
-			std::cout << "media_seek: SEEK_SET" << std::endl;
+			NYMPH_LOG_INFORMATION("media_seek: SEEK_SET");
 			new_offset = DataBuffer::seek(DB_SEEK_START, offset);
 			break;
 		case SEEK_CUR:	// Seek from the current position.
-			std::cout << "media_seek: SEEK_CUR" << std::endl;
+			NYMPH_LOG_INFORMATION("media_seek: SEEK_CUR");
 			new_offset = DataBuffer::seek(DB_SEEK_CURRENT, offset);
 			break;
 		case SEEK_END:	// Seek from the end of the file.
-			std::cout << "media_seek: SEEK_END" << std::endl;
+			NYMPH_LOG_INFORMATION("media_seek: SEEK_END");
 			new_offset = DataBuffer::seek(DB_SEEK_END, offset);
 			break;
 		case AVSEEK_SIZE:
-			std::cout << "media_seek: received AVSEEK_SIZE, returning file size." << std::endl;
+			NYMPH_LOG_INFORMATION("media_seek: received AVSEEK_SIZE, returning file size.");
 			return DataBuffer::getFileSize();
 			break;
 		default:
-			std::cout << "media_seek: default. The universe broke." << std::endl;
+			NYMPH_LOG_ERROR("media_seek: default. The universe broke.");
 			/* new_offset = -1;
 			return new_offset; */
 	}
 	
 	if (new_offset < 0) {
 		// Some error occurred.
-		std::cerr << "Error during seeking." << std::endl;
+		NYMPH_LOG_ERROR("Error during seeking.");
 		new_offset = AVERROR(EIO);
 	}
 	
-	std::cout << "New offset: " << new_offset << std::endl;
+	NYMPH_LOG_INFORMATION("New offset: " + Poco::NumberFormatter::format(new_offset));
 	
 	return new_offset;
 }

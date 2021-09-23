@@ -192,7 +192,7 @@ struct VideoState {
 	AVInputFormat *iformat;
 	int abort_request;
 	std::atomic<int> force_refresh;
-	int paused;
+	std::atomic<int> paused;
 	int last_paused;
 	int queue_attachments_req;
 	int seek_req;
@@ -274,7 +274,10 @@ struct VideoState {
 	int eof;
 
 	char *filename;
-	int width, height, xleft, ytop;
+	std::atomic<int> width;
+	std::atomic<int> height;
+	std::atomic<int> xleft;
+	std::atomic<int> ytop;
 	int step;
 
 #if CONFIG_AVFILTER
@@ -380,8 +383,8 @@ extern const char *input_filename;
 extern const char *window_title;
 extern int default_width;
 extern int default_height;
-extern int screen_width;
-extern int screen_height;
+extern std::atomic<int> screen_width;
+extern std::atomic<int> screen_height;
 extern int screen_left;
 extern int screen_top;
 extern int audio_disable;

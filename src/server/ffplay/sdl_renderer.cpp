@@ -21,8 +21,8 @@ SDL_Texture* SdlRenderer::texture = 0;
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
 std::string SdlRenderer::docName;
-bool SdlRenderer::playerEventsActive = false;
-bool SdlRenderer::guiEventsActive = false;
+std::atomic<bool> SdlRenderer::playerEventsActive = false;
+std::atomic<bool> SdlRenderer::guiEventsActive = false;
 
 
 bool SdlRenderer::init() {
@@ -542,7 +542,7 @@ void SdlRenderer::video_audio_display(VideoState *s) {
 	channels = s->audio_tgt.channels;
 	nb_display_channels = channels;
 	if (!s->paused) {
-		int data_used= s->show_mode == SHOW_MODE_WAVES ? s->width : (2*nb_freq);
+		int data_used= s->show_mode == SHOW_MODE_WAVES ? s->width.load() : (2*nb_freq);
 		n = 2 * channels;
 		delay = s->audio_write_buf_size;
 		delay /= n;

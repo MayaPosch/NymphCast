@@ -209,6 +209,9 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		return -1;
 	}
 	
+	// Ensure we're not in the midst of a data request action.
+	//while (dataRequestPending) { }
+	
 	// TODO: removing local check. We just assume the local data isn't in the buffer and reload.
 	// In testing, the local data check has offered little benefits (not enough data in buffer).
 	// Check that this feature can be fully removed, or maybe reimplemented.

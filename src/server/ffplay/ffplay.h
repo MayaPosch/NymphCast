@@ -64,6 +64,7 @@ void finishPlayback(); // Defined in NymphCastServer.cpp
 	
 class Ffplay : public Poco::Runnable {
     VideoState* is = 0;
+	static std::string loggerName;
 	
 	static int media_read(void* opaque, uint8_t* buf, int buf_size);
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
