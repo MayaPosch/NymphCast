@@ -402,9 +402,9 @@ void SdlRenderer::run_event_loop() {
 						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
 						gCon.signal();
 						run_events = false;
+					}
 						
-						break;
-				}
+					break;
 			}
 		}
 		
