@@ -413,9 +413,22 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		
 	}
 	
+	// Trigger a data request from the client if we have space.
+	if (eof) {
+		// Do nothing.
+	}
+	else if (free > 204799) {
+		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
+		// TODO: make it possible to request a specific block size from client.
+		if (dataRequestCV != 0) {
+			dataRequestPending = true;
+			dataRequestCV->notify_one();
+		}
+	}
+	
 #ifdef DEBUG
-		std::cout << "unread " << unread << ", free " << free << std::endl;
-		std::cout << "bytesRead: " << bytesRead << std::endl;
+	std::cout << "unread " << unread << ", free " << free << std::endl;
+	std::cout << "bytesRead: " << bytesRead << std::endl;
 #endif
 	
 	bufferMutex.unlock();
@@ -540,7 +553,7 @@ uint32_t DataBuffer::write(std::string &data) {
 	}
 	
 	// Trigger a data request from the client if we have space.
-	if (eof) {
+	/* if (eof) {
 		// Do nothing.
 	}
 	else if (free > 204799) {
@@ -550,7 +563,7 @@ uint32_t DataBuffer::write(std::string &data) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
 		}
-	}
+	} */
 	
 	bufferMutex.unlock();
 	

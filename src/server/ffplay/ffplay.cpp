@@ -31,6 +31,7 @@ AVPacket flush_pkt;
 
 // Global objects.
 Poco::Condition playerCon;
+Poco::Mutex playerMutex;
 // ---
 
 // Static definitions.
@@ -477,9 +478,9 @@ void Ffplay::run() {
 	
 	// Wait here until playback has finished.
 	// The read thread in StreamHandler will signal this condition variable.
-	Poco::Mutex playerMutex;
 	playerMutex.lock();
 	playerCon.wait(playerMutex);
+	playerMutex.unlock();
 	
 	// Immediately disable player events since we're no longer processing them.
 	SdlRenderer::playerEvents(false);

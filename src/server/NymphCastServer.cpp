@@ -352,18 +352,34 @@ void finishPlayback() {
 	if (!display_disable) {
 		if (gui_enable) {
 			// Return to GUI.
-			SdlRenderer::hideWindow();
+			// TODO: handle this via an SDL event.
+			//SdlRenderer::hideWindow();
+			SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_UNDERSCORE;
+			SDL_PushEvent(&event);
+			
 			Gui::active = true;
 			Gui::resumeCv.notify_one();
 		}
 		else if (screensaver_enable) {
 			// Start screensaver.
-			SdlRenderer::showWindow();
+			// TODO: handle this via an SDL event.
+			//SdlRenderer::showWindow();
+			SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_MINUS;
+			SDL_PushEvent(&event);
 			ScreenSaver::start(15);
 		}
 		else {
 			// Hide window.
-			SdlRenderer::hideWindow();
+			// TODO: handle this via an SDL event.
+			//SdlRenderer::hideWindow();
+			SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_UNDERSCORE;
+			SDL_PushEvent(&event);
 		}
 	}
 }
@@ -639,7 +655,12 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 		}
 		else {
 			// Show window.
-			SdlRenderer::showWindow();
+			// TODO: handle this via an SDL event.
+			//SdlRenderer::showWindow();
+			SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_MINUS;
+			SDL_PushEvent(&event);
 		}
 	}
 	
@@ -679,6 +700,9 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		remote.ipv4 = ((NymphString*) value)->getValue();
 		((NymphStruct*) remotes[i])->getValue("ipv6", value);
 		remote.ipv6 = ((NymphString*) value)->getValue();
+		((NymphStruct*) remotes[i])->getValue("port", value);
+		remote.port = ((NymphUint16*) value)->getValue();
+		remote.handle = 0;
 		remote.delay = 0;
 	
 		slave_remotes.push_back(remote);
@@ -748,7 +772,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	
-	std::cout << "Switching to master server mode." << std::endl;
+	NYMPH_LOG_INFORMATION("Switching to master server mode.");
 	serverMode = NCS_MODE_MASTER;
 	
 	returnMsg->setResultValue(new NymphUint8(0));

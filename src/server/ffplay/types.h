@@ -93,10 +93,10 @@ typedef struct MyAVPacketList {
 
 typedef struct PacketQueue {
 	MyAVPacketList *first_pkt, *last_pkt;
-	int nb_packets;
-	int size;
+	std::atomic<int> nb_packets;
+	std::atomic<int> size;
 	int64_t duration;
-	int abort_request;
+	std::atomic<int> abort_request;
 	int serial;
 	SDL_mutex *mutex;
 	SDL_cond *cond;
@@ -119,13 +119,13 @@ typedef struct AudioParams {
 } AudioParams;
 
 typedef struct Clock {
-	double pts;		   /* clock base */
-	double pts_drift;	 /* clock base minus time at which we updated the clock */
-	double last_updated;
-	double speed;
+	std::atomic<double> pts;		   /* clock base */
+	std::atomic<double> pts_drift;	 /* clock base minus time at which we updated the clock */
+	std::atomic<double> last_updated;
+	std::atomic<double> speed;
 	int serial;		   /* clock is based on a packet with this serial */
-	int paused;
-	int *queue_serial;	/* pointer to the current packet queue serial, used for obsolete clock detection */
+	std::atomic<int> paused;
+	int* queue_serial;	/* pointer to the current packet queue serial, used for obsolete clock detection */
 } Clock;
 
 /* Common struct for handling all types of decoded data and allocated render buffers. */

@@ -390,7 +390,15 @@ void SdlRenderer::run_event_loop() {
 					gCon.signal();
 					break;
 				case SDL_KEYDOWN:
-					if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+					if (event.key.keysym.sym == SDLK_MINUS) {
+						// Toggle show window.
+						showWindow();
+					}
+					else if (event.key.keysym.sym == SDLK_UNDERSCORE) {
+						// Toggle hide window.
+						hideWindow();
+					}
+					else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
 						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
 						gCon.signal();
 						run_events = false;
