@@ -1,0 +1,18 @@
+# NCS Valgrind suppression file.
+{
+	libavcodec:datarace
+	Helgrind:Race
+	obj:*/libavcodec.so.*
+}
+
+{
+	libavutil:datarace
+	Helgrind:Race
+	obj:*/libavutil.so.*
+}
+
+{
+	vmwgfx_dri:datarace
+	Helgrind:Race
+	obj:*/vmwgfx_dri.so
+}
