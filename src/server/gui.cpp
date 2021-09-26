@@ -32,7 +32,7 @@
 
 // Static definitions.
 std::thread* Gui::sdl = 0;
-std::atomic<bool> Gui::running = false;
+std::atomic<bool> Gui::running = { false };
 Window Gui::window;
 SystemScreenSaver* Gui::screensaver = 0;
 std::string Gui::resourceFolder;

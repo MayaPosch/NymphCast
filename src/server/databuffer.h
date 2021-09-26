@@ -10,6 +10,10 @@
 */
 
 
+#ifndef DATABUFFER_H
+#define DATABUFFER_H
+
+
 #include <atomic>
 #include <mutex>
 #include <functional>
@@ -86,3 +90,6 @@ public:
 	static bool hasStreamTrack();
 	static std::string getStreamTrack();
 };
+
+#endif
+

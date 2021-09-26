@@ -11,6 +11,10 @@
 */
 
 
+#ifndef SARGE_H
+#define SARGE_H
+
+
 #include <string>
 #include <vector>
 #include <map>
@@ -52,3 +56,5 @@ public:
 	int flagCount() { return flagCounter; }
 	std::string executableName() { return execName; }
 };
+
+#endif

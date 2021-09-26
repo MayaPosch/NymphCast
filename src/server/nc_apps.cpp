@@ -199,6 +199,10 @@ bool NCApps::readAppList(std::string path) {
 		if (!addApp(app.id, app)) { return false; }
 	}
 	
+	if (apps.size() > 0) {
+		defaultApp = apps[0];
+	}
+	
 	return true;
 }
 

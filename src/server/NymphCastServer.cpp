@@ -79,8 +79,8 @@ const char *input_filename;
 const char *window_title;
 int default_width  = 640;
 int default_height = 480;
-std::atomic<int> screen_width  = 0;
-std::atomic<int> screen_height = 0;
+std::atomic<int> screen_width  = { 0 };
+std::atomic<int> screen_height = { 0 };
 int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int audio_disable;
@@ -124,7 +124,7 @@ char *afilters = NULL;
 int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
-std::atomic<uint32_t> audio_volume = 100;
+std::atomic<uint32_t> audio_volume = { 100 };
 
 
 #ifdef main
@@ -140,15 +140,15 @@ struct CastClient {
 
 // --- Globals ---
 FileMetaInfo file_meta;
-std::atomic<bool> playerStarted = false;
-std::atomic<bool> playerPaused = false;
-std::atomic<bool> castingUrl = false;		// We're either casting data or streaming when playing.
+std::atomic<bool> playerStarted = { false };
+std::atomic<bool> playerPaused = { false };
+std::atomic<bool> castingUrl = { false };		// We're either casting data or streaming when playing.
 std::string castUrl;
 Poco::Thread avThread;
 Ffplay ffplay;
 const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
 std::string appsFolder;
-std::atomic<bool> running = true;
+std::atomic<bool> running = { true };
 std::condition_variable dataRequestCv;
 std::mutex dataRequestMtx;
 std::string loggerName = "NymphCastServer";
