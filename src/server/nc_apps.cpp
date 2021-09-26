@@ -200,7 +200,7 @@ bool NCApps::readAppList(std::string path) {
 	}
 	
 	if (apps.size() > 0) {
-		defaultApp = apps[0];
+		defaultApp = apps.begin()->second;
 	}
 	
 	return true;
