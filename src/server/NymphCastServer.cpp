@@ -278,7 +278,7 @@ void sendGlobalStatusUpdate() {
 	NYMPH_LOG_INFORMATION("Sending status update to all " + Poco::NumberFormatter::format(clients.size()) 
 					+ " clients.");
 	std::map<int, CastClient>::const_iterator it;
-	for (it = clients.begin(); it != clients.end(); ++it) {
+	for (it = clients.begin(); it != clients.end();/**/) {
 		NYMPH_LOG_DEBUG("Client ID: " + Poco::NumberFormatter::format(it->first) + "/" + it->second.name);
 		
 		// Call the status update callback with the current playback status.
@@ -291,9 +291,10 @@ void sendGlobalStatusUpdate() {
 			NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
 			
 			// An error here very likely means that the client no long exists. Remove it.
-			clients.erase(it);
-			
-			continue;
+			it = clients.erase(it);
+		}
+		else {
+			++it;
 		}
 	}
 }
@@ -366,10 +367,10 @@ void finishPlayback() {
 			// Start screensaver.
 			// TODO: handle this via an SDL event.
 			//SdlRenderer::showWindow();
-			SDL_Event event;
+			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event);
+			SDL_PushEvent(&event); */
 			ScreenSaver::start(15);
 		}
 		else {
