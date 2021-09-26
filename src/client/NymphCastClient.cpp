@@ -36,7 +36,7 @@ using namespace Poco;
 // Globals
 Condition cnd;
 Mutex mtx;
-std::atomic<bool> playing = false;
+std::atomic<bool> playing = { false };
 uint32_t handle;		// NymphRPC handle.
 std::ifstream source;
 // ---

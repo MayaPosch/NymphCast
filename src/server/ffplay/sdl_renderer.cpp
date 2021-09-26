@@ -21,8 +21,8 @@ SDL_Texture* SdlRenderer::texture = 0;
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
 std::string SdlRenderer::docName;
-std::atomic<bool> SdlRenderer::playerEventsActive = false;
-std::atomic<bool> SdlRenderer::guiEventsActive = false;
+std::atomic<bool> SdlRenderer::playerEventsActive = { false };
+std::atomic<bool> SdlRenderer::guiEventsActive = { false };
 
 
 bool SdlRenderer::init() {

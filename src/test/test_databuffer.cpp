@@ -16,7 +16,7 @@
 // Globals
 uint8_t lastnum = 0;
 std::condition_variable dataRequestCv;
-std::atomic<bool> running = true;
+std::atomic<bool> running = { true };
 
 
 // --- SEEKING HANDLER ---
