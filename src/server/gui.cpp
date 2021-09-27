@@ -187,9 +187,11 @@ bool Gui::start() {
 	//int ps_time = SDL_GetTicks();
 	
 	//sdl = new std::thread(SdlRenderer::run_gui_loop);
-	SdlRenderer::guiEvents(true);
 	
 	active = true;
+	
+	// Enable events for the GUI.
+	SdlRenderer::guiEvents(true);
 	
 	// --------------
 
@@ -262,7 +264,8 @@ bool Gui::start() {
 
 // --- HANDLE EVENT ---
 void Gui::handleEvent(SDL_Event &event) {
-	if (event.window.windowID != windowId) { return; }
+	// TODO: Adding this filter blocks many keyboard/controller events. Just remove it?
+	//if (event.window.windowID != windowId) { return; }
 	
 	// TODO: move power saver stuff.
 	
@@ -346,16 +349,7 @@ bool Gui::stop() {
 	CollectionSystemManager::deinit();
 	SystemData::deleteSystems();
 	
-	active = false;
-	
-	//SdlRenderer::stop_gui_loop();
 	SdlRenderer::guiEvents(false);
-	
-	// Wait for thread to rejoin.
-	//sdl->join();
-	
-	// Delete thread object.
-	//delete sdl;
 	
 	running = false;
 	active = false;
