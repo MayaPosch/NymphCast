@@ -373,7 +373,6 @@ void SdlRenderer::run_event_loop() {
 			if (playerEventsActive) {
 				// Pass through player processor.
 				Player::process_event(event);
-				continue;
 			}
 		
 			// Update GUI if active.
