@@ -16,6 +16,7 @@
 
 #include <cstring>
 #include <chrono>
+#include <thread>
 #ifdef DEBUG
 #include <iostream>
 #endif
@@ -223,7 +224,12 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	}
 	
 	// Ensure we're not in the midst of a data request action.
-	//while (dataRequestPending) { }
+	while (dataRequestPending) {
+		// Sleep in 10 ms segments until the data request is done.
+		//using namespace std::chrono_literals;
+		//std::this_thread::sleep_for(10ms);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
 	
 	// TODO: removing local check. We just assume the local data isn't in the buffer and reload.
 	// In testing, the local data check has offered little benefits (not enough data in buffer).
