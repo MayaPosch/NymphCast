@@ -1886,11 +1886,17 @@ int main(int argc, char** argv) {
 				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
 				init_success = false;
 			}
+			
+			SdlRenderer::hideWindow();
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);
 			SdlRenderer::showWindow();
 			ScreenSaver::start(15);
+		}
+		else {
+			// 
+			SdlRenderer::hideWindow();
 		}
 	}
 	
