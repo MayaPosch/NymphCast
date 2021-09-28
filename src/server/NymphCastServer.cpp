@@ -353,8 +353,6 @@ void finishPlayback() {
 	if (!display_disable) {
 		if (gui_enable) {
 			// Return to GUI.
-			// TODO: handle this via an SDL event.
-			//SdlRenderer::hideWindow();
 			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_UNDERSCORE;
@@ -365,8 +363,6 @@ void finishPlayback() {
 		}
 		else if (screensaver_enable) {
 			// Start screensaver.
-			// TODO: handle this via an SDL event.
-			//SdlRenderer::showWindow();
 			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
@@ -375,8 +371,6 @@ void finishPlayback() {
 		}
 		else {
 			// Hide window.
-			// TODO: handle this via an SDL event.
-			//SdlRenderer::hideWindow();
 			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_UNDERSCORE;
