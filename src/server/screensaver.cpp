@@ -44,6 +44,8 @@ void ScreenSaver::setDataPath(std::string path) {
 	
 	// Read in image names.
 	for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
+		std::string ext = entry.path().extension().string();
+		if (ext == ".txt" || ext == ".sh") { continue; }
         images.push_back(entry.path().string());
 	}
 }
