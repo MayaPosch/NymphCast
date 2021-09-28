@@ -215,10 +215,10 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	std::cout << "ByteIndex: " << byteIndex << std::endl;
 #endif
 
-	// Ensure that the new offset isn't past the end of the file. If so, return -1.
-	if (new_offset > filesize) {
+	// Ensure that the new offset isn't past the beginning/end of the file. If so, return -1.
+	if (new_offset > filesize || new_offset < 0) {
 #ifdef DEBUG
-		std::cout << "New offset larger than file size. Returning -1." << std::endl;
+		std::cout << "New offset larger than file size or negative. Returning -1." << std::endl;
 #endif
 		return -1;
 	}
