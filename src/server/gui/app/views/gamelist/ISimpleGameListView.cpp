@@ -8,6 +8,8 @@
 #include "SystemData.h"
 #include <SDL_timer.h>
 
+#include "Log.h"
+
 ISimpleGameListView::ISimpleGameListView(Window* window, FileData* root) : IGameListView(window, root),
 	mHeaderText(window), mHeaderImage(window), mBackground(window)
 {
@@ -81,9 +83,12 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 {
 	if(input.value != 0)
 	{
-		if(config->isMappedTo("a", input))
-		{
+		if(config->isMappedTo("a", input)) {
 			FileData* cursor = getCursor();
+			
+			// Debug
+			LOG(LogInfo) << "Got FileData, name: " << cursor->getName();
+			
 			if(cursor->getType() == GAME || cursor->getType() == MEDIA)
 			{
 				Sound::getFromTheme(getTheme(), getName(), "launch")->play();

@@ -201,7 +201,13 @@ void ViewController::onFileChanged(FileData* file, FileChangeType change)
 
 void ViewController::launch(FileData* game, Vector3f center) {
 	FileType type = game->getType();
-	if (type != GAME || type != MEDIA) {
+	if (type == GAME) {
+		LOG(LogInfo) << "Launching game...";
+	}
+	else if (type == MEDIA) {
+		LOG(LogInfo) << "Launching media file...";
+	}
+	else {
 		LOG(LogError) << "tried to launch something that isn't a game or media file";
 		return;
 	}

@@ -339,6 +339,7 @@ void Gui::run_updates() {
 
 // --- STOP ---
 bool Gui::stop() {
+	LOG(LogInfo) << "Stopping the NymphCast GUI..";
 	while(window.peekGui() != ViewController::get()) {
 		delete window.peekGui();
 	}
@@ -360,7 +361,7 @@ bool Gui::stop() {
 
 // --- QUIT ---
 bool Gui::quit() {
-	//SdlRenderer::quitGui();
+	LOG(LogInfo) << "Quitting the NymphCast GUI...";
 	
 	if (screensaver) {
 		delete screensaver;
