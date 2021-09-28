@@ -1898,9 +1898,12 @@ int main(int argc, char** argv) {
 			// 
 			SdlRenderer::hideWindow();
 		}
+		
+		// Set full-screen mode.
+		SdlRenderer::set_fullscreen(is_full_screen);
 	}
 	
-	// Start SDL, wait for it to exit.
+	// Start SDL event loop, wait for it to exit.
 	if (init_success) {
 		SdlRenderer::run_event_loop();
 	}
