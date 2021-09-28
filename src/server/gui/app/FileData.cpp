@@ -317,28 +317,32 @@ void FileData::launchGame(Window* window) {
 		NymphCastRemote receiver;
 		receiver.name = Poco::Net::DNS::hostName();
 		receiver.port = 4004; // FIXME: don't use hardcoded port.
-		Poco::Net::SocketAddress sa(file.mediaserver.ipv6, receiver.port);
+		Poco::Net::SocketAddress sa(file.mediaserver.ipv4, receiver.port);
 		uint32_t ipv4;
 		if (!remoteToLocalIP(sa, ipv4, receiver.ipv6)) {
 			LOG(LogError) << "Failed to convert remote IP to local.";
 		}
-		
-		receiver.ipv4 = NyanSD::ipv4_uintToString(ipv4);
-		
-		Gui::active = false;
-		
-		std::vector<NymphCastRemote> receivers;
-		receivers.push_back(receiver);
-		if (!Gui::client->playShare(file, receivers)) {
-			LOG(LogError) << "Failed to play back file...";
-		}
 		else {
-			// Wait until playback has finished.
-			std::unique_lock<std::mutex> lk(Gui::resumeMtx);
-			using namespace std::chrono_literals;
-			while (Gui::resumeCv.wait_for(lk, 10s) != std::cv_status::timeout) {
-				// FIXME: handle playback issues. May end up in a loop here.
-				if (Gui::active) { break; }
+			receiver.ipv4 = NyanSD::ipv4_uintToString(ipv4);
+		
+			Gui::active = false;
+		
+			std::vector<NymphCastRemote> receivers;
+			receivers.push_back(receiver);
+			if (!Gui::client->playShare(file, receivers)) {
+				LOG(LogError) << "Failed to play back file...";
+			}
+			else {
+				// Wait until playback has finished.
+				std::unique_lock<std::mutex> lk(Gui::resumeMtx);
+				using namespace std::chrono_literals;
+				while (Gui::resumeCv.wait_for(lk, 10s) != std::cv_status::timeout) {
+					// FIXME: handle playback issues. May end up in a loop here.
+					if (Gui::active) { 
+						LOG(LogInfo) << "Playback ended. Resuming GUI...";
+						break; 
+					}
+				}
 			}
 		}
 	}
