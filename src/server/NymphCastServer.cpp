@@ -13,6 +13,13 @@
 */
 
 
+// Uncomment PROFILING to enable profiling mode.
+// This disables the FFMPEG-based ffplay class and uses the ffplay-dummy driver instead.
+// This driver dummy simulates an active ffplay player, with regular reads from the DataBuffer.
+//#define PROFILING 1
+// -----------------
+
+
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -31,7 +38,12 @@
 
 namespace fs = std::filesystem;
 
+#ifdef PROFILING
+#include "ffplaydummy.h"
+#else
 #include "ffplay/ffplay.h"
+#endif
+
 #include "ffplay/types.h"
 #include "sdl_renderer.h"
 
@@ -145,7 +157,13 @@ std::atomic<bool> playerPaused = { false };
 std::atomic<bool> castingUrl = { false };		// We're either casting data or streaming when playing.
 std::string castUrl;
 Poco::Thread avThread;
+
+#ifdef PROFILING
+FfplayDummy ffplay;
+#else
 Ffplay ffplay;
+#endif
+
 const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
 std::string appsFolder;
 std::atomic<bool> running = { true };
