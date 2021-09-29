@@ -167,5 +167,5 @@ void FfplayDummy::run() {
  
 // --- QUIT ---
 void FfplayDummy::quit() {
-	//
+	dummyCon.signal();
 }
