@@ -412,6 +412,8 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 	if (init) {
 		// Initial callback for this remote on connect. Just set safe defaults.
 		std::cout << "Initial remote status callback on connect." << std::endl;
+		
+		playingTrack = false;
 		ui->playToolButton->setEnabled(true);
 		ui->playToolButton->setVisible(true);
 		ui->stopToolButton->setEnabled(false);
@@ -693,7 +695,7 @@ void MainWindow::removeFile() {
 	// TODO: Remove stored file path.
 	// FIXME: Clear and rewrite the file contents for now.
 	QFile playlist;
-	playlist.setFileName("filepaths.conf");
+	playlist.setFileName(appDataLocation + "filepaths.conf");
 	playlist.open(QIODevice::WriteOnly | QIODevice::Truncate);
 	int size = ui->mediaListWidget->count();
 	QTextStream textStream(&playlist);
