@@ -147,7 +147,7 @@ void FfplayDummy::run() {
 	// - Once EOF is returned, wait N milliseconds, then quit.
 	ct.setCallback(FfplayDummy::triggerRead, 0);
 	ct.setStopCallback(FfplayDummy::cleanUp);
-	ct.start(50 * 1000);	// Trigger time in milliseconds.
+	ct.start(50);	// Trigger time in milliseconds.
 	
 	// Wait here until playback has finished.
 	// The read thread in StreamHandler will signal this condition variable.
