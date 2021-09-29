@@ -56,7 +56,7 @@ int FfplayDummy::media_read(void* opaque, uint8_t* buf, int buf_size) {
 	NYMPH_LOG_INFORMATION("Read " + Poco::NumberFormatter::format(bytesRead) + " bytes.");
 	if (bytesRead == 0) {
 		std::cout << "EOF is " << DataBuffer::isEof() << std::endl;
-		if (DataBuffer::isEof()) { return AVERROR_EOF; }
+		if (DataBuffer::isEof()) { return -1; }
 		else { return -1; }
 	}
 	
