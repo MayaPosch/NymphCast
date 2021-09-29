@@ -127,14 +127,14 @@ void FfplayDummy::setVolume(uint8_t volume) {
 void FfplayDummy::triggerRead(int) {
 	// Call read() with a 32 kB data request. This data is then discarded.
 	if (media_read(0, buf, buf_size) == -1) {
-		ct.finish();
+		// Signal the player thread that the playback has ended.
+		dummyCon.signal();
 	}
 }
 
 
 void FfplayDummy::cleanUp() {
-	// Signal the player thread that the playback has ended.
-	dummyCon.signal();
+	//
 }
 
 
@@ -152,8 +152,10 @@ void FfplayDummy::run() {
 	// Wait here until playback has finished.
 	// The read thread in StreamHandler will signal this condition variable.
 	dummyMutex.lock();
-	dummyCon.wait(playerMutex);
+	dummyCon.wait(dummyMutex);
 	dummyMutex.unlock();
+	
+	ct.stop();
 	
 	DataBuffer::reset();	// Clears the data buffer (file data buffer).
 	finishPlayback();		// Calls handler for post-playback steps.
@@ -165,5 +167,5 @@ void FfplayDummy::run() {
  
 // --- QUIT ---
 void FfplayDummy::quit() {
-	ct.stop();
+	//
 }
