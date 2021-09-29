@@ -16,11 +16,9 @@ class ScreenSaver {
 	static std::atomic<bool> active;
 	static std::atomic<bool> firstRun;
 	static ChronoTrigger ct;
-	static ChronoTrigger sdl_ct;
 	static std::vector<std::string> images;
 	static int imageId;
 	static std::string dataPath;
-	static std::thread* sdl;
 	
 	static void changeImage(int);
 	static void cleanUp();

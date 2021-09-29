@@ -14,11 +14,9 @@ namespace fs = std::filesystem;
 std::atomic<bool> ScreenSaver::active = {false};
 std::atomic<bool> ScreenSaver::firstRun = {true};
 ChronoTrigger ScreenSaver::ct;
-ChronoTrigger ScreenSaver::sdl_ct;
 std::vector<std::string> ScreenSaver::images;
 int ScreenSaver::imageId = 0;
 std::string ScreenSaver::dataPath;
-std::thread* ScreenSaver::sdl = 0;
 
 
 
@@ -65,25 +63,11 @@ void ScreenSaver::start(uint32_t changeSecs) {
 	ct.start(changeSecs * 1000);	// Convert to milliseconds.
 		
 	active = true;
-	
-	// Start SDL loop.
-	//sdl = new std::thread(SdlRenderer::run_event_loop);
 }
 
 
 void ScreenSaver::stop() {
 	if (!active) { return; }
-	
-	//std::cout << "Stopping SDL loop..." << std::endl;
-	
-	// Stop SDL event loop.
-	//SdlRenderer::stop_event_loop();
-	
-	// Wait for thread to exit.
-	//sdl->join();
-	
-	// Delete thread object.
-	//delete sdl;
 	
 	std::cout << "Stopping timer..." << std::endl;
 	
