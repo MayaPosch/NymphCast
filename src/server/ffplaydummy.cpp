@@ -38,6 +38,7 @@ Poco::Mutex dummyMutex;
 #include <string>
 #include <cstring>
 #include <vector>
+#include <chrono>
 
 #include "ffplay/types.h"
 #include "databuffer.h"
@@ -142,10 +143,16 @@ void FfplayDummy::triggerRead(int) {
 	}
 	
 	// Call read() with a 32 kB data request. This data is then discarded.
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	if (media_read(0, buf, buf_size) == -1) {
 		// Signal the player thread that the playback has ended.
 		dummyCon.signal();
 	}
+	
+	// Report time for the media_read call.
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	NYMPH_LOG_INFORMATION("Read duration: " + Poco::NumberFormatter::format(std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) + "µs.");
+	
 }
 
 
