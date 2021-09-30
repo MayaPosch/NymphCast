@@ -423,7 +423,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	if (eof) {
 		// Do nothing.
 	}
-	else if (free > 204799) {
+	else if (!dataRequestPending && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
