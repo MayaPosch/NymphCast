@@ -21,6 +21,7 @@ std::string FfplayDummy::loggerName = "FfplayDummy";
 ChronoTrigger FfplayDummy::ct;
 int FfplayDummy::buf_size = 32 * 1024;
 uint8_t* FfplayDummy::buf;
+uint8_t FfplayDummy::count = 0;
 
 
 // Global objects.
@@ -125,6 +126,21 @@ void FfplayDummy::setVolume(uint8_t volume) {
 
 // --- TRIGGER READ ---
 void FfplayDummy::triggerRead(int) {
+	// TODO: if first read, seek to end - N bytes.
+	// If second read, seek to beginning.
+	if (count == 0) {
+		// Seek to end - 10 kB.
+		media_seek(0, DataBuffer::getFileSize() - (10 * 1024), SEEK_SET);
+		count++;
+		return;
+	}
+	else if (count == 1) {
+		// Seek to beginning.
+		media_seek(0, 0, SEEK_SET);
+		count++;
+		return;
+	}
+	
 	// Call read() with a 32 kB data request. This data is then discarded.
 	if (media_read(0, buf, buf_size) == -1) {
 		// Signal the player thread that the playback has ended.

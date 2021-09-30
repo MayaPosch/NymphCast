@@ -69,6 +69,7 @@ class FfplayDummy : public Poco::Runnable {
 	static ChronoTrigger ct;
 	static int buf_size;
 	static uint8_t* buf;
+	static uint8_t count;
 	
 	static void triggerRead(int);
 	static void cleanUp();
