@@ -607,7 +607,8 @@ void MainWindow::castUrl() {
 	QString url = QInputDialog::getText(this, tr("Cast URL"), tr("Copy in the URL to cast."));
 	if (url.isEmpty()) { return; }
 	
-	if (client.castUrl(handle, url.toStdString())) {
+	std::string surl = url.toStdString();
+	if (client.castUrl(handle, surl)) {
 		// Playing back URL now. Update status.
 		playingTrack = true;
 		singleCast = true;
@@ -1030,8 +1031,10 @@ void MainWindow::appsHome() {
     if (!remoteEnsureConnected(ncid)) { return; }
     
     // Request the starting Apps page from the remote.
-    QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, std::string(), 
-                                                                               "apps.html"));
+	std::string home = std::string();
+	std::string resource = "apps.html";
+    QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, home, 
+                                                                               resource));
     
     
     // Set the received HTML into the target widget.
@@ -1058,9 +1061,11 @@ void MainWindow::anchorClicked(const QUrl &link) {
         if (list.size() < 2) { return; }
         
         // Try to load the index page for the specified app.
+		std::string appId = list[1].toStdString();
+		std::string resource = "index.html";
         QString page = QString::fromStdString(client.loadResource(remotes[ncid].handle, 
-                                                                  list[1].toStdString(), 
-                                                                   "index.html"));
+                                                                  appId, 
+                                                                   resource));
         
         if (page.isEmpty()) { 
             QMessageBox::warning(this, tr("Failed to start"), tr("The selected app could not be started."));
