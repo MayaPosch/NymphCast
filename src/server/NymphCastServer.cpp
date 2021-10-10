@@ -199,7 +199,6 @@ void dataRequestFunction() {
 		// Request more data.
 		std::vector<NymphType*> values;
 		std::string result;
-		NymphBoolean* resVal = 0;
 		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
 			std::cerr << "Calling callback failed: " << result << std::endl;
 			return;
@@ -237,41 +236,117 @@ void MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data) {
 
 
 // --- GET PLAYBACK STATUS ---
-NymphStruct* getPlaybackStatus() {
+std::map<std::string, NymphPair>* getPlaybackStatus() {
 	// Set the playback status.
 	// We're sending back whether we are playing something currently. If so, also includes:
 	// * duration of media in seconds.
 	// * position in the media, in seconds with remainder.
 	// * title of the media, if available.
 	// * artist of the media, if available.
-	NymphStruct* response = new NymphStruct;
+	//NymphStruct* response = new NymphStruct;
+	std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
+	NymphPair pair;
+	std::string* key;
 	if (playerStarted) {
 		// Distinguish between playing and paused for the player.
 		if (playerPaused) {
-			response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PAUSED));
+			//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PAUSED));
+			key = new std::string("status");
+			pair.key = new NymphType(key, true);
+			pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_PAUSED);
+			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		}
 		else {
-			response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+			//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
+			key = new std::string("status");
+			pair.key = new NymphType(key, true);
+			pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_PLAYING);
+			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		}
 		
-		response->addPair("playing", new NymphBoolean(true));
-		response->addPair("duration", new NymphUint64(file_meta.duration));
-		response->addPair("position", new NymphDouble(file_meta.position));
-		response->addPair("title", new NymphString(file_meta.getTitle()));
-		response->addPair("artist", new NymphString(file_meta.getArtist()));
-		response->addPair("volume", new NymphUint8(audio_volume));
+		//response->addPair("playing", new NymphBoolean(true));
+		key = new std::string("playing");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(true);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("duration", new NymphUint64(file_meta.duration));
+		key = new std::string("duration");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(file_meta.duration);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("position", new NymphDouble(file_meta.position));
+		key = new std::string("position");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(file_meta.position);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("title", new NymphString(file_meta.getTitle()));
+		key = new std::string("title");
+		pair.key = new NymphType(key, true);
+		std::string* val = new std::string(file_meta.getTitle());
+		pair.value = new NymphType(val, true);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("artist", new NymphString(file_meta.getArtist()));
+		key = new std::string("artist");
+		pair.key = new NymphType(key, true);
+		val = new std::string(file_meta.getArtist());
+		pair.value = new NymphType(val, true);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("volume", new NymphUint8(audio_volume));
+		key = new std::string("volume");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(audio_volume);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
-		response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
-		response->addPair("playing", new NymphBoolean(false));
-		response->addPair("duration", new NymphUint64(0));
-		response->addPair("position", new NymphDouble(0));
-		response->addPair("title", new NymphString());
-		response->addPair("artist", new NymphString());
-		response->addPair("volume", new NymphUint8(audio_volume));
+		//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
+		key = new std::string("status");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_STOPPED);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+			
+		//response->addPair("playing", new NymphBoolean(false));
+		key = new std::string("playing");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(false);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("duration", new NymphUint64(0));
+		key = new std::string("duration");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType((uint64_t) 0);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("position", new NymphDouble(0));
+		key = new std::string("position");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType((double) 0.0);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("title", new NymphString());
+		key = new std::string("title");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType((char*) 0, 0);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("artist", new NymphString());
+		key = new std::string("artist");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType((char*) 0, 0);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//response->addPair("volume", new NymphUint8(audio_volume));
+		key = new std::string("volume");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(audio_volume);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	
-	return response;
+	return pairs;
 }
 
 
@@ -279,8 +354,10 @@ NymphStruct* getPlaybackStatus() {
 void sendStatusUpdate(uint32_t handle) {
 	// Call the status update callback with the current playback status.
 	std::vector<NymphType*> values;
-	values.push_back(getPlaybackStatus());
-	NymphBoolean* resVal = 0;
+	std::map<std::string, NymphPair>* status = getPlaybackStatus();
+	values.push_back(new NymphType(status, true));
+	//NymphBoolean* resVal = 0;
+	NymphType* resVal = 0;
 	std::string result;
 	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
 		std::cerr << "Calling media status callback failed: " << result << std::endl;
@@ -295,15 +372,17 @@ void sendGlobalStatusUpdate() {
 	//std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
 	NYMPH_LOG_INFORMATION("Sending status update to all " + Poco::NumberFormatter::format(clients.size()) 
 					+ " clients.");
+					
+	std::map<std::string, NymphPair>* pairs = getPlaybackStatus();
 	std::map<int, CastClient>::const_iterator it;
 	for (it = clients.begin(); it != clients.end();/**/) {
 		NYMPH_LOG_DEBUG("Client ID: " + Poco::NumberFormatter::format(it->first) + "/" + it->second.name);
 		
 		// Call the status update callback with the current playback status.
-		std::vector<NymphType*> values;
-		values.push_back(getPlaybackStatus());
-		NymphBoolean* resVal = 0;
+		NymphType* resVal = 0;
 		std::string result;
+		std::vector<NymphType*> values;
+		values.push_back(new NymphType(pairs));
 		if (!NymphRemoteClient::callCallback(it->first, "MediaStatusCallback", values, result)) {
 			//std::cerr << "Calling media status callback failed: " << result << std::endl;
 			NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
@@ -315,6 +394,10 @@ void sendGlobalStatusUpdate() {
 			++it;
 		}
 	}
+	
+	// Delete the map.
+	// TODO: persist the data somehow.
+	delete pairs;
 }
 
 
@@ -323,9 +406,10 @@ void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;
-		values.push_back(new NymphUint64(offset));
+		//values.push_back(new NymphUint64(offset));
+		values.push_back(new NymphType((uint64_t) offset));
 		std::string result;
-		NymphBoolean* resVal = 0;
+		NymphType* resVal = 0;
 		if (!NymphRemoteClient::callCallback(session, "MediaSeekCallback", values, result)) {
 			std::cerr << "Calling media seek callback failed: " << result << std::endl;
 			return;
@@ -358,7 +442,6 @@ void finishPlayback() {
 	uint32_t handle = DataBuffer::getSessionHandle();
 	std::vector<NymphType*> values;
 	std::string result;
-	NymphBoolean* resVal = 0;
 	if (!NymphRemoteClient::callCallback(handle, "MediaStopCallback", values, result)) {
 		std::cerr << "Calling media stop callback failed: " << result << std::endl;
 		return;
@@ -462,7 +545,7 @@ uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	std::cout << "Received message for session: " << session << ", msg ID: " << msg->getMessageId() << "\n";
 	
-	std::string clientStr = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string clientStr = msg->parameters()[0]->getString();
 	std::cout << "Client string: " << clientStr << "\n";
 	
 	// TODO: check whether we're not operating in slave or master mode already.
@@ -473,10 +556,10 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
-	NymphBoolean* retVal = 0;
+	NymphType* retVal = 0;
 	if (it != clients.end()) {
 		// Client ID already exists, abort.
-		retVal = new NymphBoolean(false);
+		retVal = new NymphType(false);
 	}
 	else {
 		CastClient c;
@@ -485,19 +568,21 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 		c.sessionActive = false;
 		c.filesize = 0;
 		clients.insert(std::pair<int, CastClient>(session, c));
-		retVal = new NymphBoolean(true);
+		retVal = new NymphType(true);
 	}
 	
 	// Send the client the current playback status.
 	std::vector<NymphType*> values;
-	values.push_back(getPlaybackStatus());
+	std::map<std::string, NymphPair>* status = getPlaybackStatus();
+	values.push_back(new NymphType(status, true));
 	std::string result;
-	NymphBoolean* resVal = 0;
 	if (!NymphRemoteClient::callCallback(session, "MediaStatusCallback", values, result)) {
 		std::cerr << "Calling media status callback failed: " << result << std::endl;
 	}
 	
 	returnMsg->setResultValue(retVal);
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -516,7 +601,7 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	// Switch to slave mode, if possible.
 	// Return error if we're currently playing content in stand-alone mode.
 	if (playerStarted) {
-		returnMsg->setResultValue(new NymphSint64(0));
+		returnMsg->setResultValue(new NymphType((int64_t) 0));
 	}
 	else {
 		// FIXME: for now we just return the current time.
@@ -527,7 +612,7 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 		
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
-		returnMsg->setResultValue(new NymphSint64(now));
+		returnMsg->setResultValue(new NymphType(now));
 	}
 	
 	// TODO: Obtain timestamp, compare with current time.
@@ -536,6 +621,8 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	// TODO: Send delay request to master.
 	
 	// TODO: Determine final latency and share with master.
+	
+	msg->discard();
 	
 	return returnMsg;
 }
@@ -548,12 +635,13 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Extract data blob and add it to the buffer.
-	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
-	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
-	int64_t when = ((NymphSint64*) msg->parameters()[2])->getValue();
+	//std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
+	NymphType* mediaData = msg->parameters()[0];
+	bool done = msg->parameters()[1]->getBool();
+	int64_t when = msg->parameters()[2]->getInt64();
 	
 	// Write string into buffer.
-	DataBuffer::write(mediaData);
+	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
 	if (!playerStarted) {
 		// Start the player when the delay in 'when' has been reached.
@@ -574,6 +662,8 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	if (done) {
 		DataBuffer::setEof(done);
 	}
+	
+	msg->discard();
 	
 	return returnMsg;
 }
@@ -613,7 +703,9 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 	serverMode = NCS_MODE_STANDALONE;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
-	returnMsg->setResultValue(new NymphBoolean(true));
+	returnMsg->setResultValue(new NymphType(true));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -628,20 +720,26 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
 	if (it == clients.end()) {
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
 		return returnMsg;
 	}
 	
 	// Obtain the filesize from the client, which we use with the buffer management.
-	NymphStruct* fileInfo = ((NymphStruct*) msg->parameters()[0]);
+	//NymphStruct* fileInfo = ((NymphStruct*) msg->parameters()[0]);
+	NymphType* fileInfo = msg->parameters()[0];
 	NymphType* num = 0;
-	if (!fileInfo->getValue("filesize", num)) {
+	if (!fileInfo->getStructValue("filesize", num)) {
+	//if (!fileInfo->getValue("filesize", num)) {
 		std::cerr << "Didn't find entry 'filesize'. Aborting..." << std::endl;
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
 		return returnMsg;
 	}
 	
-	it->second.filesize = ((NymphUint32*) num)->getValue();
+	it->second.filesize = num->getUint32();
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
@@ -652,7 +750,9 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// has been filled sufficiently, start the playback.
 	if (!DataBuffer::start()) {
 		std::cerr << "Failed to start buffering. Abort." << std::endl;
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
 		return returnMsg;
 	}
 		
@@ -677,7 +777,9 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -689,6 +791,8 @@ NymphMessage* session_meta(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// X unused function.
+	
+	msg->discard();
 	
 	return returnMsg;
 }
@@ -702,19 +806,22 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Extract the array.
-	std::vector<NymphType*> remotes = ((NymphArray*) msg->parameters()[0])->getValues();
-	for (int i = 0; i < remotes.size(); ++i) {
-		NymphStruct* ns = (NymphStruct*) remotes[i];
+	std::vector<NymphType*>* remotes = msg->parameters()[0]->getArray();
+	for (int i = 0; i < (*remotes).size(); ++i) {
+		std::map<std::string, NymphPair>* pairs = (*remotes)[i]->getStruct();
 		NymphCastSlaveRemote remote;
 		NymphType* value = 0;
-		((NymphStruct*) remotes[i])->getValue("name", value);
-		remote.name = ((NymphString*) value)->getValue();
-		((NymphStruct*) remotes[i])->getValue("ipv4", value);
-		remote.ipv4 = ((NymphString*) value)->getValue();
-		((NymphStruct*) remotes[i])->getValue("ipv6", value);
-		remote.ipv6 = ((NymphString*) value)->getValue();
-		((NymphStruct*) remotes[i])->getValue("port", value);
-		remote.port = ((NymphUint16*) value)->getValue();
+		(*remotes)[i]->getStructValue("name", value);
+		remote.name = std::string(value->getChar(), value->string_length());
+		
+		(*remotes)[i]->getStructValue("ipv4", value);
+		remote.ipv4 = std::string(value->getChar(), value->string_length());
+		
+		(*remotes)[i]->getStructValue("ipv6", value);
+		remote.ipv6 = std::string(value->getChar(), value->string_length());
+		
+		(*remotes)[i]->getStructValue("port", value);
+		remote.port = value->getUint16();
 		remote.handle = 0;
 		remote.delay = 0;
 	
@@ -734,7 +841,9 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 				NymphRemoteServer::disconnect(drm.handle, result);
 			}
 			
-			returnMsg->setResultValue(new NymphUint8(1));
+			returnMsg->setResultValue(new NymphType((uint8_t) 1));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
@@ -743,37 +852,34 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
 		std::vector<NymphType*> values;
-		values.push_back(new NymphSint64(now));
+		values.push_back(new NymphType(now));
 		NymphType* returnValue = 0;
 		if (!NymphRemoteServer::callMethod(rm.handle, "connectMaster", values, returnValue, result)) {
 			std::cerr << "Slave connect master failed: " << result << std::endl;
 			// TODO: disconnect from slave remotes.
-			returnMsg->setResultValue(new NymphUint8(1));
+			returnMsg->setResultValue(new NymphType((uint8_t) 1));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
 		// Get new time. This should be roughly twice the latency to the slave remote.
 		ts.update();
 		int64_t pong = ts.epochMicroseconds();
-		
-		// Check return value.
-		if (returnValue->type() != NYMPH_SINT64) {
-			std::cout << "Return value wasn't a sint64. Type: " << returnValue->type() << std::endl;
-			// TODO: disconnect from slave remotes.
-			returnMsg->setResultValue(new NymphUint8(1));
-			return returnMsg;
-		}
-		
-		if (((NymphSint64*) returnValue)->getValue() == 0) {
+		time_t theirs = returnValue->getInt64();
+		delete returnValue;
+		if (theirs == 0) {
 			std::cerr << "Configuring remote as slave failed." << std::endl;
 			// TODO: disconnect from slave remotes.
-			returnMsg->setResultValue(new NymphUint8(1));
+			returnMsg->setResultValue(new NymphType((uint8_t) 1));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
 		// Use returned time stamp to calculate the delay.
 		// FIXME: using stopwatch-style local time to determine latency for now.
-		time_t theirs = ((NymphSint64*) returnValue)->getValue();
+		
 		//rm.delay = theirs - now;
 		rm.delay = pong - now;
 		std::cout << "Slave delay: " << rm.delay << " microseconds." << std::endl;
@@ -788,7 +894,9 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	NYMPH_LOG_INFORMATION("Switching to master server mode.");
 	serverMode = NCS_MODE_MASTER;
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -803,16 +911,18 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
 	if (it == clients.end()) {
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
 		return returnMsg;
 	}
 	
 	// Safely write the data for this session to the buffer.
-	std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
-	bool done = ((NymphBoolean*) msg->parameters()[1])->getValue();
+	//std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
+	NymphType* mediaData = msg->parameters()[0];
+	bool done = msg->parameters()[1]->getBool();
 	
 	// Write string into buffer.
-	DataBuffer::write(mediaData);
+	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
 	// If passing the message through to slave remotes, add the timestamp to the message.
 	// This timestamp is the current time plus the largest master-slave latency times 2.
@@ -822,24 +932,28 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		int64_t now = (int64_t) ts.epochMicroseconds();
 		//then = now + (slaveLatencyMax * 2);
 		
-		NymphBlob* mediaBlob = new NymphBlob(mediaData);
-		NymphBoolean* doneBool = new NymphBoolean(done);
+		//NymphBlob* mediaBlob = new NymphBlob(mediaData);
+		
 		
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
 			then = slaveLatencyMax - rm.delay;
 		
 			// Prepare data vector.
+			NymphType* media = new NymphType((char*) mediaData->getChar(), mediaData->string_length());
+			NymphType* doneBool = new NymphType(done);
 			std::vector<NymphType*> values;
-			values.push_back(mediaBlob);
+			values.push_back(media);
 			values.push_back(doneBool);
-			values.push_back(new NymphSint64(then));
+			values.push_back(new NymphType(then));
 			
 			std::string result;
 			NymphType* returnValue = 0;
 			if (!NymphRemoteServer::callMethod(rm.handle, "receiveDataMaster", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -881,7 +995,9 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		DataBuffer::setEof(done);
 	}
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -896,13 +1012,17 @@ NymphMessage* session_end(int session, NymphMessage* msg, void* data) {
 	std::map<int, CastClient>::iterator it;
 	it = clients.find(session);
 	if (it == clients.end()) {
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
 		return returnMsg;
 	}
 	
 	it->second.sessionActive = false;
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -912,10 +1032,10 @@ NymphMessage* session_end(int session, NymphMessage* msg, void* data) {
 NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	uint8_t volume = ((NymphUint8*) msg->parameters()[0])->getValue();
+	uint8_t volume = msg->parameters()[0]->getUint8();
 	
 	std::vector<NymphType*> values;
-	values.push_back(new NymphUint8(volume));
+	values.push_back(new NymphType(volume));
 	if (serverMode == NCS_MODE_MASTER) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
@@ -924,13 +1044,17 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "volume_set", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
 	audio_volume = volume;
 	ffplay.setVolume(volume);
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -949,6 +1073,8 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "volume_up", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -959,7 +1085,9 @@ NymphMessage* volume_up(int session, NymphMessage* msg, void* data) {
 	
 	// TODO: update global audio_volume variable.
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -978,6 +1106,8 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "volume_down", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -988,7 +1118,9 @@ NymphMessage* volume_down(int session, NymphMessage* msg, void* data) {
 	
 	// TODO: update global audio_volume variable.
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1007,6 +1139,8 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "volume_mute", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1015,7 +1149,9 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_m;
 	SDL_PushEvent(&event);
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1034,6 +1170,8 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "playback_start", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1047,7 +1185,9 @@ NymphMessage* playback_start(int session, NymphMessage* msg, void* data) {
 	// Send status update to clients.
 	sendGlobalStatusUpdate();
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1066,6 +1206,8 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "playback_stop", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1076,7 +1218,9 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	
 	playerPaused = false;
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1095,6 +1239,8 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "playback_pause", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1108,7 +1254,9 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 	// Send status update to clients.
 	sendGlobalStatusUpdate();
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1119,7 +1267,9 @@ NymphMessage* playback_pause(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1130,7 +1280,9 @@ NymphMessage* playback_rewind(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_forward(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1148,6 +1300,8 @@ NymphMessage* cycle_audio(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_audio", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1156,7 +1310,9 @@ NymphMessage* cycle_audio(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_a;
 	SDL_PushEvent(&event);
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1174,6 +1330,8 @@ NymphMessage* cycle_video(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_video", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1182,7 +1340,9 @@ NymphMessage* cycle_video(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_v;
 	SDL_PushEvent(&event);
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1200,6 +1360,8 @@ NymphMessage* cycle_subtitle(int session, NymphMessage* msg, void* data) {
 			if (!NymphRemoteServer::callMethod(rm.handle, "cycle_subtitle", values, returnValue, result)) {
 				// TODO:
 			}
+			
+			delete returnValue;
 		}
 	}
 	
@@ -1208,7 +1370,9 @@ NymphMessage* cycle_subtitle(int session, NymphMessage* msg, void* data) {
 	event.key.keysym.sym = SDLK_t;
 	SDL_PushEvent(&event);
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1224,9 +1388,9 @@ enum {
 NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	uint8_t type = ((NymphUint8*) msg->parameters()[0])->getValue();
+	uint8_t type = msg->parameters()[0]->getUint8();
 	if (type == NYMPH_SEEK_TYPE_PERCENTAGE) {
-		uint8_t percentage = ((NymphUint8*) msg->parameters()[1])->getValue();
+		uint8_t percentage = msg->parameters()[1]->getUint8();
 		
 		// Sanity check.
 		// We accept a value from 0 - 100.
@@ -1243,11 +1407,13 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 		// TODO: implement.
 	}
 	else {
-		returnMsg->setResultValue(new NymphUint8(1));
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
 		return returnMsg;
 	}
 	
-	returnMsg->setResultValue(new NymphUint8(0));
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1257,14 +1423,15 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	std::string url = ((NymphString*) msg->parameters()[0])->getValue();
+	std::string url = msg->parameters()[0]->getString();
 	bool ret = streamTrack(url);
 	
-	NymphUint8* retval = new NymphUint8(1);
+	NymphType* retval = new NymphType((uint8_t) 1);
 	if (ret) {
-		std::vector<NymphType*> values;
-		values.push_back(new NymphString(url));
 		if (serverMode == NCS_MODE_MASTER) {
+			std::vector<NymphType*> values;
+			std::string* tUrl = new std::string(url);
+			values.push_back(new NymphType(tUrl, true));
 			for (int i = 0; i < slave_remotes.size(); ++i) {
 				NymphCastSlaveRemote& rm = slave_remotes[i];
 				std::string result;
@@ -1272,16 +1439,20 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 				if (!NymphRemoteServer::callMethod(rm.handle, "playback_url", values, returnValue, result)) {
 					// TODO:
 				}
+				
+				delete returnValue;
 			}
 		}
 		
-		retval->setValue(0);
+		retval->setValue((uint8_t) 0);
 	}
 	
 	// Send status update to client.
 	sendStatusUpdate(DataBuffer::getSessionHandle());
 	
 	returnMsg->setResultValue(retval);
+	msg->discard();
+	
 	return returnMsg;
 }
 	
@@ -1292,7 +1463,9 @@ NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
 NymphMessage* playback_status(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 		
-	returnMsg->setResultValue(getPlaybackStatus());
+	returnMsg->setResultValue(new NymphType(getPlaybackStatus(), true));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1306,15 +1479,17 @@ NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 	// Obtain and serialise the app names list.
 	//std::vector<std::string> appNames = NymphCastApps::appNames();
 	std::vector<std::string> appNames = nc_apps.appNames();
-	std::string names;
+	std::string* names = new std::string();
 	std::vector<std::string>::const_iterator it = appNames.cbegin();
 	while (it != appNames.cend()) {
-		names.append(*it);
-		names.append("\n");
+		names->append(*it);
+		names->append("\n");
 		it++;
 	}
 	
-	returnMsg->setResultValue(new NymphString(names));
+	returnMsg->setResultValue(new NymphType(names, true));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1325,8 +1500,8 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Validate the application ID, try to find running instance, else launch new app instance.
-	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
-	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
+	std::string appId = msg->parameters()[0]->getString();
+	std::string message = msg->parameters()[1]->getString();
 	
 	// Get the desired output format.
 	// 0 - CLI	- Text with tab (\t) separators and \n terminator.
@@ -1334,23 +1509,27 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	//uint8_t format = ((NymphUint8*) msg->parameters()[1])->getValue();
 	
 	// Find the application details.
-	std::string result = "";
+	std::string* result = new std::string();
 	NymphCastApp app = nc_apps.findApp(appId);
 	if (app.id.empty()) {
 		std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
-		returnMsg->setResultValue(new NymphString(result));
+		returnMsg->setResultValue(new NymphType(result, true));
+		msg->discard();
+			
 		return returnMsg;
 	}
 	
 	std::cout << "Found " << appId << " app." << std::endl;
 	
-	if (!nc_apps.runApp(appId, message, result)) {
+	if (!nc_apps.runApp(appId, message, *result)) {
 		std::cerr << "Error running app: " << result << std::endl;
 		
 		// TODO: report back error to client.
 	}
 	
-	returnMsg->setResultValue(new NymphString(result));
+	returnMsg->setResultValue(new NymphType(result, true));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1360,11 +1539,11 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Validate the application ID, try to find running instance, else launch new app instance.
-	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
-	std::string name = ((NymphString*) msg->parameters()[1])->getValue();
+	std::string appId = msg->parameters()[0]->getString();
+	std::string name = msg->parameters()[1]->getString();
 	
 	// Find the application details.
-	std::string result;
+	std::string* result = new std::string();
 	
 	if (appId.empty()) {
 		// Use root folder.
@@ -1372,14 +1551,18 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
 			std::cerr << "File name contained illegal directory separator character." << std::endl;
-			returnMsg->setResultValue(new NymphBlob(result));
+			returnMsg->setResultValue(new NymphType(result, true));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
 		fs::path f = appsFolder + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
-			returnMsg->setResultValue(new NymphBlob(result));
+			returnMsg->setResultValue(new NymphType(result, true));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
@@ -1391,7 +1574,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		std::string buffer(size, ' ');
 		fstr.seekg(0);
 		fstr.read(&buffer[0], size);
-		result.swap(buffer);
+		result->swap(buffer);
 	}
 	else {
 		// Use App folder.
@@ -1400,7 +1583,9 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		NymphCastApp app = nc_apps.findApp(appId);
 		if (app.id.empty()) {
 			std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
-			returnMsg->setResultValue(new NymphBlob(result));
+			returnMsg->setResultValue(new NymphType(result, true));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
@@ -1408,14 +1593,18 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
 			std::cerr << "File name contained illegal directory separator character." << std::endl;
-			returnMsg->setResultValue(new NymphBlob(result));
+			returnMsg->setResultValue(new NymphType(result, true));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
 		fs::path f = appsFolder + appId + "/" + name;
 		if (!fs::exists(f)) {
 			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
-			returnMsg->setResultValue(new NymphBlob(result));
+			returnMsg->setResultValue(new NymphType(result, true));
+			msg->discard();
+			
 			return returnMsg;
 		}
 		
@@ -1427,10 +1616,12 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		std::string buffer(size, ' ');
 		fstr.seekg(0);
 		fstr.read(&buffer[0], size);
-		result.swap(buffer);
+		result->swap(buffer);
 	}
 	
-	returnMsg->setResultValue(new NymphBlob(result));
+	returnMsg->setResultValue(new NymphType(result));
+	msg->discard();
+	
 	return returnMsg;
 }
 
@@ -1542,33 +1733,29 @@ int main(int argc, char** argv) {
 	// Client connects to server.
 	// bool connect(string client_id)
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod connectFunction("connect", parameters, NYMPH_BOOL);
-	connectFunction.setCallback(connectClient);
+	NymphMethod connectFunction("connect", parameters, NYMPH_BOOL, connectClient);
 	NymphRemoteClient::registerMethod("connect", connectFunction);
 	
 	// Master server calls this to turn this server instance into a slave.
 	// uint8 connectMaster(sint64)
 	parameters.clear();
 	parameters.push_back(NYMPH_SINT64);
-	NymphMethod connectMasterFunction("connectMaster", parameters, NYMPH_SINT64);
-	connectMasterFunction.setCallback(connectMaster);
+	NymphMethod connectMasterFunction("connectMaster", parameters, NYMPH_SINT64, connectMaster);
 	NymphRemoteClient::registerMethod("connectMaster", connectMasterFunction);
 	
 	// Receives data chunks for playback.
 	// uint8 receiveDataMaster(blob data, bool done, sint64)
 	parameters.clear();
-	parameters.push_back(NYMPH_BLOB);
+	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_BOOL);
 	parameters.push_back(NYMPH_SINT64);
-	NymphMethod receivedataMasterFunction("receiveDataMaster", parameters, NYMPH_UINT8);
-	receivedataMasterFunction.setCallback(receiveDataMaster);
+	NymphMethod receivedataMasterFunction("receiveDataMaster", parameters, NYMPH_UINT8, receiveDataMaster);
 	NymphRemoteClient::registerMethod("receiveDataMaster", receivedataMasterFunction);
 	
 	// Client disconnects from server.
 	// bool disconnect()
 	parameters.clear();
-	NymphMethod disconnectFunction("disconnect", parameters, NYMPH_BOOL);
-	disconnectFunction.setCallback(disconnect);
+	NymphMethod disconnectFunction("disconnect", parameters, NYMPH_BOOL, disconnect);
 	NymphRemoteClient::registerMethod("disconnect", disconnectFunction);
 	
 	// Client starts a session.
@@ -1576,8 +1763,7 @@ int main(int argc, char** argv) {
 	// int session_start()
 	parameters.clear();
 	parameters.push_back(NYMPH_STRUCT);
-	NymphMethod sessionStartFunction("session_start", parameters, NYMPH_UINT8);
-	sessionStartFunction.setCallback(session_start);
+	NymphMethod sessionStartFunction("session_start", parameters, NYMPH_UINT8, session_start);
 	NymphRemoteClient::registerMethod("session_start", sessionStartFunction);
 	
 	// Client sends meta data for the track.
@@ -1587,8 +1773,7 @@ int main(int argc, char** argv) {
 	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_UINT32);
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod sessionMetaFunction("session_meta", parameters, NYMPH_UINT8);
-	sessionMetaFunction.setCallback(session_meta);
+	NymphMethod sessionMetaFunction("session_meta", parameters, NYMPH_UINT8, session_meta);
 	NymphRemoteClient::registerMethod("session_meta", sessionMetaFunction);
 	
 	// Client adds slave NymphCast servers to the session.
@@ -1597,26 +1782,23 @@ int main(int argc, char** argv) {
 	// int session_add_slave(array servers);
 	parameters.clear();
 	parameters.push_back(NYMPH_ARRAY);
-	NymphMethod sessionAddSlaveFunction("session_add_slave", parameters, NYMPH_UINT8);
-	sessionAddSlaveFunction.setCallback(session_add_slave);
+	NymphMethod sessionAddSlaveFunction("session_add_slave", parameters, NYMPH_UINT8, session_add_slave);
 	NymphRemoteClient::registerMethod("session_add_slave", sessionAddSlaveFunction);
 	
 	// Client sends a chunk of track data.
 	// Returns: OK (0), ERROR (1).
 	// int session_data(string buffer)
 	parameters.clear();
-	parameters.push_back(NYMPH_BLOB);
+	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_BOOL);
-	NymphMethod sessionDataFunction("session_data", parameters, NYMPH_UINT8);
-	sessionDataFunction.setCallback(session_data);
+	NymphMethod sessionDataFunction("session_data", parameters, NYMPH_UINT8, session_data);
 	NymphRemoteClient::registerMethod("session_data", sessionDataFunction);
 	
 	// Client ends the session.
 	// Returns: OK (0), ERROR (1).
 	// int session_end()
 	parameters.clear();
-	NymphMethod sessionEndFunction("session_end", parameters, NYMPH_UINT8);
-	sessionEndFunction.setCallback(session_end);
+	NymphMethod sessionEndFunction("session_end", parameters, NYMPH_UINT8, session_end);
 	NymphRemoteClient::registerMethod("session_end", sessionEndFunction);
 	
 	// Playback control methods.
@@ -1627,8 +1809,7 @@ int main(int argc, char** argv) {
 	// Returns new volume setting or >100 if failed.
 	parameters.clear();
 	parameters.push_back(NYMPH_UINT8);
-	NymphMethod volumeSetFunction("volume_set", parameters, NYMPH_UINT8);
-	volumeSetFunction.setCallback(volume_set);
+	NymphMethod volumeSetFunction("volume_set", parameters, NYMPH_UINT8, volume_set);
 	NymphRemoteClient::registerMethod("volume_set", volumeSetFunction);
 	
 	// VolumeUp.
@@ -1636,8 +1817,7 @@ int main(int argc, char** argv) {
 	// Increase volume by 10 up to 100.
 	// Returns new volume setting or >100 if failed.
 	parameters.clear();
-	NymphMethod volumeUpFunction("volume_up", parameters, NYMPH_UINT8);
-	volumeUpFunction.setCallback(volume_up);
+	NymphMethod volumeUpFunction("volume_up", parameters, NYMPH_UINT8, volume_up);
 	NymphRemoteClient::registerMethod("volume_up", volumeUpFunction);
 		
 	// VolumeDown.
@@ -1645,8 +1825,7 @@ int main(int argc, char** argv) {
 	// Decrease volume by 10 up to 100.
 	// Returns new volume setting or >100 if failed.
 	parameters.clear();
-	NymphMethod volumeDownFunction("volume_down", parameters, NYMPH_UINT8);
-	volumeDownFunction.setCallback(volume_down);
+	NymphMethod volumeDownFunction("volume_down", parameters, NYMPH_UINT8, volume_down);
 	NymphRemoteClient::registerMethod("volume_down", volumeDownFunction);
 	
 	// PlaybackStart.
@@ -1654,8 +1833,7 @@ int main(int argc, char** argv) {
 	// Start playback.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod playbackStartFunction("playback_start", parameters, NYMPH_UINT8);
-	playbackStartFunction.setCallback(playback_start);
+	NymphMethod playbackStartFunction("playback_start", parameters, NYMPH_UINT8, playback_start);
 	NymphRemoteClient::registerMethod("playback_start", playbackStartFunction);
 	
 	// PlaybackStop.
@@ -1663,8 +1841,7 @@ int main(int argc, char** argv) {
 	// Stop playback.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod playbackStopFunction("playback_stop", parameters, NYMPH_UINT8);
-	playbackStopFunction.setCallback(playback_stop);
+	NymphMethod playbackStopFunction("playback_stop", parameters, NYMPH_UINT8, playback_stop);
 	NymphRemoteClient::registerMethod("playback_stop", playbackStopFunction);
 	
 	// PlaybackPause.
@@ -1672,8 +1849,7 @@ int main(int argc, char** argv) {
 	// Pause playback.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod playbackPauseFunction("playback_pause", parameters, NYMPH_UINT8);
-	playbackPauseFunction.setCallback(playback_pause);
+	NymphMethod playbackPauseFunction("playback_pause", parameters, NYMPH_UINT8, playback_pause);
 	NymphRemoteClient::registerMethod("playback_pause", playbackPauseFunction);
 	
 	// PlaybackRewind.
@@ -1681,8 +1857,7 @@ int main(int argc, char** argv) {
 	// Rewind the current file to the beginning.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod playbackRewindFunction("playback_rewind", parameters, NYMPH_UINT8);
-	playbackRewindFunction.setCallback(playback_rewind);
+	NymphMethod playbackRewindFunction("playback_rewind", parameters, NYMPH_UINT8, playback_rewind);
 	NymphRemoteClient::registerMethod("playback_rewind", playbackRewindFunction);
 	
 	// PlaybackForward
@@ -1690,32 +1865,28 @@ int main(int argc, char** argv) {
 	// Forward the current file to the end.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod playbackForwardFunction("playback_forward", parameters, NYMPH_UINT8);
-	playbackForwardFunction.setCallback(playback_forward);
+	NymphMethod playbackForwardFunction("playback_forward", parameters, NYMPH_UINT8, playback_forward);
 	NymphRemoteClient::registerMethod("playback_forward", playbackForwardFunction);
 	
 	// uint8 cycle_audio()
 	// Cycle audio channel.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod cycleAudioFunction("cycle_audio", parameters, NYMPH_UINT8);
-	cycleAudioFunction.setCallback(cycle_audio);
+	NymphMethod cycleAudioFunction("cycle_audio", parameters, NYMPH_UINT8, cycle_audio);
 	NymphRemoteClient::registerMethod("cycle_audio", cycleAudioFunction);
 	
 	// uint8 cycle_video()
 	// Cycle video channel.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod cycleVideoFunction("cycle_video", parameters, NYMPH_UINT8);
-	cycleVideoFunction.setCallback(cycle_video);
+	NymphMethod cycleVideoFunction("cycle_video", parameters, NYMPH_UINT8, cycle_video);
 	NymphRemoteClient::registerMethod("cycle_video", cycleVideoFunction);
 	
 	// uint8 cycle_subtitle()
 	// Cycle audio channel.
 	// Returns success or error number.
 	parameters.clear();
-	NymphMethod cycleSubtitleFunction("cycle_subtitle", parameters, NYMPH_UINT8);
-	cycleSubtitleFunction.setCallback(cycle_subtitle);
+	NymphMethod cycleSubtitleFunction("cycle_subtitle", parameters, NYMPH_UINT8, cycle_subtitle);
 	NymphRemoteClient::registerMethod("cycle_subtitle", cycleSubtitleFunction);
 	
 	// PlaybackSeek
@@ -1724,8 +1895,7 @@ int main(int argc, char** argv) {
 	// Returns success or error number.
 	parameters.clear();
 	parameters.push_back(NYMPH_ARRAY);
-	NymphMethod playbackSeekFunction("playback_seek", parameters, NYMPH_UINT8);
-	playbackSeekFunction.setCallback(playback_seek);
+	NymphMethod playbackSeekFunction("playback_seek", parameters, NYMPH_UINT8, playback_seek);
 	NymphRemoteClient::registerMethod("playback_seek", playbackSeekFunction);
 	
 	// PlaybackUrl.
@@ -1734,8 +1904,7 @@ int main(int argc, char** argv) {
 	// Returns success or error number.
 	parameters.clear();
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod playbackUrlFunction("playback_url", parameters, NYMPH_UINT8);
-	playbackUrlFunction.setCallback(playback_url);
+	NymphMethod playbackUrlFunction("playback_url", parameters, NYMPH_UINT8, playback_url);
 	NymphRemoteClient::registerMethod("playback_url", playbackUrlFunction);
 	
 	// PlaybackStatus
@@ -1745,21 +1914,14 @@ int main(int argc, char** argv) {
 	// ["playing"] => boolean (true/false)
 	// 
 	parameters.clear();
-	NymphMethod playbackStatusFunction("playback_status", parameters, NYMPH_STRUCT);
-	playbackStatusFunction.setCallback(playback_status);
+	NymphMethod playbackStatusFunction("playback_status", parameters, NYMPH_STRUCT, playback_status);
 	NymphRemoteClient::registerMethod("playback_status", playbackStatusFunction);
-	
-	
-	// ReceiverStatus.
-	// 
-	
-	
+		
 	// AppList
 	// string app_list()
 	// Returns a list of installed applications.
 	parameters.clear();
-	NymphMethod appListFunction("app_list", parameters, NYMPH_STRING);
-	appListFunction.setCallback(app_list);
+	NymphMethod appListFunction("app_list", parameters, NYMPH_STRING, app_list);
 	NymphRemoteClient::registerMethod("app_list", appListFunction);	
 	
 	// AppSend
@@ -1768,8 +1930,7 @@ int main(int argc, char** argv) {
 	parameters.clear();
 	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod appSendFunction("app_send", parameters, NYMPH_STRING);
-	appSendFunction.setCallback(app_send);
+	NymphMethod appSendFunction("app_send", parameters, NYMPH_STRING, app_send);
 	NymphRemoteClient::registerMethod("app_send", appSendFunction);	
 	
 	// AppLoadResource
@@ -1782,8 +1943,7 @@ int main(int argc, char** argv) {
 	parameters.clear();
 	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_STRING);
-	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_BLOB);
-	appLoadResourceFunction.setCallback(app_loadResource);
+	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_STRING, app_loadResource);
 	NymphRemoteClient::registerMethod("app_loadResource", appLoadResourceFunction);
 	
 	

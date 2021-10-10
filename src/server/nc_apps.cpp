@@ -253,7 +253,6 @@ void NCApps::clientSend(uint32_t id, std::string message) {
 	// Send a message to a client for an app, if the cliend ID exists.
 	std::vector<NymphType*> values;
 	std::string result;
-	NymphBoolean* resVal = 0;
 	if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "ReceiveFromAppCallback", 
 																				values, result)) {
 		std::cerr << "Calling callback failed: " << result << std::endl;

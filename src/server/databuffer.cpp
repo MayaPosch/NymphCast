@@ -446,8 +446,13 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 // --- WRITE ---
 // Write data into the buffer.
 uint32_t DataBuffer::write(std::string &data) {
+	write(data.data(), data.length());
+}
+
+
+uint32_t DataBuffer::write(const char* data, uint32_t length) {
 #ifdef DEBUG
-	std::cout << "DataBuffer::write: len " << data.length() << std::endl;
+	std::cout << "DataBuffer::write: len " << length << std::endl;
 	std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
 
@@ -468,13 +473,13 @@ uint32_t DataBuffer::write(std::string &data) {
 	if (back < index) { bytesSingleWrite = index - back; }
 	else { bytesSingleWrite = end - back; }
 	
-	if (data.length() <= bytesSingleWrite) {
+	if (length <= bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Write whole chunk at back. Single write: " << bytesSingleWrite << std::endl;
 #endif
 		// Enough space to write the data in one go.
-		memcpy(back, data.data(), data.length());
-		bytesWritten = data.length();
+		memcpy(back, data, length);
+		bytesWritten = length;
 		back += bytesWritten;
 		unread += bytesWritten;
 		free -= bytesWritten;
@@ -488,7 +493,7 @@ uint32_t DataBuffer::write(std::string &data) {
 		std::cout << "Partial write at back. Single write: " << bytesSingleWrite << std::endl;
 #endif
 		// Only enough space in buffer to write to the back. Write what we can, then return.
-		memcpy(back, data.data(), bytesSingleWrite);
+		memcpy(back, data, bytesSingleWrite);
 		bytesWritten = bytesSingleWrite;
 		back += bytesWritten;
 		unread += bytesWritten;
@@ -503,7 +508,7 @@ uint32_t DataBuffer::write(std::string &data) {
 		std::cout << "Partial write at back, rest at front. Single write: " << bytesSingleWrite << std::endl;
 #endif
 		// Write to the back, then the rest at the front.
-		memcpy(back, data.data(), bytesSingleWrite);
+		memcpy(back, data, bytesSingleWrite);
 		bytesWritten = bytesSingleWrite;
 		unread += bytesWritten;
 		free -= bytesWritten;
@@ -511,14 +516,14 @@ uint32_t DataBuffer::write(std::string &data) {
 		back = buffer;
 		
 		// Write remainder at the front.
-		uint32_t bytesToWrite = data.length() - bytesWritten;
+		uint32_t bytesToWrite = length - bytesWritten;
 #ifdef DEBUG
 	std::cout << "Write remainder: " << bytesToWrite << std::endl;
 	std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
 		if (bytesToWrite <= free) {
 			// Write the remaining bytes we have.
-			memcpy(back, data.data() + bytesWritten, bytesToWrite);
+			memcpy(back, data + bytesWritten, bytesToWrite);
 			bytesWritten += bytesToWrite;
 			unread += bytesToWrite;
 			free -= bytesToWrite;
@@ -526,7 +531,7 @@ uint32_t DataBuffer::write(std::string &data) {
 		}
 		else {
 			// Write the unread bytes still available in the buffer.
-			memcpy(back, data.data() + bytesWritten, free);
+			memcpy(back, data + bytesWritten, free);
 			bytesWritten += free;
 			unread += free;
 			free += 0;
@@ -557,19 +562,6 @@ uint32_t DataBuffer::write(std::string &data) {
 		
 		return bytesWritten;
 	}
-	
-	// Trigger a data request from the client if we have space.
-	/* if (eof) {
-		// Do nothing.
-	}
-	else if (free > 204799) {
-		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
-		// TODO: make it possible to request a specific block size from client.
-		if (dataRequestCV != 0) {
-			dataRequestPending = true;
-			dataRequestCV->notify_one();
-		}
-	} */
 	
 	bufferMutex.unlock();
 	

@@ -83,6 +83,7 @@ public:
 	static bool seeking();
 	static uint32_t read(uint32_t len, uint8_t* bytes);
 	static uint32_t write(std::string &data);
+	static uint32_t write(const char* data, uint32_t length);
 	static void setEof(bool eof);
 	static bool isEof();
 	
