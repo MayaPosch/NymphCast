@@ -239,8 +239,8 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
 		reset();
-		byteIndexLow = new_offset;
-		byteIndexHigh = new_offset;
+		byteIndexLow = (uint32_t) new_offset;
+		byteIndexHigh = (uint32_t) new_offset;
 		if (seekRequestCallback == 0) { return -1; }
 		seekRequestPending = true;
 		state = DBS_SEEKING;
@@ -275,7 +275,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		//unreadHigh -= unread - oldUnread;
 	} */
 	
-	byteIndex = new_offset;
+	byteIndex = (uint32_t) new_offset;
 	
 	return new_offset;
 }
@@ -446,7 +446,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 // --- WRITE ---
 // Write data into the buffer.
 uint32_t DataBuffer::write(std::string &data) {
-	write(data.data(), data.length());
+	return write(data.data(), data.length());
 }
 
 
