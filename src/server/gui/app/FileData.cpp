@@ -326,6 +326,8 @@ void FileData::launchGame(Window* window) {
 			receiver.ipv4 = NyanSD::ipv4_uintToString(ipv4);
 		
 			Gui::active = false;
+			
+			Scripting::fireEvent("game-start", file.name, file.section);
 		
 			std::vector<NymphCastRemote> receivers;
 			receivers.push_back(receiver);
@@ -343,6 +345,8 @@ void FileData::launchGame(Window* window) {
 						break; 
 					}
 				}
+				
+				Scripting::fireEvent("game-end");
 			}
 		}
 	}
