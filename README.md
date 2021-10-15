@@ -104,9 +104,9 @@ Video-capable* | Platform |  OS | Notes
 Yes |x86_64 | Windows | Using MSYS2 as compile & runtime environment.
 Yes | x86_64 | Linux | Stock install of Manjaro, Raspbian and Debian/Mint.
 Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS.
-- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
-- | Odroid-C2 | Armbian, Ubuntu Mate | No hardware accelerated video decoding present with ffmpeg.
-- | Banana Pro | Armbian | No hardware accelerated video decoding present with ffmpeg.
+\- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
+\- | Odroid-C2 | Armbian, Ubuntu Mate | No hardware accelerated video decoding present with ffmpeg.
+\- | Banana Pro | Armbian | No hardware accelerated video decoding present with ffmpeg.
 
 \* The `Video-capable` column indicates whether the platform in the indicated configuration is capable of both audio & video playback (`Yes`), or just audio (`-`). Video output relies on hardware-accelerated video decoding support on the target platform.
 
