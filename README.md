@@ -47,7 +47,7 @@ The current development version is v0.1-alpha5. Version 0.1 will be the first re
 
 Category | Status | Description | Notes
 ---|----|---|---
-File Streaming |90% | Streaming media files from client to server | Meta-info & playback status reporting need more testing.
+File Streaming |95% | Streaming media files from client to server | Meta-info & playback status reporting need more testing.
 Subtitles & streams | 75% | Subtitle & stream selection support | Implemented but untested.
 MediaServer | 100% | Streaming from NymphCast MediaServer instances | 
 URL Streaming | 100% | Streaming from URLs | 
@@ -82,6 +82,12 @@ NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implement
 
 The NymphCast Player provides NymphCast client functionality in a graphical (Qt-based) format. It is also a demonstration platform for the NymphCast SDK (see details on the SDK later in this document). It is designed to run on any OS that is supported by the Qt framework.
 
+The player has been successfully compiled and used on the following platforms:
+
+* Windows (7, 10)
+* Linux (x86, ARM: Arch, Debian)
+* Android (8+)
+
 
 ### **Server Platforms** ###
 
@@ -90,6 +96,20 @@ The server should work on any platform that is supported by a C++17 toolchain an
 FFmpeg and SDL2 libraries are used for audio and video playback. Both of which are supported on a wide variety of platforms, with Linux, MacOS and Windows being the primary platforms. **System requirements** also depend on whether only audio or also video playback is required. The latter can be disabled, which drops any graphical output requirement.
 
 **Memory requirements** depend on the NymphCast Server configuration: by default the ffmpeg library uses an internal 32 kB buffer, and the server itself a 20 MB buffer. The latter can be configured using the (required) configuration INI file, allowing it to be tweaked to fit the use case.
+
+**Tested platforms:**
+
+Video-capable* | Platform |  OS | Notes
+---|---|---|--
+Yes |x86_64 | Windows | Using MSYS2 as compile & runtime environment.
+Yes | x86_64 | Linux | Stock install of Manjaro, Raspbian and Debian/Mint.
+Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS.
+- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
+- | Odroid-C2 | Armbian, Ubuntu Mate | No hardware accelerated video decoding present with ffmpeg.
+- | Banana Pro | Armbian | No hardware accelerated video decoding present with ffmpeg.
+
+\* The `Video-capable` column indicates whether the platform in the indicated configuration is capable of both audio & video playback (`Yes`), or just audio (`-`). Video output relies on hardware-accelerated video decoding support on the target platform.
+
 
 ### **Client Platforms** ###
 
