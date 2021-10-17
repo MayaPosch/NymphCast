@@ -563,6 +563,8 @@ int StreamHandler::read_thread(void *arg) {
     else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
         file_meta.setArtist(t->value);
 	}
+	
+	file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
