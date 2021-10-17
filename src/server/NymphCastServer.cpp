@@ -185,17 +185,17 @@ void dataRequestFunction() {
 	while (running) {
 		// Wait for the condition to be signalled.
 		std::unique_lock<std::mutex> lk(dataRequestMtx);
+		using namespace std::chrono_literals;
 		dataRequestCv.wait(lk);
 		
-		if (!running) { 
-			//std::cout << "Shutting down data request function..." << std::endl;
+		if (!running) {
 			NYMPH_LOG_INFORMATION("Shutting down data request function...");
 			break;
 		}
+		else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
 		
-		//std::cout << "Asking for data..." << std::endl;
 		NYMPH_LOG_INFORMATION("Asking for data...");
-		
+	
 		// Request more data.
 		std::vector<NymphType*> values;
 		std::string result;
@@ -203,6 +203,27 @@ void dataRequestFunction() {
 			std::cerr << "Calling callback failed: " << result << std::endl;
 			return;
 		}
+		
+		// We're now playing, so make sure the data buffer stays fed. Check every 100 ms whether
+		// there's a pending request.
+		/* while (1) {
+			dataRequestCv.wait_for(lk, 500ms);
+			if (!playerStarted) { 
+				NYMPH_LOG_INFORMATION("DataRequestFunction: returning to waiting...");
+				break; 
+			}
+			else if (!DataBuffer::dataRequestPending) { continue; }
+		
+			NYMPH_LOG_INFORMATION("Asking for data...");
+		
+			// Request more data.
+			std::vector<NymphType*> values;
+			std::string result;
+			if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
+				std::cerr << "Calling callback failed: " << result << std::endl;
+				return;
+			}
+		} */
 	}
 }
 
@@ -453,7 +474,7 @@ void finishPlayback() {
 	// Start the Screensaver here for now.
 	if (!display_disable) {
 		if (gui_enable) {
-			// Return to GUI.
+			// Return to GUI. Hide window.
 			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_UNDERSCORE;
@@ -761,15 +782,17 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// Stop screensaver.
 	if (!video_disable) {
 		if (gui_enable) {
-			// Should just work.
+			// Show window.
+			/* SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_MINUS;
+			SDL_PushEvent(&event); */
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::stop();
 		}
 		else {
 			// Show window.
-			// TODO: handle this via an SDL event.
-			//SdlRenderer::showWindow();
 			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
@@ -1723,7 +1746,7 @@ int main(int argc, char** argv) {
 	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	// Initialise the client component (RemoteServer) for use with slave remotes.
-	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
@@ -2059,7 +2082,8 @@ int main(int argc, char** argv) {
 				init_success = false;
 			}
 			
-			SdlRenderer::hideWindow();
+			//SdlRenderer::hideWindow();
+			SdlRenderer::showWindow();
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);

@@ -58,7 +58,6 @@ class DataBuffer {
 	static std::condition_variable* dataRequestCV;
 	static std::mutex dataWaitMutex;
 	static std::condition_variable dataWaitCV;
-	static std::atomic<bool> dataRequestPending;
 	static std::mutex seekRequestMutex;
 	static std::condition_variable seekRequestCV;
 	static std::atomic<bool> seekRequestPending;
@@ -90,6 +89,8 @@ public:
 	static void addStreamTrack(std::string track);
 	static bool hasStreamTrack();
 	static std::string getStreamTrack();
+	
+	static std::atomic<bool> dataRequestPending;
 };
 
 #endif
