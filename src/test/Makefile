@@ -22,6 +22,9 @@ test_screensaver:
 	cp ../server/green.jpg bin/green.jpg
 	cp ../server/forest_brook.jpg bin/forest_brook.jpg
 	
+test_databuffer_mport:
+	g++ -o bin/test_db_mp -I. test_databuffer_multi_port.cpp ../server/databuffer.cpp ../server/chronotrigger.cpp ../server/ffplaydummy.cpp $(CPPFLAGS) -lPocoFoundation
+	
 	
 clean:
 	
