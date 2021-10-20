@@ -54,7 +54,7 @@ test_databuffer_mport:
 test_ffplay_local_file: makedirs $(FFPLAY_OBJ) $(FFPLAY_OBJ_C) obj/test_ffplay_local_file.o bin/test_ffplay_local_file
 	
 obj/$(TARGET_BIN)%.o: %.cpp
-	$(GPP) -c -o $@ $< $(CPPFLAGS) $(SDL_FLAGS) $(FFPLAY_FLAGS)
+	$(GPP) -c -o $@ $< $(CPPFLAGS) $(SDL_FLAGS) $(FFPLAY_FLAGS) -DTESTING
 
 obj/$(TARGET_BIN)%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $ $(SDL_FLAGS) $(FFPLAY_FLAGS)
