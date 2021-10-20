@@ -389,70 +389,70 @@ void SdlRenderer::run_event_loop() {
 	run_events = true;
 	SDL_Event event;
 	while (run_events) {
-		//while (SDL_PollEvent(&event)) {
-		SDL_PumpEvents();
-		while (!SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
-			// Update player, UI, etc.
+		while (SDL_PollEvent(&event)) {
 			if (playerEventsActive) {
-				// Trigger player refresh.
-				Player::run_updates();
-				continue;
-			}
-			
-			// Pause for a bit to ease off on the CPU load.
-			if (playerEventsActive) {
-				// No delay.
-				continue;
-			}
-			else {
-				SDL_Delay(10);
+				// Pass through player processor.
+				Player::process_event(event);
 			}
 			
 #ifndef TESTING
 			// Update GUI if active.
 			if (guiEventsActive) {
-				Gui::run_updates();
+				Gui::handleEvent(event);
 			}
 #endif
-			SDL_PumpEvents();
+			
+			// Check for quit events.
+			switch (event.type) {
+				case SDL_QUIT:
+				case FF_QUIT_EVENT:
+					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
+					run_events = false;
+					gCon.signal();
+					break;
+				case SDL_KEYDOWN:
+					if (event.key.keysym.sym == SDLK_MINUS) {
+						// Toggle show window.
+						showWindow();
+					}
+					else if (event.key.keysym.sym == SDLK_UNDERSCORE) {
+						// Toggle hide window.
+						hideWindow();
+					}
+					else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
+						gCon.signal();
+						run_events = false;
+					}
+						
+					break;
+			}
 		}
 		
+		// Update player, UI, etc.
 		if (playerEventsActive) {
-			// Pass through player processor.
-			Player::process_event(event);
+			// Trigger player refresh.
+			Player::run_updates();
+			continue;
 		}
 		
 #ifndef TESTING
 		// Update GUI if active.
 		if (guiEventsActive) {
-			Gui::handleEvent(event);
+			Gui::run_updates();
 		}
 #endif
 		
-		// Check for quit events.
-		switch (event.type) {
-			case SDL_QUIT:
-			case FF_QUIT_EVENT:
-				av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
-				run_events = false;
-				gCon.signal();
-				break;
-			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_MINUS) {
-					// Toggle show window.
-					showWindow();
-				}
-				else if (event.key.keysym.sym == SDLK_UNDERSCORE) {
-					// Toggle hide window.
-					hideWindow();
-				}
-				else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
-					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
-					gCon.signal();
-					run_events = false;
-				}
-					
-				break;
+		// Pause for a bit to ease off on the CPU load.
+		if (playerEventsActive) {
+			// No delay.
+			continue;
+		}
+		//if (!playerEventsActive && !guiEventsActive) {
+			//SDL_Delay(10);
+		//}
+		else {
+			SDL_Delay(10);
 		}
 	}
 }
