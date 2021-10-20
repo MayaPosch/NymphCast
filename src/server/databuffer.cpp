@@ -47,7 +47,10 @@ std::atomic<bool> DataBuffer::dataRequestPending = { false };
 std::mutex DataBuffer::seekRequestMutex;
 std::condition_variable DataBuffer::seekRequestCV;
 std::atomic<bool> DataBuffer::seekRequestPending = { false };
+std::atomic<bool> DataBuffer::requestedDataLastTime = { false };
 uint32_t DataBuffer::sessionHandle = 0;
+
+//std::atomic<uint32_t> DataBuffer::bytesSingleRead = 0;
 
 std::mutex DataBuffer::streamTrackQueueMutex;
 std::queue<std::string> DataBuffer::streamTrackQueue;
@@ -83,6 +86,7 @@ bool DataBuffer::init(uint32_t capacity) {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
+	requestedDataLastTime = false;
 	state = DBS_IDLE;
 	
 	bufferMutex.unlock();
@@ -172,7 +176,7 @@ void DataBuffer::requestData() {
 // Reset the buffer to the initialised state. This leaves the existing allocated buffer intact, 
 // but erases its contents.
 bool DataBuffer::reset() {
-	bufferMutex.lock();
+	//bufferMutex.lock();
 	front = buffer;
 	back = buffer;
 	size = 0;
@@ -188,9 +192,10 @@ bool DataBuffer::reset() {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
+	requestedDataLastTime = false;
 	state = DBS_IDLE;
 	
-	bufferMutex.unlock();
+	//bufferMutex.unlock();
 	
 	return true;
 }
@@ -320,16 +325,17 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		}
 	}
 	
-	bufferMutex.lock();
+	//bufferMutex.lock();
 	uint32_t bytesRead = 0;
 	
 	// Determine the number of bytes we can read in one copy operation.
 	// This depends on the location of the write pointer ('back') compared to the 
 	// read pointer ('index'). If the write pointer is ahead of the read pointer, we can read up 
 	// till there, otherwise to the end of the buffer.
-	uint32_t bytesSingleRead = 0;
-	if (index < back) { bytesSingleRead = back - index; }
-	else { bytesSingleRead = end - index; }
+	uint32_t bytesSingleRead = unread;
+	//if (index < back) { bytesSingleRead = back - index; }
+	if ((end - index) < bytesSingleRead) { bytesSingleRead = end - index; } // Unread section wraps around.
+	//else { bytesSingleRead = end - index; }
 	
 #ifdef DEBUG
 	std::cout << "bytesSingleRead: " << bytesSingleRead << std::endl;
@@ -423,12 +429,17 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	if (eof) {
 		// Do nothing.
 	}
+	else if (requestedDataLastTime) {
+		// Skip requesting data this pass.
+		requestedDataLastTime = false;
+	}
 	else if (!dataRequestPending && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
+			requestedDataLastTime = true;
 		}
 	}
 	
@@ -437,7 +448,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	std::cout << "bytesRead: " << bytesRead << std::endl;
 #endif
 	
-	bufferMutex.unlock();
+	//bufferMutex.unlock();
 	
 	return bytesRead;
 }
@@ -461,17 +472,18 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// the buffer.
 	// The bytesFreeLow and bytesFreeHigh counters are for keeping track of the number of free bytes
 	// at the low (beginning) and high (end) side respectively.
-	bufferMutex.lock();
-	dataRequestPending = false;
+	//bufferMutex.lock();
 	uint32_t bytesWritten = 0;
 	
 	// Determine the number of bytes we can write in one copy operation.
 	// This depends on the number of 'free' bytes, and the location of the read pointer ('index') 
 	// compared to the  write pointer ('back'). If the read pointer is ahead of the write pointer, 
 	// we can write up till there, otherwise to the end of the buffer.
-	uint32_t bytesSingleWrite = 0;
-	if (back < index) { bytesSingleWrite = index - back; }
-	else { bytesSingleWrite = end - back; }
+	//uint32_t bytesSingleWrite = 0;
+	uint32_t bytesSingleWrite = free;
+	//if (back < index) { bytesSingleWrite = index - back; }
+	if ((end - back) < bytesSingleWrite) { bytesSingleWrite = end - back; }
+	//else { bytesSingleWrite = end - back; }
 	
 	if (length <= bytesSingleWrite) {
 #ifdef DEBUG
@@ -556,14 +568,32 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		std::cout << "In seeking mode. Notifying seeking routine." << std::endl;
 #endif
 		seekRequestPending = false;
+		dataRequestPending = false;
 		seekRequestCV.notify_one();
 		
-		bufferMutex.unlock();
+		//bufferMutex.unlock();
 		
 		return bytesWritten;
 	}
 	
-	bufferMutex.unlock();
+	// Trigger a data request from the client if we have space.
+	/* if (eof) {
+		// Do nothing.
+	}
+	if (requestedDataLastTime) {
+		//
+	}
+	else if (free > 204799) {
+		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
+		// TODO: make it possible to request a specific block size from client.
+		if (dataRequestCV != 0) {
+			dataRequestPending = true;
+			dataRequestCV->notify_one();
+		}
+	} */
+	
+	dataRequestPending = false;
+	//bufferMutex.unlock();
 	
 	return bytesWritten;
 }
