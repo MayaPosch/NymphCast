@@ -386,7 +386,7 @@ void Ffplay::run() {
 	init_dynload();
 	
 	// Fake command line arguments.
-	std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "info"};
+	std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "warning", "-sync", "ext"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
 		const std::string& arg = arguments[i];
@@ -395,11 +395,10 @@ void Ffplay::run() {
 	
 	int argc = argv.size() - 1;
 
-	av_log_set_flags(AV_LOG_SKIP_REPEATED);
-	parse_loglevel(argc, argv.data(), options);
+	//parse_loglevel(argc, argv.data(), options);
 	
 #ifdef _WIN32
-	av_log_set_callback(avLogCallback);
+	//av_log_set_callback(avLogCallback);
 #endif
 
 	/* register all codecs, demux and protocols */
@@ -413,8 +412,10 @@ void Ffplay::run() {
 	//signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).	*/
 	//signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
 
-	show_banner(argc, argv.data(), options);
+	//show_banner(argc, argv.data(), options);
 	parse_options(NULL, argc, argv.data(), options, opt_input_file);
+	av_log_set_flags(AV_LOG_SKIP_REPEATED);
+	av_log_set_level(AV_LOG_TRACE);
 		
 		
 	// --- AVIOContext section ---
@@ -481,6 +482,10 @@ void Ffplay::run() {
 	playerMutex.lock();
 	playerCon.wait(playerMutex);
 	playerMutex.unlock();
+	
+	// Enter loop. Quitting the Player's loop will also terminate this one.
+	//Player::refresh_loop(is);
+	//Player::event_loop(is);
 	
 	// Immediately disable player events since we're no longer processing them.
 	SdlRenderer::playerEvents(false);

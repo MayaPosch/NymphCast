@@ -1,11 +1,16 @@
 
 
+// Uncomment when testing just the player.
+//#define TESTING 1
+
 #include "sdl_renderer.h"
 
 #include "frame_queue.h"
 #include "player.h"
 #include "types.h"
+#ifndef TESTING
 #include "../gui.h"
+#endif
 
 
 // Globals
@@ -23,6 +28,8 @@ std::atomic<bool> SdlRenderer::run_events;
 std::string SdlRenderer::docName;
 std::atomic<bool> SdlRenderer::playerEventsActive = { false };
 std::atomic<bool> SdlRenderer::guiEventsActive = { false };
+std::atomic<bool> SdlRenderer::windowVisible = { false };
+std::atomic<bool> SdlRenderer::windowShouldBeVisible = { false };
 
 
 bool SdlRenderer::init() {
@@ -97,6 +104,9 @@ bool SdlRenderer::init() {
 		}
 	}
 	
+	windowVisible = false;
+	windowShouldBeVisible = false;
+	
 	return true;
 }
 
@@ -128,15 +138,25 @@ void SdlRenderer::quit() {
 void SdlRenderer::showWindow() {
 	if (window) {
 		SDL_ShowWindow(window);
+		windowVisible = true;
+		windowShouldBeVisible = true;
 	}
 }
 
 
 // --- HIDE WINDOW ---
-void SdlRenderer::hideWindow() {
+void SdlRenderer::SdlRenderer::hideWindow() {
 	if (window) {
 		SDL_HideWindow(window);
+		windowVisible = false;
+		windowShouldBeVisible = false;
 	}
+}
+
+
+// --- SET SHOW WINDOW ---
+void SdlRenderer::setShowWindow(bool show) {
+	windowShouldBeVisible = show;
 }
 
 
@@ -369,61 +389,70 @@ void SdlRenderer::run_event_loop() {
 	run_events = true;
 	SDL_Event event;
 	while (run_events) {
-		while (SDL_PollEvent(&event)) {
+		//while (SDL_PollEvent(&event)) {
+		SDL_PumpEvents();
+		while (!SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+			// Update player, UI, etc.
 			if (playerEventsActive) {
-				// Pass through player processor.
-				Player::process_event(event);
-			}
-		
-			// Update GUI if active.
-			if (guiEventsActive) {
-				Gui::handleEvent(event);
+				// Trigger player refresh.
+				Player::run_updates();
+				continue;
 			}
 			
-			// Check for quit events.
-			switch (event.type) {
-				case SDL_QUIT:
-				case FF_QUIT_EVENT:
-					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
-					run_events = false;
-					gCon.signal();
-					break;
-				case SDL_KEYDOWN:
-					if (event.key.keysym.sym == SDLK_MINUS) {
-						// Toggle show window.
-						showWindow();
-					}
-					else if (event.key.keysym.sym == SDLK_UNDERSCORE) {
-						// Toggle hide window.
-						hideWindow();
-					}
-					else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
-						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
-						gCon.signal();
-						run_events = false;
-					}
-						
-					break;
+			// Pause for a bit to ease off on the CPU load.
+			if (playerEventsActive) {
+				// No delay.
+				continue;
 			}
+			else {
+				SDL_Delay(10);
+			}
+			
+#ifndef TESTING
+			// Update GUI if active.
+			if (guiEventsActive) {
+				Gui::run_updates();
+			}
+#endif
+			SDL_PumpEvents();
 		}
 		
-		// Update player, UI, etc.
 		if (playerEventsActive) {
-			// Trigger player refresh.
-			Player::run_updates();
+			// Pass through player processor.
+			Player::process_event(event);
 		}
 		
+#ifndef TESTING
 		// Update GUI if active.
 		if (guiEventsActive) {
-			Gui::run_updates();
+			Gui::handleEvent(event);
 		}
+#endif
 		
-		// Pause for a bit to ease off on the CPU load.
-		if (!playerEventsActive && !guiEventsActive) {
-			SDL_Delay(10);
-		}
-		else {
-			SDL_Delay(10);
+		// Check for quit events.
+		switch (event.type) {
+			case SDL_QUIT:
+			case FF_QUIT_EVENT:
+				av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
+				run_events = false;
+				gCon.signal();
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_MINUS) {
+					// Toggle show window.
+					showWindow();
+				}
+				else if (event.key.keysym.sym == SDLK_UNDERSCORE) {
+					// Toggle hide window.
+					hideWindow();
+				}
+				else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
+					av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
+					gCon.signal();
+					run_events = false;
+				}
+					
+				break;
 		}
 	}
 }

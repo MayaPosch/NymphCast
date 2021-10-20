@@ -21,6 +21,8 @@ class SdlRenderer {
 	static std::string docName;
 	static std::atomic<bool> playerEventsActive;
 	static std::atomic<bool> guiEventsActive;
+	static std::atomic<bool> windowVisible;
+	static std::atomic<bool> windowShouldBeVisible;
 	
 	static void fill_rectangle(int x, int y, int w, int h);
 	static int realloc_texture(SDL_Texture **texture, Uint32 new_format, int new_width, 
@@ -32,6 +34,7 @@ public:
 	static void quit();
 	static void showWindow();
 	static void hideWindow();
+	static void setShowWindow(bool show);
 	static void resizeWindow(int width, int height);
 	static void set_default_window_size(int width, int height, AVRational sar);
 	static void set_fullscreen(bool fullscreen);

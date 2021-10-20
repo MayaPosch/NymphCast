@@ -405,35 +405,6 @@ void StreamHandler::step_to_next_frame(VideoState *is) {
     is->step = 1;
 }
 
-static double compute_target_delay(double delay, VideoState *is)
-{
-    double sync_threshold, diff = 0;
-
-    /* update delay to follow master synchronisation source */
-    if (ClockC::get_master_sync_type(is) != AV_SYNC_VIDEO_MASTER) {
-        /* if video is slave, we try to correct big delays by
-           duplicating or deleting a frame */
-        diff = ClockC::get_clock(&is->vidclk) - ClockC::get_master_clock(is);
-
-        /* skip or repeat frame. We take into account the
-           delay to compute the threshold. I still don't know
-           if it is the best guess */
-        sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
-        if (!isnan(diff) && fabs(diff) < is->max_frame_duration) {
-            if (diff <= -sync_threshold)
-                delay = FFMAX(0, delay + diff);
-            else if (diff >= sync_threshold && delay > AV_SYNC_FRAMEDUP_THRESHOLD)
-                delay = delay + diff;
-            else if (diff >= sync_threshold)
-                delay = 2 * delay;
-        }
-    }
-
-    av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n",
-            delay, -diff);
-
-    return delay;
-}
 
 static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     if (vp->serial == nextvp->serial) {
@@ -836,17 +807,22 @@ fail:
 		avformat_close_input(&ic);
 	}
 	
-	Player::quit();
+	//Player::quit();
+	//SDL_Event event;
+	//event.type = SDL_KEYDOWN;
+	//event.key.keysym.sym = SDLK_ESCAPE;
+	//SDL_PushEvent(&event);
 	
 	av_log(NULL, AV_LOG_INFO, "Goto 'fail'. Exiting main loop...\n");
 	
 	AudioRenderer::quit();
 	VideoRenderer::quit();
 	
-	SDL_DestroyMutex(wait_mutex);
+	//SDL_DestroyMutex(wait_mutex);
 	
 	// Signal the player thread that the playback has ended.
 	playerCon.signal();
+	Player::quit();
 	
 	return 0;
 }

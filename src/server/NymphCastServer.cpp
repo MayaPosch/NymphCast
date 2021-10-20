@@ -109,6 +109,7 @@ int alwaysontop;
 int startup_volume = 100;
 int show_status = 1;
 int av_sync_type = AV_SYNC_AUDIO_MASTER;
+//int av_sync_type = AV_SYNC_EXTERNAL_CLOCK;
 int64_t start_time = AV_NOPTS_VALUE;
 int64_t duration = AV_NOPTS_VALUE;
 int fast = 0;
