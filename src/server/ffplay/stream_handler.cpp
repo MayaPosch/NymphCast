@@ -13,6 +13,15 @@
 
 #include "stream_handler.h"
 
+// Enable profiling.
+//#define PROFILING_SH 1
+#ifdef PROFILING_SH
+#include <chrono>
+#include <fstream>
+std::ofstream debugfile;
+uint32_t profcount = 0;
+#endif
+
 
 // Static initialisations.
 std::atomic_bool StreamHandler::run;
@@ -427,6 +436,12 @@ static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial
 
 /* this thread gets the stream from the disk or the network */
 int StreamHandler::read_thread(void *arg) {
+#ifdef PROFILING_SH
+	if (!debugfile.is_open()) {
+		debugfile.open("profiling_read_thread.txt");
+	}
+#endif
+
     VideoState *is = (VideoState*) arg;
 	AVFormatContext* ic = is->ic;
 	
@@ -733,6 +748,10 @@ int StreamHandler::read_thread(void *arg) {
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
+			
+			// DEBUG: this 'warning' is a positive sign, means the read thread is keeping up with
+			// the decoding.
+			av_log(NULL, AV_LOG_WARNING, "Queues are full, waiting for them to empty...\n");
             continue;
         }
 		
@@ -751,10 +770,17 @@ int StreamHandler::read_thread(void *arg) {
 			av_log(NULL, AV_LOG_INFO, "Would have quit here if auto-exit was enabled.\n");
         }
 		
+#ifdef PROFILING_SH
+		debugfile << "Reading frame.\t";
+		std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
+#endif
+
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
 			// FIXME: hack.
 			if (ret == AVERROR_EOF) { eof = true; break; }
+			
+			av_log(NULL, AV_LOG_WARNING, "av_read_frame() returned <0, no EOF.\n");
 			
 			// EOF or error. 
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
@@ -775,6 +801,11 @@ int StreamHandler::read_thread(void *arg) {
         } else {
             is->eof = 0;
         }
+
+#ifdef PROFILING_SH
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		debugfile << "Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.\n";
+#endif
 		
         /* check if packet is in play range specified by user, then queue, otherwise discard */
         stream_start_time = ic->streams[pkt->stream_index]->start_time;
@@ -797,6 +828,7 @@ int StreamHandler::read_thread(void *arg) {
         } 
 		else {
             av_packet_unref(pkt);
+			av_log(NULL, AV_LOG_WARNING, "Discarded packet, not in range.\n");
         }
     }
 
@@ -807,7 +839,7 @@ fail:
 		avformat_close_input(&ic);
 	}
 	
-	//Player::quit();
+	Player::quit();
 	//SDL_Event event;
 	//event.type = SDL_KEYDOWN;
 	//event.key.keysym.sym = SDLK_ESCAPE;
@@ -818,11 +850,18 @@ fail:
 	AudioRenderer::quit();
 	VideoRenderer::quit();
 	
-	//SDL_DestroyMutex(wait_mutex);
+	SDL_DestroyMutex(wait_mutex);
 	
 	// Signal the player thread that the playback has ended.
 	playerCon.signal();
-	Player::quit();
+	//Player::quit();
+	
+#ifdef PROFILING
+	if (debugfile.is_open()) {
+		debugfile.flush();
+		debugfile.close();
+	}
+#endif
 	
 	return 0;
 }
@@ -981,4 +1020,10 @@ void StreamHandler::stream_cycle_channel(VideoState *is, int codec_type) {
 
 void StreamHandler::quit() {
 	run = false;
+#ifdef PROFILING_SH
+	if (debugfile.is_open()) {
+		debugfile.flush();
+		debugfile.close();
+	}
+#endif
 }
