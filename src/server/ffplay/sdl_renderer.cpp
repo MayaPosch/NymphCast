@@ -390,18 +390,6 @@ void SdlRenderer::run_event_loop() {
 	SDL_Event event;
 	while (run_events) {
 		while (SDL_PollEvent(&event)) {
-			if (playerEventsActive) {
-				// Pass through player processor.
-				Player::process_event(event);
-			}
-			
-#ifndef TESTING
-			// Update GUI if active.
-			if (guiEventsActive) {
-				Gui::handleEvent(event);
-			}
-#endif
-			
 			// Check for quit events.
 			switch (event.type) {
 				case SDL_QUIT:
@@ -427,6 +415,19 @@ void SdlRenderer::run_event_loop() {
 						
 					break;
 			}
+			
+			if (playerEventsActive) {
+				// Pass through player processor.
+				Player::process_event(event);
+			}
+			
+#ifndef TESTING
+			// Update GUI if active.
+			if (guiEventsActive) {
+				Gui::handleEvent(event);
+			}
+#endif
+			
 		}
 		
 		// Update player, UI, etc.
