@@ -21,6 +21,15 @@
 #include <iostream>
 #endif
 
+// Enable profiling.
+//#define PROFILING_DB 1
+#ifdef PROFILING_DB
+#include <chrono>
+#include <fstream>
+std::ofstream db_debugfile;
+uint32_t profcount = 0;
+#endif
+
 
 // Static initialisations.
 uint8_t* DataBuffer::buffer = 0;
@@ -47,7 +56,6 @@ std::atomic<bool> DataBuffer::dataRequestPending = { false };
 std::mutex DataBuffer::seekRequestMutex;
 std::condition_variable DataBuffer::seekRequestCV;
 std::atomic<bool> DataBuffer::seekRequestPending = { false };
-std::atomic<bool> DataBuffer::requestedDataLastTime = { false };
 uint32_t DataBuffer::sessionHandle = 0;
 
 //std::atomic<uint32_t> DataBuffer::bytesSingleRead = 0;
@@ -60,7 +68,7 @@ std::queue<std::string> DataBuffer::streamTrackQueue;
 // Initialises new data buffer. Capacity is provided in bytes.
 // Returns false on error, otherwise true.
 bool DataBuffer::init(uint32_t capacity) {
-	bufferMutex.lock();
+	//bufferMutex.lock();
 	if (buffer != 0) {
 		// An existing buffer exists. Erase it first.
 		delete[] buffer;
@@ -86,10 +94,14 @@ bool DataBuffer::init(uint32_t capacity) {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
-	requestedDataLastTime = false;
 	state = DBS_IDLE;
 	
-	bufferMutex.unlock();
+	//bufferMutex.unlock();
+#ifdef PROFILING_DB
+	if (!db_debugfile.is_open()) {
+		db_debugfile.open("profiling_databuffer.txt");
+	}
+#endif
 	
 	return true;
 }
@@ -102,6 +114,13 @@ bool DataBuffer::cleanup() {
 		delete[] buffer;
 		buffer = 0;
 	}
+	
+#ifdef PROFILING_DB
+	if (db_debugfile.is_open()) {
+		db_debugfile.flush();
+		db_debugfile.close();
+	}
+#endif
 	
 	return true;
 }
@@ -192,7 +211,6 @@ bool DataBuffer::reset() {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
-	requestedDataLastTime = false;
 	state = DBS_IDLE;
 	
 	//bufferMutex.unlock();
@@ -299,6 +317,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef DEBUG
 	std::cout << "DataBuffer::read: len " << len << ". EOF: " << eof << std::endl;
 #endif
+		
+#ifdef PROFILING_DB
+	std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
+#endif
 
 	// Request more data if the buffer does not have enough unread data left, and EOF condition
 	// has not been reached.
@@ -306,6 +328,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		// More data should be available on the client, try to request it.
 #ifdef DEBUG
 		std::cout << "Requesting more data..." << std::endl;
+#endif
+
+#ifdef PROFILING_DB
+		db_debugfile << "Requesting more data... Unread: " << unread << ".\n";
 #endif
 		requestData();
 	}
@@ -357,6 +383,11 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		if (index >= end) {
 			index = buffer;	// Read pointer went past the buffer end. Reset to buffer begin.
 		}
+
+#ifdef PROFILING_DB
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		db_debugfile << "SR. Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs. ";
+#endif
 	}
 	else if (bytesSingleRead > 0 && unread == bytesSingleRead) {
 		// Less data in buffer than needed & nothing at the front.
@@ -375,7 +406,11 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		if (index >= end) {
 			index = buffer;	// Read pointer went past the buffer end. Reset to buffer begin.
 		}
-		
+
+#ifdef PROFILING_DB
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		db_debugfile << "PR. Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.";
+#endif
 	}
 	else if (bytesSingleRead > 0 && unread > bytesSingleRead) {
 		// Read part from the end of the buffer, then read rest from the front.
@@ -415,6 +450,11 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			unread -= 0;
 			free += unread;
 		}
+
+#ifdef PROFILING_DB
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		db_debugfile << "FB. Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.";
+#endif
 	}
 	else {
 		// Default case.
@@ -429,19 +469,20 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	if (eof) {
 		// Do nothing.
 	}
-	else if (requestedDataLastTime) {
-		// Skip requesting data this pass.
-		requestedDataLastTime = false;
-	}
 	else if (!dataRequestPending && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
-			requestedDataLastTime = true;
+			//requestedDataLastTime = true;
 		}
 	}
+
+#ifdef PROFILING_DB
+		std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+		db_debugfile << "\t\tDuration2: " << std::chrono::duration_cast<std::chrono::microseconds>(end2 - begin).count() << "µs.\n";
+#endif
 	
 #ifdef DEBUG
 	std::cout << "unread " << unread << ", free " << free << std::endl;
@@ -576,12 +617,11 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		return bytesWritten;
 	}
 	
+	dataRequestPending = false;
+	
 	// Trigger a data request from the client if we have space.
-	/* if (eof) {
+	if (eof) {
 		// Do nothing.
-	}
-	if (requestedDataLastTime) {
-		//
 	}
 	else if (free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
@@ -590,9 +630,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 			dataRequestPending = true;
 			dataRequestCV->notify_one();
 		}
-	} */
-	
-	dataRequestPending = false;
+	}
 	//bufferMutex.unlock();
 	
 	return bytesWritten;
