@@ -403,9 +403,9 @@ void Ffplay::run() {
 #endif
 
 	/* register all codecs, demux and protocols */
-#if CONFIG_AVDEVICE
+//#if CONFIG_AVDEVICE
 	avdevice_register_all();
-#endif
+//#endif
 	avformat_network_init();
 
 	init_opts();
@@ -416,7 +416,8 @@ void Ffplay::run() {
 	//show_banner(argc, argv.data(), options);
 	parse_options(NULL, argc, argv.data(), options, opt_input_file);
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
-	av_log_set_level(AV_LOG_TRACE);
+	//av_log_set_level(AV_LOG_TRACE);
+	av_log_set_level(AV_LOG_INFO);
 		
 		
 	// --- AVIOContext section ---
