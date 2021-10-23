@@ -13,6 +13,7 @@ class Player {
 	//Config config;
 	
 	static std::atomic_bool run;
+	static double remaining_time;
 	
 public:
 	Player();
@@ -22,6 +23,7 @@ public:
 	
 	static void quit();
 	static void event_loop(VideoState *cur_stream);
+	static void refresh_loop(VideoState* is);
 	static bool process_event(SDL_Event &event);
 	static void run_updates();
 };

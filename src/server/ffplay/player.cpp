@@ -8,10 +8,20 @@
 #include "frame_queue.h"
 #include "sdl_renderer.h"
 
+// Enable profiling.
+//#define PROFILING 1
+#ifdef PROFILING
+#include <chrono>
+#include <fstream>
+std::ofstream debugfile;
+uint32_t profcount = 0;
+#endif
+
 
 // Static initialisations.
 std::atomic_bool Player::run;
 VideoState* Player::cur_stream = 0;
+double Player::remaining_time = 0.0;
 
 
 // --- CONSTRUCTOR ---
@@ -86,6 +96,27 @@ static void refresh_loop_wait_event(VideoState *is, SDL_Event *event) {
     }
 }
 
+
+void Player::refresh_loop(VideoState* is) {
+	av_log(NULL, AV_LOG_INFO, "Entering video refresh loop.\n");
+	bool run = true;
+	while (run) {
+        if (!cursor_hidden && av_gettime_relative() - cursor_last_shown > CURSOR_HIDE_DELAY) {
+            SDL_ShowCursor(0);
+            cursor_hidden = 1;
+        }
+		
+        if (remaining_time > 0.0)
+            av_usleep((int64_t)(remaining_time * 1000000.0));
+        remaining_time = REFRESH_RATE;
+        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+            VideoRenderer::video_refresh(is, &remaining_time);
+    }
+	
+	av_log(NULL, AV_LOG_INFO, "Leaving video refresh loop.\n");
+}
+
+
 static void seek_chapter(VideoState *is, int incr)
 {
     int64_t pos = ClockC::get_master_clock(is) * AV_TIME_BASE;
@@ -149,6 +180,12 @@ void Player::event_loop(VideoState *cur_stream) {
 				case SDLK_f:
 					toggle_full_screen(cur_stream);
 					cur_stream->force_refresh = 1;
+					break;
+				case SDLK_MINUS:
+					SdlRenderer::setShowWindow(true); // Show window.
+					break;
+				case SDLK_UNDERSCORE:
+					SdlRenderer::setShowWindow(false); // Set hide window.
 					break;
 				case SDLK_p:
 				case SDLK_SPACE:
@@ -371,20 +408,37 @@ void Player::run_updates() {
 		cursor_hidden = 1;
 	}
 	
-	double remaining_time = 0.0;
-	remaining_time = REFRESH_RATE;
-	if (cur_stream->show_mode != SHOW_MODE_NONE && (!cur_stream->paused || cur_stream->force_refresh)) {
-		VideoRenderer::video_refresh(cur_stream, &remaining_time);
+#ifdef PROFILING
+	if (!debugfile.is_open()) {
+		debugfile.open("profiling.txt");
 	}
+	
+	debugfile << profcount++ << "\tRemaining: " << remaining_time << "\t";
+	std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
+#endif
 	
 	if (remaining_time > 0.0) {
 		av_usleep((int64_t)(remaining_time * 1000000.0));
 	}
+	
+	remaining_time = REFRESH_RATE;
+	if (cur_stream->show_mode != SHOW_MODE_NONE && (!cur_stream->paused || cur_stream->force_refresh)) {
+		VideoRenderer::video_refresh(cur_stream, &remaining_time);
+	}
+
+#ifdef PROFILING
+	std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+	debugfile << "Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.\n";
+#endif
+
 }
 
 
 // --- PROCESS EVENT ---
 bool Player::process_event(SDL_Event &event) {
+#ifdef PROFILING
+	debugfile << "Player::process_event called.\n";
+#endif
 	double incr, pos, frac;
 	double x;
 	switch (event.type) {
@@ -635,5 +689,12 @@ bool Player::process_event(SDL_Event &event) {
 // --- QUIT ---
 void Player::quit() {
 	run = false;
+	
+#ifdef PROFILING
+	if (debugfile.is_open()) {
+		debugfile.flush();
+		debugfile.close();
+	}
+#endif
 }
 
