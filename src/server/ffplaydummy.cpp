@@ -27,9 +27,13 @@
 // Static definitions.
 std::string FfplayDummy::loggerName = "FfplayDummy";
 ChronoTrigger FfplayDummy::ct;
-int FfplayDummy::buf_size = 32 * 1024;
+//int FfplayDummy::buf_size = 32 * 1024;
+int FfplayDummy::buf_size = 128 * 1024;
 uint8_t* FfplayDummy::buf;
 uint8_t FfplayDummy::count = 0;
+uint32_t start_size = 27 * 1024; 	// Initial size of a request.
+uint32_t step_size = 1 * 1014;		// Request 1 kB more each cycle until buf_size is reached.
+uint32_t read_size = 0;
 
 
 // Global objects.
@@ -187,9 +191,14 @@ void FfplayDummy::triggerRead(int) {
 		return;
 	}
 	
-	// Call read() with a 32 kB data request. This data is then discarded.
+	// Call read() with a data request. This data is then discarded.
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	if (media_read(0, buf, buf_size) == -1) {
+	read_size += step_size;
+	if (read_size > buf_size) {
+		read_size = start_size;
+	}
+	
+	if (media_read(0, buf, read_size) == -1) {
 		// Signal the player thread that the playback has ended.
 		dummyCon.signal();
 	}
@@ -213,6 +222,8 @@ void FfplayDummy::cleanUp() {
 // --- RUN ---
 void FfplayDummy::run() {
 	buf = (uint8_t*) malloc(buf_size);
+	
+	read_size = start_size;
 	
 	// Start dummy playback:
 	// - Request a 32 kB data block every N milliseconds.
