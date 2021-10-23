@@ -217,7 +217,6 @@ bool DataBuffer::reset() {
 	dataRequestPending = false;
 	seekRequestPending = false;
 	resetRequest = false;
-	writeStarted = false;
 	state = DBS_IDLE;
 	
 	//bufferMutex.unlock();
@@ -266,13 +265,13 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	// Check whether we have the requested data in the buffer.
 	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
-		if (writeStarted) {
+		/* if (writeStarted) {
 			resetRequest = true;
-			while (writeStarted && resetRequest) {
+			while (resetRequest) {
 				// Wait for the write thread to acknowledge the request.
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-		}
+		} */
 		
 		reset();
 		byteIndexLow = (uint32_t) new_offset;
@@ -636,7 +635,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// Trigger a data request from the client if we have space.
 	if (eof) {
 		// Do nothing.
-	}
+	}/* 
 	else if (resetRequest) {
 		// Reset request is pending. Ensure no data requests are pending before we signal okay.
 		while (dataRequestPending) {
@@ -644,8 +643,8 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 		
-		resetRequest = true;
-	}
+		resetRequest = false;
+	} */
 	else if (free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
