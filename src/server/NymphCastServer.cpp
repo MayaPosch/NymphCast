@@ -1740,14 +1740,15 @@ int main(int argc, char** argv) {
 	// Initialise Poco.
 	Poco::Data::SQLite::Connector::registerConnector();
 	
-	// Initialise the server.
+	// Initialise the client component (RemoteServer) for use with slave remotes.
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
-	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
-	
-	// Initialise the client component (RemoteServer) for use with slave remotes.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	
+	// Initialise the server.
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
