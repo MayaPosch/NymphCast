@@ -56,6 +56,8 @@ std::atomic<bool> DataBuffer::dataRequestPending = { false };
 std::mutex DataBuffer::seekRequestMutex;
 std::condition_variable DataBuffer::seekRequestCV;
 std::atomic<bool> DataBuffer::seekRequestPending = { false };
+std::atomic<bool> DataBuffer::resetRequest = { false };
+std::atomic<bool> DataBuffer::writeStarted = { false };
 uint32_t DataBuffer::sessionHandle = 0;
 
 //std::atomic<uint32_t> DataBuffer::bytesSingleRead = 0;
@@ -94,6 +96,8 @@ bool DataBuffer::init(uint32_t capacity) {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
+	resetRequest = false;
+	writeStarted = false;
 	state = DBS_IDLE;
 	
 	//bufferMutex.unlock();
@@ -167,6 +171,7 @@ int64_t DataBuffer::getFileSize() {
 bool DataBuffer::start() {
 	if (dataRequestCV == 0) { return false; }
 	
+	writeStarted = true;
 	dataRequestPending = true;
 	dataRequestCV->notify_one();
 	
@@ -211,6 +216,8 @@ bool DataBuffer::reset() {
 	eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
+	resetRequest = false;
+	writeStarted = false;
 	state = DBS_IDLE;
 	
 	//bufferMutex.unlock();
@@ -248,9 +255,7 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	
 	// Ensure we're not in the midst of a data request action.
 	while (dataRequestPending) {
-		// Sleep in 10 ms segments until the data request is done.
-		//using namespace std::chrono_literals;
-		//std::this_thread::sleep_for(10ms);
+		// Sleep in 1 ms segments until the data request is done.
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	
@@ -261,6 +266,14 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 	// Check whether we have the requested data in the buffer.
 	//if (new_offset < byteIndexLow || new_offset > byteIndexHigh) {
 		// Data is not in buffer. Reset buffer and send seek request to client.
+		if (writeStarted) {
+			resetRequest = true;
+			while (writeStarted && resetRequest) {
+				// Wait for the write thread to acknowledge the request.
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+		
 		reset();
 		byteIndexLow = (uint32_t) new_offset;
 		byteIndexHigh = (uint32_t) new_offset;
@@ -358,7 +371,8 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	// This depends on the location of the write pointer ('back') compared to the 
 	// read pointer ('index'). If the write pointer is ahead of the read pointer, we can read up 
 	// till there, otherwise to the end of the buffer.
-	uint32_t bytesSingleRead = unread;
+	uint32_t locunread = unread;
+	uint32_t bytesSingleRead = locunread;
 	//if (index < back) { bytesSingleRead = back - index; }
 	if ((end - index) < bytesSingleRead) { bytesSingleRead = end - index; } // Unread section wraps around.
 	//else { bytesSingleRead = end - index; }
@@ -389,7 +403,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		db_debugfile << "SR. Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs. ";
 #endif
 	}
-	else if (bytesSingleRead > 0 && unread == bytesSingleRead) {
+	else if (bytesSingleRead > 0 && locunread == bytesSingleRead) {
 		// Less data in buffer than needed & nothing at the front.
 		// Read what we can from the back, then return.
 #ifdef DEBUG
@@ -412,7 +426,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		db_debugfile << "PR. Duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.";
 #endif
 	}
-	else if (bytesSingleRead > 0 && unread > bytesSingleRead) {
+	else if (bytesSingleRead > 0 && locunread > bytesSingleRead) {
 		// Read part from the end of the buffer, then read rest from the front.
 #ifdef DEBUG
 		std::cout << "Read back, then front." << std::endl;
@@ -432,7 +446,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef DEBUG
 		std::cout << "bytesRead: " << bytesRead << ", bytesToRead: " << bytesToRead << std::endl;
 #endif
-		if (bytesToRead <= unread) {
+		if (bytesToRead <= locunread) {
 			// Read the remaining bytes we need.
 			memcpy(bytes + bytesRead, index, bytesToRead);
 			index += bytesToRead;
@@ -443,12 +457,12 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		}
 		else {
 			// Read the unread bytes still available in the buffer.
-			memcpy(bytes + bytesRead, index, unread);
-			index += unread;
-			bytesRead += unread;
-			byteIndex += unread;
-			unread -= 0;
-			free += unread;
+			memcpy(bytes + bytesRead, index, locunread);
+			index += locunread;
+			bytesRead += locunread;
+			byteIndex += locunread;
+			unread -= locunread;
+			free += locunread;
 		}
 
 #ifdef PROFILING_DB
@@ -520,8 +534,8 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// This depends on the number of 'free' bytes, and the location of the read pointer ('index') 
 	// compared to the  write pointer ('back'). If the read pointer is ahead of the write pointer, 
 	// we can write up till there, otherwise to the end of the buffer.
-	//uint32_t bytesSingleWrite = 0;
-	uint32_t bytesSingleWrite = free;
+	uint32_t locfree = free;
+	uint32_t bytesSingleWrite = locfree;
 	//if (back < index) { bytesSingleWrite = index - back; }
 	if ((end - back) < bytesSingleWrite) { bytesSingleWrite = end - back; }
 	//else { bytesSingleWrite = end - back; }
@@ -541,7 +555,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 			back = buffer;
 		}
 	}
-	else if (bytesSingleWrite > 0 && free == bytesSingleWrite) {
+	else if (bytesSingleWrite > 0 && locfree == bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Partial write at back. Single write: " << bytesSingleWrite << std::endl;
 #endif
@@ -556,7 +570,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 			back = buffer;
 		}
 	}
-	else if (bytesSingleWrite > 0 && free > bytesSingleWrite) {
+	else if (bytesSingleWrite > 0 && locfree > bytesSingleWrite) {
 #ifdef DEBUG
 		std::cout << "Partial write at back, rest at front. Single write: " << bytesSingleWrite << std::endl;
 #endif
@@ -574,7 +588,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	std::cout << "Write remainder: " << bytesToWrite << std::endl;
 	std::cout << "Index: " << index - buffer << ", Back: " << back - buffer << std::endl;
 #endif
-		if (bytesToWrite <= free) {
+		if (bytesToWrite <= locfree) {
 			// Write the remaining bytes we have.
 			memcpy(back, data + bytesWritten, bytesToWrite);
 			bytesWritten += bytesToWrite;
@@ -584,11 +598,11 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		}
 		else {
 			// Write the unread bytes still available in the buffer.
-			memcpy(back, data + bytesWritten, free);
-			bytesWritten += free;
-			unread += free;
-			free += 0;
-			back += free;
+			memcpy(back, data + bytesWritten, locfree);
+			bytesWritten += locfree;
+			unread += locfree;
+			free -= locfree;
+			back += locfree;
 		}
 	}
 	else {
@@ -622,6 +636,15 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// Trigger a data request from the client if we have space.
 	if (eof) {
 		// Do nothing.
+	}
+	else if (resetRequest) {
+		// Reset request is pending. Ensure no data requests are pending before we signal okay.
+		while (dataRequestPending) {
+			// Sleep in 1 ms segments until the data request is done.
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+		
+		resetRequest = true;
 	}
 	else if (free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
