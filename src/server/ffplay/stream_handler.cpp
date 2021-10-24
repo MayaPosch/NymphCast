@@ -749,9 +749,6 @@ int StreamHandler::read_thread(void *arg) {
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
 			
-			// DEBUG: this 'warning' is a positive sign, means the read thread is keeping up with
-			// the decoding.
-			av_log(NULL, AV_LOG_WARNING, "Queues are full, waiting for them to empty...\n");
             continue;
         }
 		
