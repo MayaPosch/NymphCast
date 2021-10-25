@@ -62,10 +62,8 @@ void Window::removeGui(GuiComponent* gui)
 	}
 }
 
-GuiComponent* Window::peekGui()
-{
-	if(mGuiStack.size() == 0)
-		return NULL;
+GuiComponent* Window::peekGui() {
+	if (mGuiStack.size() == 0) { return 0; }
 
 	return mGuiStack.back();
 }
@@ -111,13 +109,12 @@ bool Window::init() {
 	return true;
 }
 
-void Window::deinit()
-{
+void Window::deinit() {
 	// Hide all GUI elements on uninitialisation - this disable
-	for(auto i = mGuiStack.cbegin(); i != mGuiStack.cend(); i++)
-	{
+	for (auto i = mGuiStack.cbegin(); i != mGuiStack.cend(); i++) {
 		(*i)->onHide();
 	}
+	
 	InputManager::getInstance()->deinit();
 	ResourceManager::getInstance()->unloadAll();
 	Renderer::deinit();
@@ -241,12 +238,14 @@ void Window::update(int deltaTime)
 
 	mTimeSinceLastInput += deltaTime;
 
-	if(peekGui())
+	if (peekGui() == 0) {
 		peekGui()->update(deltaTime);
+	}
 
 	// Update the screensaver
 	if (mScreenSaver)
 		mScreenSaver->update(deltaTime);
+	
 }
 
 void Window::render()

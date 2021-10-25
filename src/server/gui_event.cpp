@@ -17,28 +17,15 @@
 
 
 // --- SET ITEM ---
-void GuiEvent::setItem(FileData* item, Vector3f center) { 
+void GuiEvent::setItem(FileData* item, Window* window) { 
 	this->item = item;
-	this->center = center;
-	single = false;
-}
-
-
-void GuiEvent::setItem(FileData* item) { 
-	this->item = item;
-	this->center = center;
-	single = true;
+	this->window = window;
 }
 
 
 // --- PROCESS ---
 void GuiEvent::process() {
-	if (single) {
-		ViewController::get()->launchItem(item);
-	}
-	else {
-		ViewController::get()->launchItem(item, center);
-	}
+	item->launchItem(window);
 }
 
 

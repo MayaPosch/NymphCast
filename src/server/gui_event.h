@@ -19,7 +19,7 @@
 #include <SDL_events.h>
 
 #include "gui/app/FileData.h"
-#include "gui/core/math/Vector3f.h"
+#include "gui/core/Window.h"
 
 #include <string>
 #include <atomic>
@@ -28,15 +28,13 @@
 
 
 class GuiEvent : public AbstractRequest {
-	Vector3f center;
 	FileData* item;
-	bool single = false;
+	Window* window;
 	std::string loggerName;
 	
 public:
 	GuiEvent() { loggerName = "GUI_Event"; }
-	void setItem(FileData* item);
-	void setItem(FileData* item, Vector3f center);
+	void setItem(FileData* item, Window* window);
 	void process();
 	void finish();
 };

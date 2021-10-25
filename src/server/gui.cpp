@@ -73,7 +73,7 @@ bool Gui::init(std::string resFolder) {
 		Utils::FileSystem::setExePath(resFolder);
 	}
 	
-	screensaver = new SystemScreenSaver(&window);
+	//screensaver = new SystemScreenSaver(&window);
 	PowerSaver::init();
 	ViewController::init(&window);
 	CollectionSystemManager::init(&window);
@@ -319,6 +319,8 @@ void Gui::handleEvent(SDL_Event &event) {
 
 // --- RUN UPDATES ---
 void Gui::run_updates() {
+	if (!active) { return; }
+	
 	// TODO: handle power saving feature in a more global manner.
 	//bool ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
 	bool ps_standby = false;
@@ -329,11 +331,9 @@ void Gui::run_updates() {
 
 	// cap deltaTime if it ever goes negative
 	if (deltaTime < 0) { deltaTime = 1000; }
-
 	window.update(deltaTime);
 	window.render();
-	Renderer::swapBuffers();
-
+	Renderer::swapBuffers();;
 	Log::flush();
 }
 

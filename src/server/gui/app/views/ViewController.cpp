@@ -204,7 +204,7 @@ void ViewController::onFileChanged(FileData* file, FileChangeType change)
 
 
 // --- LAUNCH ---
-void ViewController::launch(FileData* game) {
+/* void ViewController::launch(FileData* game) {
 	GuiEvent* request = new GuiEvent;
 	request->setItem(game);
 	Dispatcher::addRequest(request);
@@ -215,10 +215,11 @@ void ViewController::launch(FileData* game, Vector3f center) {
 	GuiEvent* request = new GuiEvent;
 	request->setItem(game, center);
 	Dispatcher::addRequest(request);
-}
+} */
 
 
-void ViewController::launchItem(FileData* game, Vector3f center) {
+//void ViewController::launchItem(FileData* game, Vector3f center) {
+void ViewController::launch(FileData* game, Vector3f center) {
 	FileType type = game->getType();
 	if (type == GAME) {
 		LOG(LogInfo) << "Launching game...";
@@ -402,10 +403,8 @@ bool ViewController::input(InputConfig* config, Input input)
 	return false;
 }
 
-void ViewController::update(int deltaTime)
-{
-	if(mCurrentView)
-	{
+void ViewController::update(int deltaTime) {
+	if (mCurrentView) {
 		mCurrentView->update(deltaTime);
 	}
 

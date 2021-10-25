@@ -80,6 +80,7 @@ public:
 	std::string getCleanName() const;
 
 	void launchGame(Window* window);
+	void launchItem(Window* window);
 
 	typedef bool ComparisonFunction(const FileData* a, const FileData* b);
 	struct SortType

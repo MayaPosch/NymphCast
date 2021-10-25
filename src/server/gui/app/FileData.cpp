@@ -25,6 +25,9 @@
 #include <nyansd.h>
 #include "../ffplay/sdl_renderer.h"
 
+#include <nymph/dispatcher.h>
+#include "gui_event.h"
+
 
 FileData::FileData(FileType type, const std::string& path, SystemEnvironmentData* envData, SystemData* system)
 	: mType(type), mPath(path), mSystem(system), mEnvData(envData), mSourceFileData(NULL), mParent(NULL), metadata(type == GAME ? GAME_METADATA : FOLDER_METADATA) // metadata is REALLY set in the constructor!
@@ -305,7 +308,18 @@ bool remoteToLocalIP(Poco::Net::SocketAddress &sa, uint32_t &ipv4, std::string &
 
 // --- LAUNCH GAME ---
 void FileData::launchGame(Window* window) {
+	GuiEvent* request = new GuiEvent;
+	request->setItem(this, window);
+	Dispatcher::addRequest(request);
+}
+
+	
+void FileData::launchItem(Window* window) {
 	LOG(LogInfo) << "Attempting to launch game...";
+		
+	// Disable the GUI and SDL GUI events.
+	Gui::active = false;
+	SdlRenderer::guiEvents(false);
 
 	AudioManager::getInstance()->deinit();
 	VolumeControl::getInstance()->deinit();
@@ -325,10 +339,6 @@ void FileData::launchGame(Window* window) {
 		}
 		else {
 			receiver.ipv4 = NyanSD::ipv4_uintToString(ipv4);
-		
-			// Disable the GUI and SDL GUI events.
-			Gui::active = false;
-			SdlRenderer::guiEvents(false);
 			
 			Scripting::fireEvent("game-start", file.name, file.section);
 		
@@ -351,9 +361,6 @@ void FileData::launchGame(Window* window) {
 				
 				Scripting::fireEvent("game-end");
 			}
-			
-			// Re-enable GUI SDL events.
-			SdlRenderer::guiEvents(true);
 		}
 	}
 	else {
@@ -383,6 +390,9 @@ void FileData::launchGame(Window* window) {
 	window->init();
 	VolumeControl::getInstance()->init();
 	window->normalizeNextUpdate();
+			
+	// Re-enable GUI SDL events.
+	SdlRenderer::guiEvents(true);
 
 	if (mType == GAME) {
 		//update number of times the game has been launched
