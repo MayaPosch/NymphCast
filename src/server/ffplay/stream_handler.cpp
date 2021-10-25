@@ -847,11 +847,10 @@ fail:
 	AudioRenderer::quit();
 	VideoRenderer::quit();
 	
-	SDL_DestroyMutex(wait_mutex);
-	
 	// Signal the player thread that the playback has ended.
 	playerCon.signal();
-	//Player::quit();
+	
+	SDL_DestroyMutex(wait_mutex);
 	
 #ifdef PROFILING
 	if (debugfile.is_open()) {
