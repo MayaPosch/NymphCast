@@ -272,6 +272,7 @@ void Gui::handleEvent(SDL_Event &event) {
 
 	//if (ps_standby ? SDL_WaitEventTimeout(&event, PowerSaver::getTimeout()) : SDL_PollEvent(&event)) {
 		//do {
+			
 			InputManager::getInstance()->parseEvent(event, &window);
 
 			/* if (event.type == SDL_QUIT) {
@@ -340,6 +341,9 @@ void Gui::run_updates() {
 // --- STOP ---
 bool Gui::stop() {
 	LOG(LogInfo) << "Stopping the NymphCast GUI..";
+	
+	SdlRenderer::guiEvents(false);
+	
 	while(window.peekGui() != ViewController::get()) {
 		delete window.peekGui();
 	}
@@ -349,8 +353,6 @@ bool Gui::stop() {
 	MameNames::deinit();
 	CollectionSystemManager::deinit();
 	SystemData::deleteSystems();
-	
-	SdlRenderer::guiEvents(false);
 	
 	running = false;
 	active = false;

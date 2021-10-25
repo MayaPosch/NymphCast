@@ -784,10 +784,10 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	if (!video_disable) {
 		if (gui_enable) {
 			// Show window.
-			/* SDL_Event event;
+			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event); */
+			SDL_PushEvent(&event);
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::stop();
@@ -2084,8 +2084,8 @@ int main(int argc, char** argv) {
 				init_success = false;
 			}
 			
-			//SdlRenderer::hideWindow();
-			SdlRenderer::showWindow();
+			SdlRenderer::hideWindow();
+			//SdlRenderer::showWindow();
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);

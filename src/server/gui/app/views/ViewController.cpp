@@ -17,6 +17,9 @@
 #include "SystemData.h"
 #include "Window.h"
 
+#include <nymph/dispatcher.h>
+#include "gui_event.h"
+
 ViewController* ViewController::sInstance = NULL;
 
 ViewController* ViewController::get()
@@ -199,7 +202,23 @@ void ViewController::onFileChanged(FileData* file, FileChangeType change)
 		it->second->onFileChanged(file, change);
 }
 
+
+// --- LAUNCH ---
+void ViewController::launch(FileData* game) {
+	GuiEvent* request = new GuiEvent;
+	request->setItem(game);
+	Dispatcher::addRequest(request);
+}
+
+
 void ViewController::launch(FileData* game, Vector3f center) {
+	GuiEvent* request = new GuiEvent;
+	request->setItem(game, center);
+	Dispatcher::addRequest(request);
+}
+
+
+void ViewController::launchItem(FileData* game, Vector3f center) {
 	FileType type = game->getType();
 	if (type == GAME) {
 		LOG(LogInfo) << "Launching game...";

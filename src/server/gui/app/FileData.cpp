@@ -23,6 +23,7 @@
 #include <Poco/Net/NetworkInterface.h>
 #include <Poco/Net/NetException.h>
 #include <nyansd.h>
+#include "../ffplay/sdl_renderer.h"
 
 
 FileData::FileData(FileType type, const std::string& path, SystemEnvironmentData* envData, SystemData* system)
@@ -325,7 +326,9 @@ void FileData::launchGame(Window* window) {
 		else {
 			receiver.ipv4 = NyanSD::ipv4_uintToString(ipv4);
 		
+			// Disable the GUI and SDL GUI events.
 			Gui::active = false;
+			SdlRenderer::guiEvents(false);
 			
 			Scripting::fireEvent("game-start", file.name, file.section);
 		
@@ -338,7 +341,7 @@ void FileData::launchGame(Window* window) {
 				// Wait until playback has finished.
 				std::unique_lock<std::mutex> lk(Gui::resumeMtx);
 				using namespace std::chrono_literals;
-				while (Gui::resumeCv.wait_for(lk, 10s) != std::cv_status::timeout) {
+				while (Gui::resumeCv.wait_for(lk, 1s) == std::cv_status::timeout) {
 					// FIXME: handle playback issues. May end up in a loop here.
 					if (Gui::active) { 
 						LOG(LogInfo) << "Playback ended. Resuming GUI...";
@@ -348,6 +351,9 @@ void FileData::launchGame(Window* window) {
 				
 				Scripting::fireEvent("game-end");
 			}
+			
+			// Re-enable GUI SDL events.
+			SdlRenderer::guiEvents(true);
 		}
 	}
 	else {
