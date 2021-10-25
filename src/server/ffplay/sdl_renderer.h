@@ -15,6 +15,7 @@ class SdlRenderer {
 	static SDL_Window* window;
 	static SDL_Renderer* renderer;
 	static SDL_Texture* texture;
+	static uint32_t windowId;
 	//static SDL_RendererInfo renderer_info;
 	//static SDL_AudioDeviceID audio_dev;
 	static std::atomic<bool> run_events;

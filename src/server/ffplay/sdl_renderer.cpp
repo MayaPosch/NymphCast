@@ -22,6 +22,7 @@ SDL_RendererInfo renderer_info = {0};
 SDL_Window* SdlRenderer::window = 0;
 SDL_Renderer* SdlRenderer::renderer = 0;
 SDL_Texture* SdlRenderer::texture = 0;
+uint32_t SdlRenderer::windowId = 0;
 //SDL_RendererInfo SdlRenderer::renderer_info = {0};
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
@@ -86,6 +87,7 @@ bool SdlRenderer::init() {
 															dm.w, dm.h, flags);
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 		if (window) {
+			windowId = SDL_GetWindowID(window);
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 			if (!renderer) {
 				av_log(NULL, AV_LOG_WARNING, "Failed to initialize a hardware accelerated renderer: %s\n", SDL_GetError());
@@ -141,6 +143,9 @@ void SdlRenderer::showWindow() {
 		windowVisible = true;
 		windowShouldBeVisible = true;
 	}
+	else {
+		av_log(NULL, AV_LOG_WARNING, "Failed to show window: no such object.\n");
+	}
 }
 
 
@@ -150,6 +155,9 @@ void SdlRenderer::SdlRenderer::hideWindow() {
 		SDL_HideWindow(window);
 		windowVisible = false;
 		windowShouldBeVisible = false;
+	}
+	else {
+		av_log(NULL, AV_LOG_WARNING, "Failed to hide window: no such object.\n");
 	}
 }
 
@@ -392,6 +400,18 @@ void SdlRenderer::run_event_loop() {
 		while (SDL_PollEvent(&event)) {
 			// Check for quit events.
 			switch (event.type) {
+				case SDL_WINDOWEVENT:  {
+					if (event.window.windowID == windowId) {
+						if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+							// Push on event to terminate playback.
+							SDL_Event ev;
+							ev.type = SDL_KEYDOWN;
+							ev.key.keysym.sym = SDLK_ESCAPE;
+							SDL_PushEvent(&ev);
+						}
+					}
+					break;         
+				}
 				case SDL_QUIT:
 				case FF_QUIT_EVENT:
 					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
@@ -449,9 +469,6 @@ void SdlRenderer::run_event_loop() {
 			// No delay.
 			continue;
 		}
-		//if (!playerEventsActive && !guiEventsActive) {
-			//SDL_Delay(10);
-		//}
 		else {
 			SDL_Delay(10);
 		}
@@ -466,6 +483,7 @@ void SdlRenderer::stop_event_loop() {
 
 // --- PLAYER EVENTS ---
 void SdlRenderer::playerEvents(bool active) {
+	//av_log(NULL, AV_LOG_WARNING, "Toggling playerEvents: %d.\n", active);
 	playerEventsActive = active;
 }
 
