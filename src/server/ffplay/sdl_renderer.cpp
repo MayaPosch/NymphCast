@@ -5,6 +5,7 @@
 
 #include "sdl_renderer.h"
 
+#include "stream_handler.h"
 #include "frame_queue.h"
 #include "player.h"
 #include "types.h"
@@ -415,8 +416,11 @@ void SdlRenderer::run_event_loop() {
 				case SDL_QUIT:
 				case FF_QUIT_EVENT:
 					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
-					run_events = false;
-					gCon.signal();
+					if (!playerEventsActive) {
+						run_events = false;
+						gCon.signal();
+					}
+					
 					break;
 				case SDL_KEYDOWN:
 					if (event.key.keysym.sym == SDLK_MINUS) {
@@ -429,6 +433,11 @@ void SdlRenderer::run_event_loop() {
 					}
 					else if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & KMOD_CTRL) != 0 ) {
 						av_log(NULL, AV_LOG_INFO, "Received Ctrl+c...\n");
+						if (playerEventsActive) {
+							// Signal the player thread that the playback has ended.
+							StreamHandler::quit();
+						}
+						
 						gCon.signal();
 						run_events = false;
 					}
