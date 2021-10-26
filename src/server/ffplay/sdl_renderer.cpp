@@ -418,7 +418,6 @@ void SdlRenderer::run_event_loop() {
 					av_log(NULL, AV_LOG_INFO, "Received SDL_QUIT event...\n");
 					if (!playerEventsActive) {
 						run_events = false;
-						gCon.signal();
 					}
 					
 					break;
@@ -438,7 +437,6 @@ void SdlRenderer::run_event_loop() {
 							StreamHandler::quit();
 						}
 						
-						gCon.signal();
 						run_events = false;
 					}
 						

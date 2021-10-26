@@ -79,12 +79,6 @@ using namespace Poco;
 #include "gui.h"
 
 
-// Global objects.
-Condition gCon;
-Mutex gMutex;
-// ---
-
-
 /* options specified by the user */
 AVInputFormat *file_iformat;
 const char *input_filename;
@@ -533,7 +527,6 @@ bool streamTrack(std::string url) {
 void signal_handler(int signal) {
 	NYMPH_LOG_INFORMATION("SIGINT handler called. Shutting down...");
 	SdlRenderer::stop_event_loop();
-	gCon.signal();
 }
 
 
