@@ -482,6 +482,12 @@ void SdlRenderer::run_event_loop() {
 			SDL_Delay(10);
 		}
 	}
+
+	// Final check in case playback is still running.
+	if (playerEventsActive) {
+		// Signal the player thread that the playback has ended.
+		StreamHandler::quit();
+	}
 }
 
 
