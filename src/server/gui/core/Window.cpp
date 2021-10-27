@@ -199,23 +199,20 @@ bool Window::inputDuringScreensaver(InputConfig* config, Input input)
 	return input_consumed;
 }
 
-void Window::update(int deltaTime)
-{
-	if(mNormalizeNextUpdate)
-	{
+void Window::update(int deltaTime) {
+	if (mNormalizeNextUpdate) {
 		mNormalizeNextUpdate = false;
-		if(deltaTime > mAverageDeltaTime)
+		if (deltaTime > mAverageDeltaTime) {
 			deltaTime = mAverageDeltaTime;
+		}
 	}
 
 	mFrameTimeElapsed += deltaTime;
 	mFrameCountElapsed++;
-	if(mFrameTimeElapsed > 500)
-	{
+	if (mFrameTimeElapsed > 500) {
 		mAverageDeltaTime = mFrameTimeElapsed / mFrameCountElapsed;
 
-		if(Settings::getInstance()->getBool("DrawFramerate"))
-		{
+		if(Settings::getInstance()->getBool("DrawFramerate")) {
 			std::stringstream ss;
 
 			// fps
@@ -238,7 +235,7 @@ void Window::update(int deltaTime)
 
 	mTimeSinceLastInput += deltaTime;
 
-	if (peekGui() == 0) {
+	if (peekGui()) {
 		peekGui()->update(deltaTime);
 	}
 

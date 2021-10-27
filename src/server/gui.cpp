@@ -73,7 +73,7 @@ bool Gui::init(std::string resFolder) {
 		Utils::FileSystem::setExePath(resFolder);
 	}
 	
-	//screensaver = new SystemScreenSaver(&window);
+	screensaver = new SystemScreenSaver(&window);
 	PowerSaver::init();
 	ViewController::init(&window);
 	CollectionSystemManager::init(&window);
@@ -140,8 +140,6 @@ bool Gui::verifyHomeFolderExists() {
 // --- START ---
 bool Gui::start() {
 	LOG(LogInfo) << "NymphCast GUI - " << __VERSION;
-	
-	active = true;
 
 	bool splashScreen = Settings::getInstance()->getBool("SplashScreen");
 	bool splashScreenProgress = Settings::getInstance()->getBool("SplashScreenProgress");
@@ -189,6 +187,8 @@ bool Gui::start() {
 	//int ps_time = SDL_GetTicks();
 	
 	//sdl = new std::thread(SdlRenderer::run_gui_loop);
+	
+	active = true;
 	
 	// Enable events for the GUI.
 	SdlRenderer::guiEvents(true);
