@@ -45,6 +45,8 @@ public:
 	//void launch(FileData* game);					// Launches in new thread.
 	//void launch(FileData* game, Vector3f center);	// Launches in new thread.
 	void launch(FileData* game, Vector3f centerCameraOn = Vector3f(Renderer::getScreenWidth() / 2.0f, Renderer::getScreenHeight() / 2.0f, 0));
+	void showCurrentView();
+	void useOriginalCamera();
 
 	bool input(InputConfig* config, Input input) override;
 	void update(int deltaTime) override;
@@ -101,6 +103,7 @@ private:
 	Transform4x4f mCamera;
 	float mFadeOpacity;
 	bool mLockInput;
+	Transform4x4f origCamera;
 
 	State mState;
 };

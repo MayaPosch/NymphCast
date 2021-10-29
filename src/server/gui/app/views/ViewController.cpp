@@ -237,7 +237,8 @@ void ViewController::launch(FileData* game, Vector3f center) {
 		mCurrentView->onHide();
 	}
 
-	Transform4x4f origCamera = mCamera;
+	// Transform4x4f origCamera;
+	origCamera = mCamera;
 	origCamera.translation() = -mCurrentView->getPosition();
 
 	center += mCurrentView->getPosition();
@@ -255,36 +256,51 @@ void ViewController::launch(FileData* game, Vector3f center) {
 		setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this, game, fadeFunc]
 		{
 			game->launchGame(mWindow);
-			setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { mLockInput = false; }, true);
-			this->onFileChanged(game, FILE_METADATA_CHANGED);
-			if (mCurrentView)
-				mCurrentView->onShow();
+			//setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { mLockInput = false; }, true);
+			//this->onFileChanged(game, FILE_METADATA_CHANGED);
+			//if (mCurrentView)
+				//mCurrentView->onShow();
 		});
 	} 
 	else if (transition_style == "slide") {
 		// move camera to zoom in on center + fade out, launch game, come back in
-		setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, origCamera, center, game]
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, origCamera, center, game]
+		setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, game]
 		{
 			game->launchGame(mWindow);
-			mCamera = origCamera;
-			setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 600), 0, [this] { mLockInput = false; }, true);
-			this->onFileChanged(game, FILE_METADATA_CHANGED);
-			if (mCurrentView)
-				mCurrentView->onShow();
+			//mCamera = origCamera;
+			//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 600), 0, [this] { mLockInput = false; }, true);
+			//this->onFileChanged(game, FILE_METADATA_CHANGED);
+			//if (mCurrentView)
+				//mCurrentView->onShow();
 		});
 	} 
 	else { // instant
-		setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, origCamera, center, game]
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, origCamera, center, game]
+		setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, center, game]
 		{
 			game->launchGame(mWindow);
-			mCamera = origCamera;
-			setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this] { mLockInput = false; }, true);
-			this->onFileChanged(game, FILE_METADATA_CHANGED);
-			if (mCurrentView)
-				mCurrentView->onShow();
+			//mCamera = origCamera;
+			//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this] { mLockInput = false; }, true);
+			//this->onFileChanged(game, FILE_METADATA_CHANGED);
+			//if (mCurrentView)
+				//mCurrentView->onShow();
 		});
 	}
 }
+
+
+void ViewController::showCurrentView() {
+	if (mCurrentView) {
+		mCurrentView->onShow();
+	}
+}
+
+
+void ViewController::useOriginalCamera() {
+	mCamera = origCamera;
+}
+
 
 void ViewController::removeGameListView(SystemData* system)
 {
