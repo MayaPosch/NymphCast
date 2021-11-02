@@ -91,7 +91,7 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 {
 	size_t width, height;
 	
-	LOG(LogInfo) << "mDataRGBA: initImageFromMemory for path: " << mPath;
+	//LOG(LogInfo) << "mDataRGBA: initImageFromMemory for path: " << mPath;
 
 	// If already initialised then don't read again
 	{
@@ -118,14 +118,14 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 
 bool TextureData::initFromRGBA(const unsigned char* dataRGBA, size_t width, size_t height)
 {
-	LOG(LogInfo) << "mDataRGBA: initFromRGBA for path: " << mPath;
+	//LOG(LogInfo) << "mDataRGBA: initFromRGBA for path: " << mPath;
 	
 	// If already initialised then don't read again
 	std::unique_lock<std::mutex> lock(mMutex);
 	if (mDataRGBA)
 		return true;
 	
-	LOG(LogInfo) << "mDataRGBA: initFromRGBA_2 for path: " << mPath;
+	//LOG(LogInfo) << "mDataRGBA: initFromRGBA_2 for path: " << mPath;
 
 	// Take a copy
 	mDataRGBA = new unsigned char[width * height * 4];
@@ -184,7 +184,7 @@ bool TextureData::uploadAndBind()
 		// Load it if necessary
 		if (!mDataRGBA)
 		{
-			LOG(LogInfo) << "mDataRGBA: No data for path: " << mPath;
+			//LOG(LogInfo) << "mDataRGBA: No data for path: " << mPath;
 			return false;
 		}
 		// Make sure we're ready to upload
