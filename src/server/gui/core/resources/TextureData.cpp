@@ -90,6 +90,8 @@ bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length
 bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t length)
 {
 	size_t width, height;
+	
+	LOG(LogInfo) << "mDataRGBA: initImageFromMemory for path: " << mPath;
 
 	// If already initialised then don't read again
 	{
@@ -101,7 +103,9 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 	std::vector<unsigned char> imageRGBA = ImageIO::loadFromMemoryRGBA32((const unsigned char*)(fileData), length, width, height);
 	if (imageRGBA.size() == 0)
 	{
-		LOG(LogError) << "Could not initialize texture from memory, invalid data!  (file path: " << mPath << ", data ptr: " << (size_t)fileData << ", reported size: " << length << ")";
+		LOG(LogError) << "Could not initialize texture from memory, invalid data!  (file path: " 
+						<< mPath << ", data ptr: " << (size_t)fileData << ", reported size: " 
+						<< length << ")";
 		return false;
 	}
 
@@ -114,10 +118,14 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 
 bool TextureData::initFromRGBA(const unsigned char* dataRGBA, size_t width, size_t height)
 {
+	LOG(LogInfo) << "mDataRGBA: initFromRGBA for path: " << mPath;
+	
 	// If already initialised then don't read again
 	std::unique_lock<std::mutex> lock(mMutex);
 	if (mDataRGBA)
 		return true;
+	
+	LOG(LogInfo) << "mDataRGBA: initFromRGBA_2 for path: " << mPath;
 
 	// Take a copy
 	mDataRGBA = new unsigned char[width * height * 4];
@@ -127,26 +135,33 @@ bool TextureData::initFromRGBA(const unsigned char* dataRGBA, size_t width, size
 	return true;
 }
 
-bool TextureData::load()
-{
+
+bool TextureData::load() {
 	bool retval = false;
 
 	// Need to load. See if there is a file
-	if (!mPath.empty())
-	{
+	if (!mPath.empty()) {
 		std::shared_ptr<ResourceManager>& rm = ResourceManager::getInstance();
 		const ResourceData& data = rm->getFileData(mPath);
-		// is it an SVG?
-		if (mPath.substr(mPath.size() - 4, std::string::npos) == ".svg")
-		{
-			mScalable = true;
-			retval = initSVGFromMemory((const unsigned char*)data.ptr.get(), data.length);
+		
+		if (data.length == 0) {
+			LOG(LogError) << "TextureData::load(): failed to get data for path: " << mPath;
+			return retval;
 		}
-		else
-			retval = initImageFromMemory((const unsigned char*)data.ptr.get(), data.length);
+		
+		// is it an SVG?
+		if (mPath.substr(mPath.size() - 4, std::string::npos) == ".svg") {
+			mScalable = true;
+			retval = initSVGFromMemory((const unsigned char*) data.ptr.get(), data.length);
+		}
+		else {
+			retval = initImageFromMemory((const unsigned char*) data.ptr.get(), data.length);
+		}
 	}
+	
 	return retval;
 }
+
 
 bool TextureData::isLoaded()
 {
@@ -169,6 +184,7 @@ bool TextureData::uploadAndBind()
 		// Load it if necessary
 		if (!mDataRGBA)
 		{
+			LOG(LogInfo) << "mDataRGBA: No data for path: " << mPath;
 			return false;
 		}
 		// Make sure we're ready to upload
@@ -196,6 +212,10 @@ void TextureData::releaseRAM()
 	std::unique_lock<std::mutex> lock(mMutex);
 	delete[] mDataRGBA;
 	mDataRGBA = 0;
+	
+	// Added
+	mWidth = 0;
+	mHeight = 0;
 }
 
 size_t TextureData::width()

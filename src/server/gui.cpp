@@ -29,9 +29,11 @@
 #include <SDL_main.h>
 #include <SDL_timer.h>
 
+#include <chrono>
+
 
 // Static definitions.
-std::thread* Gui::sdl = 0;
+std::thread* Gui::guiThread = 0;
 std::atomic<bool> Gui::running = { false };
 Window Gui::window;
 SystemScreenSaver* Gui::screensaver = 0;
@@ -186,7 +188,7 @@ bool Gui::start() {
 	lastTime = SDL_GetTicks();
 	//int ps_time = SDL_GetTicks();
 	
-	//sdl = new std::thread(SdlRenderer::run_gui_loop);
+	//guiThread = new std::thread(run_updates);
 	
 	active = true;
 	
@@ -319,8 +321,6 @@ void Gui::handleEvent(SDL_Event &event) {
 
 // --- RUN UPDATES ---
 void Gui::run_updates() {
-	if (!active) { return; }
-	
 	// TODO: handle power saving feature in a more global manner.
 	//bool ps_standby = PowerSaver::getState() && (int) SDL_GetTicks() - ps_time > PowerSaver::getMode();
 	bool ps_standby = false;

@@ -47,6 +47,7 @@ public:
 	void launch(FileData* game, Vector3f centerCameraOn = Vector3f(Renderer::getScreenWidth() / 2.0f, Renderer::getScreenHeight() / 2.0f, 0));
 	void showCurrentView();
 	void useOriginalCamera();
+	void returnFromLaunch();
 
 	bool input(InputConfig* config, Input input) override;
 	void update(int deltaTime) override;
@@ -104,6 +105,8 @@ private:
 	float mFadeOpacity;
 	bool mLockInput;
 	Transform4x4f origCamera;
+	Vector3f origCenter;
+	FileData* launchedGame;
 
 	State mState;
 };

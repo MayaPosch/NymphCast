@@ -90,6 +90,7 @@ private:
 	ScreenSaver*	mScreenSaver;
 	InfoPopup*	mInfoPopup;
 	bool		mRenderScreenSaver;
+	bool		mInitialized;
 
 	std::vector<GuiComponent*> mGuiStack;
 

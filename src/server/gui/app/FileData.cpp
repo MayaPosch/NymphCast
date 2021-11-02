@@ -389,9 +389,9 @@ void FileData::launchItem(Window* window) {
 		Scripting::fireEvent("game-end");
 	}
 
-	window->init();
+	//window->init();
 	VolumeControl::getInstance()->init();
-	window->normalizeNextUpdate();
+	//window->normalizeNextUpdate();
 
 	if (mType == GAME) {
 		//update number of times the game has been launched
@@ -408,7 +408,7 @@ void FileData::launchItem(Window* window) {
 	}
 	
 	// Run return animation, if any.
-	std::string transition_style = Settings::getInstance()->getString("TransitionStyle");
+	/*std::string transition_style = Settings::getInstance()->getString("TransitionStyle");
 	if (transition_style == "fade") {
 		// fade out, launch game, fade back in
 		/* auto fadeFunc = [this](float t) {
@@ -420,7 +420,7 @@ void FileData::launchItem(Window* window) {
 			//game->launchGame(mWindow);
 			// setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { mLockInput = false; }, true);
 			//this->onFileChanged(game, FILE_METADATA_CHANGED);
-			ViewController::get()->onFileChanged(this, FILE_METADATA_CHANGED);
+			/*ViewController::get()->onFileChanged(this, FILE_METADATA_CHANGED);
 			//if (mCurrentView)
 				//mCurrentView->onShow(); 
 			ViewController::get()->showCurrentView();
@@ -454,7 +454,7 @@ void FileData::launchItem(Window* window) {
 				//mCurrentView->onShow(); 
 			ViewController::get()->showCurrentView();
 		//});
-	}
+	}*/
 			
 	// Re-enable GUI SDL events.
 	SdlRenderer::guiEvents(true);

@@ -38,6 +38,7 @@ ViewController::ViewController(Window* window)
 	: GuiComponent(window), mCurrentView(nullptr), mCamera(Transform4x4f::Identity()), mFadeOpacity(0), mLockInput(false)
 {
 	mState.viewing = NOTHING;
+	launchedGame = 0;
 }
 
 ViewController::~ViewController()
@@ -231,6 +232,9 @@ void ViewController::launch(FileData* game, Vector3f center) {
 		LOG(LogError) << "tried to launch something that isn't a game or media file";
 		return;
 	}
+	
+	// Retain reference to the item.
+	launchedGame = game;
 
 	// Hide the current view
 	if (mCurrentView) {
@@ -242,6 +246,7 @@ void ViewController::launch(FileData* game, Vector3f center) {
 	origCamera.translation() = -mCurrentView->getPosition();
 
 	center += mCurrentView->getPosition();
+	origCenter = center;
 	stopAnimation(1); // make sure the fade in isn't still playing
 	mWindow->stopInfoPopup(); // make sure we disable any existing info popup
 	mLockInput = true;
@@ -299,6 +304,54 @@ void ViewController::showCurrentView() {
 
 void ViewController::useOriginalCamera() {
 	mCamera = origCamera;
+}
+
+
+void ViewController::returnFromLaunch() {
+	if (launchedGame == 0) { 
+		LOG(LogError) << "Return from launch called without active launch.";
+		return;
+	}
+	
+	std::string transition_style = Settings::getInstance()->getString("TransitionStyle");
+	if (transition_style == "fade") {
+		// fade out, launch game, fade back in
+		auto fadeFunc = [this](float t) {
+			mFadeOpacity = Math::lerp(0.0f, 1.0f, t);
+		};
+		
+		//setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this, game, fadeFunc] {
+			//game->launchGame(mWindow);
+			setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { mLockInput = false; }, true);
+			this->onFileChanged(launchedGame, FILE_METADATA_CHANGED);
+			if (mCurrentView) { mCurrentView->onShow(); }
+		//});
+	} 
+	else if (transition_style == "slide") {
+		// move camera to zoom in on center + fade out, launch game, come back in
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, origCamera, center, game]
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, game]
+		//{
+			//game->launchGame(mWindow);
+			mCamera = origCamera;
+			setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, origCenter, 600), 0, [this] { mLockInput = false; }, true);
+			this->onFileChanged(launchedGame, FILE_METADATA_CHANGED);
+			if (mCurrentView) { mCurrentView->onShow(); }
+		//});
+	} 
+	else { // instant
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, origCamera, center, game]
+		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, center, game]
+		//{
+			//game->launchGame(mWindow);
+			mCamera = origCamera;
+			setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, origCenter, 10), 0, [this] { mLockInput = false; }, true);
+			this->onFileChanged(launchedGame, FILE_METADATA_CHANGED);
+			if (mCurrentView) { mCurrentView->onShow(); }
+		//});
+	}
+	
+	launchedGame = 0;
 }
 
 

@@ -5,6 +5,7 @@
 #include "resources/Font.h"
 #include "resources/TextureResource.h"
 #include "InputManager.h"
+#include "../app/views/ViewController.h"
 #include "Log.h"
 #include "Scripting.h"
 #include <algorithm>
@@ -19,6 +20,7 @@ Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCoun
 {
 	mHelp = new HelpComponent(this);
 	mBackgroundOverlay = new ImageComponent(this);
+	mInitialized = false;
 }
 
 Window::~Window()
@@ -75,6 +77,9 @@ bool Window::init() {
 		return false;
 	}
 	
+	// Set window as initialised.
+	mInitialized = true;
+	
 	LOG(LogInfo) << "Init InputManager...";
 
 	InputManager::getInstance()->init();
@@ -118,6 +123,9 @@ void Window::deinit() {
 	InputManager::getInstance()->deinit();
 	ResourceManager::getInstance()->unloadAll();
 	Renderer::deinit();
+	
+	// Set window as not initialised.
+	mInitialized = false;
 }
 
 void Window::textInput(const char* text)
@@ -126,8 +134,10 @@ void Window::textInput(const char* text)
 		peekGui()->textInput(text);
 }
 
-void Window::input(InputConfig* config, Input input)
-{
+
+void Window::input(InputConfig* config, Input input) {
+	if (!mInitialized) { init(); mNormalizeNextUpdate = true; ViewController::get()->returnFromLaunch(); }
+	
 	if (mScreenSaver && mScreenSaver->isScreenSaverActive() && Settings::getInstance()->getBool("ScreenSaverControls")
 		&& inputDuringScreensaver(config, input))
 	{
@@ -199,7 +209,10 @@ bool Window::inputDuringScreensaver(InputConfig* config, Input input)
 	return input_consumed;
 }
 
+
 void Window::update(int deltaTime) {
+	if (!mInitialized) { init(); mNormalizeNextUpdate = true; ViewController::get()->returnFromLaunch(); }
+	
 	if (mNormalizeNextUpdate) {
 		mNormalizeNextUpdate = false;
 		if (deltaTime > mAverageDeltaTime) {
@@ -245,8 +258,9 @@ void Window::update(int deltaTime) {
 	
 }
 
-void Window::render()
-{
+void Window::render() {
+	if (!mInitialized) { init(); mNormalizeNextUpdate = true; ViewController::get()->returnFromLaunch(); }
+	
 	Transform4x4f transform = Transform4x4f::Identity();
 
 	mRenderedHelpPrompts = false;

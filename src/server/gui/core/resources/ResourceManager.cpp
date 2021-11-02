@@ -56,8 +56,7 @@ const ResourceData ResourceManager::getFileData(const std::string& path) const
 	//check if its a resource
 	const std::string respath = getResourcePath(path);
 
-	if(Utils::FileSystem::exists(respath))
-	{
+	if (Utils::FileSystem::exists(respath)) {
 		ResourceData data = loadFile(respath);
 		return data;
 	}
@@ -87,6 +86,7 @@ ResourceData ResourceManager::loadFile(const std::string& path) const
 	}
 
 	//error reading file, return an "empty" ResourceData
+	LOG(LogError) << "Error reading file: " << path;
 	ResourceData ret = {NULL, 0};
 	return ret;
 }
