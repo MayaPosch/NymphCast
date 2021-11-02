@@ -320,7 +320,6 @@ void FileData::launchGame(Window* window) {
 
 	
 void FileData::launchItem(Window* window) {
-//void FileData::launchGame(Window* window) {
 	LOG(LogInfo) << "Attempting to launch game...";
 
 	AudioManager::getInstance()->deinit();
@@ -389,9 +388,7 @@ void FileData::launchItem(Window* window) {
 		Scripting::fireEvent("game-end");
 	}
 
-	//window->init();
 	VolumeControl::getInstance()->init();
-	//window->normalizeNextUpdate();
 
 	if (mType == GAME) {
 		//update number of times the game has been launched
@@ -406,55 +403,6 @@ void FileData::launchItem(Window* window) {
 
 		gameToUpdate->mSystem->onMetaDataSavePoint();
 	}
-	
-	// Run return animation, if any.
-	/*std::string transition_style = Settings::getInstance()->getString("TransitionStyle");
-	if (transition_style == "fade") {
-		// fade out, launch game, fade back in
-		/* auto fadeFunc = [this](float t) {
-			mFadeOpacity = Math::lerp(0.0f, 1.0f, t);
-		}; */
-		
-		//setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this, game, fadeFunc]
-		//{
-			//game->launchGame(mWindow);
-			// setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { mLockInput = false; }, true);
-			//this->onFileChanged(game, FILE_METADATA_CHANGED);
-			/*ViewController::get()->onFileChanged(this, FILE_METADATA_CHANGED);
-			//if (mCurrentView)
-				//mCurrentView->onShow(); 
-			ViewController::get()->showCurrentView();
-		//});
-	} 
-	else if (transition_style == "slide") {
-		// move camera to zoom in on center + fade out, launch game, come back in
-		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 1500), 0, [this, origCamera, center, game]
-		//{
-			//game->launchGame(mWindow);
-			//mCamera = origCamera;
-			ViewController::get()->useOriginalCamera();
-			//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 600), 0, [this] { mLockInput = false; }, true);
-			//this->onFileChanged(game, FILE_METADATA_CHANGED);
-			ViewController::get()->onFileChanged(this, FILE_METADATA_CHANGED);
-			//if (mCurrentView)
-				//mCurrentView->onShow(); 
-			ViewController::get()->showCurrentView();
-		//});
-	} 
-	else { // instant
-		//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this, origCamera, center, game]
-		//{
-			//game->launchGame(mWindow);
-			//mCamera = origCamera;
-			ViewController::get()->useOriginalCamera();
-			//setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this] { mLockInput = false; }, true);
-			//this->onFileChanged(game, FILE_METADATA_CHANGED);
-			ViewController::get()->onFileChanged(this, FILE_METADATA_CHANGED);
-			//if (mCurrentView)
-				//mCurrentView->onShow(); 
-			ViewController::get()->showCurrentView();
-		//});
-	}*/
 			
 	// Re-enable GUI SDL events.
 	SdlRenderer::guiEvents(true);
