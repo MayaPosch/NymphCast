@@ -410,6 +410,7 @@ void Player::run_updates() {
 	
 #ifdef PROFILING
 	if (!debugfile.is_open()) {
+		av_log(NULL, AV_LOG_WARNING, "Start profiling...\n");
 		debugfile.open("profiling.txt");
 	}
 	
