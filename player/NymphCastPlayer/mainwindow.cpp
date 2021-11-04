@@ -149,6 +149,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 	connect(ui->actionFile, SIGNAL(triggered()), this, SLOT(castFile()));
 	connect(ui->actionURL, SIGNAL(triggered()), this, SLOT(castUrl()));
+	connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(savePlaylist()));
+	connect(ui->actionLoad, SIGNAL(triggered()), this, SLOT(loadPlaylist()));
 	
 	// UI
 	connect(ui->editRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
@@ -190,6 +192,9 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// General NC library.
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
+			
+	// Timers.
+	connect(&posTimer, SIGNAL(timeout()), this, SLOT(positionUpdate()));
 			
 	// Set up playback controls.
 	ui->pauseToolButton->setVisible(false);
@@ -337,6 +342,51 @@ MainWindow::~MainWindow() {
 }
 
 
+// --- POSITION UPDATE ---
+// Called by 'posTimer' whenever the 1 second interval expires.
+// Updates the playback position of the current file if needed (not updated externally).
+void MainWindow::positionUpdate() {
+	if (!playingTrack) { return; }
+	
+	// Obtain the info on the currently active remote.
+	// Obtain selected ID.
+	int index = ui->remotesComboBox->currentIndex();
+	uint32_t id = ui->remotesComboBox->currentData().toUInt();
+	
+	NCRemoteInstance* ris = 0;
+	if (index > separatorIndex) {
+		NCRemoteGroup& group = groups[id];
+		if (group.remotes.size() < 1) { return; }
+		
+		ris = &(group.remotes[0]);
+	}
+	else if (index < separatorIndex) {
+		ris = &(remotes[index]);
+	}
+	
+	ris->position += 1; // Increase by one second.
+	
+	QTime now = QTime::currentTime();
+	if (ris->timestamp.secsTo(now) < 1) {
+		// No need to update.
+		return;
+	}
+	
+	// Increase position by 1 second.
+	ris->position += 1;
+	
+	// Set position & duration in UI.
+	QTime position(0, 0);
+	position = position.addSecs((int64_t) ris->position);
+	QTime duration(0, 0);
+	duration = duration.addSecs(ris->duration);
+	ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
+													duration.toString("hh:mm:ss"));
+													
+	ui->positionSlider->setValue((ris->position / ris->duration) * 100);
+}
+
+
 // --- STATUS UPDATE CALLBACK ---
 void MainWindow::statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
 	// Send the data along to the slot on the GUI thread.
@@ -353,15 +403,12 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 	int index = ui->remotesComboBox->currentIndex();
 	uint32_t id = ui->remotesComboBox->currentData().toUInt();
 	
-	bool init = false;
+	NCRemoteInstance* ris = 0;
 	if (index > separatorIndex) {
 		NCRemoteGroup& group = groups[ui->remotesComboBox->currentData().toUInt()];
 		if (group.remotes.size() < 1) { return; }
 		
-		if (group.remotes[0].init) {
-			init = true;
-			group.remotes[0].init = false;
-		}
+		ris = &(group.remotes[0]);
 		
 		group.remotes[0].status = status;
 		if (groups[id].remotes[0].handle != handle) {
@@ -374,18 +421,18 @@ void MainWindow::setPlaying(uint32_t handle, NymphPlaybackStatus status) {
 			return;
 		}
 		
-		if (remotes[index].init) {
-			init = true;
-			remotes[index].init = false;
-		}
+		ris = &(remotes[index]);
+	}
+	else {
+		return;
 	}
 	
-	updatePlayerUI(status, init);
+	updatePlayerUI(status, ris);
 }
 	
 	
 // --- UPDATE PLAYER UI ---
-void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
+void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ris) {
 	// Update the UI.
 	bool paused = false;
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
@@ -409,11 +456,18 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		ui->soundToolButton->setIcon(QIcon(":/icons/icons/mute.png"));
 	}
 	
-	if (init) {
+	if (ris->init) {
 		// Initial callback for this remote on connect. Just set safe defaults.
 		std::cout << "Initial remote status callback on connect." << std::endl;
 		
+		ris->init = false;
+		
 		playingTrack = false;
+		if (posTimer.isActive()) {
+			// Stop timer.
+			posTimer.stop();
+		}
+		
 		ui->playToolButton->setEnabled(true);
 		ui->playToolButton->setVisible(true);
 		ui->stopToolButton->setEnabled(false);
@@ -441,6 +495,16 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, bool init) {
 		
 		// Set to true in case we're playing from a share.
 		playingTrack = true;
+		
+		// Start timer if it hasn't been started already.
+		if (!posTimer.isActive()) {
+			ris->duration = status.duration;
+			posTimer.start(1000);
+		}
+		
+		// Update recorded position, along with the timestamp.
+		ris->position = status.position;
+		ris->timestamp = QTime::currentTime();
 		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
@@ -637,7 +701,7 @@ void MainWindow::playerRemoteChanged(int index) {
 			remoteIsConnected();
 		}
 		else {
-			updatePlayerUI(group.remotes[0].status);
+			updatePlayerUI(group.remotes[0].status, &(group.remotes[0]));
 		}
 	}
 	else if (index < separatorIndex) {
@@ -645,7 +709,7 @@ void MainWindow::playerRemoteChanged(int index) {
 			remoteIsConnected();
 		}
 		else {
-			updatePlayerUI(remotes[index].status);
+			updatePlayerUI(remotes[index].status, &(remotes[index]));
 		}
 	}
 }
@@ -1309,6 +1373,86 @@ void MainWindow::about() {
 // --- QUIT ---
 void MainWindow::quit() {
 	exit(0);
+}
+
+
+// --- LOAD PLAYLIST ---
+// Clear current playlist and load new playlist contents.
+void MainWindow::loadPlaylist() {
+	// Select playlist from filesystem, parse and replace old playlist view.
+	// Use stored directory location, if any.
+	QSettings settings;
+	QString dir = settings.value("openPlaylistDir").toString();
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open playlist"), dir, tr("Playlists (*.m3u *.m3u8)"));
+	if (filename.isEmpty()) { return; }
+	
+	// Update current folder.
+	settings.setValue("openPlaylistDir", filename);
+	
+	// Parse file. Discard Extended M3U (#-prefixed) lines for now.
+	QFile playlist;
+	playlist.setFileName(filename);
+	if (!playlist.exists()) { 
+		QMessageBox::warning(this, tr("Failed to open file"), tr("The selected file could not be opened."));
+		return;
+	}
+	
+	playlist.open(QIODevice::ReadOnly);
+	QTextStream textStream(&playlist);
+	ui->mediaListWidget->clear();
+	
+	// Overwrite local playlist with the new playlist too.
+	QFile filepaths;
+	filepaths.setFileName(appDataLocation + "/filepaths.conf");
+	filepaths.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	QTextStream outStream(&filepaths);
+	
+	QString line;
+	while (!(line = textStream.readLine()).isNull()) {
+		if (line.startsWith("#") || line.startsWith(" ")) { continue; }
+		
+		// We should have a file path now.
+		QFileInfo finf(line);
+		if (!finf.isFile()) { continue; }
+		
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(finf.fileName());
+		newItem->setData(Qt::UserRole, QVariant(line));
+		ui->mediaListWidget->addItem(newItem);
+		
+		outStream << finf.fileName() << "\n";
+	}
+	
+	playlist.close();
+}
+
+
+// --- SAVE PLAYLIST ---
+// Save currently loaded playlist as a plain M3U file to the designated location.
+void MainWindow::savePlaylist() {
+	// Get location to save the playlist to.
+	QSettings settings;
+	QString dir = settings.value("savePlaylistDir").toString();
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save playlist"), dir, tr("Playlists (*.m3u"));
+	if (filename.isEmpty()) { return; }
+	
+	// Update current folder.
+	settings.setValue("savePlaylistDir", filename);
+	
+	// Open file.
+	QFile playlist;
+	playlist.setFileName(filename);
+	playlist.open(QIODevice::WriteOnly);
+	QTextStream textStream(&playlist);
+	
+	// Write paths to file.
+	int itemCount = ui->mediaListWidget->count();
+	for (int i = 0; i < itemCount; i++) {
+		QListWidgetItem* item = ui->mediaListWidget->item(i);
+		textStream << item->text() << "\n";
+	}
+	
+	playlist.close();
 }
 
 

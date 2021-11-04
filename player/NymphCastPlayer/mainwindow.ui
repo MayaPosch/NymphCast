@@ -611,8 +611,16 @@
     <addaction name="actionFile"/>
     <addaction name="actionURL"/>
    </widget>
+   <widget class="QMenu" name="menuPlaylist">
+    <property name="title">
+     <string>Playlist</string>
+    </property>
+    <addaction name="actionSave"/>
+    <addaction name="actionLoad"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCast"/>
+   <addaction name="menuPlaylist"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -660,6 +668,16 @@
   <action name="actionURL">
    <property name="text">
     <string>URL...</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Load</string>
    </property>
   </action>
  </widget>

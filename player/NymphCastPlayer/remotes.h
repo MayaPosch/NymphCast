@@ -8,6 +8,7 @@
 #define REMOTES_H
 
 #include <QDialog>
+#include <QTime>
 
 #include <vector>
 #include <string>
@@ -20,6 +21,9 @@ struct NCRemoteInstance {
 	bool connected = false;
 	bool init = true;
 	uint32_t handle;
+	uint64_t duration;
+	double position;
+	QTime timestamp;
 	NymphPlaybackStatus status;
 };
 

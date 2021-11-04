@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QStandardItemModel>
+#include <QTimer>
 
 #include "nymphcast_client.h"
 
@@ -30,6 +31,8 @@ private slots:
 	void quit();
 	void castFile();
 	void castUrl();
+	void loadPlaylist();
+	void savePlaylist();
 	
     // Player tab
 	void playerRemoteChanged(int index);
@@ -48,7 +51,7 @@ private slots:
 	void cycleVideo();
 	
 	void setPlaying(uint32_t handle, NymphPlaybackStatus status);
-	void updatePlayerUI(NymphPlaybackStatus status, bool init = false);
+	void updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ris);
 	
     // Apps tab.
 	void appsListRefresh();	
@@ -69,6 +72,8 @@ private slots:
 	void updateGroupsList(std::vector<NCRemoteGroup> &groups);
 	void addGroupsToRemotes();
 	
+	void positionUpdate();
+	
 signals:
 	void playbackStatusChange(uint32_t handle, NymphPlaybackStatus status);
 	
@@ -85,6 +90,7 @@ private:
 	QString appDataLocation;
 	int separatorIndex;
 	RemotesDialog* rd;
+	QTimer posTimer;
 	
     QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);
