@@ -259,103 +259,87 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 	// * position in the media, in seconds with remainder.
 	// * title of the media, if available.
 	// * artist of the media, if available.
-	//NymphStruct* response = new NymphStruct;
 	std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
 	NymphPair pair;
 	std::string* key;
 	if (playerStarted) {
 		// Distinguish between playing and paused for the player.
 		if (playerPaused) {
-			//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PAUSED));
 			key = new std::string("status");
 			pair.key = new NymphType(key, true);
 			pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_PAUSED);
 			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		}
 		else {
-			//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_PLAYING));
 			key = new std::string("status");
 			pair.key = new NymphType(key, true);
 			pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_PLAYING);
 			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		}
 		
-		//response->addPair("playing", new NymphBoolean(true));
 		key = new std::string("playing");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("duration", new NymphUint64(file_meta.duration));
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(file_meta.duration);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("position", new NymphDouble(file_meta.position));
 		key = new std::string("position");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(file_meta.position);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("title", new NymphString(file_meta.getTitle()));
 		key = new std::string("title");
 		pair.key = new NymphType(key, true);
 		std::string* val = new std::string(file_meta.getTitle());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("artist", new NymphString(file_meta.getArtist()));
 		key = new std::string("artist");
 		pair.key = new NymphType(key, true);
 		val = new std::string(file_meta.getArtist());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("volume", new NymphUint8(audio_volume));
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(audio_volume);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
-		//response->addPair("status", new NymphUint32(NYMPH_PLAYBACK_STATUS_STOPPED));
 		key = new std::string("status");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_STOPPED);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
-			
-		//response->addPair("playing", new NymphBoolean(false));
+		
 		key = new std::string("playing");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(false);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("duration", new NymphUint64(0));
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((uint64_t) 0);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("position", new NymphDouble(0));
 		key = new std::string("position");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((double) 0.0);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("title", new NymphString());
 		key = new std::string("title");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((char*) 0, 0);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("artist", new NymphString());
 		key = new std::string("artist");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((char*) 0, 0);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//response->addPair("volume", new NymphUint8(audio_volume));
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(audio_volume);
@@ -372,7 +356,6 @@ void sendStatusUpdate(uint32_t handle) {
 	std::vector<NymphType*> values;
 	std::map<std::string, NymphPair>* status = getPlaybackStatus();
 	values.push_back(new NymphType(status, true));
-	//NymphBoolean* resVal = 0;
 	NymphType* resVal = 0;
 	std::string result;
 	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
@@ -385,7 +368,6 @@ void sendStatusUpdate(uint32_t handle) {
 // --- SEND GLOBAL STATUS UPDATE ---
 // Send playback status update to all connected clients.
 void sendGlobalStatusUpdate() {
-	//std::cout << "Sending status update to all " << clients.size() << " clients." << std::endl;
 	NYMPH_LOG_INFORMATION("Sending status update to all " + Poco::NumberFormatter::format(clients.size()) 
 					+ " clients.");
 					
@@ -400,7 +382,6 @@ void sendGlobalStatusUpdate() {
 		std::vector<NymphType*> values;
 		values.push_back(new NymphType(pairs));
 		if (!NymphRemoteClient::callCallback(it->first, "MediaStatusCallback", values, result)) {
-			//std::cerr << "Calling media status callback failed: " << result << std::endl;
 			NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
 			
 			// An error here very likely means that the client no long exists. Remove it.
@@ -422,7 +403,6 @@ void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;
-		//values.push_back(new NymphUint64(offset));
 		values.push_back(new NymphType((uint64_t) offset));
 		std::string result;
 		NymphType* resVal = 0;
@@ -480,10 +460,6 @@ void finishPlayback() {
 		}
 		else if (screensaver_enable) {
 			// Start screensaver.
-			/* SDL_Event event;
-			event.type = SDL_KEYDOWN;
-			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event); */
 			ScreenSaver::start(15);
 		}
 		else {
@@ -650,7 +626,6 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Extract data blob and add it to the buffer.
-	//std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
 	NymphType* mediaData = msg->parameters()[0];
 	bool done = msg->parameters()[1]->getBool();
 	int64_t when = msg->parameters()[2]->getInt64();
@@ -742,11 +717,9 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Obtain the filesize from the client, which we use with the buffer management.
-	//NymphStruct* fileInfo = ((NymphStruct*) msg->parameters()[0]);
 	NymphType* fileInfo = msg->parameters()[0];
 	NymphType* num = 0;
 	if (!fileInfo->getStructValue("filesize", num)) {
-	//if (!fileInfo->getValue("filesize", num)) {
 		std::cerr << "Didn't find entry 'filesize'. Aborting..." << std::endl;
 		returnMsg->setResultValue(new NymphType((uint8_t) 1));
 		msg->discard();
@@ -948,9 +921,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		Poco::Timestamp ts;
 		int64_t now = (int64_t) ts.epochMicroseconds();
 		//then = now + (slaveLatencyMax * 2);
-		
-		//NymphBlob* mediaBlob = new NymphBlob(mediaData);
-		
 		
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
