@@ -33,6 +33,7 @@ private slots:
 	void castUrl();
 	void loadPlaylist();
 	void savePlaylist();
+	void clearPlaylist();
 	
     // Player tab
 	void playerRemoteChanged(int index);

@@ -151,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->actionURL, SIGNAL(triggered()), this, SLOT(castUrl()));
 	connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(savePlaylist()));
 	connect(ui->actionLoad, SIGNAL(triggered()), this, SLOT(loadPlaylist()));
+	connect(ui->actionClear, SIGNAL(triggered()), this, SLOT(clearPlaylist()));
 	
 	// UI
 	connect(ui->editRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
@@ -1424,6 +1425,7 @@ void MainWindow::loadPlaylist() {
 	}
 	
 	playlist.close();
+	filepaths.close();
 }
 
 
@@ -1453,6 +1455,19 @@ void MainWindow::savePlaylist() {
 	}
 	
 	playlist.close();
+}
+
+
+// --- CLEAR PLAYLIST ---
+// Clears the current displayed playlist.
+void MainWindow::clearPlaylist() {
+	ui->mediaListWidget->clear();
+	
+	// Clear local list too.
+	QFile filepaths;
+	filepaths.setFileName(appDataLocation + "/filepaths.conf");
+	filepaths.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	filepaths.close();
 }
 
 
