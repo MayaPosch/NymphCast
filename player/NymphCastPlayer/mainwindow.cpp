@@ -1409,12 +1409,13 @@ void MainWindow::loadPlaylist() {
 	QTextStream outStream(&filepaths);
 	
 	QString line;
+	bool clean = true;
 	while (!(line = textStream.readLine()).isNull()) {
-		if (line.startsWith("#") || line.startsWith(" ")) { continue; }
+		if (line.startsWith("#")) { continue; }
 		
 		// We should have a file path now.
 		QFileInfo finf(line);
-		if (!finf.isFile()) { continue; }
+		if (!finf.isFile()) { clean = false; continue; }
 		
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(finf.fileName());
@@ -1422,6 +1423,11 @@ void MainWindow::loadPlaylist() {
 		ui->mediaListWidget->addItem(newItem);
 		
 		outStream << finf.fileName() << "\n";
+	}
+	
+	if (!clean) {
+		QMessageBox::warning(this, tr("Playlist issue"), 
+			tr("There was an issue with some of the playlist entries"));
 	}
 	
 	playlist.close();
@@ -1451,7 +1457,7 @@ void MainWindow::savePlaylist() {
 	int itemCount = ui->mediaListWidget->count();
 	for (int i = 0; i < itemCount; i++) {
 		QListWidgetItem* item = ui->mediaListWidget->item(i);
-		textStream << item->text() << "\n";
+		textStream << item->data(Qt::UserRole).toString() << "\n";
 	}
 	
 	playlist.close();

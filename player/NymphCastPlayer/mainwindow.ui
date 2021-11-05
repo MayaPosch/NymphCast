@@ -673,12 +673,12 @@
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>Save...</string>
    </property>
   </action>
   <action name="actionLoad">
    <property name="text">
-    <string>Load</string>
+    <string>Load...</string>
    </property>
   </action>
   <action name="actionClear">
