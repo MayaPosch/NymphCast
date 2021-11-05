@@ -365,6 +365,11 @@ void MainWindow::positionUpdate() {
 		ris = &(remotes[index]);
 	}
 	
+	// Check whether we're paused.
+	if (ris->status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
+		return;
+	}
+	
 	ris->position += 1; // Increase by one second.
 	
 	QTime now = QTime::currentTime();
@@ -380,11 +385,11 @@ void MainWindow::positionUpdate() {
 	QTime position(0, 0);
 	position = position.addSecs((int64_t) ris->position);
 	QTime duration(0, 0);
-	duration = duration.addSecs(ris->duration);
+	duration = duration.addSecs(ris->status.duration);
 	ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
 													duration.toString("hh:mm:ss"));
 													
-	ui->positionSlider->setValue((ris->position / ris->duration) * 100);
+	ui->positionSlider->setValue((ris->position / ris->status.duration) * 100);
 }
 
 
