@@ -615,8 +615,8 @@
     <property name="title">
      <string>Playlist</string>
     </property>
-    <addaction name="actionSave"/>
     <addaction name="actionLoad"/>
+    <addaction name="actionSave"/>
     <addaction name="actionClear"/>
    </widget>
    <addaction name="menuFile"/>
