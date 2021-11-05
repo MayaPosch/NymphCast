@@ -1422,7 +1422,7 @@ void MainWindow::loadPlaylist() {
 		newItem->setData(Qt::UserRole, QVariant(line));
 		ui->mediaListWidget->addItem(newItem);
 		
-		outStream << finf.fileName() << "\n";
+		outStream << line << "\n";
 	}
 	
 	if (!clean) {
