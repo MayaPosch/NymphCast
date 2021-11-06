@@ -370,8 +370,6 @@ void MainWindow::positionUpdate() {
 		return;
 	}
 	
-	ris->position += 1; // Increase by one second.
-	
 	QTime now = QTime::currentTime();
 	if (ris->timestamp.secsTo(now) < 1) {
 		// No need to update.
