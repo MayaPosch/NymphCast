@@ -381,6 +381,9 @@ void MainWindow::positionUpdate() {
 	// Increase position by 1 second.
 	ris->position += 1;
 	
+	// Update timestamp.
+	ris->timestamp = now;
+	
 	// Set position & duration in UI.
 	QTime position(0, 0);
 	position = position.addSecs((int64_t) ris->position);
