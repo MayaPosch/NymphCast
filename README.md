@@ -36,10 +36,12 @@ Please ensure that these ports are whitelisted in e.g. firewall rules if applica
 
 ## GUI configuration ##
 
-When setting up NymphCast server for GUI mode, the necessary resource files (in the `.emulationstation` folder) are by default located under `src/server`. This can be overridden in two ways:
+When setting up NymphCast server for the (experimental) GUI mode, the necessary resource files (in the `.emulationstation` folder) are by default located under `src/server`. This can be overridden in two ways:
 
 1. Copy the `src/server/.emulationstation` folder to the home folder (`~/`) of the user running NymphCast Server.
 2. Pass the path to the folder containing the `.emulationstation` folder as a command line option.
+
+**Note:** In order for shared media files and the NymphCast entry in the GUI to show up, at least one NymphCast MediaServer instance must be active on the same network and sharing files.
 
 ## Features & Status ##
 
