@@ -728,31 +728,39 @@ void MainWindow::addFile() {
 	// Use stored directory location, if any.
 	QSettings settings;
 	QString dir = settings.value("openFileDir").toString();
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open media file"), dir);
-	if (filename.isEmpty()) { return; }
+	QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open media files"), dir);
+	if (filenames.isEmpty()) { return; }
 	
 	// Update current folder.
-	settings.setValue("openFileDir", filename);
+	settings.setValue("openFileDir", filenames[0]);
 	
-	// Check file.
-	QFileInfo finf(filename);
-	if (!finf.isFile()) { 
-		QMessageBox::warning(this, tr("Failed to open file"), tr("The selected file could not be opened."));
-		return;
-	}
-	
-	// Add it.
-	QListWidgetItem *newItem = new QListWidgetItem;
-	newItem->setText(finf.fileName());
-	newItem->setData(Qt::UserRole, QVariant(filename));
-	ui->mediaListWidget->addItem(newItem);
 	
 	// Store path of added file to reload on restart. Append to file.
 	QFile playlist;
 	playlist.setFileName(appDataLocation + "/filepaths.conf");
 	playlist.open(QIODevice::WriteOnly | QIODevice::Append);
-	QTextStream textStream(&playlist);
-	textStream << filename << "\n";
+	
+	// Handle each file.
+	for (int i = 0; i < filenames.size(); ++i) {
+		// Check file.
+		QFileInfo finf(filenames[i]);
+		if (!finf.isFile()) { 
+			QMessageBox::warning(this, tr("Failed to open file"), 
+					tr("%1 could not be opened.").arg(finf.fileName()));
+			return;
+		}
+		
+		// Add to UI.
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(finf.fileName());
+		newItem->setData(Qt::UserRole, QVariant(filenames[i]));
+		ui->mediaListWidget->addItem(newItem);
+	
+		// Add to internal playlist.
+		QTextStream textStream(&playlist);
+		textStream << filenames[i] << "\n";
+	}
+	
 	playlist.close();
 }
 
