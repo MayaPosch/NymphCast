@@ -922,9 +922,18 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		int64_t now = (int64_t) ts.epochMicroseconds();
 		//then = now + (slaveLatencyMax * 2);
 		
+		// Timing: 	Multiply the max slave latency by the number of slaves. After sending this delay
+		// 			to the first slave (minus half its recorded latency), 
+		// 			subtract the time it took to send to this slave from the
+		//			first delay, then send this new delay to the second slave, and so on.
+		int64_t countdown = slaveLatencyMax * slave_remotes.size();
+		
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
-			then = slaveLatencyMax - rm.delay;
+			//then = slaveLatencyMax - rm.delay;
+			then = countdown - (rm.delay / 2);
+			
+			int64_t send = (int64_t) ts.epochMicroseconds();
 		
 			// Prepare data vector.
 			NymphType* media = new NymphType((char*) mediaData->getChar(), mediaData->string_length());
@@ -941,7 +950,18 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 			}
 			
 			delete returnValue;
+			
+			int64_t receive = (int64_t) ts.epochMicroseconds();
+			
+			countdown -= (receive - send);
 		}
+		
+		// Wait out the countdown.
+		std::condition_variable cv;
+		std::mutex cv_m;
+		std::unique_lock<std::mutex> lk(cv_m);
+		std::chrono::microseconds dur(countdown);
+		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 	}
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
