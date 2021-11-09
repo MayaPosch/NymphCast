@@ -1,0 +1,303 @@
+# NMakefile for NymphCast src/client/nymphcast_client.
+#
+# Build NymphCast nymphcast_client command line program (MSVC).
+#
+# Created 17 October 2021.
+# Copyright (c) 2021 Nyanko.ws
+#
+# Usage: nmake -f NMakefile [definitions] [target]
+#
+# Definitions:
+# - CONFIG={Debug|Release}
+# - CPPSTD={flag}
+# - LNKCRT={flag}
+# - WARNING={flag}
+# - OPTIMIZATION={flag}
+# - POCO_ROOT={install-folder}]
+# - NYMPHRPC_ROOT={install-folder}
+# - LIBNYMPHCAST_ROOT={install-folder}
+# - INSTALL_PREFIX={install-folder}
+#
+# Targets:
+# - all
+# - bin, same as all
+# - install
+# - clean
+# - dist-clean
+# - real-clean, same as dist-clean
+#
+# Configuration:
+# - `CONFIG` defaults to `Release`
+# - `CPPSTD` defaults to `-std:c++latest`.
+# - `LNKCRT` defaults to `-MD`.
+# - `WARNING` defaults to empty, default compiler behaviour.
+# - `OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
+# - If defined, environment variable `NYMPHRPC_ROOT` is used for NymphRPC dependency.
+# - If defined, environment variable `LIBNYMPHCAST_ROOT` is used for LibNymphCast dependency.
+# - If defined, environment variable `NYMPHCAST_ROOT` is used for target `install`, unless
+#   `INSTALL_PREFIX` is specified on the commandline.
+#
+# Dependencies:
+# - Nymph: NymphRPC, libnymphcast
+# - Poco: PocoFoundation, PocoNet, https://pocoproject.org/
+#
+# Installation destination:
+# - `NYMPHCAST_ROOT`
+# - e.g.: `set NYMPHCAST_ROOT=C:\Libraries\NymphCast`
+#
+# Product build directories:
+# - .\bin\x86_{32|64}-w64-msvc\{Debug|Release}
+# - .\obj\x86_{32|64}-w64-msvc\{Debug|Release}
+#
+# Use the Microsoft C++ toolset from the command line.
+# https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
+#
+
+# Configuration:
+
+# Note: no space before macro being defined.
+
+!ifdef CONFIG
+LIB_CONFIG = $(CONFIG)
+!else
+LIB_CONFIG = Release
+!endif
+
+LIB_DEF_CPPSTD = -std:c++latest
+
+!ifdef CPPSTD
+LIB_CPPSTD = $(CPPSTD)
+!else
+LIB_CPPSTD = $(LIB_DEF_CPPSTD)
+!endif
+
+LIB_DEF_LNKCRT = -MD
+
+!ifdef LNKCRT
+LIB_LNKCRT = $(LNKCRT)
+!else
+LIB_LNKCRT = $(LIB_DEF_LNKCRT)
+!endif
+
+!ifndef POCO_ROOT
+POCO_ROOT = D:\Libraries\Poco
+!endif
+
+!ifndef NYMPHRPC_ROOT
+NYMPHRPC_ROOT = D:\Libraries\NymphRPC
+!endif
+
+!ifndef LIBNYMPHCAST_ROOT
+LIBNYMPHCAST_ROOT = D:\Libraries\LibNymphCast
+!endif
+
+!ifndef NYMPHCAST_ROOT
+NYMPHCAST_ROOT = D:\Programs\NymphCast
+!endif
+
+!ifndef INSTALL_PREFIX
+INSTALL_PREFIX = $(NYMPHCAST_ROOT)
+!endif
+
+!ifdef OPTIMIZATION
+LIB_OPTIMIZATION = $(OPTIMIZATION)
+!elseif "$(LIB_CONFIG)" == "Release"
+LIB_OPTIMIZATION = -O2
+!else
+LIB_OPTIMIZATION = -Od
+!endif
+
+!ifdef WARNING
+LIB_WARNING = $(WARNING)
+!else
+LIB_WARNING =	# Use default warning level
+!endif
+
+# End Configuration.
+
+# Determine 32, or 64 bit:
+
+!if "$(VSCMD_ARG_TGT_ARCH)" == "x86"
+LIB_BITS = 32
+!elseif "$(VSCMD_ARG_TGT_ARCH)" == "x64"
+LIB_BITS = 64
+!else
+!error [Got unexpected target architecture '$(VSCMD_ARG_TGT_ARCH)'. Bailing out.]
+!endif
+
+# Sanity checks:
+
+!if "$(LIB_CONFIG)" != "Debug" && "$(LIB_CONFIG)" != "Release"
+!error [Expecting 'CONFIG=Debug' or 'CONFIG=Release', got 'CONFIG=$(LIB_CONFIG)'. Bailing out.]
+!endif
+
+!if !exist("$(POCO_ROOT)\include\Poco\Poco.h")
+!error [Cannot find Poco dependency at '$(POCO_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(NYMPHRPC_ROOT)\include\nymph\nymph.h")
+!error [Cannot find NymphRPC dependency at '$(NYMPHRPC_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(LIBNYMPHCAST_ROOT)\include\nymphcast_client.h")
+!error [Cannot find libNymphCast dependency at '$(LIBNYMPHCAST_ROOT)'. Bailing out.]
+!endif
+
+# INACTIVE: Setup desired toolset ()
+# Note: did not get this to work; use the NMake from the cmd for the desired toolset.
+
+# !if ["$(VCINSTALLDIR)\Auxiliary\Build\vcvars$(LIB_BITS).bat" ]
+# !endif
+
+# Commands:
+
+CXX   = cl -nologo
+LIB   = lib -nologo
+
+CP    = xcopy /Y
+RM    = del
+MKDIR = md		# Note: Do not use MAKEDIR=... as MAKEDIR is an NMake macro.
+
+# Product-related macros:
+
+# Include the file with the versioning information ('VERSION' variable).
+#!include version
+BIN_VERSION = -D__VERSION="\"v0.1-alpha3.20200925\""	# TODO obtain version from file; NMake does not support :=
+
+BIN_OUTPUT  = nymphcast_client.exe
+
+SRC_FOLDER  = .
+#LIB_ARCH   = $(VSCMD_ARG_TGT_ARCH)_$(LIB_BITS)-w64-msvc	# e.g.: x86_32-w64-msvc
+LIB_ARCH    = x86_$(LIB_BITS)-w64-msvc				# e.g.: x86_32-w64-msvc
+BIN_FOLDER  = bin/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: bin\x86_32-w64-msvc\Release
+LIB_FOLDER  = lib/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: lib\x86_32-w64-msvc\Release
+OBJ_FOLDER  = obj/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: obj\x86_32-w64-msvc\Release
+
+LIB_INCLUDE = -I $(SRC_FOLDER) -I $(LIBNYMPHCAST_ROOT)/include -I $(NYMPHRPC_ROOT)/include -I $(POCO_ROOT)/include
+LIB_LIBS    = NymphCast.lib NymphRPC.lib # PocoFoundation.lib PocoNet.lib # PocoUtil.lib PocoJSON.lib
+CXXFLAGS    = $(LIB_CPPSTD) -EHsc $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_INCLUDE) $(BIN_VERSION)
+
+INST_FOLDER_INC = $(INSTALL_PREFIX)\include
+INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
+
+# MSVC and Windows SDK paths:
+
+# Note: provide these specifically to the linker,
+# as they may not be found through the settings made via vcvars{N}.bat.
+
+!if $(LIB_BITS) == 32
+LNK_MACHINE = X86
+!else
+LNK_MACHINE = X64
+!endif
+
+LIB_LIBCPATH    = $(VCTOOLSINSTALLDIR)lib\x$(LIB_BITS)
+LIB_SDKUMPATH   = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)um\$(LNK_MACHINE)
+LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
+
+# Create targets:
+
+LIB_SOURCES_DIR = \
+	$(SRC_FOLDER)/NymphCastClient.cpp \
+	$(SRC_FOLDER)/sarge.cpp
+
+# Two steps:
+
+LIB_OBJECTS_TMP = $(LIB_SOURCES_DIR:.cpp=.obj)
+
+# LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:src/=$(OBJ_FOLDER)/)	# <== This seems to not work.
+
+# TODO ./ => src
+# Write-out all permutations:
+
+!if     "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/x86_32-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/x86_32-w64-msvc/Release/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/x86_64-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/x86_64-w64-msvc/Release/)
+!endif
+
+#
+# Inference rules:
+#
+
+{$(SRC_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+#
+# Targets:
+#
+
+all: print-configuration lib
+
+print-configuration:
+	@echo.
+	@echo Building program '$(BIN_OUTPUT)' with Configuration:
+	@echo "- LIB_CONFIG       : '$(LIB_CONFIG)'"
+	@echo "- LIB_BITS         : '$(LIB_BITS)'"
+	@echo "- LIB_CPPSTD       : '$(LIB_CPPSTD)'"
+	@echo "- LIB_WARNING      : '$(LIB_WARNING)'"
+	@echo "- LIB_OPTIMIZATION : '$(LIB_OPTIMIZATION)'"
+	@echo "- LIB_LNKCRT       : '$(LIB_LNKCRT)'"
+	@echo "- BIN_FOLDER       : '$(BIN_FOLDER)'"
+	@echo "- OBJ_FOLDER       : '$(OBJ_FOLDER)'"
+	@echo "- POCO_ROOT        : '$(POCO_ROOT)'"
+	@echo "- NYMPHRPC_ROOT    : '$(NYMPHRPC_ROOT)'"
+	@echo "- LIBNYMPHCAST_ROOT: '$(LIBNYMPHCAST_ROOT)'"
+	@echo "- INSTALL_PREFIX   : '$(INSTALL_PREFIX)'"
+	@echo "- LIB_LIBCPATH     : '$(LIB_LIBCPATH)'"
+	@echo "- LIB_SDKUMPATH    : '$(LIB_SDKUMPATH)'"
+	@echo "- LIB_SDKUCRTPATH  : '$(LIB_SDKUCRTPATH)'"
+	@echo.
+	@echo "- sources: $(LIB_SOURCES_DIR)"
+	@echo "- objects: $(LIB_OBJECTS_DIR)"
+	@echo.
+
+lib: makedir-lib $(BIN_FOLDER)\$(BIN_OUTPUT)
+
+makedir-lib:
+	-$(MKDIR) "$(BIN_FOLDER)" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)" > nul 2>&1
+
+# Dependencies:
+
+$(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
+
+$(BIN_FOLDER)\$(BIN_OUTPUT): $(LIB_OBJECTS_DIR)
+	$(CXX) -Fe$(BIN_FOLDER)\$(BIN_OUTPUT) $(LIB_OBJECTS_DIR) /link \
+	/machine:"$(LNK_MACHINE)" \
+	/libpath:"$(NYMPHRPC_ROOT)\lib" \
+	/libpath:"$(LIBNYMPHCAST_ROOT)\lib" \
+	/libpath:"$(POCO_ROOT)\lib" \
+	/libpath:"$(LIB_LIBCPATH)" \
+	/libpath:"$(LIB_SDKUMPATH)" \
+	/libpath:"$(LIB_SDKUCRTPATH)" \
+	$(LIB_LIBS)
+
+# Installation targets:
+
+install: lib makedir-install copy-install
+
+makedir-install:
+	-$(MKDIR) "$(INST_FOLDER_INC:/=\)" > nul 2>&1
+	-$(MKDIR) "$(INST_FOLDER_LIB:/=\)" > nul 2>&1
+
+copy-install:
+	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
+	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
+
+# Clean targets:
+
+clean:
+	-$(RM) $(OBJ_FOLDER:/=\)\*.obj
+
+dist-clean: clean
+	-$(RM) $(BIN_FOLDER:/=\)\$(BIN_OUTPUT)
+
+real-clean: dist-clean
+
+# end of file
