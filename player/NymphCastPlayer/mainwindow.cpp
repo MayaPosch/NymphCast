@@ -16,6 +16,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QDataStream>
+#include <QScroller>
 
 #include "remotes.h"
 
@@ -209,6 +210,10 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Set values.
     ui->sharesTreeView->setModel(&sharesModel);
+	
+	// Set QScroller on the list view and similar that need touch-based scrolling support.
+	QScroller::grabGesture(ui->mediaListWidget, QScroller::LeftMouseButtonGesture);
+	QScroller::grabGesture(ui->sharesTreeView, QScroller::LeftMouseButtonGesture);
 	
 	// Ensure this path exists.
 	QDir dir(appDataLocation);

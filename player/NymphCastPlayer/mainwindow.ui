@@ -164,7 +164,14 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QListWidget" name="mediaListWidget"/>
+           <widget class="QListWidget" name="mediaListWidget">
+            <property name="verticalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <property name="horizontalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -473,7 +480,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeView" name="sharesTreeView"/>
+           <widget class="QTreeView" name="sharesTreeView">
+            <property name="verticalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="sharesPlayButton">
