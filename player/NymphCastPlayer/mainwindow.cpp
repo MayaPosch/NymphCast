@@ -1386,7 +1386,7 @@ void MainWindow::addGroupsToRemotes() {
 
 // --- ABOUT ---
 void MainWindow::about() {
-	QMessageBox::about(this, tr("About NymphCast Player."), tr("NymphCast Player is the reference player for NymphCast.\n\nRev.: v0.1-alpha6"));
+	QMessageBox::about(this, tr("About NymphCast Player."), tr("NymphCast Player is the reference player for NymphCast.\n\nRev.: v0.1-beta0"));
 }
 
 
