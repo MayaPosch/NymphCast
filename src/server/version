@@ -1,4 +1,4 @@
 # Versioning file for the NymphCast server.
 # Included by the main Makefile.
 
-VERSION := v0.1-alpha6.20211016
+VERSION := v0.1-beta0.20211111
