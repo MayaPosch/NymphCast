@@ -698,7 +698,10 @@ void MainWindow::castUrl() {
 // --- PLAYER REMOTE CHANGED ---
 void MainWindow::playerRemoteChanged(int index) {
 	if (index < 0) {
-		return;
+		return;	// Invalid index.
+	}
+	else if (remotes.empty()) {
+		return; // Nothing to change to.
 	}
 	
 	// Obtain selected ID.
