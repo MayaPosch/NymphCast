@@ -49,10 +49,7 @@
          <string>Select remote or group</string>
         </property>
         <property name="currentText">
-         <string>Select Remote...</string>
-        </property>
-        <property name="placeholderText">
-         <string>Select Remote...</string>
+         <string/>
         </property>
        </widget>
       </item>
