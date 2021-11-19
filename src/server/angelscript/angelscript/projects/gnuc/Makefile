@@ -85,7 +85,7 @@ else
 	CXX := $(GPP)
 	# On i686 architecture you may need to add -march=i686 if you get 
 	# an undefined symbol for __sync_sub_and_fetch_4 in as_atomic.cpp.
-	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing
+	CXXFLAGS += -Wall -fPIC -fno-strict-aliasing -ffunction-sections -fdata-sections
 endif
 
 ## Detect if targeting ARM CPU and if so tell assembler to accept implicit IT constructs in thumb mode
