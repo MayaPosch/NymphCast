@@ -202,7 +202,7 @@ The **NymphCast Player** is a GUI-based application and accepts no command line 
 
 **Server:**
 
-[Server building instructions](building_nymphcast_server.md)
+[Server building instructions](doc/building_nymphcast_server.md)
 
 
 ### **Building The NymphCast Player Client** ###
