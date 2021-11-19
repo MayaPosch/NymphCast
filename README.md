@@ -4,10 +4,11 @@
 
 NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device, or directly on the receiver.
 
-In addition, the server supports powerful NymphCast apps written in AngelScript to extend the overall NymphCast functionality with e.g. 3rd party audio / video streaming protocol support on the server side, and cross-platform control panels served to the client application that integrate with the overall client experience.  
+In addition, the server supports NymphCast apps (currently in preview status) written in AngelScript to extend the overall NymphCast functionality with e.g. 3rd party audio / video streaming protocol support on the server side, and customisable UIs in the client application.
 
-NymphCast requires in all but the GUI mode that at least the server application runs on a target device, while the full functionality is provided in conjunction with a  remote control device: 
-![NymphCast diagram](doc/nymphcast.png)
+NymphCast requires the use of a client device in all but the GUI mode. The server application (receiver) runs on a target device, while the client device functions as a remote control device:
+
+![NymphCast diagram](doc/nymphcast_layout.png)
 
 Client-side core functionality is provided through the NymphCast library.
 
@@ -17,13 +18,19 @@ NymphCast can be used in a number of scenarios:
 
 - **NymphCast Audio** :arrow_right: Audio-only receiver mode.
 	+ Profile: `nymphcast_audio_config.ini`
+	+ [Setup guide](doc/nymphcast_audio_setup_guide.md)
 - **NymphCast Video** :arrow_right: Audio & Video receiver mode.
 	+ Profile: `nymphcast_video_config.ini`
+	+ [Setup guide](doc/nymphcast_video_setup_guide.md)
 - **NymphCast ScreenSaver** :arrow_right: Like NymphCast Video, but with image-based ScreenSaver when not playing content.
 	+ Profile: `nymphcast_screensaver_config.ini`
+	+ [Setup guide](doc/nymphcast_screensaver_screensaver_guide.md)
 - **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled. (experimental feature)
 	+ Profile: `nymphcast_gui_config.ini`
+	+ [Setup guide](doc/nymphcast_audio_gui_guide.md)
 	
+
+
 ## Network ports ##
 
 **Note:** NymphCast Server uses UDP port 4004 for discovery, and TCP port 4004 for playback.
@@ -34,18 +41,10 @@ Systems running the [NymphCast MediaServer](https://github.com/MayaPosch/NymphCa
 
 Please ensure that these ports are whitelisted in e.g. firewall rules if applicable.
 
-## GUI configuration ##
-
-When setting up NymphCast server for the (experimental) GUI mode, the necessary resource files (in the `.emulationstation` folder) are by default located under `src/server`. This can be overridden in two ways:
-
-1. Copy the `src/server/.emulationstation` folder to the home folder (`~/`) of the user running NymphCast Server.
-2. Pass the path to the folder containing the `.emulationstation` folder as a command line option.
-
-**Note:** In order for shared media files and the NymphCast entry in the GUI to show up, at least one NymphCast MediaServer instance must be active on the same network and sharing files.
 
 ## Features & Status ##
 
-The current development version is v0.1-alpha5. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
+The current development version is v0.1-beta0. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
 
 Category | Status | Description | Notes
 ---|----|---|---
@@ -74,11 +73,11 @@ The NymphCast project consists out of multiple components:
 
 Component | Purpose | Status
 ---|---|---
-NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-alpha5
-[LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1-alpha5
-NymphCast Client | CLI-based NymphCast client. | v0.1-alpha4
-NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-alpha4
-[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-alpha0
+NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-beta0
+[LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1-beta0
+NymphCast Client | CLI-based NymphCast client. | v0.1-beta0
+NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-beta0
+[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-beta0
 
 ### **NymphCast Player Client** ###
 
@@ -201,66 +200,9 @@ The **NymphCast Player** is a GUI-based application and accepts no command line 
 
 **Note:** This section is for building the project from source. Pre-built binaries are provided in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder.
 
-The steps below assume building the server part on a system running a current version of Debian (Buster) or similarly current version of Arch (Manjaro) Linux or Alpine Linux. The player client demo application can be built on Linux/BSD/MacOS with a current GCC toolchain, or MSYS2 on Windows with MinGW toolchain. 
+**Server:**
 
-Once the project files have been downloaded, run the `setup.sh` script in the project root, or install the dependencies and run the Makefile in the `client` and `server` folders as described. Either method will output a binary into the newly created `bin/` folder.
-
-To build the corresponding client-related parts of NymphCast, in addition to a C++ toolchain with C++17 support, one needs the dependencies as listed below.
-
-### **Server Dependencies** ###
-
-- [NymphRPC](https://github.com/MayaPosch/NymphRPC)
-- [LibNymphCast](https://github.com/MayaPosch/libnymphcast)
-- [LibAV](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
-- LibSDL2
-- LibSDL2_Image
-- LibPOCO (1.5+)
-- libFreeType
-- libFreeImage
-- RapidJson
-- Pkg-config
-
-On **Debian** & derivatives:
-
-```
-sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
-```
-
-On **Arch** & derivatives:
-
-```
-sudo pacman -S --noconfirm --needed sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkgconf
-```
-
-On **Alpine** & derivatives:
-
-```
-sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev vlc-dev curl-dev alsa-lib-dev nymphrpc-dev pkg-config
-```
-
-
-### **Client Library Dependencies** ###
-
-* [NymphRPC](https://github.com/MayaPosch/NymphRPC)
-* LibPOCO (1.5+)
-
-
-### **Building The Server** ###
-
-If using a compatible OS (e.g. **Debian** Buster, Alpine Linux or Arch Linux), one can use the setup script: 
-
-1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
-2. Run the `install_linux.sh` script in the project root to install the binaries and set up a systemd/OpenRC service on Linux systems.
-
-Else, use the manual procedure:
-
-1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
-2. Install NymphRPC with `sudo make install`.
-3. Check-out [LibNymphCast](https://github.com/MayaPosch/libnymphcast) elsewhere and build the library with `make`.
-4. Install LibNymphCast with `sudo make install`.
-5. Change to `NymphCast/src/server` and execute `make` command.
-6. Use `sudo make install` to install the server and associated files.
-7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
+[Server building instructions](building_nymphcast_server.md)
 
 
 ### **Building The NymphCast Player Client** ###
@@ -281,6 +223,8 @@ Or (building and running on Windows & other **desktop** platforms):
 
 On **Android**:
 
+**Note:** Poco for Android must be built using the patches provided with the [alternate Poco build system](https://github.com/MayaPosch/Poco-build) for certain network functionality to function.
+
 1. Download or clone the project repository.
 2. Compile the dependencies (LibNymphCast, NymphRPC & Poco) for the target Android platforms.
 3. Ensure dependency libraries along with their headers are installed in the Android NDK, under `<ANDROID_SDK>/ndk/<VERSION>/toolchains/llvm/prebuilt/<HOST_OS>/sysroot/usr/lib/<TARGET>` where `TARGET` is the target Android platform (ARMv7, AArch64, x86, x86_64). Header files are placed in the accompanying `usr/include` folder.
@@ -289,7 +233,6 @@ On **Android**:
 
 
 Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
-
 
 
 
