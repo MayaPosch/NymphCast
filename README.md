@@ -24,10 +24,10 @@ NymphCast can be used in a number of scenarios:
 	+ [Setup guide](doc/nymphcast_video_setup_guide.md)
 - **NymphCast ScreenSaver** :arrow_right: Like NymphCast Video, but with image-based ScreenSaver when not playing content.
 	+ Profile: `nymphcast_screensaver_config.ini`
-	+ [Setup guide](doc/nymphcast_screensaver_screensaver_guide.md)
+	+ [Setup guide](doc/nymphcast_screensaver_setup_guide.md)
 - **NymphCast GUI** :arrow_right: Like NymphCast Video, but with stand-alone GUI mode (smart TV) enabled. (experimental feature)
 	+ Profile: `nymphcast_gui_config.ini`
-	+ [Setup guide](doc/nymphcast_audio_gui_guide.md)
+	+ [Setup guide](doc/nymphcast_gui_setup_guide.md)
 	
 
 

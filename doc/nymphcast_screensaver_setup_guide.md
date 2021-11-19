@@ -17,7 +17,7 @@ The audio and video playback quality and other details are dependent on the unde
 
 ## Requirements ##
 
-In order to set up an NC-V system, the following hardware and software requirements have to be met:
+In order to set up an NC-S system, the following hardware and software requirements have to be met:
 
 - System running a supported operating system (Linux, Windows, others are experimental).
 - Audio and video output (including hardware acceleration) configured in the OS.
