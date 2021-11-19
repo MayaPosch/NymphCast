@@ -22,6 +22,8 @@ A C++17-capable GCC toolchain is required in addition to the below dependencies:
 - libFreeImage
 - RapidJson
 - Pkg-config
+- libVLC
+- libCurl
 
 On **Debian** & derivatives:
 
