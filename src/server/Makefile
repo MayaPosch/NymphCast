@@ -53,7 +53,7 @@ LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON 
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
-LDFLAGS := -Wl,--gc-sections $(PLATFORM_LDFLAGS) $(LIB)
+LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
