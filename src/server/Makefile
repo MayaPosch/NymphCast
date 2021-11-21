@@ -92,7 +92,9 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard gui/app/scrapers/*.cpp) \
 			$(wildcard gui/app/views/*.cpp) \
 			$(wildcard gui/app/views/gamelist/*.cpp) \
-			$(wildcard gui/app/pugixml/src/*.cpp)
+			$(wildcard gui/app/pugixml/src/*.cpp) \
+			$(wildcard lcdapi/api/*.cpp) \
+			$(wildcard lcdapi/sensors/*.cpp)
 C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
 C_OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
@@ -137,6 +139,8 @@ makedir:
 	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/scrapers
 	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/views/gamelist
 	$(MAKEDIR) obj/$(TARGET_BIN)gui/app/pugixml/src
+	$(MAKEDIR) obj/$(TARGET_BIN)lcdapi/api
+	$(MAKEDIR) obj/$(TARGET_BIN)lcdapi/sensors
 	$(MAKEDIR) bin/$(TARGET)
 	
 angelscript:
