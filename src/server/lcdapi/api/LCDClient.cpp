@@ -232,7 +232,7 @@ void LCDClient::mainLoop()
 
     if ( (0 == reply.find("huh?")) || (0 == reply.compare("success")) )
     {
-      const LCDLock l(&_sendMutex);
+      //const LCDLock l(&_sendMutex);
       _answer = reply;
       ::pthread_cond_signal(&_gotAnswer);
     }
