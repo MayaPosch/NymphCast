@@ -153,6 +153,12 @@ std::atomic<bool> castingUrl = { false };		// We're either casting data or strea
 std::string castUrl;
 Poco::Thread avThread;
 
+// LCDProc client.
+#include "lcdapi/include/LCDHeaders.h"
+std::atomic<bool> lcdapi_active = { false };
+bool lcdproc_enabled = false;
+// ---
+
 #ifdef PROFILING
 FfplayDummy ffplay;
 #else
@@ -445,6 +451,11 @@ void finishPlayback() {
 	
 	// Call the status update callback to indicate to the clients that playback stopped.
 	sendGlobalStatusUpdate();
+	
+	// Update the LCDProc daemon if enabled.
+	if (lcdproc_enabled) {
+		// TODO: Clear the screen.
+	}
 	
 	// Start the Screensaver here for now.
 	if (!display_disable) {
@@ -1713,6 +1724,9 @@ int main(int argc, char** argv) {
 	// screensaver mode.
 	gui_enable = config.getValue<bool>("gui_enable", false);
 	
+	// Check whether the LCDProc client should be enabled.
+	lcdproc_enabled = config.getValue<bool>("enable_lcdproc", false);
+	
 	// Open the 'apps.ini' file and parse it.
 	nc_apps.setAppsFolder(appsFolder);
 	if (!nc_apps.readAppList(appsFolder + "apps.ini")) {
@@ -2046,6 +2060,44 @@ int main(int argc, char** argv) {
 	
 	std::cout << "Starting NyanSD on port 4004 UDP..." << std::endl;
 	NyanSD::startListener(4004);
+	
+	if (lcdproc_enabled) {
+		// Try to connect to the local LCDProc daemon if it's running.
+		try {
+			lcdapi::LCDClient lcdclient("localhost", 13666);
+			
+			lcdapi_active = true;
+			
+			// Set start screen.
+			// TODO: get properties of remote screen. For now assume 16x2 HD44780.
+			lcdapi::LCDScreen screen1(&lcdclient);
+			screen1.setTimeOut(30);
+			
+			lcdapi::LCDTitle title("NymphCast Receiver");
+			screen1.add(&title);
+			
+			screen1.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
+			
+			// Playback screen
+			lcdapi::LCDScreen screen2(&lcdclient);
+			
+			lcdapi::LCDScroller scroll(&screen2);
+			scroll.setWidth(20);
+			scroll.setSpeed(3);
+			scroll.move(1, 3);
+			
+			lcdapi::LCDNymphCastSensor ncsensor("No title");
+			ncsensor.addOnChangeWidget(&scroll);
+			
+			screen2.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
+		}
+		catch (lcdapi::LCDException e)  {
+			std::cout << e.what() << std::endl;
+			std::cout << "Skipping LCDApi activation." << std::endl;
+			
+			lcdapi_active = false;
+		}
+	}
 	
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
