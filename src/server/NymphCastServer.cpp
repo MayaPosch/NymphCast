@@ -2061,16 +2061,17 @@ int main(int argc, char** argv) {
 	std::cout << "Starting NyanSD on port 4004 UDP..." << std::endl;
 	NyanSD::startListener(4004);
 	
+	lcdapi::LCDClient* lcdclient = 0;
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
-			lcdapi::LCDClient lcdclient("localhost", 13666);
+			lcdclient = new lcdapi::LCDClient("localhost", 13666);
 			
 			lcdapi_active = true;
 			
 			// Set start screen.
 			// TODO: get properties of remote screen. For now assume 16x2 HD44780.
-			lcdapi::LCDScreen screen1(&lcdclient);
+			lcdapi::LCDScreen screen1(lcdclient);
 			screen1.setTimeOut(30);
 			
 			lcdapi::LCDTitle title("NymphCast Receiver");
@@ -2079,7 +2080,8 @@ int main(int argc, char** argv) {
 			screen1.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
 			
 			// Playback screen
-			lcdapi::LCDScreen screen2(&lcdclient);
+			lcdapi::LCDScreen screen2(lcdclient);
+			screen2.setDuration(32);
 			
 			lcdapi::LCDScroller scroll(&screen2);
 			scroll.setWidth(20);
@@ -2159,6 +2161,11 @@ int main(int argc, char** argv) {
 	running = false;
 	dataRequestCv.notify_one();
 	drq.join();
+	
+	// LCDProc client.
+	if (lcdapi_active && lcdclient) {
+		delete lcdclient;
+	}
  
 	// Close window and clean up libSDL.
 	ffplay.quit();
