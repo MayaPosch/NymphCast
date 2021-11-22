@@ -2062,6 +2062,10 @@ int main(int argc, char** argv) {
 	NyanSD::startListener(4004);
 	
 	lcdapi::LCDClient* lcdclient = 0;
+	lcdapi::LCDScreen* screen1 = 0;
+	lcdapi::LCDTitle* title = 0;
+	lcdapi::LCDScroller* scroll = 0;
+	lcdapi::LCDNymphCastSensor* ncsensor = 0;
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
@@ -2069,29 +2073,24 @@ int main(int argc, char** argv) {
 			
 			lcdapi_active = true;
 			
-			// Set start screen.
+			// Set screen.
 			// TODO: get properties of remote screen. For now assume 16x2 HD44780.
-			lcdapi::LCDScreen screen1(lcdclient);
-			screen1.setTimeOut(30);
+			screen1 = new lcdapi::LCDScreen(lcdclient);
 			
-			lcdapi::LCDTitle title("NymphCast Receiver");
-			screen1.add(&title);
+			title = new lcdapi::LCDTitle("NymphCast Receiver");
+			screen1->add(title);
 			
-			screen1.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
+			screen1->setDuration(32);
 			
-			// Playback screen
-			lcdapi::LCDScreen screen2(lcdclient);
-			screen2.setDuration(32);
+			scroll = new lcdapi::LCDScroller(screen1);
+			scroll->setWidth(20);
+			scroll->setSpeed(3);
+			scroll->move(1, 3);
 			
-			lcdapi::LCDScroller scroll(&screen2);
-			scroll.setWidth(20);
-			scroll.setSpeed(3);
-			scroll.move(1, 3);
+			ncsensor = new lcdapi::LCDNymphCastSensor("No title");
+			ncsensor->addOnChangeWidget(scroll);
 			
-			lcdapi::LCDNymphCastSensor ncsensor("No title");
-			ncsensor.addOnChangeWidget(&scroll);
-			
-			screen2.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
+			screen1->setBackLight(lcdapi::LCD_BACKLIGHT_ON);
 		}
 		catch (lcdapi::LCDException e)  {
 			std::cout << e.what() << std::endl;
@@ -2165,6 +2164,10 @@ int main(int argc, char** argv) {
 	// LCDProc client.
 	if (lcdapi_active && lcdclient) {
 		delete lcdclient;
+		delete screen1;
+		delete scroll;
+		delete title;
+		delete ncsensor;
 	}
  
 	// Close window and clean up libSDL.
