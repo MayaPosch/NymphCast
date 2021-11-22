@@ -193,7 +193,7 @@ void dataRequestFunction() {
 			NYMPH_LOG_INFORMATION("Shutting down data request function...");
 			break;
 		}
-		else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
+		//else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
 		
 		NYMPH_LOG_INFORMATION("Asking for data...");
 	
@@ -2061,40 +2061,35 @@ int main(int argc, char** argv) {
 	std::cout << "Starting NyanSD on port 4004 UDP..." << std::endl;
 	NyanSD::startListener(4004);
 	
-	lcdapi::LCDClient* lcdclient = 0;
-	lcdapi::LCDScreen* screen1 = 0;
-	lcdapi::LCDTitle* title = 0;
-	lcdapi::LCDScroller* scroll = 0;
-	lcdapi::LCDNymphCastSensor* ncsensor = 0;
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
-			lcdclient = new lcdapi::LCDClient("localhost", 13666);
+			static lcdapi::LCDClient lcdclient("localhost", 13666);
 			
 			lcdapi_active = true;
 			
 			// Set screen.
 			// TODO: get properties of remote screen. For now assume 16x2 HD44780.
-			screen1 = new lcdapi::LCDScreen(lcdclient);
+			static lcdapi::LCDScreen screen1(&lcdclient);
+			screen1.setDuration(32);
 			
-			title = new lcdapi::LCDTitle("NymphCast Receiver");
-			screen1->add(title);
+			static lcdapi::LCDTitle title(&screen1);
+			screen1.add(&title);
+			title.set("NymphCast");
 			
-			screen1->setDuration(32);
+			static lcdapi::LCDScroller scroll(&screen1);
+			scroll.setWidth(20);
+			scroll.setSpeed(3);
+			scroll.move(1, 3);
 			
-			scroll = new lcdapi::LCDScroller(screen1);
-			scroll->setWidth(20);
-			scroll->setSpeed(3);
-			scroll->move(1, 3);
+			static lcdapi::LCDNymphCastSensor ncsensor("No title");
+			ncsensor.addOnChangeWidget(&scroll);
 			
-			ncsensor = new lcdapi::LCDNymphCastSensor("No title");
-			ncsensor->addOnChangeWidget(scroll);
-			
-			screen1->setBackLight(lcdapi::LCD_BACKLIGHT_ON);
+			screen1.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
 		}
 		catch (lcdapi::LCDException e)  {
 			std::cout << e.what() << std::endl;
-			std::cout << "Skipping LCDApi activation." << std::endl;
+			std::cout << "Skipping LCDProc client activation." << std::endl;
 			
 			lcdapi_active = false;
 		}
@@ -2160,15 +2155,6 @@ int main(int argc, char** argv) {
 	running = false;
 	dataRequestCv.notify_one();
 	drq.join();
-	
-	// LCDProc client.
-	if (lcdapi_active && lcdclient) {
-		delete lcdclient;
-		delete screen1;
-		delete scroll;
-		delete title;
-		delete ncsensor;
-	}
  
 	// Close window and clean up libSDL.
 	ffplay.quit();
