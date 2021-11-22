@@ -539,6 +539,11 @@ int StreamHandler::read_thread(void *arg) {
 
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0))) {
         window_title = av_asprintf("%s - %s", t->value, input_filename);
+	}
+	
+	// Set new title after clearing it.
+	file_meta.setTitle("");
+	if (t = av_dict_get(ic->metadata, "title", NULL, 0)) {
 		file_meta.setTitle(t->value);
 	}
 
@@ -868,7 +873,7 @@ VideoState* StreamHandler::stream_open(const char *filename, AVInputFormat *ifor
 
     is = (VideoState*) av_mallocz(sizeof(VideoState));
     if (!is)
-        return NULL;
+        return 0;
     is->filename = av_strdup(filename);
     if (!is->filename) {
         stream_close(is);
@@ -931,7 +936,7 @@ VideoState* StreamHandler::stream_open(const char *filename, AVInputFormat *ifor
     if (!is->read_tid) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateThread(): %s\n", SDL_GetError());
         stream_close(is);
-        return NULL;
+        return 0;
     }
     return is;
 }
