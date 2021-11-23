@@ -157,8 +157,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// UI
 	connect(ui->editRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
 	connect(ui->refreshRemotesButton, SIGNAL(clicked()), this, SLOT(remoteListRefresh()));
-	connect(ui->remotesComboBox, SIGNAL(currentIndexChanged(int)), 
-															this, SLOT(playerRemoteChanged(int)));
+	connect(ui->remotesComboBox, SIGNAL(activated(int)), this, SLOT(playerRemoteChanged(int)));
 	
 	// Tabs
     // Player tab.
