@@ -24,7 +24,8 @@ sudo make -C src/server/ install
 if [ -d "/run/systemd/system" ]; then
 	echo "Installing systemd service..."
 	sudo make -C src/server/ install-systemd
-	sudo ln -s /usr/local/etc/systemd/system/nymphcast.service /etc/systemd/system/multi-user.target.wants/nymphcast.service
+	#sudo ln -s /usr/local/etc/systemd/system/nymphcast.service /etc/systemd/system/multi-user.target.wants/nymphcast.service
+	sudo systemctl enable nymphcast.service
 else
 	echo "Installing OpenRC service..."
 	sudo make -C src/server/ install-openrc
