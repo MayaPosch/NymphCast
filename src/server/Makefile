@@ -177,7 +177,7 @@ install:
 	install -m 755 bin/$(TARGET_BIN)$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
 	install -m 644 *.ini $(DESTDIR)$(CONFDIR)/nymphcast/
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
-	install -m 644 *.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
+	install -m 644 wallpapers/*.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
 
 .PHONY: install-systemd
 install-systemd:
