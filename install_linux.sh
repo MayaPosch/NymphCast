@@ -31,27 +31,27 @@ else
 fi
 
 # Set the requested configuration file.
-read -p "Desired NymphCast receiver configuration? [audio/video/screensaver/gui]" choice
+read -p "Desired NymphCast receiver configuration? [audio/video/screensaver/gui] " choice
 
 case $choice in
 	audio)
 		echo "Setting Audio configuration..."
-		sudo cp src/server/nymphcast_audio_config.ini etc/nymphcast/nymphcast_config.ini
+		sudo cp src/server/nymphcast_audio_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
 		;;
 		
 	video)
 		echo "Setting video configuration..."
-		sudo cp src/server/nymphcast_video_config.ini etc/nymphcast/nymphcast_config.ini
+		sudo cp src/server/nymphcast_video_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
 		;;
 		
 	screensaver)
 		echo "Setting screensaver configuration..."
-		sudo cp src/server/nymphcast_screensaver_config.ini etc/nymphcast/nymphcast_config.ini
+		sudo cp src/server/nymphcast_screensaver_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
 		;;
 		
 	gui)
 		echo "Setting GUI configuration..."
-		sudo cp src/server/nymphcast_gui_config.ini etc/nymphcast/nymphcast_config.ini
+		sudo cp src/server/nymphcast_gui_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
 		;;
 		
 	*)
