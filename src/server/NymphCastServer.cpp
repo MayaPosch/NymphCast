@@ -193,7 +193,9 @@ void dataRequestFunction() {
 			NYMPH_LOG_INFORMATION("Shutting down data request function...");
 			break;
 		}
-		//else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
+		
+		// Set data request as pending.
+		DataBuffer::dataRequestPending = true;
 		
 		NYMPH_LOG_INFORMATION("Asking for data...");
 	

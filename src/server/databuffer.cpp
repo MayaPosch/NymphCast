@@ -60,8 +60,6 @@ std::atomic<bool> DataBuffer::resetRequest = { false };
 std::atomic<bool> DataBuffer::writeStarted = { false };
 uint32_t DataBuffer::sessionHandle = 0;
 
-//std::atomic<uint32_t> DataBuffer::bytesSingleRead = 0;
-
 std::mutex DataBuffer::streamTrackQueueMutex;
 std::queue<std::string> DataBuffer::streamTrackQueue;
 
@@ -70,7 +68,6 @@ std::queue<std::string> DataBuffer::streamTrackQueue;
 // Initialises new data buffer. Capacity is provided in bytes.
 // Returns false on error, otherwise true.
 bool DataBuffer::init(uint32_t capacity) {
-	//bufferMutex.lock();
 	if (buffer != 0) {
 		// An existing buffer exists. Erase it first.
 		delete[] buffer;
@@ -100,7 +97,6 @@ bool DataBuffer::init(uint32_t capacity) {
 	writeStarted = false;
 	state = DBS_IDLE;
 	
-	//bufferMutex.unlock();
 #ifdef PROFILING_DB
 	if (!db_debugfile.is_open()) {
 		db_debugfile.open("profiling_databuffer.txt");
@@ -172,7 +168,6 @@ bool DataBuffer::start() {
 	if (dataRequestCV == 0) { return false; }
 	
 	writeStarted = true;
-	dataRequestPending = true;
 	dataRequestCV->notify_one();
 	
 	return true;
@@ -184,7 +179,6 @@ void DataBuffer::requestData() {
 	if (dataRequestCV == 0) { return; }
 	
 	// Trigger a data request from the client.
-	dataRequestPending = true;
 	dataRequestCV->notify_one();
 	
 	// Wait until we have received data or time out.
@@ -200,7 +194,6 @@ void DataBuffer::requestData() {
 // Reset the buffer to the initialised state. This leaves the existing allocated buffer intact, 
 // but erases its contents.
 bool DataBuffer::reset() {
-	//bufferMutex.lock();
 	front = buffer;
 	back = buffer;
 	size = 0;
@@ -218,8 +211,6 @@ bool DataBuffer::reset() {
 	seekRequestPending = false;
 	resetRequest = false;
 	state = DBS_IDLE;
-	
-	//bufferMutex.unlock();
 	
 	return true;
 }
@@ -363,7 +354,6 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		}
 	}
 	
-	//bufferMutex.lock();
 	uint32_t bytesRead = 0;
 	
 	// Determine the number of bytes we can read in one copy operation.
@@ -372,9 +362,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	// till there, otherwise to the end of the buffer.
 	uint32_t locunread = unread;
 	uint32_t bytesSingleRead = locunread;
-	//if (index < back) { bytesSingleRead = back - index; }
 	if ((end - index) < bytesSingleRead) { bytesSingleRead = end - index; } // Unread section wraps around.
-	//else { bytesSingleRead = end - index; }
 	
 #ifdef DEBUG
 	std::cout << "bytesSingleRead: " << bytesSingleRead << std::endl;
@@ -486,9 +474,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
-			dataRequestPending = true;
 			dataRequestCV->notify_one();
-			//requestedDataLastTime = true;
 		}
 	}
 
@@ -501,8 +487,6 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	std::cout << "unread " << unread << ", free " << free << std::endl;
 	std::cout << "bytesRead: " << bytesRead << std::endl;
 #endif
-	
-	//bufferMutex.unlock();
 	
 	return bytesRead;
 }
@@ -535,9 +519,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// we can write up till there, otherwise to the end of the buffer.
 	uint32_t locfree = free;
 	uint32_t bytesSingleWrite = locfree;
-	//if (back < index) { bytesSingleWrite = index - back; }
 	if ((end - back) < bytesSingleWrite) { bytesSingleWrite = end - back; }
-	//else { bytesSingleWrite = end - back; }
 	
 	if (length <= bytesSingleWrite) {
 #ifdef DEBUG
@@ -625,8 +607,6 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		dataRequestPending = false;
 		seekRequestCV.notify_one();
 		
-		//bufferMutex.unlock();
-		
 		return bytesWritten;
 	}
 	
@@ -649,11 +629,9 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
-			dataRequestPending = true;
 			dataRequestCV->notify_one();
 		}
 	}
-	//bufferMutex.unlock();
 	
 	return bytesWritten;
 }
