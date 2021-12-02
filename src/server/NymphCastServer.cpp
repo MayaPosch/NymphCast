@@ -1010,10 +1010,8 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		sendGlobalStatusUpdate();
 	}
 	
-	// if 'done' is true, the client has sent the last bytes. Signal session end in this case.
-	if (done) {
-		DataBuffer::setEof(done);
-	}
+	// Update EOF status.
+	DataBuffer::setEof(done);
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
