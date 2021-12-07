@@ -394,7 +394,7 @@ void MainWindow::positionUpdate() {
 	ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
 													duration.toString("hh:mm:ss"));
 													
-	ui->positionSlider->setValue((ris->position / ris->status.duration) * 100);
+	ui->positionSlider->setValue((ris->position / ris->status.duration) * 1000);
 }
 
 
@@ -532,7 +532,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->durationLabel->setText(position.toString("hh:mm:ss") + " / " + 
 														duration.toString("hh:mm:ss"));
 														
-		ui->positionSlider->setValue((status.position / status.duration) * 100);
+		ui->positionSlider->setValue((status.position / status.duration) * 1000);
 		
 		ui->volumeSlider->setValue(status.volume);
 	}
