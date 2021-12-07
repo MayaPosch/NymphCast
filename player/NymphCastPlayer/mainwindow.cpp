@@ -485,6 +485,9 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->pauseToolButton->setEnabled(false);
 		ui->pauseToolButton->setVisible(false);
 		
+		ui->menuCast->setEnabled(true);
+		ui->sharesPlayButton->setEnabled(true);
+		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
 		
@@ -523,6 +526,9 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->stopToolButton->setEnabled(true);
 		ui->pauseToolButton->setEnabled(true);
 		ui->pauseToolButton->setVisible(true);
+		
+		ui->menuCast->setEnabled(false);
+		ui->sharesPlayButton->setEnabled(false);
 		
 		// Set position & duration.
 		QTime position(0, 0);
