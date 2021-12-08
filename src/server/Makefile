@@ -6,6 +6,7 @@
 ifdef PLATFORM
 include platforms/$(PLATFORM).mk
 TARGET := $(PLATFORM)
+CROSSC := 1
 else
 # Get the compiler's (GCC or Clang) target triplet and use that as platform.
 TARGET := $(shell g++ -dumpmachine)
@@ -25,6 +26,7 @@ endif
 
 export TARGET
 export GPP
+export PLATFORM_FLAGS
 
 USYS := $(shell uname -s)
 UMCH := $(shell uname -m)
@@ -37,19 +39,31 @@ VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_server
 INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_on \
-			-I angelscript/json -I angelscript/regexp `sdl2-config --cflags` \
+			-I angelscript/json -I angelscript/regexp \
 			-I gui/core -I gui/core/animations  -I gui/core/components  -I gui/core/guis \
 			-I gui/core/math  -I gui/core/renderers  -I gui/core/resources  -I gui/core/utils \
 			-I gui/app -I gui/app/animations -I gui/app/components -I gui/app/guis \
 			-I gui/app/scrapers -I gui/app/views -I gui/app/gamelist \
-			`pkg-config --cflags freetype2` \
 			-I gui/core/nanosvg
+ifdef CROSSC
+INCLUDE += -I $(SYSROOT)/usr/include/SDL2 -I $(SYSROOT)/usr/include/freetype2
+else 
+INCLUDE += `sdl2-config --cflags` \
+			`pkg-config --cflags freetype2`
+endif
+
 LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
 		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
-		-lstdc++fs `sdl2-config --libs` -lfreetype \
-			`pkg-config --libs freetype2` -lcurl -lvlc -lfreeimage \
+		-lstdc++fs -lfreetype \
+			 -lcurl -lvlc -lfreeimage \
 			-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
+ifdef CROSSC
+LIB := -L $(SYSROOT)/usr/lib $(PLATFORM_LDFLAGS) -lfreetype -lSDL2main -lSDL2 $(LIB) -lpthread -lc
+else
+LIB += `pkg-config --libs freetype2` `sdl2-config --libs`
+endif
+
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
@@ -205,8 +219,6 @@ ar-rasp-full: bin/$(TARGET_BIN)$(OUTPUT)
 	$(MAKEDIR) out/tmp/payload/usr/local/share/nymphcast
 	cp -r apps/ out/tmp/payload/usr/local/share/nymphcast/.
 	cp -r wallpapers/ out/tmp/payload/usr/local/share/nymphcast/.
-	cp forest_brook.jpg out/tmp/payload/usr/local/share/nymphcast/wallpapers/.
-	cp green.jpg out/tmp/payload/usr/local/share/nymphcast/wallpapers/.
 	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
 	cd out/tmp && zip --symlinks -vr ../nymphcast_raspbian.zip . && cd -
 	
@@ -225,5 +237,20 @@ ar-rasp-audio: bin/$(TARGET_BIN)$(OUTPUT)
 	#tar -cvJf out/nymphcast_raspbian.xz -C out/tmp/ .
 	cd out/tmp && zip --symlinks -vr ../nymphcast_audio_raspbian.zip . && cd -
 
+# Package up the compiled project and dependencies.
+# For use on Linux-compatible platforms.
 package:
-	tar -C bin/$(TARGET_BIN) -cvzf bin/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT)
+	rm -rf out/nymphcast
+	$(MAKEDIR) out/nymphcast/bin
+	$(MAKEDIR) out/nymphcast/lib
+	$(MAKEDIR) out/nymphcast/systemd
+	cp bin/$(TARGET_BIN)$(OUTPUT) out/nymphcast/bin/.
+	cp -a /usr/lib/libnymphrpc.* out/nymphcast/lib/.
+	cp -a /usr/lib/libnymphcast.* out/nymphcast/lib/.
+	cp nymphcast_*_config.ini out/nymphcast/.
+	cp -r apps/ out/nymphcast/.
+	cp -r wallpapers/ out/nymphcast/.
+	cp systemd/nymphcast_filled.service out/nymphcast/systemd/nymphcast.service
+	cp install.sh out/nymphcast/.
+	#tar -C bin/$(TARGET_BIN) -cvzf bin/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT)
+	tar -C out/ -cvzf ../$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz nymphcast
