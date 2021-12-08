@@ -876,9 +876,17 @@ void MainWindow::play() {
 		}
 		else {
 			QListWidgetItem* item = ui->mediaListWidget->currentItem();
-			if (item == 0) { 
-				QMessageBox::warning(this, tr("No file selected"), tr("Please first select a file to play."));
-				return; 
+			if (item == 0) {
+				// If files are loaded in the playlist, start playing from the top, and set the
+				// track as selected. 
+				if (ui->mediaListWidget->count() > 0) {
+					ui->mediaListWidget->setCurrentRow(0);
+					item = ui->mediaListWidget->currentItem();
+				}
+				else {
+					QMessageBox::warning(this, tr("No files"), tr("Please first add a file to play."));
+					return;
+				}
 			}
 			
 			QString filename = item->data(Qt::UserRole).toString();
