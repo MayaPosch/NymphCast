@@ -170,7 +170,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->pauseToolButton, SIGNAL(clicked()), this, SLOT(pause()));
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
-	connect(ui->positionSlider, SIGNAL(valueChanged(int)), this, SLOT(seek(int)));
+	connect(ui->positionSlider, SIGNAL(sliderReleased(int)), this, SLOT(seek(int)));
 	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
 	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
 	connect(ui->cycleVideoButton, SIGNAL(clicked()), this, SLOT(cycleVideo()));
