@@ -259,4 +259,4 @@ package:
 	cp systemd/nymphcast_filled.service out/nymphcast/systemd/nymphcast.service
 	cp install.sh out/nymphcast/.
 	#tar -C bin/$(TARGET_BIN) -cvzf bin/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT)
-	tar -C out/ -cvzf ../$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz nymphcast
+	tar -C out/ -cvzf out/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz nymphcast
