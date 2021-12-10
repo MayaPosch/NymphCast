@@ -91,27 +91,28 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
 			$(wildcard angelscript/json/*.cpp) \
 			$(wildcard angelscript/regexp/*.cpp) \
-			$(wildcard gui/core/*.cpp) \
-			$(wildcard gui/core/animations/*.cpp) \
-			$(wildcard gui/core/components/*.cpp) \
-			$(wildcard gui/core/guis/*.cpp) \
-			$(wildcard gui/core/math/*.cpp) \
-			$(wildcard gui/core/renderers/*.cpp) \
-			$(wildcard gui/core/resources/*.cpp) \
-			$(wildcard gui/core/utils/*.cpp) \
-			$(wildcard gui/core/nanosvg/src/*.cpp) \
-			$(wildcard gui/app/*.cpp) \
-			$(wildcard gui/app/components/*.cpp) \
-			$(wildcard gui/app/guis/*.cpp) \
-			$(wildcard gui/app/scrapers/*.cpp) \
-			$(wildcard gui/app/views/*.cpp) \
-			$(wildcard gui/app/views/gamelist/*.cpp) \
-			$(wildcard gui/app/pugixml/src/*.cpp) \
 			$(wildcard lcdapi/api/*.cpp) \
 			$(wildcard lcdapi/sensors/*.cpp)
-C_SOURCES := $(wildcard *.c) $(wildcard ffplay/*.c)
-OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
-C_OBJECTS := $(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
+GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
+				$(wildcard gui/core/animations/*.cpp) \
+				$(wildcard gui/core/components/*.cpp) \
+				$(wildcard gui/core/guis/*.cpp) \
+				$(wildcard gui/core/math/*.cpp) \
+				$(wildcard gui/core/renderers/*.cpp) \
+				$(wildcard gui/core/resources/*.cpp) \
+				$(wildcard gui/core/utils/*.cpp) \
+				$(wildcard gui/core/nanosvg/src/*.cpp) \
+				$(wildcard gui/app/*.cpp) \
+				$(wildcard gui/app/components/*.cpp) \
+				$(wildcard gui/app/guis/*.cpp) \
+				$(wildcard gui/app/scrapers/*.cpp) \
+				$(wildcard gui/app/views/*.cpp) \
+				$(wildcard gui/app/views/gamelist/*.cpp) \
+				$(wildcard gui/app/pugixml/src/*.cpp)
+C_SOURCES := 	$(wildcard *.c) $(wildcard ffplay/*.c)
+OBJECTS := 		$(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
+GUI_OBJECTS := 	$(addprefix obj/$(TARGET_BIN),$(notdir) $(GUI_SOURCES:.cpp=.o))
+C_OBJECTS := 	$(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
 
 PREFIX ?= /usr/local
 ifdef OS
@@ -159,6 +160,8 @@ makedir:
 	
 angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
+	
+gui: $(GUI_OBJECTS)
 
 obj/$(TARGET_BIN)%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -166,12 +169,12 @@ obj/$(TARGET_BIN)%.o: %.cpp
 obj/$(TARGET_BIN)%.o: %.c
 	$(GCC) -c -o $@ $< -g3 $(CFLAGS)
 	
-bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS)
-	$(GPP) -o $@ $(OBJECTS) $(C_OBJECTS) $(LDFLAGS)
+bin/$(TARGET_BIN)$(OUTPUT): angelscript $(OBJECTS) $(C_OBJECTS) $(GUI_OBJECTS)
+	$(GPP) -o $@ $(OBJECTS) $(GUI_OBJECTS) $(C_OBJECTS) $(LDFLAGS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 
-clean: clean-objects clean-angelscript
+clean: clean-objects clean-angelscript clean-gui
 
 clean-objects:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
@@ -179,7 +182,10 @@ clean-objects:
 clean-angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ clean
 	
-.PHONY: all clean angelscript makedir
+clean-gui:
+	$(RM) $(GUI_OBJECTS)
+	
+.PHONY: all clean angelscript makedir gui
 	
 .PHONY: install
 install:
