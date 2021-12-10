@@ -492,6 +492,7 @@ void Ffplay::run() {
 		file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
 	} */
 
+	
 	Player::setVideoState(is);
 	SdlRenderer::playerEvents(true);
 	
@@ -504,12 +505,12 @@ void Ffplay::run() {
 	playerCon.wait(playerMutex);
 	playerMutex.unlock();
 	
-	// Enter loop. Quitting the Player's loop will also terminate this one.
-	//Player::refresh_loop(is);
-	//Player::event_loop(is);
-	
 	// Immediately disable player events since we're no longer processing them.
 	SdlRenderer::playerEvents(false);
+	
+	// Clear file meta info.
+	FileMetaInfo::setPosition(0.0);
+	FileMetaInfo::setDuration(0);
 	
 	SDL_Delay(500); // wait 500 ms.
 	
