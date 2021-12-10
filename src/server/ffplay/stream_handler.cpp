@@ -542,20 +542,23 @@ int StreamHandler::read_thread(void *arg) {
 	}
 	
 	// Set new title after clearing it.
-	file_meta.setTitle("");
+	FileMetaInfo::setTitle("");
 	if (t = av_dict_get(ic->metadata, "title", NULL, 0)) {
-		file_meta.setTitle(t->value);
+		FileMetaInfo::setTitle(t->value);
 	}
 
-	file_meta.setArtist(""); // clear old artist.
+	//file_meta.setArtist(""); // clear old artist.
+	FileMetaInfo::setArtist(""); // clear old artist.
     if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
-        file_meta.setArtist(t->value);
+        FileMetaInfo::setArtist(t->value);
 	}
     else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
-        file_meta.setArtist(t->value);
+        FileMetaInfo::setArtist(t->value);
 	}
 	
-	file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	//file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	//FileMetaInfo::duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	FileMetaInfo::setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {

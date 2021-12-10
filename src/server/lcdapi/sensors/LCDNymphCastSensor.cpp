@@ -16,6 +16,9 @@
 
 #include "ffplay/ffplay.h"
 
+// debug
+#include <iostream>
+
 
 namespace lcdapi {
 
@@ -35,9 +38,12 @@ LCDNymphCastSensor::~LCDNymphCastSensor() { }
 
 // --- WAIT FOR CHANGE ---
 void LCDNymphCastSensor::waitForChange() {
+	//std::cout << "NCSensor: waitForChange()" << std::endl;
 	while (_previousValue == getCurrentValue()) {
 		sleep(1);
 	}
+	
+	//std::cout << "NCSensor: waitForChange, exited loop." << std::endl;
 	
 	_previousValue = getCurrentValue();
 }
@@ -47,9 +53,12 @@ void LCDNymphCastSensor::waitForChange() {
 string LCDNymphCastSensor::getCurrentValue() {
 	string value;
 	if (playerStarted) {
-		value = file_meta.getArtist() + " - " + file_meta.getTitle();
+		std::cout << "NCSensor: getCurrentValue, playerStarted." << std::endl;
+		//value = file_meta.getArtist() + " - " + file_meta.getTitle();
+		value = FileMetaInfo::getArtist() + " - " + FileMetaInfo::getTitle();
 	} 
 	else {
+		//std::cout << "NCSensor: getCurrentValue, default." << std::endl;
 		value = _defaultValue;
 	}
 

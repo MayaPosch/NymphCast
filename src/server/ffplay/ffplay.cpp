@@ -20,6 +20,22 @@
 /* current context */
 int is_full_screen;
 int64_t audio_callback_time;
+//FileMetaInfo file_meta;
+
+// Static defines.
+std::atomic<uint64_t> FileMetaInfo::duration;		// seconds
+std::atomic<double> FileMetaInfo::position;		// seconds with remainder.
+std::atomic<uint32_t> FileMetaInfo::width;		// pixels
+std::atomic<uint32_t> FileMetaInfo::height;		// pixels
+std::atomic<uint32_t> FileMetaInfo::video_rate;	// kilobits per second
+std::atomic<uint32_t> FileMetaInfo::audio_rate;	// kilobits per second
+std::atomic<uint32_t> FileMetaInfo::framrate;
+std::atomic<uint8_t> FileMetaInfo::audio_channels;
+std::string FileMetaInfo::title;
+std::string FileMetaInfo::artist;
+std::string FileMetaInfo::album;
+Poco::Mutex FileMetaInfo::mutex;	// Use only with non-atomic entries.
+// ---
 
 unsigned sws_flags = SWS_BICUBIC;
 
@@ -472,12 +488,15 @@ void Ffplay::run() {
 	
 	// Extract meta data from VideoState instance and copy to FileMetaInfo instance.
 	//av_dict_get(ic->metadata, "title", NULL, 0);
-	if (!castingUrl) {
+	/* if (!castingUrl) {
 		file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	}
+	} */
 
 	Player::setVideoState(is);
 	SdlRenderer::playerEvents(true);
+	
+	// Update clients with status.
+	sendGlobalStatusUpdate();
 	
 	// Wait here until playback has finished.
 	// The read thread in StreamHandler will signal this condition variable.

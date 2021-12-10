@@ -146,7 +146,7 @@ struct CastClient {
 };
 
 // --- Globals ---
-FileMetaInfo file_meta;
+//static FileMetaInfo file_meta;
 std::atomic<bool> playerStarted = { false };
 std::atomic<bool> playerPaused = { false };
 std::atomic<bool> castingUrl = { false };		// We're either casting data or streaming when playing.
@@ -292,23 +292,23 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(file_meta.duration);
+		pair.value = new NymphType(FileMetaInfo::duration);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("position");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(file_meta.position);
+		pair.value = new NymphType(FileMetaInfo::position);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("title");
 		pair.key = new NymphType(key, true);
-		std::string* val = new std::string(file_meta.getTitle());
+		std::string* val = new std::string(FileMetaInfo::getTitle());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("artist");
 		pair.key = new NymphType(key, true);
-		val = new std::string(file_meta.getArtist());
+		val = new std::string(FileMetaInfo::getArtist());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
@@ -1003,7 +1003,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		avThread.start(ffplay);
 		
 		// Signal the clients that we're playing now.
-		sendGlobalStatusUpdate();
+		//sendGlobalStatusUpdate();
 	}
 	else {
 		// Send status update to clients.
