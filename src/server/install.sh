@@ -23,19 +23,19 @@ sudo cp -a lib/* /usr/lib/.
 sudo install -d /usr/local/etc/nymphcast/ \
 		-d /etc/local/share/nymphcast/apps/ \
 		-d /etc/local/share/nymphcast/wallpapers/
-sudo install -m 755 bin/nymph_server /usr/bin/
+sudo install -m 755 bin/nymphcast_server /usr/bin/
 sudo install -m 644 *.ini /usr/local/etc/nymphcast/
 sudo cp -r apps/* /usr/local/share/nymphcast/apps/
 sudo install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
 
 # Ask to install a system service to start NCS automatically
 read -p "Install systemd service for NymphCast? [y/n] (default: n): " choice
-if [[ "$choice" != "y" ]]; then
-	echo "Skipping system service installation..."
-else
+if [ "$choice" = "y" ]; then
 	echo "Installing systemd service..."
 	sudo cp systemd/nymphcast.service /etc/systemd/system/nymphcast.service
 	sudo systemctl enable nymphcast.service
+else
+	echo "Skipping system service installation..."
 fi
 
 # Set the requested configuration file.
