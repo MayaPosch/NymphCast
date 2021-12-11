@@ -1164,11 +1164,6 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 		}
 	}
 	
-	SDL_Event event;
-	event.type = SDL_KEYDOWN;
-	event.key.keysym.sym = SDLK_m;
-	SDL_PushEvent(&event);
-	
 	// Update muted audio state.
 	muted = ~muted;
 	if (muted) {
@@ -1178,6 +1173,11 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	else {
 		audio_volume = muted_volume.load();
 	}
+	
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_m;
+	SDL_PushEvent(&event);
 	
 	sendGlobalStatusUpdate();
 	
