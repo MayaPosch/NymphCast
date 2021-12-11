@@ -1849,6 +1849,14 @@ int main(int argc, char** argv) {
 	parameters.clear();
 	NymphMethod volumeDownFunction("volume_down", parameters, NYMPH_UINT8, volume_down);
 	NymphRemoteClient::registerMethod("volume_down", volumeDownFunction);
+		
+	// VolumeMute.
+	// uint8 volume_mute()
+	// Toggle muting audio volume.
+	// Returns 0 if succeeded.
+	parameters.clear();
+	NymphMethod volumeMuteFunction("volume_mute", parameters, NYMPH_UINT8, volume_mute);
+	NymphRemoteClient::registerMethod("volume_mute", volumeMuteFunction);
 	
 	// PlaybackStart.
 	// uint8 playback_start()
