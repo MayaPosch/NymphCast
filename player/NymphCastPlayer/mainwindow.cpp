@@ -1021,12 +1021,14 @@ void MainWindow::mute() {
 	if (!remoteEnsureConnected(handle)) { return; }
 	
 	if (!muted) {
-		client.volumeSet(handle, 0);
+		//client.volumeSet(handle, 0);
+		client.volumeMute(handle);
 		muted = true;
 		ui->soundToolButton->setIcon(QIcon(":/icons/icons/mute.png"));
 	}
 	else {
-		client.volumeSet(handle, ui->volumeSlider->value());
+		//client.volumeSet(handle, ui->volumeSlider->value());
+		client.volumeMute(handle);
 		muted = false;
 		ui->soundToolButton->setIcon(QIcon(":/icons/icons/high-volume.png"));
 	}
