@@ -132,6 +132,8 @@ int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
 std::atomic<uint32_t> audio_volume = { 100 };
+std::atomic<bool> muted = { false };
+std::atomic<uint32_t> muted_volume;
 
 
 #ifdef main
@@ -1166,6 +1168,18 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	event.type = SDL_KEYDOWN;
 	event.key.keysym.sym = SDLK_m;
 	SDL_PushEvent(&event);
+	
+	// Update muted audio state.
+	muted = ~muted;
+	if (muted) {
+		muted_volume = audio_volume.load();
+		audio_volume = 0;
+	}
+	else {
+		audio_volume = muted_volume.load();
+	}
+	
+	sendGlobalStatusUpdate();
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
