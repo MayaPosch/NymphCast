@@ -386,6 +386,9 @@ void MainWindow::positionUpdate() {
 	// Update timestamp.
 	ris->timestamp = now;
 	
+	//
+	//std::cout << "positionUpdate: position: " << ris->position << ", duration: " << ris->duration << std::endl;
+	
 	// Set position & duration in UI.
 	QTime position(0, 0);
 	position = position.addSecs((int64_t) ris->position);
@@ -510,15 +513,18 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		// Set to true in case we're playing from a share.
 		playingTrack = true;
 		
-		// Start timer if it hasn't been started already.
-		if (!posTimer.isActive()) {
-			ris->duration = status.duration;
-			posTimer.start(1000);
-		}
+		// DEBUG
+		//std::cout << "updatePlayerUI: playing, duration: " << status.duration << ", position: " << status.position << std::endl;
 		
 		// Update recorded position, along with the timestamp.
 		ris->position = status.position;
+		ris->duration = status.duration;
 		ris->timestamp = QTime::currentTime();
+		
+		// Start timer if it hasn't been started already.
+		if (!posTimer.isActive()) {
+			posTimer.start(1000);
+		}
 		
 		// Remote player is active. Read out 'status.status' to get the full status.
 		ui->playToolButton->setEnabled(false);
@@ -554,6 +560,8 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		
 		ui->menuCast->setEnabled(true);
 		ui->sharesPlayButton->setEnabled(true);
+		
+		if (posTimer.isActive()) { posTimer.stop(); }
 		
 		ui->durationLabel->setText("0:00 / 0:00");
 		ui->positionSlider->setValue(0);
@@ -841,6 +849,10 @@ void MainWindow::play() {
 	// Immediately fail if:
 	// * No remotes available.
 	// * No remote or group selected.
+	if (remotes.empty()) {
+		QMessageBox::warning(this, tr("No remotes found"), tr("Please refresh and try again."));
+		return;
+	}
 	
 	// Get currently selected remote or group, connect if necessary.
 	if (ui->remotesComboBox->count() == 0) {
@@ -1062,6 +1074,11 @@ void MainWindow::cycleVideo() {
 // --- PLAYER ENSURE CONNECTED ---
 bool MainWindow::remoteEnsureConnected(uint32_t &handle) {
 	// Get currently selected remote, connect if necessary.
+	if (remotes.empty()) {
+		QMessageBox::warning(this, tr("No remotes found"), tr("Please refresh and try again."));
+		return false;
+	}
+	
 	if (ui->remotesComboBox->count() == 0) {
 		QMessageBox::warning(this, tr("No remote selected"), tr("Please select a target receiver."));
 		return false;
