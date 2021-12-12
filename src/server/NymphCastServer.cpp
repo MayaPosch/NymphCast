@@ -316,7 +316,7 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(audio_volume.load());
+		pair.value = new NymphType((uint8_t) audio_volume.load());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
@@ -352,7 +352,7 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(audio_volume.load());
+		pair.value = new NymphType((uint8_t) audio_volume.load());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	
@@ -1071,6 +1071,9 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	
 	audio_volume = volume;
 	ffplay.setVolume(volume);
+	
+	// Inform all clients of this update.
+	sendGlobalStatusUpdate();
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
