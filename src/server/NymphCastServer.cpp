@@ -316,7 +316,7 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(audio_volume);
+		pair.value = new NymphType(audio_volume.load());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
@@ -352,7 +352,7 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(audio_volume);
+		pair.value = new NymphType(audio_volume.load());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	
@@ -1165,7 +1165,7 @@ NymphMessage* volume_mute(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Update muted audio state.
-	muted = ~muted;
+	muted = !muted;
 	if (muted) {
 		muted_volume = audio_volume.load();
 		audio_volume = 0;
