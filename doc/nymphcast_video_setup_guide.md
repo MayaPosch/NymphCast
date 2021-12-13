@@ -30,7 +30,7 @@ Simply extract the archive and run the contained `install.sh` script:
 
 ```
 tar -xvf nymphcast_server-<version>-<platform>.tar.gz
-cd nymphcast_server-version>-<platform>
+cd nymphcast
 sudo ./install.sh
 ```
 
