@@ -48,7 +48,7 @@ The current development version is v0.1-beta0. Version 0.1 will be the first rel
 
 Category | Status | Description | Notes
 ---|----|---|---
-File Streaming |95% | Streaming media files from client to server | Meta-info & playback status reporting need more testing.
+File Streaming |100% | Streaming media files from client to server | 
 Subtitles & streams | 75% | Subtitle & stream selection support | Implemented but untested.
 MediaServer | 100% | Streaming from NymphCast MediaServer instances | 
 URL Streaming | 100% | Streaming from URLs | 
@@ -140,7 +140,7 @@ To start using NymphCast, you need a device on which the server will be running 
 
 ### **Releases** ###
 
-NymphCast is currently in Alpha stage. Experimental releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
+NymphCast is currently in Beta stage. Releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
 
 Some packages also exist for selected distros.
 
@@ -156,7 +156,7 @@ Player client releases for **Android** and **Windows**:
 * APK for installation on Android, see ['Releases'](https://github.com/MayaPosch/NymphCast/releases) 
 * desktop client for Windows(x64), see ['Releases'](https://github.com/MayaPosch/NymphCast/releases)   
 
-If pre-compiled releases for your target device or operating system are currently not listed above, you may need to build the server and client applications from source.
+If pre-compiled releases for your target device or operating system are currently not listed above or on the releases page, you may need to build the server and client applications from source. See the Setup Guides listed under the Usage Scenarios section at the beginning of this document.
 
   
 ### **Running NymphCast** ###

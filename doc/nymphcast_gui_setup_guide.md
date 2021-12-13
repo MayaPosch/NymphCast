@@ -26,6 +26,22 @@ In order to set up an NC-G system, the following hardware and software requireme
 
 For detailed requirements, see the [Compiling NymphCast Server manually](building_nymphcast_server.md) documentation.
 
+## Binary installer ##
+
+For Raspberry Pi single-board computers (SBCs) a binary installer (for legacy Buster & current Bullseye) is provided on the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) page. These are `.tar.gz` files containing the binary files for NymphCast Server and dependencies.
+
+Simply extract the archive and run the contained `install.sh` script:
+
+```
+tar -xvf nymphcast_server-<version>-<platform>.tar.gz
+cd nymphcast_server-version>-<platform>
+sudo ./install.sh
+```
+
+During this process any needed dependencies will be downloaded and installed using Debian's package manager.
+
+The installer will also ask whether to install a systemd service for NymphCast service, and ask which mode to configure the service for. For GUI mode, choose `gui` here.
+
 
 ## GUI configuration ##
 
