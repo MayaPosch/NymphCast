@@ -178,6 +178,14 @@ The server will listen on all network interfaces for incoming connections. It su
 -v	--version			Output NymphCast server version and exit.
 ```
 
+**LCDProc configuration**
+
+NymphCast Server can output basic media file information (artist - title) to an LCDProc daemon on the system. To enable this, set to `1` the option `enable_lcdproc` in the active NymphCast Server configuration file (on Linux: `/usr/local/etc/nymphcast/nymphcast_config.ini`).
+
+After this restart the NymphCast server instance.
+
+&nbsp;
+
 The **client binary** supports the following flags:
 
 ```
