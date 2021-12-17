@@ -21,9 +21,9 @@ fi
 # Copy the files to their locations.
 sudo cp -a lib/* /usr/lib/.
 sudo install -d /usr/local/etc/nymphcast/ \
-		-d /etc/local/share/nymphcast/apps/ \
-		-d /etc/local/share/nymphcast/wallpapers/
-sudo install -m 755 bin/nymphcast_server /usr/bin/
+		-d /usr/local/share/nymphcast/apps/ \
+		-d /usr/local/share/nymphcast/wallpapers/
+sudo install -m 755 bin/nymphcast_server /usr/local/bin/
 sudo install -m 644 *.ini /usr/local/etc/nymphcast/
 sudo cp -r apps/* /usr/local/share/nymphcast/apps/
 sudo install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
