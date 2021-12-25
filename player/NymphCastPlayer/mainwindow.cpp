@@ -1289,9 +1289,17 @@ void MainWindow::scanForShares() {
         if (files.empty()) { continue; }
         
         // Insert into model. Use the media server's host name as top folder, with the shared
-        // files inserted underneath it.
+        // files inserted underneath it in their respective media type categories.
+		// TODO: Use the provided media item categories within the UI. 
         QStandardItem* item = new QStandardItem(QString::fromStdString(mediaservers[i].name));
         item->setSelectable(false);
+		QStandardItem* audioRoot = new QStandardItem("audio");
+		QStandardItem* videoRoot = new QStandardItem("video");
+		//QStandardItem* imageRoot = new QStandardItem("image");
+		QStandardItem* playlistRoot = new QStandardItem("playlist");
+		audioRoot->setSelectable(false);
+		videoRoot->setSelectable(false);
+		playlistRoot->setSelectable(false);
         for (uint32_t j = 0; j < files.size(); ++j) {
 			if (files[j].type == FILE_TYPE_IMAGE) { continue; }
             QStandardItem* fn = new QStandardItem(QString::fromStdString(files[j].name));
@@ -1303,10 +1311,20 @@ void MainWindow::scanForShares() {
             ids.append(QVariant((uint32_t) mediaFiles.size()));
             
             fn->setData(QVariant(ids), Qt::UserRole);
-            item->appendRow(fn);
+            //item->appendRow(fn);
+			if 		(files[j].type == FILE_TYPE_AUDIO) 		{ audioRoot->appendRow(fn); }
+			else if (files[j].type == FILE_TYPE_VIDEO) 		{ videoRoot->appendRow(fn); }
+			else if (files[j].type == FILE_TYPE_PLAYLIST) 	{ playlistRoot->appendRow(fn); }
         }
         
-        parentItem->appendRow(item);
+		item->appendRow(audioRoot);
+		item->appendRow(videoRoot);
+		//item->appendRow(imageRoot);
+		item->appendRow(playlistRoot);
+		parentItem->appendRow(item);
+		
+		// Expand each root item.
+		ui->sharesTreeView->setExpanded(sharesModel.indexFromItem(item), true);
     }
 }
 
@@ -1324,7 +1342,7 @@ void MainWindow::playSelectedShare() {
         return;
     }
     else if (indexes.size() > 1) {
-        QMessageBox::warning(this, tr("No file selected."), tr("No media file selected."));
+        QMessageBox::warning(this, tr("Too many files selected."), tr("Select single file."));
         return;
     }
     
