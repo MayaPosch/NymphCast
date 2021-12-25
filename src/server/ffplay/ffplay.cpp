@@ -512,8 +512,6 @@ void Ffplay::run() {
 	FileMetaInfo::setPosition(0.0);
 	FileMetaInfo::setDuration(0);
 	
-	SDL_Delay(500); // wait 500 ms.
-	
 	if (ioContext) {
 		av_freep(&ioContext->buffer);
 		av_freep(&ioContext);
@@ -523,6 +521,8 @@ void Ffplay::run() {
 		StreamHandler::stream_close(is);
 		is = 0;
 	}
+	
+	SDL_Delay(500); // wait 500 ms.
 	
 	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
 	

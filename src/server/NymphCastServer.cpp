@@ -152,6 +152,7 @@ struct CastClient {
 std::atomic<bool> playerStarted = { false };
 std::atomic<bool> playerPaused = { false };
 std::atomic<bool> castingUrl = { false };		// We're either casting data or streaming when playing.
+std::atomic<bool> playerStopped = { false };	// Playback was stopped by the user.
 std::string castUrl;
 Poco::Thread avThread;
 
@@ -292,6 +293,11 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		pair.value = new NymphType(true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
+		key = new std::string("stopped");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(false);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(FileMetaInfo::duration);
@@ -320,6 +326,20 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
+		if (playerStopped) {
+			// Stopped by user.
+			key = new std::string("stopped");
+			pair.key = new NymphType(key, true);
+			pair.value = new NymphType(true);
+			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		}
+		else {
+			key = new std::string("stopped");
+			pair.key = new NymphType(key, true);
+			pair.value = new NymphType(false);
+			pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		}
+		
 		key = new std::string("status");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((uint32_t) NYMPH_PLAYBACK_STATUS_STOPPED);
@@ -435,6 +455,18 @@ void finishPlayback() {
 		playerStarted = true;
 		castUrl = DataBuffer::getStreamTrack();
 		castingUrl = true;
+		
+		// Ensure AV thread is no longer running.
+		if (avThread.isRunning()) { 
+			bool ret = avThread.tryJoin(100); // 100 ms
+			if (!ret) {
+				// Player thread is still running, meaning we cannot proceed. Error out.
+				// TODO: error handling.
+				std::cerr << "finishPlayback: AV thread is still running. Aborting next stream." 
+							<< std::endl;
+				return;
+			}
+		}
 		
 		avThread.start(ffplay);
 		
@@ -922,7 +954,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	}
 	
 	// Safely write the data for this session to the buffer.
-	//std::string mediaData = ((NymphBlob*) msg->parameters()[0])->getValue();
 	NymphType* mediaData = msg->parameters()[0];
 	bool done = msg->parameters()[1]->getBool();
 	
@@ -1000,9 +1031,24 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 			while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 		}
 		
+		// If the AV thread is currently running, we wait until it's quit.
+		//if (avThread.joinable()) { avThread.join(); } // FIXME: C++11 version
+		if (avThread.isRunning()) { 
+			bool ret = avThread.tryJoin(100);
+			if (!ret) {
+				// Player thread is still running, meaning we cannot proceed. Error out.
+				returnMsg->setResultValue(new NymphType((uint8_t) 1));
+				msg->discard();
+	
+				return returnMsg;
+			}
+		}
+		
 		// Start playback locally.
 		playerStarted = true;
 		avThread.start(ffplay);
+		
+		playerStopped = false;
 		
 		// Signal the clients that we're playing now.
 		//sendGlobalStatusUpdate();
@@ -1252,6 +1298,7 @@ NymphMessage* playback_stop(int session, NymphMessage* msg, void* data) {
 	SDL_PushEvent(&event);
 	
 	playerPaused = false;
+	playerStopped = true;
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
