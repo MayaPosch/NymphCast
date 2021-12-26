@@ -1075,7 +1075,7 @@ void MainWindow::cycleVideo() {
 }
 
 
-// --- PLAYER ENSURE CONNECTED ---
+// --- REMOTE ENSURE CONNECTED ---
 bool MainWindow::remoteEnsureConnected(uint32_t &handle) {
 	// Get currently selected remote, connect if necessary.
 	if (remotes.empty()) {
@@ -1331,9 +1331,10 @@ void MainWindow::scanForShares() {
 
 // --- PLAY SELECTED SHARE --
 void MainWindow::playSelectedShare() {
-	
-	//uint32_t handle;
-    //if (!remoteEnsureConnected(handle)) { return; }
+	// Make sure we are connected to the remote on which the NCMS will be playing on, to ensure 
+	// that we get all the status updates from this remote.
+	uint32_t handle;
+    if (!remoteEnsureConnected(handle)) { return; }
     
     // Get the currently selected file name and obtain the ID.
     QModelIndexList indexes = ui->sharesTreeView->selectionModel()->selectedIndexes();
