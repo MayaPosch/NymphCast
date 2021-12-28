@@ -300,12 +300,12 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(FileMetaInfo::duration);
+		pair.value = new NymphType(FileMetaInfo::getDuration());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("position");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(FileMetaInfo::position);
+		pair.value = new NymphType(FileMetaInfo::getPosition());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("title");
