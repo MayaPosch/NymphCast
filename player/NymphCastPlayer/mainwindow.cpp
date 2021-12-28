@@ -450,7 +450,8 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 	// Update the UI.
 	bool paused = false;
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
-		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist));
+		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist)
+										+ " - " + QString::fromStdString(status.title));
 	}
 	else if (status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
 		ui->remoteStatusLabel->setText("Paused.");
