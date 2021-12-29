@@ -140,13 +140,6 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Status:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="remoteStatusLabel">
             <property name="text">
              <string>No remote selected.</string>
