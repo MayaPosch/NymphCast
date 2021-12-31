@@ -511,9 +511,6 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 	else if (status.playing) {
         std::cout << "Status: Set playing..." << std::endl;
 		
-		// Set to true in case we're playing from a share.
-		playingTrack = true;
-		
 		// DEBUG
 		//std::cout << "updatePlayerUI: playing, duration: " << status.duration << ", position: " << status.position << std::endl;
 		
