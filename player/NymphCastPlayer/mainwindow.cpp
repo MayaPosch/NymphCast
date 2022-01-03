@@ -957,6 +957,12 @@ void MainWindow::play() {
             // Playing back file now. Update status.
            playingTrack = true;
         }
+		else {
+			// Playback failed.
+			QMessageBox::warning(this, tr("Playback failed"), 
+				tr("Couldn't play back file. Check that it is a valid file and try again."));
+				return;
+		}
 	}
 	
 }
@@ -964,7 +970,7 @@ void MainWindow::play() {
 
 // --- STOP ---
 void MainWindow::stop() {
-	if (!playingTrack) { return; }
+	//if (!playingTrack) { return; }
 	
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
@@ -976,7 +982,7 @@ void MainWindow::stop() {
 
 // --- PAUSE ---
 void MainWindow::pause() {
-	if (!playingTrack) { return; }
+	//if (!playingTrack) { return; }
 	
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
