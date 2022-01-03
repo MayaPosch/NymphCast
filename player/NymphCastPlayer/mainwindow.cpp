@@ -797,8 +797,9 @@ void MainWindow::removeFile() {
 	// TODO: Remove stored file path.
 	// FIXME: Clear and rewrite the file contents for now.
 	QFile playlist;
-	playlist.setFileName(appDataLocation + "filepaths.conf");
-	playlist.open(QIODevice::WriteOnly | QIODevice::Truncate);
+	playlist.setFileName(appDataLocation + "/filepaths.conf");
+	playlist.open(QIODevice::ReadWrite | QIODevice::Truncate);
+	
 	int size = ui->mediaListWidget->count();
 	QTextStream textStream(&playlist);
 	for (int i = 0; i < size; ++i) {
