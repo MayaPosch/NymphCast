@@ -314,6 +314,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	playlist.setFileName(appDataLocation + "/filepaths.conf");
 	playlist.open(QIODevice::ReadOnly);
 	QTextStream textStream(&playlist);
+	textStream.setCodec("UTF-8");
 	QString line;
 	while (!(line = textStream.readLine()).isNull()) {
 		QFileInfo finf(line);
@@ -763,6 +764,8 @@ void MainWindow::addFile() {
 	playlist.open(QIODevice::WriteOnly | QIODevice::Append);
 	
 	// Handle each file.
+	QTextStream textStream(&playlist);
+	textStream.setCodec("UTF-8");
 	for (int i = 0; i < filenames.size(); ++i) {
 		// Check file.
 		QFileInfo finf(filenames[i]);
@@ -779,7 +782,6 @@ void MainWindow::addFile() {
 		ui->mediaListWidget->addItem(newItem);
 	
 		// Add to internal playlist.
-		QTextStream textStream(&playlist);
 		textStream << filenames[i] << "\n";
 	}
 	
@@ -802,6 +804,7 @@ void MainWindow::removeFile() {
 	
 	int size = ui->mediaListWidget->count();
 	QTextStream textStream(&playlist);
+	textStream.setCodec("UTF-8");
 	for (int i = 0; i < size; ++i) {
 		QListWidgetItem* item = ui->mediaListWidget->item(i);
 		QString filename = item->data(Qt::UserRole).toString();
@@ -1491,6 +1494,7 @@ void MainWindow::loadPlaylist() {
 	
 	playlist.open(QIODevice::ReadOnly);
 	QTextStream textStream(&playlist);
+	textStream.setCodec("UTF-8");
 	ui->mediaListWidget->clear();
 	
 	// Overwrite local playlist with the new playlist too.
@@ -1498,6 +1502,7 @@ void MainWindow::loadPlaylist() {
 	filepaths.setFileName(appDataLocation + "/filepaths.conf");
 	filepaths.open(QIODevice::WriteOnly | QIODevice::Truncate);
 	QTextStream outStream(&filepaths);
+	outStream.setCodec("UTF-8");
 	
 	QString line;
 	bool clean = true;
@@ -1543,6 +1548,7 @@ void MainWindow::savePlaylist() {
 	playlist.setFileName(filename);
 	playlist.open(QIODevice::WriteOnly);
 	QTextStream textStream(&playlist);
+	textStream.setCodec("UTF-8");
 	
 	// Write paths to file.
 	int itemCount = ui->mediaListWidget->count();
