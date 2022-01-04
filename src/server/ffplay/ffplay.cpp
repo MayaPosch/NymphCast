@@ -67,7 +67,6 @@ AVPacket flush_pkt;
 Poco::Condition playerCon;
 Poco::Mutex playerMutex;
 std::condition_variable playbackCv;
-std::mutex playbackMtx;
 // ---
 
 // Static definitions.
@@ -451,6 +450,7 @@ void Ffplay::run() {
 	// stream from, or a file to stream via the DataBuffer.
 	running = true;
 	playerStarted = false;
+	std::mutex playbackMtx;
 	while (running) {
 		// Wait in condition variable until triggered. Ensure an event is waiting to deal with
 		// spurious wake-ups.
