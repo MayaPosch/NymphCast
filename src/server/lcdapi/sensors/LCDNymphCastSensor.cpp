@@ -20,6 +20,9 @@
 #include <iostream>
 
 
+extern Ffplay ffplay;
+
+
 namespace lcdapi {
 
 using namespace std;
@@ -52,7 +55,7 @@ void LCDNymphCastSensor::waitForChange() {
 // --- GET CURRENT VALUE ---
 string LCDNymphCastSensor::getCurrentValue() {
 	string value;
-	if (playerStarted) {
+	if (ffplay.playbackActive()) {
 		std::cout << "NCSensor: getCurrentValue, playerStarted." << std::endl;
 		//value = file_meta.getArtist() + " - " + file_meta.getTitle();
 		value = FileMetaInfo::getArtist() + " - " + FileMetaInfo::getTitle();
