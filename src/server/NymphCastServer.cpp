@@ -419,8 +419,14 @@ void sendGlobalStatusUpdate() {
 		}
 	}
 	
-	// Delete the map.
+	// Delete the map and its values.
 	// TODO: persist the data somehow.
+	std::map<std::string, NymphPair>::iterator sit;
+	for (sit = pairs->begin(); sit != pairs->end(); ++sit) {
+		delete sit->second.key;
+		delete sit->second.value;
+	}
+	
 	delete pairs;
 }
 
