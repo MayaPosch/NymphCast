@@ -29,6 +29,8 @@
 
 #include "types.h"
 
+#include <nymph/nymph.h>
+
 
 struct FileMetaInfo {
 	//std::atomic<uint32_t> filesize;		// bytes.
@@ -72,7 +74,7 @@ struct FileMetaInfo {
 
 // --- Globals ---
 //extern FileMetaInfo file_meta;
-extern std::atomic<bool> playerStarted;
+//extern std::atomic<bool> playerStarted;
 	
 void finishPlayback(); // Defined in NymphCastServer.cpp
 void sendGlobalStatusUpdate();
@@ -81,6 +83,11 @@ void sendGlobalStatusUpdate();
 class Ffplay : public Poco::Runnable {
     VideoState* is = 0;
 	static std::string loggerName;
+	std::atomic<bool> running = { false };
+	std::atomic<bool> playerStarted = { false };
+	std::string castUrl;
+	std::atomic<bool> castingUrl = { false };
+	std::atomic<bool> playingTrack = { false };
 	
 	static int media_read(void* opaque, uint8_t* buf, int buf_size);
 	static int64_t media_seek(void* opaque, int64_t pos, int whence);
@@ -89,6 +96,9 @@ public:
 	virtual void run();
 	uint8_t getVolume();
 	void setVolume(uint8_t volume);
+	bool playbackActive() { return playerStarted.load(); }
+	bool streamTrack(std::string url);
+	bool playTrack();
 	void quit();
 };
 

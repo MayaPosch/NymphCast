@@ -149,11 +149,8 @@ struct CastClient {
 
 // --- Globals ---
 //static FileMetaInfo file_meta;
-std::atomic<bool> playerStarted = { false };
 std::atomic<bool> playerPaused = { false };
-std::atomic<bool> castingUrl = { false };		// We're either casting data or streaming when playing.
 std::atomic<bool> playerStopped = { false };	// Playback was stopped by the user.
-std::string castUrl;
 Poco::Thread avThread;
 
 // LCDProc client.
@@ -273,7 +270,7 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 	std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
 	NymphPair pair;
 	std::string* key;
-	if (playerStarted) {
+	if (ffplay.playbackActive()) {
 		// Distinguish between playing and paused for the player.
 		if (playerPaused) {
 			key = new std::string("status");
@@ -452,29 +449,13 @@ void seekingHandler(uint32_t session, int64_t offset) {
 void finishPlayback() {
 	// Check whether we have any queued URLs to stream next.
 	if (DataBuffer::hasStreamTrack()) {
-		playerStarted = true;
-		castUrl = DataBuffer::getStreamTrack();
-		castingUrl = true;
+		std::string castUrl = DataBuffer::getStreamTrack();
 		
-		// Ensure AV thread is no longer running.
-		if (avThread.isRunning()) { 
-			bool ret = avThread.tryJoin(100); // 100 ms
-			if (!ret) {
-				// Player thread is still running, meaning we cannot proceed. Error out.
-				// TODO: error handling.
-				std::cerr << "finishPlayback: AV thread is still running. Aborting next stream." 
-							<< std::endl;
-				return;
-			}
-		}
-		
-		avThread.start(ffplay);
+		// Schedule next track URL.
+		ffplay.streamTrack(castUrl);
 		
 		return;
 	}
-	
-	castingUrl = false;
-	playerStarted = false;
 	
 	// Send message to client indicating that we're done.
 	uint32_t handle = DataBuffer::getSessionHandle();
@@ -486,11 +467,11 @@ void finishPlayback() {
 	}
 	
 	// Call the status update callback to indicate to the clients that playback stopped.
-	sendGlobalStatusUpdate();
+	//sendGlobalStatusUpdate();
 	
 	// Update the LCDProc daemon if enabled.
 	if (lcdproc_enabled) {
-		// TODO: Clear the screen.
+		// TODO: Clear the screen?
 	}
 	
 	// Start the Screensaver here for now.
@@ -525,20 +506,15 @@ void finishPlayback() {
 bool streamTrack(std::string url) {
 	// TODO: Check that we're not still streaming, otherwise queue the URL.
 	// TODO: allow to cancel any currently playing track/empty queue?
-	if (playerStarted) {
+	if (ffplay.playbackActive()) {
 		// Add to queue.
 		DataBuffer::addStreamTrack(url);
 		
 		return true;
 	}
 	
-	castUrl = url;
-	castingUrl = true;
-	
-	if (!playerStarted) {
-		playerStarted = true;
-		avThread.start(ffplay);
-	}
+	// Schedule next track URL.
+	ffplay.streamTrack(url);
 	
 	// Send status update to client.
 	sendStatusUpdate(DataBuffer::getSessionHandle());
@@ -638,7 +614,7 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	
 	// Switch to slave mode, if possible.
 	// Return error if we're currently playing content in stand-alone mode.
-	if (playerStarted) {
+	if (ffplay.playbackActive()) {
 		returnMsg->setResultValue(new NymphType((int64_t) 0));
 	}
 	else {
@@ -680,7 +656,7 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	// Write string into buffer.
 	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
-	if (!playerStarted) {
+	if (!ffplay.playbackActive()) {
 		// Start the player when the delay in 'when' has been reached.
 		std::condition_variable cv;
 		std::mutex cv_m;
@@ -692,8 +668,7 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 		
 		// Start player.
-		playerStarted = true;
-		avThread.start(ffplay);
+		ffplay.playTrack();
 	}
 	
 	if (done) {
@@ -775,6 +750,33 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	}
 	
 	it->second.filesize = num->getUint32();
+	
+	// Check whether we're already playing or not. If we continue here, this will forcefully 
+	// end current playback.
+	//	FIXME:	=> this likely happens due to a status update glitch. Fix by sending back status update
+	// 			along with error?
+	if (ffplay.playbackActive()) {
+		std::cerr << "Trying to start a new session with session already active. Abort." << std::endl;
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
+		return returnMsg;
+	}
+	
+	// If the AV thread is currently running, we wait until it's quit.
+	//if (avThread.joinable()) { avThread.join(); } // FIXME: C++11 version
+	/* if (avThread.isRunning()) {
+		std::cout << "AV thread active: waiting for join..." << std::endl;
+		bool ret = avThread.tryJoin(100);
+		if (!ret) {
+			// Player thread is still running, meaning we cannot proceed. Error out.
+			std::cerr << "Joining failed: aborting new session..." << std::endl;
+			returnMsg->setResultValue(new NymphType((uint8_t) 1));
+			msg->discard();
+
+			return returnMsg;
+		}
+	} */
 	
 	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
 	
@@ -1012,7 +1014,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	
 	// Start the player if it hasn't yet. This ensures we have a buffer ready.
 	// TODO: take into account delay of slave remotes before starting local playback.
-	if (!playerStarted) {
+	if (!ffplay.playbackActive()) {
 		// if we're in master mode, only start after the slaves are starting as well.
 		// In slave mode, we execute time-critical commands like playback start when
 		/* if (serverMode == NCS_MODE_MASTER) {
@@ -1031,27 +1033,10 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 			while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
 		}
 		
-		// If the AV thread is currently running, we wait until it's quit.
-		//if (avThread.joinable()) { avThread.join(); } // FIXME: C++11 version
-		if (avThread.isRunning()) { 
-			bool ret = avThread.tryJoin(100);
-			if (!ret) {
-				// Player thread is still running, meaning we cannot proceed. Error out.
-				returnMsg->setResultValue(new NymphType((uint8_t) 1));
-				msg->discard();
-	
-				return returnMsg;
-			}
-		}
-		
 		// Start playback locally.
-		playerStarted = true;
-		avThread.start(ffplay);
+		ffplay.playTrack();
 		
 		playerStopped = false;
-		
-		// Signal the clients that we're playing now.
-		//sendGlobalStatusUpdate();
 	}
 	else {
 		// Send status update to clients.
@@ -2101,8 +2086,6 @@ int main(int argc, char** argv) {
 	
 	std::cout << "Set up new buffer with size: " << buffer_size << " bytes." << std::endl;
 	
-	playerStarted = false;
-	
 	// Set further global variables.
 	// FIXME: refactor.
 	if (display_disable) {
@@ -2203,6 +2186,9 @@ int main(int argc, char** argv) {
 		// Set full-screen mode.
 		SdlRenderer::set_fullscreen(is_full_screen);
 	}
+	
+	// Start AV thread.
+	avThread.start(ffplay);
 	
 	// Start SDL event loop, wait for it to exit.
 	if (init_success) {

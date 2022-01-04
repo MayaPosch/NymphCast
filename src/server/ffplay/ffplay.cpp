@@ -44,16 +44,6 @@ AVPacket flush_pkt;
 #include <Poco/NumberFormatter.h>
 #include <nymph/nymph_logger.h>
 
-
-// Global objects.
-Poco::Condition playerCon;
-Poco::Mutex playerMutex;
-// ---
-
-// Static definitions.
-std::string Ffplay::loggerName = "Ffplay";
-
-
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
@@ -62,6 +52,8 @@ std::string Ffplay::loggerName = "Ffplay";
 #include <string>
 #include <cstring>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 #include "types.h"
 #include "../databuffer.h"
@@ -69,6 +61,17 @@ std::string Ffplay::loggerName = "Ffplay";
 #include "player.h"
 #include "stream_handler.h"
 #include "sdl_renderer.h"
+
+
+// Global objects.
+Poco::Condition playerCon;
+Poco::Mutex playerMutex;
+std::condition_variable playbackCv;
+std::mutex playbackMtx;
+// ---
+
+// Static definitions.
+std::string Ffplay::loggerName = "Ffplay";
 
 
 static void do_exit(VideoState *is) {
@@ -385,16 +388,37 @@ void Ffplay::setVolume(uint8_t volume) {
 }
 
 
-#ifdef _WIN32
-void avLogCallback(void *ptr, int level, const char *fmt, va_list vargs) {
-    //if (level > av_log_get_level()) { return; }
+// --- STREAM TRACK ---
+bool Ffplay::streamTrack(std::string url) {
+	if (!playerStarted) {
+		castUrl = url;
+		castingUrl = true;
+		
+		playbackCv.notify_one();
+	}
+	else {
+		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting playback of %s.\n", url.c_str());
+		return false;
+	}
+	
+	return true;
+}
 
-	//std::cout << level << " - " << fmt << std::endl;
 
-    //printf("%s ", "va_log:");
-    vprintf(fmt, vargs);
-} 
-#endif
+// --- PLAY TRACK ---
+bool Ffplay::playTrack() {
+	if (!playerStarted) {
+		playingTrack = true;
+		
+		playbackCv.notify_one();
+	}
+	else {
+		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting track playback.\n");
+		return false;
+	}
+	
+	return true;
+}
 
 
 // --- RUN ---
@@ -412,122 +436,138 @@ void Ffplay::run() {
 	
 	int argc = argv.size() - 1;
 
-	//parse_loglevel(argc, argv.data(), options);
-	
-#ifdef _WIN32
-	//av_log_set_callback(avLogCallback);
-#endif
-
-	/* register all codecs, demux and protocols */
-//#if CONFIG_AVDEVICE
 	avdevice_register_all();
-//#endif
 	avformat_network_init();
 
 	init_opts();
-	
-	//signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).	*/
-	//signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
 
-	//show_banner(argc, argv.data(), options);
 	parse_options(NULL, argc, argv.data(), options, opt_input_file);
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
-	//av_log_set_level(AV_LOG_TRACE);
-	av_log_set_level(AV_LOG_INFO);
-		
-		
-	// --- AVIOContext section ---
-	AVFormatContext* formatContext = 0;
-	AVIOContext* ioContext = 0;
-	if (!castingUrl) {
-		input_filename = "";
+	av_log_set_level(AV_LOG_TRACE);
+	//av_log_set_level(AV_LOG_INFO);
 	
-		// Create internal buffer for FFmpeg.
-		size_t iBufSize = 32 * 1024; // 32 kB
-		uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
-		 
-		// Allocate the AVIOContext:
-		// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
-		ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
-												 0,				  // bWriteable (1=true,0=false) 
-												 0, //&media_buffer,	  // user data
-												 media_read, 
-												 0,				  // Write callback function. 
-												 media_seek);
-		 
-		// Allocate the AVFormatContext. This holds information about the container format.
-		formatContext = avformat_alloc_context();
-		formatContext->pb = ioContext;	// Set the IOContext.
-		//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
+	// Start main loop.
+	// This loop waits until it is triggered, at which point there should either be a URL to
+	// stream from, or a file to stream via the DataBuffer.
+	running = true;
+	playerStarted = false;
+	while (running) {
+		// Wait in condition variable until triggered. Ensure an event is waiting to deal with
+		// spurious wake-ups.
+		std::unique_lock<std::mutex> lk(playbackMtx);
+		using namespace std::chrono_literals;
+		playbackCv.wait(lk);
 		
-		// Determine the input format.
-		// Create the ProbeData structure for av_probe_input_format.
-		/* AVProbeData probeData;
-		media_buffer.dataMutex.lock();
-		probeData.buf = (unsigned char*) media_buffer.data[0].data();
-		//probeData.buf_size = media_buffer.data[0].size();
-		probeData.buf_size = 4096;
-		probeData.filename = "";
+		if (!running) {
+			av_log(NULL, AV_LOG_INFO, "Terminating AV thread...\n");
+			break;
+		}
 		
-		pCtx->iformat = av_probe_input_format(&probeData, 1);
-		media_buffer.dataMutex.unlock(); */
+		// Intercept spurious wake-ups.
+		if (!playingTrack && !castingUrl) { continue; }
 		
+		// Start playback.
+		playerStarted = true;
 		
-	// --- End AVIOContext section ---
-	}
-	else {
-		input_filename = castUrl.c_str();
-	}
-	
-	// Start player.
-	is = StreamHandler::stream_open(input_filename, file_iformat, formatContext);
-	if (!is) {
-		av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
-		do_exit(NULL);
-	}
-	
-	// Extract meta data from VideoState instance and copy to FileMetaInfo instance.
-	//av_dict_get(ic->metadata, "title", NULL, 0);
-	/* if (!castingUrl) {
-		file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	} */
+		// --- AVIOContext section ---
+		AVFormatContext* formatContext = 0;
+		AVIOContext* ioContext = 0;
+		if (!castingUrl) {
+			input_filename = "";
+		
+			// Create internal buffer for FFmpeg.
+			size_t iBufSize = 32 * 1024; // 32 kB
+			uint8_t* pBuffer = (uint8_t*) av_malloc(iBufSize);
+			 
+			// Allocate the AVIOContext:
+			// The fourth parameter (pStream) is a user parameter which will be passed to our callback functions
+			ioContext = avio_alloc_context(pBuffer, iBufSize,  // internal Buffer and its size
+													 0,				  // bWriteable (1=true,0=false) 
+													 0, //&media_buffer,	  // user data
+													 media_read, 
+													 0,				  // Write callback function. 
+													 media_seek);
+			 
+			// Allocate the AVFormatContext. This holds information about the container format.
+			formatContext = avformat_alloc_context();
+			formatContext->pb = ioContext;	// Set the IOContext.
+			//formatContext->flags = AVFMT_FLAG_CUSTOM_IO;
+			
+			// Determine the input format.
+			// Create the ProbeData structure for av_probe_input_format.
+			/* AVProbeData probeData;
+			media_buffer.dataMutex.lock();
+			probeData.buf = (unsigned char*) media_buffer.data[0].data();
+			//probeData.buf_size = media_buffer.data[0].size();
+			probeData.buf_size = 4096;
+			probeData.filename = "";
+			
+			pCtx->iformat = av_probe_input_format(&probeData, 1);
+			media_buffer.dataMutex.unlock(); */
+			
+			
+		// --- End AVIOContext section ---
+		}
+		else {
+			input_filename = castUrl.c_str();
+		}
+		
+		// Start player.
+		is = StreamHandler::stream_open(input_filename, file_iformat, formatContext);
+		if (!is) {
+			av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
+			do_exit(NULL);
+		}
+		
+		// Extract meta data from VideoState instance and copy to FileMetaInfo instance.
+		//av_dict_get(ic->metadata, "title", NULL, 0);
+		/* if (!castingUrl) {
+			file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+		} */
 
-	
-	Player::setVideoState(is);
-	SdlRenderer::playerEvents(true);
-	
-	// Update clients with status.
-	sendGlobalStatusUpdate();
-	
-	// Wait here until playback has finished.
-	// The read thread in StreamHandler will signal this condition variable.
-	playerMutex.lock();
-	playerCon.wait(playerMutex);
-	playerMutex.unlock();
-	
-	// Immediately disable player events since we're no longer processing them.
-	SdlRenderer::playerEvents(false);
-	
-	// Clear file meta info.
-	FileMetaInfo::setPosition(0.0);
-	FileMetaInfo::setDuration(0);
-	
-	if (ioContext) {
-		av_freep(&ioContext->buffer);
-		av_freep(&ioContext);
+		
+		Player::setVideoState(is);
+		SdlRenderer::playerEvents(true);
+		
+		// Update clients with status.
+		sendGlobalStatusUpdate();
+		
+		// Wait here until playback has finished.
+		// The read thread in StreamHandler will signal this condition variable.
+		playerMutex.lock();
+		playerCon.wait(playerMutex);
+		playerMutex.unlock();
+		
+		// Immediately disable player events since we're no longer processing them.
+		SdlRenderer::playerEvents(false);
+		
+		// Clear file meta info.
+		FileMetaInfo::setPosition(0.0);
+		FileMetaInfo::setDuration(0);
+		
+		if (ioContext) {
+			av_freep(&ioContext->buffer);
+			av_freep(&ioContext);
+		}
+		
+		if (is) {
+			StreamHandler::stream_close(is);
+			is = 0;
+		}
+		
+		SDL_Delay(500); // wait 500 ms.
+		
+		av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
+		
+		DataBuffer::reset();	// Clears the data buffer (file data buffer).
+		finishPlayback();		// Calls handler for post-playback steps.
+		playerStarted = false;
+		playingTrack = false;
+		castingUrl = false;
+		
+		// Update clients with status update.
+		sendGlobalStatusUpdate();
 	}
-	
-	if (is) {
-		StreamHandler::stream_close(is);
-		is = 0;
-	}
-	
-	SDL_Delay(500); // wait 500 ms.
-	
-	av_log(NULL, AV_LOG_INFO, "Terminating player...\n");
-	
-	DataBuffer::reset();	// Clears the data buffer (file data buffer).
-	finishPlayback();		// Calls handler for post-playback steps.
 }
  
  
@@ -535,5 +575,9 @@ void Ffplay::run() {
 void Ffplay::quit() {
 	// Stop player.
 	Player::quit();
+	
+	// End loop.
+	running = false;
+	playbackCv.notify_one();
 }
 
