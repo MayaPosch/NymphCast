@@ -194,6 +194,11 @@ void dataRequestFunction() {
 			break;
 		}
 		
+		if (DataBuffer::seeking()) {
+			NYMPH_LOG_ERROR("Cannot request data while seeking. Abort.");
+			continue;
+		}
+		
 		// Set data request as pending.
 		DataBuffer::dataRequestPending = true;
 		
@@ -204,7 +209,7 @@ void dataRequestFunction() {
 		std::string result;
 		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
 			std::cerr << "Calling callback failed: " << result << std::endl;
-			return;
+			continue;
 		}
 		
 		// We're now playing, so make sure the data buffer stays fed. Check every 100 ms whether
@@ -965,6 +970,9 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	NymphType* mediaData = msg->parameters()[0];
 	bool done = msg->parameters()[1]->getBool();
 	
+	// Update EOF status.
+	DataBuffer::setEof(done);
+	
 	// Write string into buffer.
 	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
@@ -1048,9 +1056,6 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		// Send status update to clients.
 		sendGlobalStatusUpdate();
 	}
-	
-	// Update EOF status.
-	DataBuffer::setEof(done);
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();

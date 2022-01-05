@@ -206,7 +206,7 @@ bool DataBuffer::reset() {
 	byteIndexLow = 0;
 	byteIndexHigh = 0;
 	
-	eof = false;
+	//eof = false;
 	dataRequestPending = false;
 	seekRequestPending = false;
 	resetRequest = false;
@@ -474,6 +474,9 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
+#ifdef DEBUG
+			std::cout << "DataBuffer::read: requesting more data." << std::endl;
+#endif
 			dataRequestCV->notify_one();
 		}
 	}
@@ -629,6 +632,9 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
+#ifdef DEBUG
+			std::cout << "DataBuffer::write: requesting more data." << std::endl;
+#endif
 			dataRequestCV->notify_one();
 		}
 	}
