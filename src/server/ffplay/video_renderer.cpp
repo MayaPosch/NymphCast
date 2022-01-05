@@ -202,7 +202,8 @@ display:
 			double master_clock = ClockC::get_master_clock(is);
 			//file_meta.position = master_clock;	// Copy to FleMetaInfo structure for the current file.
 			//FileMetaInfo::position = master_clock;	// Copy to FleMetaInfo structure for the current file.
-			FileMetaInfo::setPosition(master_clock);
+			//FileMetaInfo::setPosition(master_clock);
+			file_meta.setPosition(master_clock);
             av_log(NULL, AV_LOG_INFO,
                    "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%"PRId64"/%"PRId64"   \r",
                    master_clock,

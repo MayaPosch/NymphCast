@@ -540,25 +540,6 @@ int StreamHandler::read_thread(void *arg) {
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0))) {
         window_title = av_asprintf("%s - %s", t->value, input_filename);
 	}
-	
-	// Set new title after clearing it.
-	FileMetaInfo::setTitle("");
-	if (t = av_dict_get(ic->metadata, "title", NULL, 0)) {
-		FileMetaInfo::setTitle(t->value);
-	}
-
-	//file_meta.setArtist(""); // clear old artist.
-	FileMetaInfo::setArtist(""); // clear old artist.
-    if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
-        FileMetaInfo::setArtist(t->value);
-	}
-    else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
-        FileMetaInfo::setArtist(t->value);
-	}
-	
-	//file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	//FileMetaInfo::duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	FileMetaInfo::setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
@@ -676,6 +657,35 @@ int StreamHandler::read_thread(void *arg) {
     }
 
     if (infinite_buffer < 0 && is->realtime) { infinite_buffer = 1; }
+	
+	
+	// Set new title after clearing it.
+	//FileMetaInfo::setTitle("");
+	file_meta.setTitle("");
+	if (t = av_dict_get(ic->metadata, "title", NULL, 0)) {
+		//FileMetaInfo::setTitle(t->value);
+		file_meta.setTitle(t->value);
+	}
+
+	//file_meta.setArtist(""); // clear old artist.
+	//FileMetaInfo::setArtist(""); // clear old artist.
+	file_meta.setArtist(""); // clear old artist.
+    if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
+		//FileMetaInfo::setArtist(t->value);
+		file_meta.setArtist(t->value);
+	}
+    else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
+		//FileMetaInfo::setArtist(t->value);
+		file_meta.setArtist(t->value);
+	}
+	
+	//file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	//FileMetaInfo::duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
+	//FileMetaInfo::setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
+	file_meta.setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
+	
+	// Update clients with status.
+	sendGlobalStatusUpdate();
 
 	// Start the main processing loop.
 	run = true;

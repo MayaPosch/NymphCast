@@ -34,7 +34,7 @@
 
 struct FileMetaInfo {
 	//std::atomic<uint32_t> filesize;		// bytes.
-	static std::atomic<uint64_t> duration;		// seconds
+	/*static std::atomic<uint64_t> duration;		// seconds
 	static std::atomic<double> position;		// seconds with remainder.
 	static std::atomic<uint32_t> width;		// pixels
 	static std::atomic<uint32_t> height;		// pixels
@@ -45,36 +45,48 @@ struct FileMetaInfo {
 	static std::string title;
 	static std::string artist;
 	static std::string album;
-	static Poco::Mutex mutex;	// Use only with non-atomic entries.
+	static Poco::Mutex mutex;*/	// Use only with non-atomic entries.
+	std::atomic<uint64_t> duration;		// seconds
+	std::atomic<double> position;		// seconds with remainder.
+	std::atomic<uint32_t> width;		// pixels
+	std::atomic<uint32_t> height;		// pixels
+	std::atomic<uint32_t> video_rate;	// kilobits per second
+	std::atomic<uint32_t> audio_rate;	// kilobits per second
+	std::atomic<uint32_t> framrate;
+	std::atomic<uint8_t> audio_channels;
+	std::string title;
+	std::string artist;
+	std::string album;
+	Poco::Mutex mutex;	// Use only with non-atomic entries.
 	
-	static void setDuration(uint64_t d) {
-		std::cout << "SetDuration." << d << std::endl;
+	void setDuration(uint64_t d) {
+		std::cout << "SetDuration. " << d << std::endl;
 		duration = d;
 	}
 	
-	static uint64_t getDuration() { return duration; }
+	uint64_t getDuration() { return duration; }
 	
-	static void setPosition(double p) { 
+	void setPosition(double p) {
+		//std::cout << "SetPosition. " << p << std::endl;
 		if (std::isnan(p)) { position = 0; }
 		else { position = p; }
 	}
 	
-	static double getPosition() { return position; }
+	double getPosition() { return position; }
 	
-	static void setTitle(std::string t) { mutex.lock(); title = t; mutex.unlock(); }
-	static std::string getTitle() { mutex.lock(); std::string t = title; mutex.unlock(); return t; }
+	void setTitle(std::string t) { mutex.lock(); title = t; mutex.unlock(); }
+	std::string getTitle() { mutex.lock(); std::string t = title; mutex.unlock(); return t; }
 	
-	static void setArtist(std::string a) { mutex.lock(); artist = a; mutex.unlock(); }
-	static std::string getArtist() { mutex.lock(); std::string a = artist; mutex.unlock(); return a; }
+	void setArtist(std::string a) { mutex.lock(); artist = a; mutex.unlock(); }
+	std::string getArtist() { mutex.lock(); std::string a = artist; mutex.unlock(); return a; }
 	
-	static void setAlbum(std::string a) { mutex.lock(); album = a; mutex.unlock(); }
-	static std::string getAlbum() { mutex.lock(); std::string a = album; mutex.unlock(); return a; }
+	void setAlbum(std::string a) { mutex.lock(); album = a; mutex.unlock(); }
+	std::string getAlbum() { mutex.lock(); std::string a = album; mutex.unlock(); return a; }
 };
 
 
 // --- Globals ---
-//extern FileMetaInfo file_meta;
-//extern std::atomic<bool> playerStarted;
+extern FileMetaInfo file_meta;
 	
 void finishPlayback(); // Defined in NymphCastServer.cpp
 void sendGlobalStatusUpdate();

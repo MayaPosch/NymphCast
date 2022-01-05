@@ -20,22 +20,7 @@
 /* current context */
 int is_full_screen;
 int64_t audio_callback_time;
-//FileMetaInfo file_meta;
-
-// Static defines.
-std::atomic<uint64_t> FileMetaInfo::duration;		// seconds
-std::atomic<double> FileMetaInfo::position;		// seconds with remainder.
-std::atomic<uint32_t> FileMetaInfo::width;		// pixels
-std::atomic<uint32_t> FileMetaInfo::height;		// pixels
-std::atomic<uint32_t> FileMetaInfo::video_rate;	// kilobits per second
-std::atomic<uint32_t> FileMetaInfo::audio_rate;	// kilobits per second
-std::atomic<uint32_t> FileMetaInfo::framrate;
-std::atomic<uint8_t> FileMetaInfo::audio_channels;
-std::string FileMetaInfo::title;
-std::string FileMetaInfo::artist;
-std::string FileMetaInfo::album;
-Poco::Mutex FileMetaInfo::mutex;	// Use only with non-atomic entries.
-// ---
+FileMetaInfo file_meta;
 
 unsigned sws_flags = SWS_BICUBIC;
 
@@ -529,9 +514,6 @@ void Ffplay::run() {
 		Player::setVideoState(is);
 		SdlRenderer::playerEvents(true);
 		
-		// Update clients with status.
-		sendGlobalStatusUpdate();
-		
 		// Wait here until playback has finished.
 		// The read thread in StreamHandler will signal this condition variable.
 		playerMutex.lock();
@@ -542,8 +524,10 @@ void Ffplay::run() {
 		SdlRenderer::playerEvents(false);
 		
 		// Clear file meta info.
-		FileMetaInfo::setPosition(0.0);
-		FileMetaInfo::setDuration(0);
+		//FileMetaInfo::setPosition(0.0);
+		file_meta.setPosition(0.0);
+		//FileMetaInfo::setDuration(0);
+		file_meta.setDuration(0);
 		
 		if (ioContext) {
 			av_freep(&ioContext->buffer);

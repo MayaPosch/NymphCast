@@ -302,23 +302,28 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		
 		key = new std::string("duration");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(FileMetaInfo::getDuration());
+		//pair.value = new NymphType(FileMetaInfo::getDuration());
+		pair.value = new NymphType(file_meta.getDuration());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("position");
 		pair.key = new NymphType(key, true);
-		pair.value = new NymphType(FileMetaInfo::getPosition());
+		//pair.value = new NymphType(FileMetaInfo::getPosition());
+		//pair.value = new NymphType(file_meta.getPosition());
+		pair.value = new NymphType(file_meta.position);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("title");
 		pair.key = new NymphType(key, true);
-		std::string* val = new std::string(FileMetaInfo::getTitle());
+		//std::string* val = new std::string(FileMetaInfo::getTitle());
+		std::string* val = new std::string(file_meta.getTitle());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
 		key = new std::string("artist");
 		pair.key = new NymphType(key, true);
-		val = new std::string(FileMetaInfo::getArtist());
+		//val = new std::string(FileMetaInfo::getArtist());
+		val = new std::string(file_meta.getArtist());
 		pair.value = new NymphType(val, true);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		

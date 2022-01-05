@@ -57,8 +57,8 @@ string LCDNymphCastSensor::getCurrentValue() {
 	string value;
 	if (ffplay.playbackActive()) {
 		std::cout << "NCSensor: getCurrentValue, playerStarted." << std::endl;
-		//value = file_meta.getArtist() + " - " + file_meta.getTitle();
-		value = FileMetaInfo::getArtist() + " - " + FileMetaInfo::getTitle();
+		value = file_meta.getArtist() + " - " + file_meta.getTitle();
+		//value = FileMetaInfo::getArtist() + " - " + FileMetaInfo::getTitle();
 	} 
 	else {
 		//std::cout << "NCSensor: getCurrentValue, default." << std::endl;

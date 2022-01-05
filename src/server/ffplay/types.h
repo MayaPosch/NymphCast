@@ -430,9 +430,6 @@ extern int autorotate;
 extern int find_stream_info;
 extern int filter_nbthreads;
 
-//extern std::atomic<bool> castingUrl;
-//extern std::string castUrl;
-
 /* current context */
 extern int is_full_screen;
 extern int64_t audio_callback_time;
