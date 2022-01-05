@@ -938,7 +938,8 @@ void MainWindow::play() {
 	// Start playing the currently selected track if it isn't already playing. 
 	// Else pause or unpause playback.
 	if (playingTrack) {
-		client.playbackStart(remotes[index].handle);
+		//client.playbackStart(remotes[index].handle);
+		client.playbackPause(remotes[index].handle);
 	}
 	else {
 		QListWidgetItem* item = ui->mediaListWidget->currentItem();
