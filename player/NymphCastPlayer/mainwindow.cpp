@@ -352,7 +352,10 @@ MainWindow::~MainWindow() {
 // Called by 'posTimer' whenever the 1 second interval expires.
 // Updates the playback position of the current file if needed (not updated externally).
 void MainWindow::positionUpdate() {
-	if (!playingTrack) { return; }
+	//if (!playingTrack) { return; }
+	
+	// DEBUG
+	//std::cout << "Position Update..." << std::endl;
 	
 	// Obtain the info on the currently active remote.
 	// Obtain selected ID.
@@ -370,10 +373,16 @@ void MainWindow::positionUpdate() {
 		ris = &(remotes[index]);
 	}
 	
+	// DEBUG
+	//std::cout << "Position Update: Check pause..." << std::endl;
+	
 	// Check whether we're paused.
 	if (ris->status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
 		return;
 	}
+	
+	// DEBUG
+	//std::cout << "Position Update: Check time..." << std::endl;
 	
 	QTime now = QTime::currentTime();
 	if (ris->timestamp.secsTo(now) < 1) {
@@ -451,15 +460,18 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 	// Update the UI.
 	bool paused = false;
 	if (status.status == NYMPH_PLAYBACK_STATUS_PLAYING) {
+		ris->paused = false;
 		ui->remoteStatusLabel->setText("Playing: " + QString::fromStdString(status.artist)
 										+ " - " + QString::fromStdString(status.title));
 	}
 	else if (status.status == NYMPH_PLAYBACK_STATUS_PAUSED) {
 		ui->remoteStatusLabel->setText("Paused.");
+		ris->paused = true;
 		paused = true;
 	}
 	else {
 		ui->remoteStatusLabel->setText("Stopped.");
+		ris->paused = false;
 	}
 
 	// Manage muted state.
@@ -888,8 +900,9 @@ void MainWindow::play() {
 		
 		// Start playing the currently selected track if it isn't already playing. 
 		// Else pause or unpause playback.
-		if (playingTrack) {
-			client.playbackStart(group.remotes[0].handle);
+		if (playingTrack || group.remotes[0].paused) {
+			//client.playbackStart(group.remotes[0].handle);
+			client.playbackPause(group.remotes[0].handle);
 		}
 		else {
 			QListWidgetItem* item = ui->mediaListWidget->currentItem();
@@ -937,7 +950,7 @@ void MainWindow::play() {
 	
 	// Start playing the currently selected track if it isn't already playing. 
 	// Else pause or unpause playback.
-	if (playingTrack) {
+	if (playingTrack || remotes[index].paused) {
 		//client.playbackStart(remotes[index].handle);
 		client.playbackPause(remotes[index].handle);
 	}
