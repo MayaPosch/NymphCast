@@ -83,7 +83,7 @@ void dataRequestFunction() {
 			std::cout << "Shutting down data request function..." << std::endl;
 			break;
 		}
-		else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
+		//else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
 		
 		std::cout << "Asking for data..." << std::endl;
 	
