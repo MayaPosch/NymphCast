@@ -9,7 +9,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 android {
-QT += androidextras
+lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 #ANDROID_MIN_SDK_VERSION = 24
 #ANDROID_TARGET_SDK_VERSION = 30
