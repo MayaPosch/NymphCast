@@ -11,7 +11,7 @@
 
 	;Name and file
 	Name "NymphCastPlayer"
-	OutFile "NymphCast_Player_installer_0.1_RC1.exe"
+	OutFile "Setup_NymphCast_Player_0.1_RC1.exe"
 
 	;Default installation folder
 	InstallDir "$PROGRAMFILES\NymphCastPlayer"
@@ -66,8 +66,8 @@ Section "NymphCastPlayer"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "UninstallString" "$INSTDIR\uninstall.exe"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "Publisher" "Maya Posch/Nyanko"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "HelpLink" "http://www.mayaposch.com/mqttcute.php"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "DisplayVersion" "0.3-alpha"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "HelpLink" "http://github.com/mayaposch/nymphcast"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "DisplayVersion" "0.1-rc1"
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "NoModify" 1 ; The installers does not offer a possibility to modify the installation
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NymphCastPlayer" "NoRepair" 1 ; The installers does not offer a possibility to repair the installation
   
