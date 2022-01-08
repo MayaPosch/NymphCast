@@ -58,6 +58,7 @@ std::condition_variable DataBuffer::seekRequestCV;
 std::atomic<bool> DataBuffer::seekRequestPending = { false };
 std::atomic<bool> DataBuffer::resetRequest = { false };
 std::atomic<bool> DataBuffer::writeStarted = { false };
+std::atomic<bool> DataBuffer::bufferAhead = { false };
 uint32_t DataBuffer::sessionHandle = 0;
 
 std::mutex DataBuffer::streamTrackQueueMutex;
@@ -95,6 +96,7 @@ bool DataBuffer::init(uint32_t capacity) {
 	seekRequestPending = false;
 	resetRequest = false;
 	writeStarted = false;
+	bufferAhead = false;
 	state = DBS_IDLE;
 	
 #ifdef PROFILING_DB
@@ -167,6 +169,7 @@ int64_t DataBuffer::getFileSize() {
 bool DataBuffer::start() {
 	if (dataRequestCV == 0) { return false; }
 	
+	bufferAhead = false;
 	writeStarted = true;
 	dataRequestCV->notify_one();
 	
@@ -470,7 +473,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	if (eof) {
 		// Do nothing.
 	}
-	else if (!dataRequestPending && free > 204799) {
+	else if (bufferAhead && !dataRequestPending && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
@@ -628,7 +631,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		
 		resetRequest = false;
 	} */
-	else if (free > 204799) {
+	else if (bufferAhead && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {

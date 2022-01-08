@@ -10,6 +10,7 @@
 #include "sdl_renderer.h"
 #include "player.h"
 #include "ffplay.h"
+#include "../databuffer.h"
 
 #include "stream_handler.h"
 
@@ -686,6 +687,9 @@ int StreamHandler::read_thread(void *arg) {
 	
 	// Update clients with status.
 	sendGlobalStatusUpdate();
+	
+	// Buffering ahead can now commence as all headers etc. should have been seeked to.
+	DataBuffer::startBufferAhead();
 
 	// Start the main processing loop.
 	run = true;

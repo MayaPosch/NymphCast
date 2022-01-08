@@ -63,6 +63,7 @@ class DataBuffer {
 	static std::atomic<bool> seekRequestPending;
 	static std::atomic<bool> resetRequest;
 	static std::atomic<bool> writeStarted;
+	static std::atomic<bool> bufferAhead;
 	static uint32_t sessionHandle;		// Active session this buffer is associated with.
 	
 	static std::mutex streamTrackQueueMutex;
@@ -87,6 +88,7 @@ public:
 	static uint32_t write(const char* data, uint32_t length);
 	static void setEof(bool eof);
 	static bool isEof();
+	static void startBufferAhead() { bufferAhead = true; }
 	
 	static void addStreamTrack(std::string track);
 	static bool hasStreamTrack();
