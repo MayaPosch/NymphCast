@@ -1785,9 +1785,8 @@ int main(int argc, char** argv) {
 	display_disable = config.getValue<bool>("disable_video", false);
 	screensaver_enable = config.getValue<bool>("enable_screensaver", false);
 	
-	// Check for 'gui_enable' boolean value. If on, use the RmlUi-based GUI instead of the
-	// screensaver mode.
-	gui_enable = config.getValue<bool>("gui_enable", false);
+	// Check for 'enable_gui' boolean value. If 'true', use the GUI interface.
+	gui_enable = config.getValue<bool>("enable_gui", false);
 	
 	// Check whether the LCDProc client should be enabled.
 	lcdproc_enabled = config.getValue<bool>("enable_lcdproc", false);
