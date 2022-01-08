@@ -27,7 +27,7 @@ void ScreenSaver::changeImage(int) {
 	
 	// Load current image.
 	std::cout << "Changing image to " << images[imageId] << std::endl;
-	SdlRenderer::image_display(images[imageId++]);
+	SdlRenderer::screensaverUpdate(images[imageId++]);
 	if (!(imageId < images.size())) { imageId = 0; }
 }
 

@@ -19,9 +19,10 @@ class SdlRenderer {
 	//static SDL_RendererInfo renderer_info;
 	//static SDL_AudioDeviceID audio_dev;
 	static std::atomic<bool> run_events;
-	static std::string docName;
+	static std::string screensaverPath;
 	static std::atomic<bool> playerEventsActive;
 	static std::atomic<bool> guiEventsActive;
+	static std::atomic<bool> updateScreensaver;
 	static std::atomic<bool> windowVisible;
 	static std::atomic<bool> windowShouldBeVisible;
 	
@@ -45,6 +46,7 @@ public:
 	static void stop_event_loop();
 	static void playerEvents(bool active);
 	static void guiEvents(bool active);
+	static void screensaverUpdate(std::string path);
 	static void video_audio_display(VideoState *s);
 	static void video_image_display(VideoState *is);
 };

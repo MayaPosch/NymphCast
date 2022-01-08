@@ -27,9 +27,10 @@ uint32_t SdlRenderer::windowId = 0;
 //SDL_RendererInfo SdlRenderer::renderer_info = {0};
 //SDL_AudioDeviceID SdlRenderer::audio_dev;
 std::atomic<bool> SdlRenderer::run_events;
-std::string SdlRenderer::docName;
+std::string SdlRenderer::screensaverPath;
 std::atomic<bool> SdlRenderer::playerEventsActive = { false };
 std::atomic<bool> SdlRenderer::guiEventsActive = { false };
+std::atomic<bool> SdlRenderer::updateScreensaver = { false };
 std::atomic<bool> SdlRenderer::windowVisible = { false };
 std::atomic<bool> SdlRenderer::windowShouldBeVisible = { false };
 
@@ -384,12 +385,22 @@ void SdlRenderer::image_display(std::string image) {
 	if (texture) { SDL_DestroyTexture(texture); texture = 0; }
 	texture = IMG_LoadTexture(renderer, image.data());
 	
+	if (texture == 0) {
+		av_log(NULL, AV_LOG_FATAL, "Failed to load image. %s\n", SDL_GetError());
+		return;
+	}
+	
 	/* int w, h;
 	SDL_QueryTexture(texture, 0, 0, &w, &h);
 	av_log(NULL, AV_LOG_INFO, "Resizing window for texture with w/h: %d, %d.\n", w, h);
 	resizeWindow(w, h); */
 	
-	SDL_RenderCopy(renderer, texture, 0, 0);
+	SDL_RenderClear(renderer);
+	if (SDL_RenderCopy(renderer, texture, 0, 0) < 0) {
+		av_log(NULL, AV_LOG_FATAL, "Cannot copy SDL texture %s\n", SDL_GetError());
+		return;
+	}
+	
 	SDL_RenderPresent(renderer);
 }
 
@@ -458,6 +469,13 @@ void SdlRenderer::run_event_loop() {
 		}
 		
 		// Update player, UI, etc.
+		if (updateScreensaver) {
+			// Load the new screensaver image from the updated path.
+			image_display(screensaverPath);
+			updateScreensaver = false;
+			continue;
+		}
+		
 		if (playerEventsActive) {
 			// Trigger player refresh.
 			Player::run_updates();
@@ -504,6 +522,13 @@ void SdlRenderer::playerEvents(bool active) {
 // --- GUI EVENTS ---
 void SdlRenderer::guiEvents(bool active) {
 	guiEventsActive = active;
+}
+
+
+// --- SCREENSAVER UPDATE ---
+void SdlRenderer::screensaverUpdate(std::string path) {
+	updateScreensaver = true;
+	screensaverPath = path;
 }
 
 
