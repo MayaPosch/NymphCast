@@ -187,8 +187,17 @@ void DataBuffer::requestData() {
 	// Wait until we have received data or time out.
 	std::unique_lock<std::mutex> lk(dataWaitMutex);
 	using namespace std::chrono_literals;
-	while (dataWaitCV.wait_for(lk, 100us) != std::cv_status::timeout) {
+	uint8_t timeout = 20;
+	while (1) {
+		// FIXME: 
+		dataWaitCV.wait_for(lk, 100us);
 		if (!dataRequestPending) { break; }
+		if (--timeout == 0) {
+#ifdef DEBUG
+			std::cerr << "RequestData timeout after 2s." << std::endl;
+#endif
+			break;
+		}
 	}
 }
 
