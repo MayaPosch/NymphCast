@@ -33,19 +33,6 @@
 
 
 struct FileMetaInfo {
-	//std::atomic<uint32_t> filesize;		// bytes.
-	/*static std::atomic<uint64_t> duration;		// seconds
-	static std::atomic<double> position;		// seconds with remainder.
-	static std::atomic<uint32_t> width;		// pixels
-	static std::atomic<uint32_t> height;		// pixels
-	static std::atomic<uint32_t> video_rate;	// kilobits per second
-	static std::atomic<uint32_t> audio_rate;	// kilobits per second
-	static std::atomic<uint32_t> framrate;
-	static std::atomic<uint8_t> audio_channels;
-	static std::string title;
-	static std::string artist;
-	static std::string album;
-	static Poco::Mutex mutex;*/	// Use only with non-atomic entries.
 	std::atomic<uint64_t> duration;		// seconds
 	std::atomic<double> position;		// seconds with remainder.
 	std::atomic<uint32_t> width;		// pixels
@@ -67,7 +54,6 @@ struct FileMetaInfo {
 	uint64_t getDuration() { return duration; }
 	
 	void setPosition(double p) {
-		//std::cout << "SetPosition. " << p << std::endl;
 		if (std::isnan(p)) { position = 0; }
 		else { position = p; }
 	}
