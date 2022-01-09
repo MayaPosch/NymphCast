@@ -39,6 +39,7 @@ uint32_t read_size = 0;
 // Global objects.
 Poco::Condition dummyCon;
 Poco::Mutex dummyMutex;
+std::condition_variable dumbplaybackCv;
 // ---
 
 
@@ -174,6 +175,41 @@ void FfplayDummy::setVolume(uint8_t volume) {
 }
 
 
+// --- STREAM TRACK ---
+bool FfplayDummy::streamTrack(std::string url) {
+	if (!playerStarted) {
+		castUrl = url;
+		castingUrl = true;
+		
+		dumbplaybackCv.notify_one();
+		
+		// TODO: wait N ms for playback to start. Try again if not started, else fail.
+	}
+	else {
+		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting playback of %s.\n", url.c_str());
+		return false;
+	}
+	
+	return true;
+}
+
+
+// --- PLAY TRACK ---
+bool FfplayDummy::playTrack() {
+	if (!playerStarted) {
+		playingTrack = true;
+		
+		dumbplaybackCv.notify_one();
+	}
+	else {
+		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting track playback.\n");
+		return false;
+	}
+	
+	return true;
+}
+
+
 // --- TRIGGER READ ---
 void FfplayDummy::triggerRead(int) {
 	// TODO: if first read, seek to end - N bytes.
@@ -225,30 +261,69 @@ void FfplayDummy::run() {
 	
 	read_size = start_size;
 	
-	// Start dummy playback:
-	// - Request a 32 kB data block every N milliseconds.
-	// - Once EOF is returned, wait N milliseconds, then quit.
-	ct.setCallback(FfplayDummy::triggerRead, 0);
-	ct.setStopCallback(FfplayDummy::cleanUp);
-	ct.start(50);	// Trigger time in milliseconds.
+	// Start main loop.
+	// This loop waits until it is triggered, at which point there should either be a URL to
+	// stream from, or a file to stream via the DataBuffer.
+	running = true;
+	playerStarted = false;
+	std::mutex playbackMtx;
+	while (running) {
+		// Wait in condition variable until triggered. Ensure an event is waiting to deal with
+		// spurious wake-ups.
+		std::unique_lock<std::mutex> lk(playbackMtx);
+		using namespace std::chrono_literals;
+		dumbplaybackCv.wait(lk);
+		
+		if (!running) {
+			av_log(NULL, AV_LOG_INFO, "Terminating AV thread...\n");
+			break;
+		}
+		
+		// Intercept spurious wake-ups.
+		if (!playingTrack && !castingUrl) { continue; }
+		
+		// Start playback.
+		playerStarted = true;
+		
+		// Update clients with status update.
+		sendGlobalStatusUpdate();
+		
+		// Start dummy playback:
+		// - Request a 32 kB data block every N milliseconds.
+		// - Once EOF is returned, wait N milliseconds, then quit.
+		ct.setCallback(FfplayDummy::triggerRead, 0);
+		ct.setStopCallback(FfplayDummy::cleanUp);
+		ct.start(50);	// Trigger time in milliseconds.
 	
-	// Wait here until playback has finished.
-	// The read thread in StreamHandler will signal this condition variable.
-	dummyMutex.lock();
-	dummyCon.wait(dummyMutex);
-	dummyMutex.unlock();
+		// Wait here until playback has finished.
+		// The read thread in StreamHandler will signal this condition variable.
+		dummyMutex.lock();
+		dummyCon.wait(dummyMutex);
+		dummyMutex.unlock();
+		
+		ct.stop();
+		
+		DataBuffer::reset();	// Clears the data buffer (file data buffer).
+		finishPlayback();		// Calls handler for post-playback steps.
+		
+		// Clean up.
+		free(buf);
 	
-	ct.stop();
-	
-	DataBuffer::reset();	// Clears the data buffer (file data buffer).
-	finishPlayback();		// Calls handler for post-playback steps.
-	
-	// Clean up.
-	free(buf);
+		playerStarted = false;
+		playingTrack = false;
+		castingUrl = false;
+		
+		// Update clients with status update.
+		sendGlobalStatusUpdate();
+	}
 }
 
  
 // --- QUIT ---
 void FfplayDummy::quit() {
+	// End loop.
+	running = false;
+	dumbplaybackCv.notify_one();
+	
 	dummyCon.signal();
 }
