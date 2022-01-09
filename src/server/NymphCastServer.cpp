@@ -208,7 +208,7 @@ void dataRequestFunction() {
 		std::vector<NymphType*> values;
 		std::string result;
 		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
-			std::cerr << "Calling callback failed: " << result << std::endl;
+			NYMPH_LOG_ERROR("Calling callback failed: " + result);
 			continue;
 		}
 		
@@ -396,7 +396,7 @@ void sendStatusUpdate(uint32_t handle) {
 	NymphType* resVal = 0;
 	std::string result;
 	if (!NymphRemoteClient::callCallback(handle, "MediaStatusCallback", values, result)) {
-		std::cerr << "Calling media status callback failed: " << result << std::endl;
+		NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
 		return;
 	}
 }
@@ -450,7 +450,7 @@ void seekingHandler(uint32_t session, int64_t offset) {
 		std::string result;
 		NymphType* resVal = 0;
 		if (!NymphRemoteClient::callCallback(session, "MediaSeekCallback", values, result)) {
-			std::cerr << "Calling media seek callback failed: " << result << std::endl;
+			NYMPH_LOG_ERROR("Calling media seek callback failed: " + result);
 			return;
 		}
 				
@@ -478,7 +478,7 @@ void finishPlayback() {
 	std::vector<NymphType*> values;
 	std::string result;
 	if (!NymphRemoteClient::callCallback(handle, "MediaStopCallback", values, result)) {
-		std::cerr << "Calling media stop callback failed: " << result << std::endl;
+		NYMPH_LOG_ERROR("Calling media stop callback failed: " + result);
 		return;
 	}
 	
@@ -573,13 +573,14 @@ uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 
 // Callback for the connect function.
 NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
-	std::cout << "Received message for session: " << session << ", msg ID: " << msg->getMessageId() << "\n";
+	NYMPH_LOG_INFORMATION("Received message for session: " + Poco::NumberFormatter::format(session)
+							+ ", msg ID: " + Poco::NumberFormatter::format(msg->getMessageId()));
 	
 	std::string clientStr = msg->parameters()[0]->getString();
-	std::cout << "Client string: " << clientStr << "\n";
+	NYMPH_LOG_INFORMATION("Client string: " + clientStr);
 	
 	// TODO: check whether we're not operating in slave or master mode already.
-	std::cout << "Switching to stand-alone server mode." << std::endl;
+	NYMPH_LOG_INFORMATION("Switching to stand-alone server mode.");
 	serverMode = NCS_MODE_STANDALONE;
 	
 	// Register this client with its ID. Return error if the client ID already exists.
@@ -607,7 +608,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 	values.push_back(new NymphType(status, true));
 	std::string result;
 	if (!NymphRemoteClient::callCallback(session, "MediaStatusCallback", values, result)) {
-		std::cerr << "Calling media status callback failed: " << result << std::endl;
+		NYMPH_LOG_ERROR("Calling media status callback failed: " + result);
 	}
 	
 	returnMsg->setResultValue(retVal);
@@ -624,7 +625,7 @@ NymphMessage* connectClient(int session, NymphMessage* msg, void* data) {
 // Returns the timestamp when the message was received.
 // sint64 connectMaster(sint64)
 NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
-	std::cout << "Received master connect request, slave mode initiation requested." << std::endl;
+	NYMPH_LOG_INFORMATION("Received master connect request, slave mode initiation requested.");
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
@@ -635,7 +636,7 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 	}
 	else {
 		// FIXME: for now we just return the current time.
-		std::cout << "Switching to slave server mode." << std::endl;
+		NYMPH_LOG_INFORMATION("Switching to slave server mode.");
 		serverMode = NCS_MODE_SLAVE;
 		//DataBuffer::setFileSize(it->second.filesize);
 		DataBuffer::setSessionHandle(session);
@@ -708,26 +709,27 @@ NymphMessage* disconnect(int session, NymphMessage* msg, void* data) {
 		clients.erase(it);
 	}
 	
-	std::cout << "Current server mode: " << serverMode << std::endl;
+	NYMPH_LOG_INFORMATION("Current server mode: " + Poco::NumberFormatter::format(serverMode));
 	
 	// Disconnect any slave remotes if we're connected.
 	if (serverMode == NCS_MODE_MASTER) {
-		std::cout << "# of slave remotes: " << slave_remotes.size() << std::endl;
+		NYMPH_LOG_DEBUG("# of slave remotes: " + 
+								Poco::NumberFormatter::format(slave_remotes.size()));
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			// Disconnect from slave remote.
 			NymphCastSlaveRemote& rm = slave_remotes[i];
-			std::cout << "Disconnecting slave: " << rm.name << std::endl;
+			NYMPH_LOG_DEBUG("Disconnecting slave: " + rm.name);
 			std::string result;
 			if (!NymphRemoteServer::disconnect(rm.handle, result)) {
 				// Failed to connect, error out. Disconnect from any already connected slaves.
-				std::cerr << "Slave disconnect error: " << result << std::endl;
+				NYMPH_LOG_ERROR("Slave disconnect error: " + result);
 			}
 		}
 		
 		slave_remotes.clear();
 	}
 	
-	std::cout << "Switching to stand-alone server mode." << std::endl;
+	NYMPH_LOG_INFORMATION("Switching to stand-alone server mode.");
 	serverMode = NCS_MODE_STANDALONE;
 	
 	NymphMessage* returnMsg = msg->getReplyMessage();
@@ -758,7 +760,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	NymphType* fileInfo = msg->parameters()[0];
 	NymphType* num = 0;
 	if (!fileInfo->getStructValue("filesize", num)) {
-		std::cerr << "Didn't find entry 'filesize'. Aborting..." << std::endl;
+		NYMPH_LOG_FATAL("Didn't find entry 'filesize'. Aborting...");
 		returnMsg->setResultValue(new NymphType((uint8_t) 1));
 		msg->discard();
 		
@@ -772,7 +774,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	//	FIXME:	=> this likely happens due to a status update glitch. Fix by sending back status update
 	// 			along with error?
 	if (ffplay.playbackActive()) {
-		std::cerr << "Trying to start a new session with session already active. Abort." << std::endl;
+		NYMPH_LOG_ERROR("Trying to start a new session with session already active. Abort.");
 		returnMsg->setResultValue(new NymphType((uint8_t) 1));
 		msg->discard();
 		
@@ -794,7 +796,8 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 		}
 	} */
 	
-	std::cout << "Starting new session for file with size: " << it->second.filesize << std::endl;
+	NYMPH_LOG_INFORMATION("Starting new session for file with size: " +
+							Poco::NumberFormatter::format(it->second.filesize));
 	
 	DataBuffer::setFileSize(it->second.filesize);
 	DataBuffer::setSessionHandle(session);
@@ -802,7 +805,7 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// Start calling the client's read callback method to obtain data. Once the data buffer
 	// has been filled sufficiently, start the playback.
 	if (!DataBuffer::start()) {
-		std::cerr << "Failed to start buffering. Abort." << std::endl;
+		NYMPH_LOG_ERROR("Failed to start buffering. Abort.");
 		returnMsg->setResultValue(new NymphType((uint8_t) 1));
 		msg->discard();
 		
@@ -890,7 +893,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		std::string result;
 		if (!NymphRemoteServer::connect(rm.ipv4, 4004, rm.handle, 0, result)) {
 			// Failed to connect, error out. Disconnect from any already connected slaves.
-			std::cerr << "Slave connection error: " << result << std::endl;
+			NYMPH_LOG_ERROR("Slave connection error: " + result);
 			for (; i >= 0; --i) {
 				NymphCastSlaveRemote& drm = slave_remotes[i];
 				NymphRemoteServer::disconnect(drm.handle, result);
@@ -910,7 +913,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		values.push_back(new NymphType(now));
 		NymphType* returnValue = 0;
 		if (!NymphRemoteServer::callMethod(rm.handle, "connectMaster", values, returnValue, result)) {
-			std::cerr << "Slave connect master failed: " << result << std::endl;
+			NYMPH_LOG_ERROR("Slave connect master failed: " + result);
 			// TODO: disconnect from slave remotes.
 			returnMsg->setResultValue(new NymphType((uint8_t) 1));
 			msg->discard();
@@ -924,7 +927,7 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		time_t theirs = returnValue->getInt64();
 		delete returnValue;
 		if (theirs == 0) {
-			std::cerr << "Configuring remote as slave failed." << std::endl;
+			NYMPH_LOG_ERROR("Configuring remote as slave failed.");
 			// TODO: disconnect from slave remotes.
 			returnMsg->setResultValue(new NymphType((uint8_t) 1));
 			msg->discard();
@@ -937,12 +940,14 @@ NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 		
 		//rm.delay = theirs - now;
 		rm.delay = pong - now;
-		std::cout << "Slave delay: " << rm.delay << " microseconds." << std::endl;
-		std::cout << "Current max slave delay: " << slaveLatencyMax << std::endl;
+		NYMPH_LOG_DEBUG("Slave delay: " + Poco::NumberFormatter::format(rm.delay) + 
+							" microseconds.");
+		NYMPH_LOG_DEBUG("Current max slave delay: " + 
+							Poco::NumberFormatter::format(slaveLatencyMax));
 		if (rm.delay > slaveLatencyMax) { 
 			slaveLatencyMax = rm.delay;
-			std::cout << "Max slave latency increased to: " << slaveLatencyMax << " microseconds." 
-						<< std::endl;
+			NYMPH_LOG_DEBUG("Max slave latency increased to: " + 
+								Poco::NumberFormatter::format(slaveLatencyMax) + " microseconds.");
 		}
 	}
 	
@@ -1595,17 +1600,17 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	std::string* result = new std::string();
 	NymphCastApp app = nc_apps.findApp(appId);
 	if (app.id.empty()) {
-		std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
+		NYMPH_LOG_FATAL("Failed to find a matching application for '" + appId + "'.");
 		returnMsg->setResultValue(new NymphType(result, true));
 		msg->discard();
 			
 		return returnMsg;
 	}
 	
-	std::cout << "Found " << appId << " app." << std::endl;
+	NYMPH_LOG_INFORMATION("Found " + appId + " app.");
 	
 	if (!nc_apps.runApp(appId, message, *result)) {
-		std::cerr << "Error running app: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error running app: " + *result);
 		
 		// TODO: report back error to client.
 	}
@@ -1633,7 +1638,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// First check that the name doesn't contain a '/' or '\' as this might be used to create
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
-			std::cerr << "File name contained illegal directory separator character." << std::endl;
+			NYMPH_LOG_ERROR("File name contained illegal directory separator character.");
 			returnMsg->setResultValue(new NymphType(result, true));
 			msg->discard();
 			
@@ -1642,7 +1647,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		
 		fs::path f = appsFolder + name;
 		if (!fs::exists(f)) {
-			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
+			NYMPH_LOG_ERROR("Failed to find requested file '" + f.string() + "'.");
 			returnMsg->setResultValue(new NymphType(result, true));
 			msg->discard();
 			
@@ -1650,7 +1655,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Read in file data.
-		std::cout << "Reading file: " << f.string() << std::endl;
+		NYMPH_LOG_INFORMATION("Reading file: " + f.string());
 		std::ifstream fstr(f.string());
 		fstr.seekg(0, std::ios::end);
 		size_t size = fstr.tellg();
@@ -1665,7 +1670,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// relative path that lead up the hierarchy.
 		NymphCastApp app = nc_apps.findApp(appId);
 		if (app.id.empty()) {
-			std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
+			NYMPH_LOG_ERROR("Failed to find a matching application for '" + appId + "'.");
 			returnMsg->setResultValue(new NymphType(result, true));
 			msg->discard();
 			
@@ -1675,7 +1680,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		// Next check that the name doesn't contain a '/' or '\' as this might be used to create
 		// a relative path that breaks security (hierarchy travel).
 		if (name.find('/') != std::string::npos || name.find('\\') != std::string::npos) {
-			std::cerr << "File name contained illegal directory separator character." << std::endl;
+			NYMPH_LOG_ERROR("File name contained illegal directory separator character.");
 			returnMsg->setResultValue(new NymphType(result, true));
 			msg->discard();
 			
@@ -1684,7 +1689,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		
 		fs::path f = appsFolder + appId + "/" + name;
 		if (!fs::exists(f)) {
-			std::cerr << "Failed to find requested file '" << f.string() << "'." << std::endl;
+			NYMPH_LOG_ERROR("Failed to find requested file '" + f.string() + "'.");
 			returnMsg->setResultValue(new NymphType(result, true));
 			msg->discard();
 			
@@ -1692,7 +1697,7 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 		}
 		
 		// Read in file data.
-		std::cout << "Reading file: " << f.string() << std::endl;
+		NYMPH_LOG_INFORMATION("Reading file: " + f.string());
 		std::ifstream fstr(f.string());
 		fstr.seekg(0, std::ios::end);
 		size_t size = fstr.tellg();
@@ -1710,9 +1715,8 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 
 
 // --- LOG FUNCTION ---
-void logFunction(int level, std::string logStr);/* {
-	std::cout << level << " - " << logStr << std::endl;
-}*/
+// Forward declaration. Real function is in the client libnymphcast library.
+void logFunction(int level, std::string logStr);
 
 
 int main(int argc, char** argv) {
@@ -1808,8 +1812,8 @@ int main(int argc, char** argv) {
 	
 	// Initialise the server.
 	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
-	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
@@ -2099,7 +2103,8 @@ int main(int argc, char** argv) {
 	DataBuffer::init(buffer_size);
 	DataBuffer::setSeekRequestCallback(seekingHandler);
 	
-	std::cout << "Set up new buffer with size: " << buffer_size << " bytes." << std::endl;
+	NYMPH_LOG_INFORMATION("Set up new buffer with size: " + 
+							Poco::NumberFormatter::format(buffer_size) + " bytes.");
 	
 	// Set further global variables.
 	// FIXME: refactor.
@@ -2109,7 +2114,7 @@ int main(int argc, char** argv) {
 	
 	// Initialise SDL.
 	if (!SdlRenderer::init()) {
-		std::cerr << "Failed to init SDL. Aborting..." << std::endl;
+		NYMPH_LOG_FATAL("Failed to init SDL. Aborting...");
 		return 0;
 	}
 	
@@ -2128,7 +2133,7 @@ int main(int argc, char** argv) {
 	sv.service = "nymphcast";
 	NyanSD::addService(sv);
 	
-	std::cout << "Starting NyanSD on port 4004 UDP..." << std::endl;
+	NYMPH_LOG_INFORMATION("Starting NyanSD on port 4004 UDP...");
 	NyanSD::startListener(4004);
 	
 	if (lcdproc_enabled) {
@@ -2158,8 +2163,8 @@ int main(int argc, char** argv) {
 			screen1.setBackLight(lcdapi::LCD_BACKLIGHT_ON);
 		}
 		catch (lcdapi::LCDException e)  {
-			std::cout << e.what() << std::endl;
-			std::cout << "Skipping LCDProc client activation." << std::endl;
+			NYMPH_LOG_ERROR(e.what());
+			NYMPH_LOG_ERROR("Skipping LCDProc client activation due to exception.");
 			
 			lcdapi_active = false;
 		}
@@ -2176,17 +2181,16 @@ int main(int argc, char** argv) {
 			// Start the GUI with the specified resource folder.
 			if (!Gui::init(resourceFolder)) {
 				// Handle error.
-				std::cerr << "Failed to initialize the GUI. Aborting..." << std::endl;
+				NYMPH_LOG_ERROR("Failed to initialize the GUI. Aborting...");
 				init_success = false;
 			}
 			
 			if (!Gui::start()) {
-				std::cerr << "Failed to start the GUI. Aborting..." << std::endl;
+				NYMPH_LOG_ERROR("Failed to start the GUI. Aborting...");
 				init_success = false;
 			}
 			
 			SdlRenderer::hideWindow();
-			//SdlRenderer::showWindow();
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);
@@ -2210,7 +2214,7 @@ int main(int argc, char** argv) {
 		SdlRenderer::run_event_loop();
 	}
 	
-	std::cout << "Main thread: Shutting down..." << std::endl;
+	NYMPH_LOG_INFORMATION("Main thread: Shutting down...");
 	
 	// Stop screensaver if it's running.
 	if (!display_disable) {
@@ -2234,7 +2238,7 @@ int main(int argc, char** argv) {
 	avThread.join();
 	SdlRenderer::quit();
 	
-	std::cout << "Stopping SDL loop..." << std::endl;
+	NYMPH_LOG_INFORMATION("Stopped SDL loop. Shutting down server threads.");
 	
 	NyanSD::stopListener();
 	NymphRemoteClient::shutdown();
