@@ -52,6 +52,10 @@ void finishPlayback() {
 	// 
 }
 
+void sendGlobalStatusUpdate() {
+	//
+}
+
 
 Poco::Condition gCon;
 Poco::Mutex gMutex;
@@ -83,7 +87,9 @@ void dataRequestFunction() {
 			std::cout << "Shutting down data request function..." << std::endl;
 			break;
 		}
-		//else if (!DataBuffer::dataRequestPending) { continue; } // Spurious wake-up.
+		
+		// Set data request as pending.
+		DataBuffer::dataRequestPending = true;
 		
 		std::cout << "Asking for data..." << std::endl;
 	
@@ -92,9 +98,8 @@ void dataRequestFunction() {
 		DataBuffer::write(chunk, chunk_size);
 		
 		if (!playerRunning) {
-			// Start the ffplay dummy thread.
-			avThread.start(ffplay);
-			
+			// Start playback locally.
+			ffplay.playTrack();
 			playerRunning = true;
 		}
 	}
@@ -130,6 +135,10 @@ int main() {
 	
 	// Start the data request handler in its own thread.
 	std::thread drq(dataRequestFunction);
+	
+	// Start the player thread.
+	// Start the ffplay dummy thread.
+	avThread.start(ffplay);
 	
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	

@@ -186,7 +186,7 @@ bool FfplayDummy::streamTrack(std::string url) {
 		// TODO: wait N ms for playback to start. Try again if not started, else fail.
 	}
 	else {
-		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting playback of %s.\n", url.c_str());
+		std::cerr << "Playback already active. Aborting playback of " << url.c_str() << std::endl;
 		return false;
 	}
 	
@@ -202,7 +202,7 @@ bool FfplayDummy::playTrack() {
 		dumbplaybackCv.notify_one();
 	}
 	else {
-		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting track playback.\n");
+		std::cerr << "Playback already active. Aborting track playback." << std::endl;
 		return false;
 	}
 	
@@ -275,7 +275,7 @@ void FfplayDummy::run() {
 		dumbplaybackCv.wait(lk);
 		
 		if (!running) {
-			av_log(NULL, AV_LOG_INFO, "Terminating AV thread...\n");
+			std::cout << "Terminating AV thread..." << std::endl;
 			break;
 		}
 		
