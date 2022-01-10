@@ -101,6 +101,8 @@ void dataRequestFunction() {
 			// Start playback locally.
 			ffplay.playTrack();
 			playerRunning = true;
+			
+			DataBuffer::startBufferAhead();
 		}
 	}
 }
