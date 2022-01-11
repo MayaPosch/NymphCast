@@ -3,7 +3,6 @@ Description=NymphCast audio/video casting server
 
 [Service]
 ExecStart=@BIN@ -c @CONFIG@ -a @APPS@ -w @WALLPAPERS@
-User=pi
 Restart=always
 RestartSec=5
 
