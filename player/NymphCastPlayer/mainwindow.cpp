@@ -484,6 +484,12 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->soundToolButton->setIcon(QIcon(":/icons/icons/mute.png"));
 	}
 	
+	if (ris->init && status.playing) {
+		// If this is the initial connect, but the remote is already playing, treat init
+		// as already done, as we want to update the UI to reflect the remote status.
+		ris->init = false;
+	}
+	
 	if (ris->init) {
 		// Initial callback for this remote on connect. Just set safe defaults.
 		std::cout << "Initial remote status callback on connect." << std::endl;
