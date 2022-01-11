@@ -743,6 +743,12 @@ void MainWindow::playerRemoteChanged(int index) {
 			remoteIsConnected();
 		}
 		else {
+			// Refresh the stored status by requesting the current status from the remote.
+			NymphPlaybackStatus stat = client.playbackStatus(group.remotes[0].handle);
+			if (!stat.error) {
+				group.remotes[0].status = stat;
+			}
+			
 			updatePlayerUI(group.remotes[0].status, &(group.remotes[0]));
 		}
 	}
@@ -751,6 +757,12 @@ void MainWindow::playerRemoteChanged(int index) {
 			remoteIsConnected();
 		}
 		else {
+			// Refresh the stored status by requesting the current status from the remote.
+			NymphPlaybackStatus stat = client.playbackStatus(remotes[index].handle);
+			if (!stat.error) {
+				remotes[index].status = stat;
+			}
+			
 			updatePlayerUI(remotes[index].status, &(remotes[index]));
 		}
 	}
