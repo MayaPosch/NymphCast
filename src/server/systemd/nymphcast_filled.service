@@ -3,7 +3,6 @@ Description=NymphCast audio/video casting server
 
 [Service]
 ExecStart=/usr/local/bin/nymphcast_server -c /usr/local/etc/nymphcast/nymphcast_config.ini -a /usr/local/share/nymphcast/apps -w /usr/local/share/nymphcast/wallpapers
-User=pi
 Restart=always
 RestartSec=5
 
