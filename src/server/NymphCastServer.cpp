@@ -694,6 +694,7 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	
 	msg->discard();
 	
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	return returnMsg;
 }
 
