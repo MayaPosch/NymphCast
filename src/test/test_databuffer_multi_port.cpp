@@ -94,7 +94,7 @@ void dataRequestFunction() {
 		// Set data request as pending.
 		DataBuffer::dataRequestPending = true;
 		
-		std::cout << "Asking for data..." << std::endl;
+		//std::cout << "Asking for data..." << std::endl;
 	
 		// Write into buffer after a brief delay.
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -143,6 +143,8 @@ void verifyCallback(uint8_t* buff, uint32_t len) {
 			gCon.signal();
 		}
 	}
+	
+	std::cout << "\t PASS...";
 }
 
 

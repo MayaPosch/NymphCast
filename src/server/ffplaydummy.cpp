@@ -72,7 +72,7 @@ int FfplayDummy::media_read(void* opaque, uint8_t* buf, int buf_size) {
 #ifndef NO_NYMPH_LOGGER
 	NYMPH_LOG_INFORMATION("Read " + Poco::NumberFormatter::format(bytesRead) + " bytes.");
 #else
-	std::cout << "Read " << bytesRead << " bytes." << std::endl;;
+	//std::cout << "Read " << bytesRead << " bytes." << std::endl;;
 #endif
 	if (bytesRead == 0) {
 		std::cout << "EOF is " << DataBuffer::isEof() << std::endl;
@@ -256,7 +256,7 @@ void FfplayDummy::triggerRead(int) {
 #ifndef NO_NYMPH_LOGGER
 	NYMPH_LOG_INFORMATION("Read duration: " + Poco::NumberFormatter::format(std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) + "µs.");
 #else
-	std::cout << "Read duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs." << std::endl;
+	std::cout << "\rRead duration: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs.";// << std::endl;
 #endif
 	
 }
