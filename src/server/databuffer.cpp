@@ -28,6 +28,10 @@
 #include <fstream>
 std::ofstream db_debugfile;
 uint32_t profcount = 0;
+
+//#include <cstdio>
+std::ofstream db_readsfile;
+//FILE* db_readsfile;
 #endif
 
 
@@ -103,6 +107,11 @@ bool DataBuffer::init(uint32_t capacity) {
 	if (!db_debugfile.is_open()) {
 		db_debugfile.open("profiling_databuffer.txt");
 	}
+	
+	if (!db_readsfile.is_open()) {
+		db_readsfile.open("db_reads.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+	}
+	//db_readsfile = fopen("db_reads.txt", "wb");
 #endif
 	
 	return true;
@@ -122,6 +131,12 @@ bool DataBuffer::cleanup() {
 		db_debugfile.flush();
 		db_debugfile.close();
 	}
+	
+	if (db_readsfile.is_open()) {
+		db_readsfile.flush();
+		db_readsfile.close();
+	}
+	//fclose(db_readsfile);
 #endif
 	
 	return true;
@@ -259,6 +274,16 @@ int64_t DataBuffer::seek(DataBufferSeek mode, int64_t offset) {
 		// Sleep in 1 ms segments until the data request is done.
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
+	
+#ifdef PROFILING_DB
+	// Truncate file.
+	if (db_readsfile.is_open()) {
+		db_readsfile.close();
+		db_readsfile.open("db_reads.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+	}
+	//fclose(db_readsfile);
+	//db_readsfile = fopen("db_reads.txt", "wb");
+#endif
 	
 	// TODO: removing local check. We just assume the local data isn't in the buffer and reload.
 	// In testing, the local data check has offered little benefits (not enough data in buffer).
@@ -495,6 +520,10 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef PROFILING_DB
 		std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
 		db_debugfile << "\t\tDuration2: " << std::chrono::duration_cast<std::chrono::microseconds>(end2 - begin).count() << "µs.\n";
+		
+		// Write read bytes to file.
+		db_readsfile.write((char*) bytes, bytesRead);
+		//fwrite(bytes, sizeof(uint8_t), bytesRead, db_readsfile);
 #endif
 	
 #ifdef DEBUG
