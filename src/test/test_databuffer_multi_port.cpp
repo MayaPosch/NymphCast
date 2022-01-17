@@ -61,7 +61,7 @@ Poco::Condition gCon;
 Poco::Mutex gMutex;
 
 uint32_t chunk_size = 200 * 1024; // 200 kB
-const char* chunk;
+char* chunk;
 FfplayDummy ffplay;
 Poco::Thread avThread;
 
@@ -69,6 +69,9 @@ std::atomic<bool> running = { true };
 std::atomic<bool> playerRunning = { false };
 std::condition_variable dataRequestCv;
 std::mutex dataRequestMtx;
+
+uint8_t writeCnt = 0;
+uint8_t readCnt = 0;
 
 
 // --- DATA REQUEST FUNCTION ---
@@ -95,6 +98,12 @@ void dataRequestFunction() {
 	
 		// Write into buffer after a brief delay.
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		
+		// Create fresh chunk using counter.
+		for (uint32_t i = 0; i < chunk_size; ++i) {
+			chunk[i] = writeCnt++;
+		}
+		
 		DataBuffer::write(chunk, chunk_size);
 		
 		if (!playerRunning) {
@@ -120,6 +129,23 @@ void seekingHandler(uint32_t session, int64_t offset) {
 }
 
 
+// --- VERIFY CALLBACK ---
+void verifyCallback(uint8_t* buff, uint32_t len) {
+	for (uint32_t i = 0; i < len; ++i) {
+		if (buff[i] != readCnt++) {
+			std::cout << " === Data Check Fail ===" << std::endl;
+			std::cout << "Expected: " << (uint16_t) readCnt - 1 << 
+						", got: " << (uint16_t) buff[i] << "." << std::endl;
+			std::cout << "\nSequence:" << std::endl;
+			std::cout.write((char*) buff, len);
+			
+			// Exit.
+			gCon.signal();
+		}
+	}
+}
+
+
 void signal_handler(int signal) {
 	std::cout << "SIGINT handler called. Shutting down..." << std::endl;
 	gCon.signal();
@@ -140,6 +166,7 @@ int main() {
 	
 	// Start the player thread.
 	// Start the ffplay dummy thread.
+	ffplay.setVerifyCallback(verifyCallback);
 	avThread.start(ffplay);
 	
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));

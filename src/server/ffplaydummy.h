@@ -17,6 +17,7 @@
 #include <iostream>
 #include <atomic>
 #include <queue>
+#include <functional>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mutex.h>
@@ -75,6 +76,9 @@ extern FileMetaInfo file_meta;
 void finishPlayback(); // Defined in NymphCastServer.cpp
 void sendGlobalStatusUpdate();
 
+
+typedef std::function<void(uint8_t*, uint32_t)> dummyReadCallback;
+
 	
 class FfplayDummy : public Poco::Runnable {
     VideoState* is = 0;
@@ -88,6 +92,7 @@ class FfplayDummy : public Poco::Runnable {
 	static int buf_size;
 	static uint8_t* buf;
 	static uint8_t count;
+	static dummyReadCallback verifycb;
 	
 	static void triggerRead(int);
 	static void cleanUp();
@@ -98,6 +103,7 @@ public:
 	virtual void run();
 	uint8_t getVolume();
 	void setVolume(uint8_t volume);
+	void setVerifyCallback(dummyReadCallback cb);
 	bool playbackActive() { return playerStarted.load(); }
 	bool streamTrack(std::string url);
 	bool playTrack();

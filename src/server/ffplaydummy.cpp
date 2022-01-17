@@ -34,6 +34,7 @@ uint8_t FfplayDummy::count = 0;
 uint32_t start_size = 27 * 1024; 	// Initial size of a request.
 uint32_t step_size = 1 * 1014;		// Request 1 kB more each cycle until buf_size is reached.
 uint32_t read_size = 0;
+dummyReadCallback FfplayDummy::verifycb = 0;
 
 
 // Global objects.
@@ -175,6 +176,12 @@ void FfplayDummy::setVolume(uint8_t volume) {
 }
 
 
+// --- SET VERIFY CALLBACK ---
+void FfplayDummy::setVerifyCallback(dummyReadCallback cb) {
+	verifycb = cb;
+}
+
+
 // --- STREAM TRACK ---
 bool FfplayDummy::streamTrack(std::string url) {
 	if (!playerStarted) {
@@ -237,6 +244,11 @@ void FfplayDummy::triggerRead(int) {
 	if (media_read(0, buf, read_size) == -1) {
 		// Signal the player thread that the playback has ended.
 		dummyCon.signal();
+	}
+	
+	// Call the verify handler, if any.
+	if (verifycb) {
+		verifycb(buf, read_size);
 	}
 	
 	// Report time for the media_read call.
