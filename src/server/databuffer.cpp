@@ -23,7 +23,7 @@
 
 // Enable profiling.
 //#define PROFILING_DB 1
-#ifdef PROFILING_DB
+//#ifdef PROFILING_DB
 #include <chrono>
 #include <fstream>
 std::ofstream db_debugfile;
@@ -503,7 +503,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	}
 	
 	// Trigger a data request from the client if we have space.
-	if (eof) {
+	/* if (eof) {
 		// Do nothing.
 	}
 	else if (bufferAhead && !dataRequestPending && free > 204799) {
@@ -515,7 +515,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #endif
 			dataRequestCV->notify_one();
 		}
-	}
+	} */
 
 #ifdef PROFILING_DB
 		std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
@@ -668,7 +668,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		
 		resetRequest = false;
 	} */
-	else if (bufferAhead && free > 204799) {
+	else if (bufferAhead && !dataRequestPending && free > 204799) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {
