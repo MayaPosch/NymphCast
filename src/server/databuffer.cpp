@@ -23,7 +23,7 @@
 
 // Enable profiling.
 //#define PROFILING_DB 1
-//#ifdef PROFILING_DB
+#ifdef PROFILING_DB
 #include <chrono>
 #include <fstream>
 std::ofstream db_debugfile;
