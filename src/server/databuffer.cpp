@@ -63,6 +63,7 @@ std::atomic<bool> DataBuffer::seekRequestPending = { false };
 std::atomic<bool> DataBuffer::resetRequest = { false };
 std::atomic<bool> DataBuffer::writeStarted = { false };
 std::atomic<bool> DataBuffer::bufferAhead = { false };
+std::atomic<bool> DataBuffer::buffering = { false };
 uint32_t DataBuffer::sessionHandle = 0;
 
 std::mutex DataBuffer::streamTrackQueueMutex;
@@ -101,6 +102,7 @@ bool DataBuffer::init(uint32_t capacity) {
 	resetRequest = false;
 	writeStarted = false;
 	bufferAhead = false;
+	buffering = false;
 	state = DBS_IDLE;
 	
 #ifdef PROFILING_DB
@@ -185,6 +187,7 @@ bool DataBuffer::start() {
 	if (dataRequestCV == 0) { return false; }
 	
 	bufferAhead = false;
+	buffering = false;
 	writeStarted = true;
 	dataRequestCV->notify_one();
 	
@@ -503,19 +506,19 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	}
 	
 	// Trigger a data request from the client if we have space.
-	/* if (eof) {
+	if (eof) {
 		// Do nothing.
 	}
-	else if (bufferAhead && !dataRequestPending && free > 204799) {
-		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
-		// TODO: make it possible to request a specific block size from client.
+	else if (bufferAhead && !buffering && !dataRequestPending && unread < (2 * 204799)) {
+		// Single block is 200 kB (204,800 bytes). We're not buffering and there's data left 
+		// to be read in the file. Restart ahead buffering.
 		if (dataRequestCV != 0) {
 #ifdef DEBUG
 			std::cout << "DataBuffer::read: requesting more data." << std::endl;
 #endif
 			dataRequestCV->notify_one();
 		}
-	} */
+	}
 
 #ifdef PROFILING_DB
 		std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
@@ -658,6 +661,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// Trigger a data request from the client if we have space.
 	if (eof) {
 		// Do nothing.
+		buffering = false;
 	}/* 
 	else if (resetRequest) {
 		// Reset request is pending. Ensure no data requests are pending before we signal okay.
@@ -676,7 +680,11 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 			std::cout << "DataBuffer::write: requesting more data." << std::endl;
 #endif
 			dataRequestCV->notify_one();
+			buffering = true;
 		}
+	}
+	else {
+		buffering = false;
 	}
 	
 	return bytesWritten;

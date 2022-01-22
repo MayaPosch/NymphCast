@@ -64,6 +64,7 @@ class DataBuffer {
 	static std::atomic<bool> resetRequest;
 	static std::atomic<bool> writeStarted;
 	static std::atomic<bool> bufferAhead;
+	static std::atomic<bool> buffering;
 	static uint32_t sessionHandle;		// Active session this buffer is associated with.
 	
 	static std::mutex streamTrackQueueMutex;
