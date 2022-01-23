@@ -7,7 +7,7 @@
 
 class ImageComponent;
 class Sound;
-class VideoComponent;
+//class VideoComponent;
 
 // Screensaver implementation for main window
 class SystemScreenSaver : public Window::ScreenSaver
@@ -51,7 +51,7 @@ private:
 private:
 	bool			mVideosCounted;
 	unsigned long		mVideoCount;
-	VideoComponent*		mVideoScreensaver;
+	//VideoComponent*		mVideoScreensaver;
 	bool			mImagesCounted;
 	unsigned long		mImageCount;
 	ImageComponent*		mImageScreensaver;

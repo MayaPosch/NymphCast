@@ -7,7 +7,7 @@
 #include "components/ScrollableContainer.h"
 #include "views/gamelist/BasicGameListView.h"
 
-class VideoComponent;
+//class VideoComponent;
 
 class VideoGameListView : public BasicGameListView
 {
@@ -35,7 +35,7 @@ private:
 
 	ImageComponent mThumbnail;
 	ImageComponent mMarquee;
-	VideoComponent* mVideo;
+	//VideoComponent* mVideo;
 	ImageComponent mImage;
 
 	TextComponent mLblRating, mLblReleaseDate, mLblDeveloper, mLblPublisher, mLblGenre, mLblPlayers, mLblLastPlayed, mLblPlayCount;

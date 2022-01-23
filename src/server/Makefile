@@ -56,8 +56,17 @@ LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON 
 		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
 		-lstdc++fs -lfreetype \
-			 -lcurl -lvlc -lfreeimage \
+			 -lcurl -lfreeimage \
 			-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
+			# -lvlc
+
+STATIC_LIB := -Wl,-Bstatic -lnymphrpc -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
+		-lstdc++fs -lfreetype -lcurl -lfreeimage -lnymphcast \
+		`pkg-config --libs freetype2` `sdl2-config --libs` \
+		 -Wl,-Bdynamic -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
+		-lPocoDataSQLite -lPocoNet -lPocoUtil -lPocoFoundation
+		# -lvlc
 ifdef CROSSC
 LIB := -L $(SYSROOT)/usr/lib $(PLATFORM_LDFLAGS) -lfreetype -lSDL2main -lSDL2 $(LIB) -lpthread -lc
 else
@@ -68,6 +77,14 @@ FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS)
 CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
 LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
+
+# Check for a static build.
+ifdef STATIC
+	TARGET_BIN := $(TARGET)-static/
+	TARGET := $(TARGET)-static
+	#LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(STATIC_LIB)
+	LDFLAGS := -static $(LDFLAGS)
+endif
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
@@ -96,12 +113,12 @@ SOURCES := $(wildcard *.cpp) \
 GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/core/animations/*.cpp) \
 				$(wildcard gui/core/components/*.cpp) \
+				$(wildcard gui/core/nanosvg/src/*.cpp) \
 				$(wildcard gui/core/guis/*.cpp) \
 				$(wildcard gui/core/math/*.cpp) \
 				$(wildcard gui/core/renderers/*.cpp) \
 				$(wildcard gui/core/resources/*.cpp) \
 				$(wildcard gui/core/utils/*.cpp) \
-				$(wildcard gui/core/nanosvg/src/*.cpp) \
 				$(wildcard gui/app/*.cpp) \
 				$(wildcard gui/app/components/*.cpp) \
 				$(wildcard gui/app/guis/*.cpp) \

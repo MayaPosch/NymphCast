@@ -1,9 +1,9 @@
 #include "SystemScreenSaver.h"
 
-#ifdef _RPI_
+/* #ifdef _RPI_
 #include "components/VideoPlayerComponent.h"
 #endif
-#include "components/VideoVlcComponent.h"
+#include "components/VideoVlcComponent.h" */
 #include "CollectionSystemManager.h"
 #include "utils/FileSystemUtil.h"
 #include "views/gamelist/IGameListView.h"
@@ -22,7 +22,7 @@
 static int lastIndex = 0;
 
 SystemScreenSaver::SystemScreenSaver(Window* window) :
-	mVideoScreensaver(NULL),
+	//mVideoScreensaver(NULL),
 	mImageScreensaver(NULL),
 	mWindow(window),
 	mVideosCounted(false),
@@ -38,9 +38,9 @@ SystemScreenSaver::SystemScreenSaver(Window* window) :
 	mStopBackgroundAudio(true)
 {
 	mWindow->setScreenSaver(this);
-	std::string path = getTitleFolder();
+	/* std::string path = getTitleFolder();
 	if(!Utils::FileSystem::exists(path))
-		Utils::FileSystem::createDirectory(path);
+		Utils::FileSystem::createDirectory(path); */
 	srand((unsigned int)time(NULL));
 	mSwapTimeout = 30000;
 }
@@ -48,16 +48,17 @@ SystemScreenSaver::SystemScreenSaver(Window* window) :
 SystemScreenSaver::~SystemScreenSaver()
 {
 	// Delete subtitle file, if existing
-	remove(getTitlePath().c_str());
+	//remove(getTitlePath().c_str());
 	mCurrentGame = NULL;
-	delete mVideoScreensaver;
-	delete mImageScreensaver;
+	//delete mVideoScreensaver;
+	//delete mImageScreensaver;
 }
 
 bool SystemScreenSaver::allowSleep()
 {
 	//return false;
-	return ((mVideoScreensaver == NULL) && (mImageScreensaver == NULL));
+	//return ((mVideoScreensaver == NULL) && (mImageScreensaver == NULL));
+	return (mImageScreensaver == NULL);
 }
 
 bool SystemScreenSaver::isScreenSaverActive()
@@ -74,7 +75,7 @@ void SystemScreenSaver::startScreenSaver()
 		mThread = new std::thread(&SystemScreenSaver::backgroundIndexing, this);
 	}
 
-	std::string screensaver_behavior = Settings::getInstance()->getString("ScreenSaverBehavior");
+	/* std::string screensaver_behavior = Settings::getInstance()->getString("ScreenSaverBehavior");
 	if (!mVideoScreensaver && (screensaver_behavior == "random video"))
 	{
 		// Configure to fade out the windows, Skip Fading if Instant mode
@@ -128,9 +129,9 @@ void SystemScreenSaver::startScreenSaver()
 		}
 	}
 	else if (screensaver_behavior == "slideshow")
-	{
+	{ */
 		// Configure to fade out the windows, Skip Fading if Instant mode
-		mState =  PowerSaver::getMode() == PowerSaver::INSTANT
+		/* mState =  PowerSaver::getMode() == PowerSaver::INSTANT
 					? STATE_SCREENSAVER_ACTIVE
 					: STATE_FADE_OUT_WINDOW;
 		mSwapTimeout = Settings::getInstance()->getInt("ScreenSaverSwapImageTimeout");
@@ -183,8 +184,8 @@ void SystemScreenSaver::startScreenSaver()
 
 		PowerSaver::runningScreenSaver(true);
 		mTimer = 0;
-		return;
-	}
+		return; */
+	//}
 	// No videos. Just use a standard screensaver
 	mState = STATE_SCREENSAVER_ACTIVE;
 	mCurrentGame = NULL;
@@ -203,10 +204,10 @@ void SystemScreenSaver::stopScreenSaver()
 	// so that we stop the background audio next time, unless we're restarting the screensaver
 	mStopBackgroundAudio = true;
 
-	delete mVideoScreensaver;
-	mVideoScreensaver = NULL;
-	delete mImageScreensaver;
-	mImageScreensaver = NULL;
+	//delete mVideoScreensaver;
+	//mVideoScreensaver = NULL;
+	/* delete mImageScreensaver;
+	mImageScreensaver = NULL; */
 
 	// Exit the indexing thread
 	if (Settings::getInstance()->getBool("BackgroundIndexing"))
@@ -224,7 +225,7 @@ void SystemScreenSaver::stopScreenSaver()
 void SystemScreenSaver::renderScreenSaver()
 {
 	std::string screensaver_behavior = Settings::getInstance()->getString("ScreenSaverBehavior");
-	if (mVideoScreensaver && screensaver_behavior == "random video")
+	/*if (mVideoScreensaver && screensaver_behavior == "random video")
 	{
 		// Render black background
 		Renderer::setMatrix(Transform4x4f::Identity());
@@ -237,7 +238,7 @@ void SystemScreenSaver::renderScreenSaver()
 			mVideoScreensaver->render(transform);
 		}
 	}
-	else if (mImageScreensaver && screensaver_behavior == "slideshow")
+	else*/ /* if (mImageScreensaver && screensaver_behavior == "slideshow")
 	{
 		// Render black background
 		Renderer::setMatrix(Transform4x4f::Identity());
@@ -264,7 +265,7 @@ void SystemScreenSaver::renderScreenSaver()
 			}
 		}
 	}
-	else if (mState != STATE_INACTIVE)
+	else  */if (mState != STATE_INACTIVE)
 	{
 		Renderer::setMatrix(Transform4x4f::Identity());
 		unsigned char color = screensaver_behavior == "dim" ? 0x000000A0 : 0x000000FF;
@@ -371,9 +372,9 @@ void SystemScreenSaver::pickGameListNode(unsigned long index, const char *nodeNa
 					mCurrentGame = (*itf);
 
 					// end of getting FileData
-					if (Settings::getInstance()->getString("ScreenSaverGameInfo") != "never")
+					/* if (Settings::getInstance()->getString("ScreenSaverGameInfo") != "never")
 						writeSubtitle(mGameName.c_str(), mSystemName.c_str(),
-							(Settings::getInstance()->getString("ScreenSaverGameInfo") == "always"));
+							(Settings::getInstance()->getString("ScreenSaverGameInfo") == "always")); */
 					return;
 				}
 			}
@@ -481,10 +482,10 @@ void SystemScreenSaver::update(int deltaTime)
 	}
 
 	// If we have a loaded video/image then update it
-	if (mVideoScreensaver)
+	/* if (mVideoScreensaver)
 		mVideoScreensaver->update(deltaTime);
-	else if (mImageScreensaver)
-		mImageScreensaver->update(deltaTime);
+	else  *//* if (mImageScreensaver)
+		mImageScreensaver->update(deltaTime); */
 }
 
 void SystemScreenSaver::nextMediaItem() {
