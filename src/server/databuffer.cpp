@@ -672,7 +672,7 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 		
 		resetRequest = false;
 	} */
-	else if (bufferAhead && !dataRequestPending && free > 204799) {
+	else if (bufferAhead && !dataRequestPending && free > (2 * 204799)) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
 		if (dataRequestCV != 0) {

@@ -200,6 +200,12 @@ void dataRequestFunction() {
 		}
 		
 		// Set data request as pending.
+		if (DataBuffer::dataRequestPending) {
+			// We're already requesting data. Continue.
+			NYMPH_LOG_ERROR("Data request triggered with request already active.");
+			continue;
+		}
+		
 		DataBuffer::dataRequestPending = true;
 		
 		NYMPH_LOG_INFORMATION("Asking for data...");
