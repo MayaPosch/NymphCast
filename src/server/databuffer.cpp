@@ -366,7 +366,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 
 	// Request more data if the buffer does not have enough unread data left, and EOF condition
 	// has not been reached.
-	if (!eof && len > unread) {
+	while (!eof && len > unread) {
 		// More data should be available on the client, try to request it.
 #ifdef DEBUG
 		std::cout << "Requesting more data..." << std::endl;
@@ -375,8 +375,29 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef PROFILING_DB
 		db_debugfile << "Requesting more data... Unread: " << unread << ".\n";
 #endif
-		dataRequestPending = false;
-		requestData();
+		if (buffering) {
+			// If we're buffering, a write should be coming soon, so give it a few ms.
+			// If we time-out, assume something went wrong and override.
+			std::unique_lock<std::mutex> lk(dataWaitMutex);
+			using namespace std::chrono_literals;
+			uint32_t timeout = 1000;
+			while (1) { 
+				dataWaitCV.wait_for(lk, 100us);
+				if (!dataRequestPending) { break; }
+				if (--timeout == 0) {
+#ifdef DEBUG
+					std::cerr << "Read: RequestData timeout after 100 ms." << std::endl;
+#endif
+					dataRequestPending = false;
+					requestData();
+					break;
+				}
+			}
+		}
+		else {
+			dataRequestPending = false;
+			requestData();
+		}
 	}
 	
 	if (unread == 0) {
