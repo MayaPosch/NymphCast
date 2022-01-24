@@ -375,6 +375,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 #ifdef PROFILING_DB
 		db_debugfile << "Requesting more data... Unread: " << unread << ".\n";
 #endif
+		dataRequestPending = false;
 		requestData();
 	}
 	
@@ -509,13 +510,14 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	if (eof) {
 		// Do nothing.
 	}
-	else if (bufferAhead && !buffering && !dataRequestPending && unread < (2 * 204799)) {
+	else if (bufferAhead && !buffering && unread < (2 * 204799)) {
 		// Single block is 200 kB (204,800 bytes). We're not buffering and there's data left 
 		// to be read in the file. Restart ahead buffering.
 		if (dataRequestCV != 0) {
 #ifdef DEBUG
 			std::cout << "DataBuffer::read: requesting more data." << std::endl;
 #endif
+			dataRequestPending = false;
 			dataRequestCV->notify_one();
 		}
 	}
