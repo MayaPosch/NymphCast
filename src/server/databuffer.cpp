@@ -406,6 +406,17 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 					return 0;
 				}
 			}
+			
+			// Sanity check to see whether we're good now.
+			if (!eof && len > unread) {
+				success = requestData();
+				if (!success) {
+#ifdef DEBUG
+					std::cerr << "Buffering Read: buffer check failed. Aborting read." << std::endl;
+#endif
+					return 0;
+				}
+			}
 		}
 		else if (!bufferAhead) {
 			// If we're not buffering ahead, we're still in the hunt-the-container-header phase.
