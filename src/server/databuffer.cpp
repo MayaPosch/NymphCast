@@ -196,8 +196,8 @@ bool DataBuffer::start() {
 
 
 // --- REQUEST DATA ---
-void DataBuffer::requestData() {
-	if (dataRequestCV == 0) { return; }
+bool DataBuffer::requestData() {
+	if (dataRequestCV == 0) { return false; }
 	
 	// Trigger a data request from the client.
 	dataRequestCV->notify_one();
@@ -213,9 +213,11 @@ void DataBuffer::requestData() {
 #ifdef DEBUG
 			std::cerr << "RequestData timeout after 500 ms." << std::endl;
 #endif
-			break;
+			return false;
 		}
 	}
+	
+	return true;
 }
 
 
@@ -381,20 +383,59 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 			std::unique_lock<std::mutex> lk(dataWaitMutex);
 			using namespace std::chrono_literals;
 			uint32_t timeout = 1000;
+			bool success = true;
 			while (1) { 
 				dataWaitCV.wait_for(lk, 100us);
 				if (!dataRequestPending) { break; }
 				if (--timeout == 0) {
 #ifdef DEBUG
-					std::cerr << "Read: RequestData timeout after 100 ms." << std::endl;
+					std::cerr << "Buffering Read: RequestData timeout after 100 ms." << std::endl;
 #endif
 					dataRequestPending = false;
-					requestData();
+					success = requestData();
 					break;
+				}
+				
+				if (!success) {
+#ifdef DEBUG
+					std::cerr << "Buffering Read: data request failed. Aborting read." << std::endl;
+#endif
+					return 0;
+				}
+			}
+		}
+		else if (!bufferAhead) {
+			// If we're not buffering ahead, we're still in the hunt-the-container-header phase.
+			// This means waiting for each data request.
+			std::unique_lock<std::mutex> lk(dataWaitMutex);
+			using namespace std::chrono_literals;
+			uint32_t timeout = 5000;
+			bool success = true;
+			while (1) { 
+				dataWaitCV.wait_for(lk, 100us);
+				if (!dataRequestPending) { break; }
+				if (--timeout == 0) {
+#ifdef DEBUG
+					std::cerr << "Slow Read: RequestData timeout after 500 ms." << std::endl;
+#endif
+					success = requestData();
+					break;
+				}
+				
+				if (!success) {
+#ifdef DEBUG
+					std::cerr << "Slow Read: data request failed. Aborting read." << std::endl;
+#endif
+					return 0;
 				}
 			}
 		}
 		else {
+			// If we're here, something likely went wrong. Try to recover by forcing a data read
+			// request.
+#ifdef DEBUG
+			std::cerr << "Panic Read: Force read." << std::endl;
+#endif
 			dataRequestPending = false;
 			requestData();
 		}

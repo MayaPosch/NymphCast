@@ -80,7 +80,7 @@ public:
 	static void setFileSize(int64_t size);
 	static int64_t getFileSize();
 	static bool start();
-	static void requestData();
+	static bool requestData();
 	static bool reset();
 	static int64_t seek(DataBufferSeek mode, int64_t offset);
 	static bool seeking();
