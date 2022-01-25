@@ -58,6 +58,8 @@ class DataBuffer {
 	static std::condition_variable* dataRequestCV;
 	static std::mutex dataWaitMutex;
 	static std::condition_variable dataWaitCV;
+	static std::mutex dataReadMutex;
+	static std::condition_variable dataReadCV;
 	static std::mutex seekRequestMutex;
 	static std::condition_variable seekRequestCV;
 	static std::atomic<bool> seekRequestPending;

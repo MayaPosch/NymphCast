@@ -54,6 +54,8 @@ std::atomic<DataBuffer::BufferState> DataBuffer::state;
 std::mutex DataBuffer::bufferMutex;
 SeekRequestCallback DataBuffer::seekRequestCallback = 0;
 std::condition_variable* DataBuffer::dataRequestCV = 0;
+std::mutex DataBuffer::dataReadMutex;
+std::condition_variable DataBuffer::dataReadCV;
 std::mutex DataBuffer::dataWaitMutex;
 std::condition_variable DataBuffer::dataWaitCV;
 std::atomic<bool> DataBuffer::dataRequestPending = { false };
@@ -371,7 +373,8 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	while (!eof && len > unread) {
 		// More data should be available on the client, try to request it.
 #ifdef DEBUG
-		std::cout << "Requesting more data..." << std::endl;
+		std::cout << "Requesting more data... buffering: " << buffering
+					<< ", bufferAhead: " << bufferAhead << std::endl;
 #endif
 
 #ifdef PROFILING_DB
@@ -380,12 +383,12 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		if (buffering) {
 			// If we're buffering, a write should be coming soon, so give it a few ms.
 			// If we time-out, assume something went wrong and override.
-			std::unique_lock<std::mutex> lk(dataWaitMutex);
+			std::unique_lock<std::mutex> lk(dataReadMutex);
 			using namespace std::chrono_literals;
 			uint32_t timeout = 1000;
 			bool success = true;
-			while (1) { 
-				dataWaitCV.wait_for(lk, 100us);
+			while (1) {
+				dataReadCV.wait_for(lk, 100us);
 				if (!dataRequestPending) { break; }
 				if (--timeout == 0) {
 #ifdef DEBUG
@@ -406,29 +409,36 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		}
 		else if (!bufferAhead) {
 			// If we're not buffering ahead, we're still in the hunt-the-container-header phase.
-			// This means waiting for each data request.
-			std::unique_lock<std::mutex> lk(dataWaitMutex);
+			// This means waiting for each data request. Fail if time-out.
+			std::unique_lock<std::mutex> lk(dataReadMutex);
 			using namespace std::chrono_literals;
 			uint32_t timeout = 5000;
 			bool success = true;
-			while (1) { 
-				dataWaitCV.wait_for(lk, 100us);
-				if (!dataRequestPending) { break; }
+			while (dataRequestPending) { 
+				dataReadCV.wait_for(lk, 100us);
 				if (--timeout == 0) {
 #ifdef DEBUG
-					std::cerr << "Slow Read: RequestData timeout after 500 ms." << std::endl;
+					std::cerr << "Slow Read: data read timeout after 500 ms." << std::endl;
 #endif
-					success = requestData();
 					break;
 				}
-				
-				if (!success) {
-#ifdef DEBUG
-					std::cerr << "Slow Read: data request failed. Aborting read." << std::endl;
-#endif
-					return 0;
-				}
 			}
+			
+#ifdef DEBUG
+			std::cout << "Slow Read: reading bytes..." << std::endl;
+#endif
+				
+			success = requestData();
+			if (!success) {
+#ifdef DEBUG
+				std::cerr << "Slow Read: data request failed. Aborting read." << std::endl;
+#endif
+				return 0;
+			}
+			
+#ifdef DEBUG
+			std::cout << "Slow Read: read bytes." << std::endl;
+#endif
 		}
 		else {
 			// If we're here, something likely went wrong. Try to recover by forcing a data read
