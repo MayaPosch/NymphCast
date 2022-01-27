@@ -379,6 +379,8 @@ bool Ffplay::streamTrack(std::string url) {
 		castingUrl = true;
 		
 		playbackCv.notify_one();
+		
+		// TODO: wait N ms for playback to start. Try again if not started, else fail.
 	}
 	else {
 		av_log(NULL, AV_LOG_ERROR, "Playback already active. Aborting playback of %s.\n", url.c_str());
@@ -520,7 +522,8 @@ void Ffplay::run() {
 		playerCon.wait(playerMutex);
 		playerMutex.unlock();
 		
-		// Immediately disable player events since we're no longer processing them.
+		// Ensure we disable player events since we're no longer processing them.
+		// The StreamHandler::read_thread should have disabled them already.
 		SdlRenderer::playerEvents(false);
 		
 		// Clear file meta info.

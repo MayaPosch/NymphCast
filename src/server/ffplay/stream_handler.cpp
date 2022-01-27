@@ -853,6 +853,9 @@ int StreamHandler::read_thread(void *arg) {
 
     ret = 0;
 fail:
+	// Disable player events.
+	SdlRenderer::playerEvents(false);
+	
 	if (ic && !is->ic) {
 		av_log(NULL, AV_LOG_INFO, "Goto 'fail': avformat_close_input()...\n");
 		avformat_close_input(&ic);
