@@ -53,7 +53,7 @@ std::atomic<bool> DataBuffer::eof = { false };
 std::atomic<DataBuffer::BufferState> DataBuffer::state;
 std::mutex DataBuffer::bufferMutex;
 SeekRequestCallback DataBuffer::seekRequestCallback = 0;
-std::condition_variable* DataBuffer::dataRequestCV = 0;
+DataRequestCallback DataBuffer::dataRequestCallback = 0;
 std::mutex DataBuffer::dataReadMutex;
 std::condition_variable DataBuffer::dataReadCV;
 std::mutex DataBuffer::dataWaitMutex;
@@ -153,9 +153,9 @@ void DataBuffer::setSeekRequestCallback(SeekRequestCallback cb) {
 }
 
 
-// --- SET DATA REQUEST CONDITION ---
-void DataBuffer::setDataRequestCondition(std::condition_variable* condition) {
-	dataRequestCV = condition;
+// --- SET DATA REQUEST CALLBACK ---
+void DataBuffer::setDataRequestCallback(DataRequestCallback cb) {
+	dataRequestCallback = cb;
 }
 
 
@@ -186,31 +186,30 @@ int64_t DataBuffer::getFileSize() {
 // --- START ---
 // Starts calling the data request handler to obtain data.
 bool DataBuffer::start() {
-	if (dataRequestCV == 0) { return false; }
-	
 	bufferAhead = false;
 	buffering = false;
 	writeStarted = true;
-	dataRequestCV->notify_one();
 	
-	return true;
+	if (!dataRequestCallback) { return false; }
+	bool ret = dataRequestCallback(sessionHandle);
+	
+	return ret;
 }
 
 
 // --- REQUEST DATA ---
 bool DataBuffer::requestData() {
-	if (dataRequestCV == 0) { return false; }
-	
 	// Trigger a data request from the client.
-	dataRequestCV->notify_one();
+	if (!dataRequestCallback) { return false; }
+	bool ret = dataRequestCallback(sessionHandle);
 	
 	// Wait until we have received data or time out.
 	std::unique_lock<std::mutex> lk(dataWaitMutex);
 	using namespace std::chrono_literals;
 	uint32_t timeout = 5000;
-	while (1) { 
-		dataWaitCV.wait_for(lk, 100us);
+	while (1) {
 		if (!dataRequestPending) { break; }
+		dataWaitCV.wait_for(lk, 100us);
 		if (--timeout == 0) {
 #ifdef DEBUG
 			std::cerr << "RequestData timeout after 500 ms." << std::endl;
@@ -418,7 +417,7 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 				}
 			}
 		}
-		else if (!bufferAhead) {
+		else if (!buffering) {
 			// If we're not buffering ahead, we're still in the hunt-the-container-header phase.
 			// This means waiting for each data request. Fail if time-out.
 			std::unique_lock<std::mutex> lk(dataReadMutex);
@@ -596,12 +595,17 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 	else if (bufferAhead && !buffering && unread < (2 * 204799)) {
 		// Single block is 200 kB (204,800 bytes). We're not buffering and there's data left 
 		// to be read in the file. Restart ahead buffering.
-		if (dataRequestCV != 0) {
+		if (dataRequestCallback) {
 #ifdef DEBUG
-			std::cout << "DataBuffer::read: requesting more data." << std::endl;
+		std::cout << "DataBuffer::read: requesting more data." << std::endl;
 #endif
 			dataRequestPending = false;
-			dataRequestCV->notify_one();
+			bool ret = dataRequestCallback(sessionHandle);
+#ifdef DEBUG
+			if (!ret) {
+				std::cerr << "DataBuffer::read: requesting data failed." << std::endl;
+			}
+#endif
 		}
 	}
 
@@ -641,7 +645,6 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	// the buffer.
 	// The bytesFreeLow and bytesFreeHigh counters are for keeping track of the number of free bytes
 	// at the low (beginning) and high (end) side respectively.
-	//bufferMutex.lock();
 	uint32_t bytesWritten = 0;
 	
 	// Determine the number of bytes we can write in one copy operation.
@@ -760,12 +763,19 @@ uint32_t DataBuffer::write(const char* data, uint32_t length) {
 	else if (bufferAhead && !dataRequestPending && free > (2 * 204799)) {
 		// Single block is 200 kB (204,800 bytes). We have space, so request another block.
 		// TODO: make it possible to request a specific block size from client.
-		if (dataRequestCV != 0) {
+		if (dataRequestCallback) {
 #ifdef DEBUG
-			std::cout << "DataBuffer::write: requesting more data." << std::endl;
+		std::cout << "DataBuffer::write: requesting more data." << std::endl;
 #endif
-			dataRequestCV->notify_one();
-			buffering = true;
+			bool ret = dataRequestCallback(sessionHandle);
+			if (!ret) {
+#ifdef DEBUG
+				std::cerr << "DataBuffer::write: requesting data failed." << std::endl;
+#endif
+			}
+			else {
+				buffering = true;
+			}
 		}
 	}
 	else {

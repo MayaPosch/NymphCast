@@ -148,7 +148,6 @@ struct CastClient {
 };
 
 // --- Globals ---
-//static FileMetaInfo file_meta;
 std::atomic<bool> playerPaused = { false };
 std::atomic<bool> playerStopped = { false };	// Playback was stopped by the user.
 Poco::Thread avThread;
@@ -168,78 +167,11 @@ Ffplay ffplay;
 const uint32_t nymph_seek_event = SDL_RegisterEvents(1);
 std::string appsFolder;
 std::atomic<bool> running = { true };
-std::condition_variable dataRequestCv;
-std::mutex dataRequestMtx;
 std::string loggerName = "NymphCastServer";
 
 NCApps nc_apps;
 std::map<int, CastClient> clients;
 // ---
-
-
-// --- DATA REQUEST FUNCTION ---
-// This function can be signalled with the condition variable to request data from the client.
-void dataRequestFunction() {
-	// Create and share condition variable with DataBuffer class.
-	DataBuffer::setDataRequestCondition(&dataRequestCv);
-	
-	while (running) {
-		// Wait for the condition to be signalled.
-		std::unique_lock<std::mutex> lk(dataRequestMtx);
-		using namespace std::chrono_literals;
-		dataRequestCv.wait(lk);
-		
-		if (!running) {
-			NYMPH_LOG_INFORMATION("Shutting down data request function...");
-			break;
-		}
-		
-		if (DataBuffer::seeking()) {
-			NYMPH_LOG_ERROR("Cannot request data while seeking. Abort.");
-			continue;
-		}
-		
-		// Set data request as pending.
-		if (DataBuffer::dataRequestPending) {
-			// We're already requesting data. Continue.
-			NYMPH_LOG_ERROR("Data request triggered with request already active.");
-			continue;
-		}
-		
-		DataBuffer::dataRequestPending = true;
-		
-		NYMPH_LOG_INFORMATION("Asking for data...");
-	
-		// Request more data.
-		std::vector<NymphType*> values;
-		std::string result;
-		if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
-			NYMPH_LOG_ERROR("Calling callback failed: " + result);
-			continue;
-		}
-		
-		// We're now playing, so make sure the data buffer stays fed. Check every 100 ms whether
-		// there's a pending request.
-		/* while (1) {
-			dataRequestCv.wait_for(lk, 500ms);
-			if (!playerStarted) { 
-				NYMPH_LOG_INFORMATION("DataRequestFunction: returning to waiting...");
-				break; 
-			}
-			else if (!DataBuffer::dataRequestPending) { continue; }
-		
-			NYMPH_LOG_INFORMATION("Asking for data...");
-		
-			// Request more data.
-			std::vector<NymphType*> values;
-			std::string result;
-			if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
-				std::cerr << "Calling callback failed: " << result << std::endl;
-				return;
-			}
-		} */
-	}
-}
 
 
 // --- MEDIA READ CALLBACK ---
@@ -447,6 +379,30 @@ void sendGlobalStatusUpdate() {
 }
 
 
+// --- DATA REQUEST HANDLER ---
+// Allows the DataBuffer to request more file data from a client.
+bool dataRequestHandler(uint32_t session) {
+	if (DataBuffer::seeking()) {
+		NYMPH_LOG_ERROR("Cannot request data while seeking. Abort.");
+		return false;
+	}
+	
+	DataBuffer::dataRequestPending = true;
+	
+	NYMPH_LOG_INFORMATION("Asking for data...");
+
+	// Request more data.
+	std::vector<NymphType*> values;
+	std::string result;
+	if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
+		NYMPH_LOG_ERROR("Calling callback failed: " + result);
+		return false;
+	}
+	
+	return true;
+}
+
+
 // --- SEEKING HANDLER ---
 void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
@@ -487,9 +443,6 @@ void finishPlayback() {
 		NYMPH_LOG_ERROR("Calling media stop callback failed: " + result);
 		return;
 	}
-	
-	// Call the status update callback to indicate to the clients that playback stopped.
-	//sendGlobalStatusUpdate();
 	
 	// Update the LCDProc daemon if enabled.
 	if (lcdproc_enabled) {
@@ -2109,6 +2062,7 @@ int main(int argc, char** argv) {
 	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 20971520); // Default 20 MB.
 	DataBuffer::init(buffer_size);
 	DataBuffer::setSeekRequestCallback(seekingHandler);
+	DataBuffer::setDataRequestCallback(dataRequestHandler);
 	
 	NYMPH_LOG_INFORMATION("Set up new buffer with size: " + 
 							Poco::NumberFormatter::format(buffer_size) + " bytes.");
@@ -2177,9 +2131,6 @@ int main(int argc, char** argv) {
 		}
 	}
 	
-	// Start the data request handler in its own thread.
-	std::thread drq(dataRequestFunction);
-	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
 	bool init_success = true;
@@ -2237,8 +2188,6 @@ int main(int argc, char** argv) {
 	// Clean-up
 	DataBuffer::cleanup();
 	running = false;
-	dataRequestCv.notify_one();
-	drq.join();
  
 	// Close window and clean up libSDL.
 	ffplay.quit();

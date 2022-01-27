@@ -23,6 +23,7 @@
 
 
 typedef std::function<void(uint32_t, int64_t)> SeekRequestCallback;
+typedef std::function<bool(uint32_t)> DataRequestCallback;
 
 enum DataBufferSeek {
 	DB_SEEK_START = 0,
@@ -55,7 +56,7 @@ class DataBuffer {
 	static std::atomic<bool> eof;
 	static std::atomic<BufferState> state;
 	static SeekRequestCallback seekRequestCallback;
-	static std::condition_variable* dataRequestCV;
+	static DataRequestCallback dataRequestCallback;
 	static std::mutex dataWaitMutex;
 	static std::condition_variable dataWaitCV;
 	static std::mutex dataReadMutex;
@@ -76,7 +77,7 @@ public:
 	static bool init(uint32_t capacity);
 	static bool cleanup();
 	static void setSeekRequestCallback(SeekRequestCallback cb);
-	static void setDataRequestCondition(std::condition_variable* condition);
+	static void setDataRequestCallback(DataRequestCallback cb);
 	static void setSessionHandle(uint32_t handle);
 	static uint32_t getSessionHandle();
 	static void setFileSize(int64_t size);
@@ -98,6 +99,7 @@ public:
 	static std::string getStreamTrack();
 	
 	static std::atomic<bool> dataRequestPending;
+	static std::atomic<bool> active;
 };
 
 #endif
