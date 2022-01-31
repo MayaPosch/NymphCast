@@ -413,7 +413,7 @@ void Ffplay::run() {
 	
 	// Fake command line arguments.
 	//std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "warning", "-sync", "ext"};
-	std::vector<std::string> arguments = {"nymphcast", "-autoexit", "-loglevel", "warning"};
+	std::vector<std::string> arguments = {"nymphcast", "-autoexit"};
 	std::vector<char*> argv;
 	for (int i = 0; i < arguments.size(); i++) {
 		const std::string& arg = arguments[i];
