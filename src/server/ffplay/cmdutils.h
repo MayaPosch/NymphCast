@@ -252,7 +252,7 @@ void show_help_children(const AVClass* avclass, int flags);
  * Per-fftool specific help handler. Implemented in each
  * fftool, called by show_help().
  */
-void show_help_default(const char *opt, const char *arg);
+//void show_help_default(const char *opt, const char *arg);
 
 /**
  * Generic -h handler common to all fftools.

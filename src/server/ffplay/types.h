@@ -13,6 +13,7 @@
 
 #include <string>
 #include <atomic>
+#include <cstdint>
 
 
 extern "C" { 

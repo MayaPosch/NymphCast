@@ -8,6 +8,9 @@
 #include "frame_queue.h"
 #include "sdl_renderer.h"
 
+#undef  AV_TIME_BASE_Q
+#define AV_TIME_BASE_Q AVRational{1, AV_TIME_BASE}
+
 // Enable profiling.
 //#define PROFILING 1
 #ifdef PROFILING

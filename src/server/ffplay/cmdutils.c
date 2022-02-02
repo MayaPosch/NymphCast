@@ -1998,7 +1998,7 @@ int show_help(void *optctx, const char *opt, const char *arg)
         *par++ = 0;
 
     if (!*topic) {
-        show_help_default(topic, par);
+        //show_help_default(topic, par);
     } else if (!strcmp(topic, "decoder")) {
         show_help_codec(par, 0);
     } else if (!strcmp(topic, "encoder")) {
@@ -2014,7 +2014,7 @@ int show_help(void *optctx, const char *opt, const char *arg)
     } else if (!strcmp(topic, "bsf")) {
         show_help_bsf(par);
     } else {
-        show_help_default(topic, par);
+        //show_help_default(topic, par);
     }
 
     av_freep(&topic);

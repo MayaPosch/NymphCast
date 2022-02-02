@@ -721,7 +721,7 @@ void SdlRenderer::video_audio_display(VideoState *s) {
 			s->show_mode = SHOW_MODE_WAVES;
 		} else {
 			FFTSample *data[2];
-			SDL_Rect rect = {.x = s->xpos, .y = 0, .w = 1, .h = s->height};
+			SDL_Rect rect = {/*.x =*/ s->xpos, /*.y =*/ 0, /*.w =*/ 1, /*.h =*/ s->height};
 			uint32_t *pixels;
 			int pitch;
 			for (ch = 0; ch < nb_display_channels; ch++) {

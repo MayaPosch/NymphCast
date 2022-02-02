@@ -149,7 +149,7 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
                    1, is->audio_filter_src.freq);
     if (is->audio_filter_src.channel_layout)
         snprintf(asrc_args + ret, sizeof(asrc_args) - ret,
-                 ":channel_layout=0x%"PRIx64,  is->audio_filter_src.channel_layout);
+                 ":channel_layout=0x%" PRIx64,  is->audio_filter_src.channel_layout);
 
     ret = avfilter_graph_create_filter(&filt_asrc,
                                        avfilter_get_by_name("abuffer"), "ffplay_abuffer",
@@ -489,7 +489,7 @@ int AudioRenderer::audio_thread(void *arg) {
             goto the_end;
 
         if (got_frame) {
-                tb = (AVRational){1, frame->sample_rate};
+                tb = AVRational{1, frame->sample_rate};
 
 #if CONFIG_AVFILTER
                 dec_channel_layout = get_valid_channel_layout(frame->channel_layout, frame->channels);
@@ -532,7 +532,7 @@ int AudioRenderer::audio_thread(void *arg) {
                 af->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
                 af->pos = frame->pkt_pos;
                 af->serial = is->auddec.pkt_serial;
-                af->duration = av_q2d((AVRational){frame->nb_samples, frame->sample_rate});
+                af->duration = av_q2d(AVRational{frame->nb_samples, frame->sample_rate});
 
                 av_frame_move_ref(af->frame, frame);
                 FrameQueueC::frame_queue_push(&is->sampq);
