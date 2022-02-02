@@ -152,8 +152,10 @@ std::atomic<bool> playerPaused = { false };
 std::atomic<bool> playerStopped = { false };	// Playback was stopped by the user.
 Poco::Thread avThread;
 
+#ifndef _MSC_VER
 // LCDProc client.
 #include "lcdapi/include/LCDHeaders.h"
+#endif
 std::atomic<bool> lcdapi_active = { false };
 bool lcdproc_enabled = false;
 // ---
@@ -2097,6 +2099,7 @@ int main(int argc, char** argv) {
 	NYMPH_LOG_INFORMATION("Starting NyanSD on port 4004 UDP...");
 	NyanSD::startListener(4004);
 	
+#ifndef _MSC_VER
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
@@ -2130,6 +2133,7 @@ int main(int argc, char** argv) {
 			lcdapi_active = false;
 		}
 	}
+#endif
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.
