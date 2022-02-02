@@ -4,6 +4,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 //The ResourceManager exists to...
 //Allow loading resources embedded into the executable like an actual file.
