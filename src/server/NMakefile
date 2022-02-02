@@ -1,0 +1,861 @@
+# NMakefile for NymphCast src/server/nymphcast_server.
+#
+# Build NymphCast nymphcast_server command line program (MSVC).
+#
+# Created 17 October 2021.
+# Copyright (c) 2021 Nyanko.ws
+#
+# Usage: nmake -f NMakefile [definitions] [target]
+#
+# Definitions:
+# - NC_CONFIG={Debug|Release}
+# - NC_CPPSTD={flag}
+# - NC_LNKCRT={flag}
+# - NC_WARNING={flag}
+# - NC_OPTIMIZATION={flag}
+# - POCO_ROOT={install-folder}
+# - SDL2_ROOT={install-folder}
+# - FFMPEG_ROOT={install-folder}
+# - FREEIMAGE_ROOT={install-folder}
+# - FREETYPE_ROOT={install-folder}
+# - LIBAVUTIL_ROOT={install-folder}
+# - RAPIDJSON_ROOT={install-folder}
+# - CURL_ROOT={install-folder}
+# - NYMPHRPC_ROOT={install-folder}
+# - LIBNYMPHCAST_ROOT={install-folder}
+# - INSTALL_PREFIX={install-folder}
+#
+# Targets:
+# - all
+# - bin, same as all
+# - install
+# - clean
+# - dist-clean
+# - real-clean, same as dist-clean
+#
+# Configuration:
+# - `CONFIG` defaults to `Release`
+# - `CPPSTD` defaults to `-std:c++17`.
+# - `LNKCRT` defaults to `-MD`.
+# - `WARNING` defaults to empty, default compiler behaviour.
+# - `OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
+# - If defined, environment variable `SDL2_ROOT` is used for SDL2 dependency.
+# - If defined, environment variable `FFMPEG_ROOT` is used for SDL2 dependency.
+# - If defined, environment variable `FREEIMAGE_ROOT` is used for FreeImage dependency.
+# - If defined, environment variable `FREETYPE_ROOT` is used for FreeType dependency.
+# - If defined, environment variable `LIBAVUTIL_ROOT` is used for LibAvUtil dependency.
+# - If defined, environment variable `RAPIDJSON_ROOT` is used for RapidJSON dependency.
+# - If defined, environment variable `CURL_ROOT` is used for Curl dependency.
+# - If defined, environment variable `NYMPHRPC_ROOT` is used for NymphRPC dependency.
+# - If defined, environment variable `LIBNYMPHCAST_ROOT` is used for LibNymphCast dependency.
+# - If defined, environment variable `NYMPHCAST_ROOT` is used for target `install`, unless
+#   `INSTALL_PREFIX` is specified on the commandline.
+#
+# Dependencies:
+# - Nymph: NymphRPC, libnymphcast
+# - Poco: PocoNet, PocoFoundation, PocoUtil, PocoJSON, https://www.qt.io/
+# - SDL2, SDL2_image, https://www.libsdl.org/
+# - ffmpeg,
+# - freeimage,
+# - freetype,
+# - libavutil,
+# - rapidjson
+# - curl
+# - [pkgconfig, vlc]
+#
+# Installation destination:
+# - `NYMPHCAST_ROOT`
+# - e.g.: `set NYMPHCAST_ROOT=C:\Libraries\NymphCast`
+#
+# Product build directories:
+# - .\bin\x86_{32|64}-w64-msvc\{Debug|Release}
+# - .\obj\x86_{32|64}-w64-msvc\{Debug|Release}
+#
+# Use the Microsoft C++ toolset from the command line.
+# https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
+#
+
+# Configuration:
+
+# Note: no space before macro being defined.
+
+!ifdef NC_CONFIG
+LIB_CONFIG = $(NC_CONFIG)
+!else
+LIB_CONFIG = Release
+!endif
+
+LIB_DEF_CPPSTD = -std:c++17	#-std:c++latest
+
+!ifdef NC_CPPSTD
+LIB_CPPSTD = $(NC_CPPSTD)
+!else
+LIB_CPPSTD = $(LIB_DEF_CPPSTD)
+!endif
+
+LIB_DEF_LNKCRT = -MD
+
+!ifdef NC_LNKCRT
+LIB_LNKCRT = $(NC_LNKCRT)
+!else
+LIB_LNKCRT = $(LIB_DEF_LNKCRT)
+!endif
+
+!if "$(LIB_LNKCRT)" == "-MT"
+LIB_LNKCRT_MT = mt
+!else
+LIB_LNKCRT_MT =
+!endif
+
+!ifndef POCO_ROOT
+POCO_ROOT = D:\Libraries\Poco
+!endif
+
+!ifndef SDL2_ROOT
+SDL2_ROOT = D:\Libraries\SDL2
+!endif
+
+!ifndef FFMPEG_ROOT
+FFMPEG_ROOT = D:\Libraries\ffmpeg
+!endif
+
+!ifndef FREEIMAGE_ROOT
+FREEIMAGE_ROOT = D:\Libraries\freeimage
+!endif
+
+!ifndef FREETYPE_ROOT
+FREETYPE_ROOT = D:\Libraries\freetype
+!endif
+
+!ifndef LIBAVUTIL_ROOT
+LIBAVUTIL_ROOT = D:\Libraries\libavutil
+!endif
+
+!ifndef RAPIDJSON_ROOT
+RAPIDJSON_ROOT = D:\Libraries\rapidjson
+!endif
+
+!ifndef CURL_ROOT
+CURL_ROOT = D:\Libraries\curl
+!endif
+
+!ifndef NYMPHRPC_ROOT
+NYMPHRPC_ROOT = D:\Libraries\NymphRPC
+!endif
+
+ANGELSCRIPT_ROOT = angelscript\angelscript  # This repository
+
+!ifndef LIBNYMPHCAST_ROOT
+LIBNYMPHCAST_ROOT = D:\Libraries\LibNymphCast
+!endif
+
+!ifndef NYMPHCAST_ROOT
+NYMPHCAST_ROOT = D:\Programs\NymphCast
+!endif
+
+!ifndef INSTALL_PREFIX
+INSTALL_PREFIX = $(NYMPHCAST_ROOT)
+!endif
+
+!ifdef NC_OPTIMIZATION
+LIB_OPTIMIZATION = $(NC_OPTIMIZATION)
+!elseif "$(LIB_CONFIG)" == "Release"
+LIB_OPTIMIZATION = -O2
+!else
+LIB_OPTIMIZATION = -Od
+!endif
+
+!ifdef NC_WARNING
+LIB_WARNING = $(NC_WARNING)
+!else
+LIB_WARNING =	# Use default warning level
+!endif
+
+# End Configuration.
+
+# Determine 32, or 64 bit:
+
+!if "$(VSCMD_ARG_TGT_ARCH)" == "x86"
+LIB_BITS     = 32
+LIB_BITS_SFX =
+LIB_BITS_CFG = Win32
+!elseif "$(VSCMD_ARG_TGT_ARCH)" == "x64"
+LIB_BITS     = 64
+LIB_BITS_SFX = 64
+LIB_BITS_CFG = x64
+!else
+!error [Got unexpected target architecture '$(VSCMD_ARG_TGT_ARCH)'. Bailing out.]
+!endif
+
+# Sanity checks:
+
+!if "$(LIB_CONFIG)" != "Debug" && "$(LIB_CONFIG)" != "Release"
+!error [Expecting 'CONFIG=Debug' or 'CONFIG=Release', got 'CONFIG=$(LIB_CONFIG)'. Bailing out.]
+!endif
+
+!if !exist("$(POCO_ROOT)\include\Poco\Poco.h")
+!error [Cannot find Poco dependency at '$(POCO_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(SDL2_ROOT)\include\SDL2\SDL.h")
+!error [Cannot find SDL2 dependency at '$(SDL2_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(FFMPEG_ROOT)\include\libavutil\ffversion.h")
+!error [Cannot find Ffmpeg dependency at '$(FFMPEG_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(LIBAVUTIL_ROOT)\include\libavutil\ffversion.h")
+!error [Cannot find libAvlUtil dependency at '$(LIBAVUTIL_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(FREEIMAGE_ROOT)\include\FreeImage.h")
+!error [Cannot find FreeImage dependency at '$(FREEIMAGE_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(FREETYPE_ROOT)\include\freetype\freetype.h")
+!error [Cannot find FreeType dependency at '$(FREETYPE_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(RAPIDJSON_ROOT)\include\rapidjson\rapidjson.h")
+!error [Cannot find RapidJSON dependency at '$(RAPIDJSON_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(CURL_ROOT)\include\curl\curl.h")
+!error [Cannot find curl dependency at '$(CURL_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(NYMPHRPC_ROOT)\include\nymph\nymph.h")
+!error [Cannot find NymphRPC dependency at '$(NYMPHRPC_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(LIBNYMPHCAST_ROOT)\include\nymphcast_client.h")
+!error [Cannot find libNymphCast dependency at '$(LIBNYMPHCAST_ROOT)'. Bailing out.]
+!endif
+
+# INACTIVE: Setup desired toolset ()
+# Note: did not get this to work; use the NMake from the cmd for the desired toolset.
+
+# !if ["$(VCINSTALLDIR)\Auxiliary\Build\vcvars$(LIB_BITS).bat" ]
+# !endif
+
+# Commands:
+
+CXX   = cl -nologo
+LIB   = lib -nologo
+
+CP    = xcopy /Y
+RM    = del
+MKDIR = md		# Note: Do not use MKDIR=... as MKDIR is an NMake macro.
+
+# Product-related macros:
+
+# Include the file with the versioning information ('VERSION' variable).
+#!include version
+BIN_VERSION = -D__VERSION="\"v0.1-RC1\""	# TODO obtain version from file; NMake does not support :=
+
+BIN_OUTPUT  = NymphcastServer.exe
+
+NCS_DEFS    = -DNCS_CONFIG_NO_LCDPROC_CLIENT
+LIB_FLAGS   = # -Zc:strictStrings-
+LIB_DEFS    = -DUSE_OPENGL_14 -DCONFIG_AVFILTER -DWIN32 -D_WIN32 -DNOMINMAX -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
+
+SRC_FOLDER  = .
+#LIB_ARCH   = $(VSCMD_ARG_TGT_ARCH)_$(LIB_BITS)-w64-msvc	# e.g.: x86_32-w64-msvc
+LIB_ARCH    = x86_$(LIB_BITS)-w64-msvc				# e.g.: x86_32-w64-msvc
+BIN_FOLDER  = bin/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: bin\x86_32-w64-msvc\Release
+LIB_FOLDER  = lib/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: lib\x86_32-w64-msvc\Release
+OBJ_FOLDER  = obj/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: obj\x86_32-w64-msvc\Release
+
+LIB_INCLUDE = \
+	-I $(SRC_FOLDER) \
+	-I ffplay \
+	-I angelscript/angelscript/include \
+	-I angelscript/add_on \
+	-I angelscript/json \
+	-I angelscript/regexp \
+	-I gui/app \
+	-I gui/app/animations \
+	-I gui/app/components \
+	-I gui/app/guis \
+	-I gui/app/scrapers \
+	-I gui/app/views \
+	-I gui/app/gamelist \
+	-I gui/core \
+	-I gui/core/animations \
+	-I gui/core/components \
+	-I gui/core/guis \
+	-I gui/core/math \
+	-I gui/core/nanosvg \
+	-I gui/core/renderers \
+	-I gui/core/resources \
+	-I gui/core/utils \
+	-I $(LIBNYMPHCAST_ROOT)/include \
+	-I $(NYMPHRPC_ROOT)/include \
+	-I $(CURL_ROOT)/include/curl \
+	-I $(FFMPEG_ROOT)/include \
+	-I $(FREEIMAGE_ROOT)/include \
+	-I $(FREETYPE_ROOT)/include \
+	-I $(LIBAVUTIL_ROOT)/include \
+	-I $(POCO_ROOT)/include \
+	-I $(RAPIDJSON_ROOT)/include \
+	-I $(SDL2_ROOT)/include \
+	-I $(SDL2_ROOT)/include/SDL2
+
+LIB_LIBS    = \
+    NymphCast$(LIB_LNKCRT_MT).lib \
+    NymphRPC$(LIB_LNKCRT_MT).lib \
+    PocoData$(LIB_LNKCRT_MT).lib \
+    PocoDataSQLite$(LIB_LNKCRT_MT).lib \
+    PocoFoundation$(LIB_LNKCRT_MT).lib \
+    PocoJSON$(LIB_LNKCRT_MT).lib \
+    PocoNet$(LIB_LNKCRT_MT).lib \
+    PocoNetSSL$(LIB_LNKCRT_MT).lib \
+    PocoUtil$(LIB_LNKCRT_MT).lib \
+    SDL2.lib \
+    SDL2_image.lib \
+    angelscript$(LIB_BITS_SFX).lib \
+    avcodec.lib \
+    avdevice.lib \
+    avformat.lib \
+    avfilter.lib \
+    avutil.lib \
+    freeimage.lib \
+    freetype.lib \
+    libcurl.lib \
+    postproc.lib \
+    sqlite3.lib \
+    swresample.lib \
+    swscale.lib \
+    zlib.lib \
+    ole32.lib \
+    opengl32.lib \
+    winmm.lib \
+    ws2_32.lib
+
+LIB_LIBS_STATIC = \
+    brotlicommon-static.lib \
+    brotlidec-static.lib \
+    bz2.lib \
+    Half-2_5.lib \
+    Iex-2_5.lib \
+    IlmImf-2_5.lib \
+    IlmThread-2_5.lib \
+    Imath-2_5.lib \
+    jasper.lib \
+    jpeg.lib \
+    lcms2.lib \
+    libexpatMD.lib \
+    libpng16.lib \
+    libwebpmux.lib \
+    lzma.lib \
+    openjp2.lib \
+    pcre.lib \
+    postproc.lib \
+    raw_r.lib \
+    swresample.lib \
+    tiff.lib \
+    webp.lib \
+    webpdecoder.lib
+
+FLAGS    = -EHsc $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(NCS_DEFS) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
+CFLAGS   = $(FLAGS)
+CXXFLAGS = $(LIB_CPPSTD) $(FLAGS)
+
+INST_FOLDER_INC = $(INSTALL_PREFIX)\include
+INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
+INST_FOLDER_BIN = $(INSTALL_PREFIX)\bin
+
+# MSVC and Windows SDK paths:
+
+# Note: provide these specifically to the linker,
+# as they may not be found through the settings made via vcvars{N}.bat.
+
+!if $(LIB_BITS) == 32
+LNK_MACHINE = X86
+!else
+LNK_MACHINE = X64
+!endif
+
+LIB_LIBCPATH    = $(VCTOOLSINSTALLDIR)lib\x$(LIB_BITS)
+LIB_SDKUMPATH   = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)um\$(LNK_MACHINE)
+LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
+
+# Create targets:
+
+# To compile one or more C++ files to probe for errors and solutions:
+!if 0
+
+LIB_SOURCES_DIR = \
+	$(SRC_FOLDER)/ffplay/ffplay.cpp \
+	$(SRC_FOLDER)/ffplay/cmdutils.c
+
+!else
+
+# Note: Files `$(SRC_FOLDER)/angelscript/angelscript/source/*.cpp` are compiled so that
+#       they use -MD, or -MT as in the rest.
+
+LIB_SOURCES_DIR = \
+	$(SRC_FOLDER)/NymphCastServer.cpp \
+	$(SRC_FOLDER)/bytebauble.cpp \
+	$(SRC_FOLDER)/chronotrigger.cpp \
+	$(SRC_FOLDER)/config_parser.cpp \
+	$(SRC_FOLDER)/databuffer.cpp \
+	$(SRC_FOLDER)/nc_apps.cpp \
+	$(SRC_FOLDER)/gui.cpp \
+	$(SRC_FOLDER)/gui_event.cpp\
+	$(SRC_FOLDER)/sarge.cpp \
+	$(SRC_FOLDER)/screensaver.cpp \
+	$(SRC_FOLDER)/angelscript/add_on/scriptarray/scriptarray.cpp \
+	$(SRC_FOLDER)/angelscript/add_on/scriptbuilder/scriptbuilder.cpp \
+	$(SRC_FOLDER)/angelscript/add_on/scriptdictionary/scriptdictionary.cpp \
+	$(SRC_FOLDER)/angelscript/add_on/scriptstdstring/scriptstdstring.cpp \
+	$(SRC_FOLDER)/angelscript/add_on/scriptstdstring/scriptstdstring_utils.cpp \
+	$(SRC_FOLDER)/angelscript/json/jsonfile.cpp \
+	$(SRC_FOLDER)/angelscript/json/jsonvalue.cpp \
+	$(SRC_FOLDER)/angelscript/regexp/regexp.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_atomic.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_builder.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_bytecode.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_callfunc.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_callfunc_x64_msvc.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_compiler.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_configgroup.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_context.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_datatype.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_gc.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_generic.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_globalproperty.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_memory.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_module.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_objecttype.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_outputbuffer.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_parser.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_restore.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_scriptcode.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_scriptengine.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_scriptfunction.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_scriptnode.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_scriptobject.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_string.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_string_util.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_thread.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_tokenizer.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_typeinfo.cpp \
+	$(SRC_FOLDER)/angelscript/angelscript/source/as_variablescope.cpp \
+	$(SRC_FOLDER)/ffplay/audio_renderer.cpp \
+	$(SRC_FOLDER)/ffplay/clock.cpp \
+	$(SRC_FOLDER)/ffplay/decoder.cpp \
+	$(SRC_FOLDER)/ffplay/ffplay.cpp \
+	$(SRC_FOLDER)/ffplay/frame_queue.cpp \
+	$(SRC_FOLDER)/ffplay/packet_queue.cpp \
+	$(SRC_FOLDER)/ffplay/player.cpp \
+	$(SRC_FOLDER)/ffplay/sdl_renderer.cpp \
+	$(SRC_FOLDER)/ffplay/stream_handler.cpp \
+	$(SRC_FOLDER)/ffplay/subtitle_handler.cpp \
+	$(SRC_FOLDER)/ffplay/video_renderer.cpp \
+	$(SRC_FOLDER)/gui/app/CollectionSystemManager.cpp \
+	$(SRC_FOLDER)/gui/app/FileData.cpp \
+	$(SRC_FOLDER)/gui/app/FileFilterIndex.cpp \
+	$(SRC_FOLDER)/gui/app/FileSorts.cpp \
+	$(SRC_FOLDER)/gui/app/Gamelist.cpp \
+	$(SRC_FOLDER)/gui/app/MetaData.cpp \
+	$(SRC_FOLDER)/gui/app/PlatformId.cpp \
+	$(SRC_FOLDER)/gui/app/ScraperCmdLine.cpp \
+	$(SRC_FOLDER)/gui/app/SystemData.cpp \
+	$(SRC_FOLDER)/gui/app/SystemScreenSaver.cpp \
+	$(SRC_FOLDER)/gui/app/VolumeControl.cpp \
+	$(SRC_FOLDER)/gui/app/components/AsyncReqComponent.cpp \
+	$(SRC_FOLDER)/gui/app/components/RatingComponent.cpp \
+	$(SRC_FOLDER)/gui/app/components/ScraperSearchComponent.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiCollectionSystemsOptions.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiFastSelect.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiGamelistFilter.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiGamelistOptions.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiGameScraper.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiGeneralScreensaverOptions.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiInfoPopup.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiMenu.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiMetaDataEd.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiScraperMulti.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiScraperStart.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiScreensaverOptions.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiSettings.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiSlideshowScreensaverOptions.cpp \
+	$(SRC_FOLDER)/gui/app/guis/GuiVideoScreensaverOptions.cpp \
+	$(SRC_FOLDER)/gui/app/scrapers/GamesDBJSONScraper.cpp \
+	$(SRC_FOLDER)/gui/app/scrapers/GamesDBJSONScraperResources.cpp \
+	$(SRC_FOLDER)/gui/app/scrapers/Scraper.cpp \
+	$(SRC_FOLDER)/gui/app/scrapers/ScreenScraper.cpp \
+	$(SRC_FOLDER)/gui/app/views/SystemView.cpp \
+	$(SRC_FOLDER)/gui/app/views/UIModeController.cpp \
+	$(SRC_FOLDER)/gui/app/views/ViewController.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/BasicGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/DetailedGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/GridGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/IGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/ISimpleGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/views/gamelist/VideoGameListView.cpp \
+	$(SRC_FOLDER)/gui/app/pugixml/src/pugixml.cpp \
+	$(SRC_FOLDER)/gui/core/AudioManager.cpp \
+	$(SRC_FOLDER)/gui/core/CECInput.cpp \
+	$(SRC_FOLDER)/gui/core/GuiComponent.cpp \
+	$(SRC_FOLDER)/gui/core/HelpStyle.cpp \
+	$(SRC_FOLDER)/gui/core/HttpReq.cpp \
+	$(SRC_FOLDER)/gui/core/ImageIO.cpp \
+	$(SRC_FOLDER)/gui/core/InputConfig.cpp \
+	$(SRC_FOLDER)/gui/core/InputManager.cpp \
+	$(SRC_FOLDER)/gui/core/Log.cpp \
+	$(SRC_FOLDER)/gui/core/MameNames.cpp \
+	$(SRC_FOLDER)/gui/core/platform.cpp \
+	$(SRC_FOLDER)/gui/core/PowerSaver.cpp \
+	$(SRC_FOLDER)/gui/core/Scripting.cpp \
+	$(SRC_FOLDER)/gui/core/Settings.cpp \
+	$(SRC_FOLDER)/gui/core/Sound.cpp \
+	$(SRC_FOLDER)/gui/core/ThemeData.cpp \
+	$(SRC_FOLDER)/gui/core/Window.cpp \
+	$(SRC_FOLDER)/gui/core/animations/AnimationController.cpp \
+	$(SRC_FOLDER)/gui/core/components/AnimatedImageComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/BusyComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/ButtonComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/ComponentGrid.cpp \
+	$(SRC_FOLDER)/gui/core/components/ComponentList.cpp \
+	$(SRC_FOLDER)/gui/core/components/DateTimeComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/DateTimeEditComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/GridTileComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/HelpComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/ImageComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/MenuComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/NinePatchComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/ScrollableContainer.cpp \
+	$(SRC_FOLDER)/gui/core/components/SliderComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/SwitchComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/TextComponent.cpp \
+	$(SRC_FOLDER)/gui/core/components/TextEditComponent.cpp \
+	$(SRC_FOLDER)/gui/core/guis/GuiDetectDevice.cpp \
+	$(SRC_FOLDER)/gui/core/guis/GuiInputConfig.cpp \
+	$(SRC_FOLDER)/gui/core/guis/GuiMsgBox.cpp \
+	$(SRC_FOLDER)/gui/core/guis/GuiTextEditPopup.cpp \
+	$(SRC_FOLDER)/gui/core/math/Misc.cpp \
+	$(SRC_FOLDER)/gui/core/math/Transform4x4f.cpp \
+	$(SRC_FOLDER)/gui/core/math/Vector2f.cpp \
+	$(SRC_FOLDER)/gui/core/math/Vector2i.cpp \
+	$(SRC_FOLDER)/gui/core/math/Vector3f.cpp \
+	$(SRC_FOLDER)/gui/core/math/Vector4f.cpp \
+	$(SRC_FOLDER)/gui/core/nanosvg/src/nanosvg_impl.cpp \
+	$(SRC_FOLDER)/gui/core/renderers/Renderer.cpp \
+	$(SRC_FOLDER)/gui/core/renderers/Renderer_GL14.cpp \
+	$(SRC_FOLDER)/gui/core/renderers/Renderer_GL21.cpp \
+	$(SRC_FOLDER)/gui/core/renderers/Renderer_GLES10.cpp \
+	$(SRC_FOLDER)/gui/core/renderers/Renderer_GLES20.cpp \
+	$(SRC_FOLDER)/gui/core/resources/Font.cpp \
+	$(SRC_FOLDER)/gui/core/resources/ResourceManager.cpp \
+	$(SRC_FOLDER)/gui/core/resources/TextureData.cpp \
+	$(SRC_FOLDER)/gui/core/resources/TextureDataManager.cpp \
+	$(SRC_FOLDER)/gui/core/resources/TextureResource.cpp \
+	$(SRC_FOLDER)/gui/core/utils/FileSystemUtil.cpp \
+	$(SRC_FOLDER)/gui/core/utils/ProfilingUtil.cpp \
+	$(SRC_FOLDER)/gui/core/utils/StringUtil.cpp \
+	$(SRC_FOLDER)/gui/core/utils/ThreadPool.cpp \
+	$(SRC_FOLDER)/gui/core/utils/TimeUtil.cpp
+
+!if 0
+	$(SRC_FOLDER)/lcdapi/api/LCDBar.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDBigNumber.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDClient.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDConnection.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDElement.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDException.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDFrame.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDHorizontalBar.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDIcon.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDLock.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDMutex.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDScreen.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDScroller.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDText.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDTitle.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDUtils.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDVerticalBar.cpp \
+	$(SRC_FOLDER)/lcdapi/api/LCDWidget.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDCpuSensor.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDKdeMultimediaSensor.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDNymphCastSensor.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDSensor.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDSystemSensor.cpp \
+	$(SRC_FOLDER)/lcdapi/sensors/LCDTimeSensor.cpp
+!endif
+
+LIB_CSOURCES_DIR = \
+	$(SRC_FOLDER)/ffplay/cmdutils.c
+!endif
+
+# Two steps:
+
+LIB_OBJECTS_TMP  = $(LIB_SOURCES_DIR:.cpp=.obj)
+LIB_COBJECTS_TMP = $(LIB_CSOURCES_DIR:.c=.obj)
+
+# LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:src/=$(OBJ_FOLDER)/)	# <== This seems to not work.
+
+# TODO 	$(SRC_FOLDER)/ => src
+# Write-out all permutations:
+
+!if     "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR  = $(LIB_OBJECTS_TMP:./=obj/x86_32-w64-msvc/Debug/)
+LIB_COBJECTS_DIR = $(LIB_COBJECTS_TMP:./=obj/x86_32-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR  = $(LIB_OBJECTS_TMP:./=obj/x86_32-w64-msvc/Release/)
+LIB_COBJECTS_DIR = $(LIB_COBJECTS_TMP:./=obj/x86_32-w64-msvc/Release/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR  = $(LIB_OBJECTS_TMP:./=obj/x86_64-w64-msvc/Debug/)
+LIB_COBJECTS_DIR = $(LIB_COBJECTS_TMP:./=obj/x86_64-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR  = $(LIB_OBJECTS_TMP:./=obj/x86_64-w64-msvc/Release/)
+LIB_COBJECTS_DIR = $(LIB_COBJECTS_TMP:./=obj/x86_64-w64-msvc/Release/)
+!endif
+
+#
+# Inference rules:
+#
+
+{$(SRC_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/ffplay}.c{$(OBJ_FOLDER)/ffplay}.obj:
+	$(CC) -c $(CFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/ffplay}.cpp{$(OBJ_FOLDER)/ffplay}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/add_on/scriptstdstring}.cpp{$(OBJ_FOLDER)/angelscript/add_on/scriptstdstring}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/add_on/scriptbuilder}.cpp{$(OBJ_FOLDER)/angelscript/add_on/scriptbuilder}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/add_on/scriptarray}.cpp{$(OBJ_FOLDER)/angelscript/add_on/scriptarray}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/add_on/scriptdictionary}.cpp{$(OBJ_FOLDER)/angelscript/add_on/scriptdictionary}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/add_on/scriptdictionary}.cpp{$(OBJ_FOLDER)/angelscript/add_on/scriptdictionary}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/angelscript/source}.cpp{$(OBJ_FOLDER)/angelscript/angelscript/source}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/json}.cpp{$(OBJ_FOLDER)/angelscript/json}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/angelscript/regexp}.cpp{$(OBJ_FOLDER)/angelscript/regexp}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app}.cpp{$(OBJ_FOLDER)/gui/app}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/components}.cpp{$(OBJ_FOLDER)/gui/app/components}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/guis}.cpp{$(OBJ_FOLDER)/gui/app/guis}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/scrapers}.cpp{$(OBJ_FOLDER)/gui/app/scrapers}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/views}.cpp{$(OBJ_FOLDER)/gui/app/views}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/views/gamelist}.cpp{$(OBJ_FOLDER)/gui/app/views/gamelist}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/app/pugixml/src}.cpp{$(OBJ_FOLDER)/gui/app/pugixml/src}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core}.cpp{$(OBJ_FOLDER)/gui/core}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/animations}.cpp{$(OBJ_FOLDER)/gui/core/animations}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/components}.cpp{$(OBJ_FOLDER)/gui/core/components}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/guis}.cpp{$(OBJ_FOLDER)/gui/core/guis}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/math}.cpp{$(OBJ_FOLDER)/gui/core/math}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/renderers}.cpp{$(OBJ_FOLDER)/gui/core/renderers}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/resources}.cpp{$(OBJ_FOLDER)/gui/core/resources}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/utils}.cpp{$(OBJ_FOLDER)/gui/core/utils}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/gui/core/nanosvg/src}.cpp{$(OBJ_FOLDER)/gui/core/nanosvg/src}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/lcdapi/api}.cpp{$(OBJ_FOLDER)/lcdapi/api}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/lcdapi/sensors}.cpp{$(OBJ_FOLDER)/lcdapi/sensors}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+#
+# Targets:
+#
+
+all: print-configuration prg
+
+print-configuration:
+	@echo.
+	@echo Building program '$(BIN_OUTPUT)' with Configuration:
+	@echo "- LIB_CONFIG       : '$(LIB_CONFIG)'"
+	@echo "- LIB_BITS         : '$(LIB_BITS)'"
+	@echo "- LIB_CPPSTD       : '$(LIB_CPPSTD)'"
+	@echo "- LIB_WARNING      : '$(LIB_WARNING)'"
+	@echo "- LIB_OPTIMIZATION : '$(LIB_OPTIMIZATION)'"
+	@echo "- LIB_LNKCRT       : '$(LIB_LNKCRT)'"
+	@echo "- BIN_FOLDER       : '$(BIN_FOLDER)'"
+	@echo "- OBJ_FOLDER       : '$(OBJ_FOLDER)'"
+	@echo "- ANGELSCRIPT_ROOT : '$(ANGELSCRIPT_ROOT)'"
+	@echo "- POCO_ROOT        : '$(POCO_ROOT)'"
+	@echo "- CURL_ROOT        : '$(CURL_ROOT)'"
+	@echo "- FFMPEG_ROOT      : '$(FFMPEG_ROOT)'"
+	@echo "- FREEIMAGE_ROOT   : '$(FREEIMAGE_ROOT)'"
+	@echo "- FREETYPE_ROOT    : '$(FREETYPE_ROOT)'"
+	@echo "- LIBAVUTIL_ROOT   : '$(LIBAVUTIL_ROOT)'"
+	@echo "- RAPIDJSON_ROOT   : '$(RAPIDJSON_ROOT)'"
+	@echo "- SDL2_ROOT        : '$(SDL2_ROOT)'"
+	@echo "- NYMPHRPC_ROOT    : '$(NYMPHRPC_ROOT)'"
+	@echo "- LIBNYMPHCAST_ROOT: '$(LIBNYMPHCAST_ROOT)'"
+	@echo "- INSTALL_PREFIX   : '$(INSTALL_PREFIX)'"
+	@echo "- LIB_LIBCPATH     : '$(LIB_LIBCPATH)'"
+	@echo "- LIB_SDKUMPATH    : '$(LIB_SDKUMPATH)'"
+	@echo "- LIB_SDKUCRTPATH  : '$(LIB_SDKUCRTPATH)'"
+	@echo.
+
+# @echo "- sources: $(LIB_SOURCES_DIR)"
+# @echo "- objects: $(LIB_OBJECTS_DIR)"
+# @echo.
+
+prg: mkdir-prg $(BIN_FOLDER)\$(BIN_OUTPUT)
+
+mkdir-prg:
+	-$(MKDIR) "$(BIN_FOLDER)" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/add_on/scriptarray" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/add_on/scriptbuilder" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/add_on/scriptdictionary" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/add_on/scriptstdstring" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/angelscript/source" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/json" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/angelscript/regexp" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/ffplay" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/app/components" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/app/guis" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/app/pugixml/src" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/app/scrapers" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/app/views/gamelist" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/animations" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/components" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/guis" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/math" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/nanosvg/src" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/renderers" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/resources" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/utils" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/gui/core/utils" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/lcdapi/api" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/lcdapi/sensors" > nul 2>&1
+
+# Dependencies:
+
+angelscript: angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib
+
+angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib: \
+    angelscript/angelscript/projects/msvc2017/angelscript.sln
+	devenv /nologo angelscript/angelscript/projects/msvc2017/angelscript.sln /Build "Release|$(LIB_BITS_CFG)"
+
+$(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
+
+$(BIN_FOLDER)\$(BIN_OUTPUT): angelscript $(LIB_OBJECTS_ASCRIPT_DIR) $(LIB_OBJECTS_FFPLAY_DIR) $(LIB_OBJECTS_GUI_DIR) $(LIB_OBJECTS_DIR) $(LIB_COBJECTS_DIR)
+	$(CXX) -Fe$(BIN_FOLDER)\$(BIN_OUTPUT) $(LIB_OBJECTS_ASCRIPT_DIR) $(LIB_OBJECTS_FFPLAY_DIR) $(LIB_OBJECTS_GUI_DIR) $(LIB_OBJECTS_DIR) $(LIB_COBJECTS_DIR) \
+	/link \
+	/machine:"$(LNK_MACHINE)" \
+	/libpath:"$(LIBNYMPHCAST_ROOT)\lib" \
+	/libpath:"$(NYMPHRPC_ROOT)\lib" \
+	/libpath:"$(ANGELSCRIPT_ROOT)\lib" \
+	/libpath:"$(CURL_ROOT)\lib" \
+	/libpath:"$(FFMPEG_ROOT)\lib" \
+	/libpath:"$(FREEIMAGE_ROOT)\lib" \
+	/libpath:"$(FREETYPE_ROOT)\lib" \
+	/libpath:"$(LIBAVUTIL_ROOT)\lib" \
+	/libpath:"$(POCO_ROOT)\lib" \
+	/libpath:"$(RAPIDJSON_ROOT)\lib" \
+	/libpath:"$(SDL2_ROOT)\lib" \
+	/libpath:"$(LIB_LIBCPATH)" \
+	/libpath:"$(LIB_SDKUMPATH)" \
+	/libpath:"$(LIB_SDKUCRTPATH)" \
+    $(LIB_LIBS)
+
+# Installation targets:
+
+install: prg mkdir-install copy-install
+
+mkdir-install:
+	-$(MKDIR) "$(INST_FOLDER_INC:/=\)" > nul 2>&1
+	-$(MKDIR) "$(INST_FOLDER_LIB:/=\)" > nul 2>&1
+
+copy-install:
+	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
+	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
+
+# Clean targets:
+
+clean-angelscript:
+	devenv /nologo angelscript/angelscript/projects/msvc2017/angelscript.sln /Build "Release|$(LIB_BITS_CFG)" clean
+
+dist-clean-angelscript: clean-angelscript
+	-$(RM) angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib
+
+clean: clean-angelscript
+	-$(RM) $(OBJ_FOLDER:/=\)\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\add_on\scriptarray\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\add_on\scriptbuilder\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\add_on\scriptdictionary\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\add_on\scriptstdstring\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\angelscript\source\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\json\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\angelscript\regexp\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\ffplay\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\components\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\guis\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\pugixml\src\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\scrapers\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\views\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\app\views\gamelist\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\animations\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\components\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\guis\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\math\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\nanosvg\src\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\renderers\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\resources\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\gui\core\utils\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\lcdapi\api\*.obj
+	-$(RM) $(OBJ_FOLDER:/=\)\lcdapi\sensors\*.obj
+
+dist-clean: clean dist-clean-angelscript
+	-$(RM) $(BIN_FOLDER:/=\)\$(BIN_OUTPUT)
+
+real-clean: dist-clean
+
+# end of file
