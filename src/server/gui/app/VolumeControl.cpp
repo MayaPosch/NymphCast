@@ -5,7 +5,7 @@
 #include "Settings.h"
 #ifdef _MSC_VER
 #include <mmdeviceapi.h>
-//#include <mmeapi.h>
+#include <mmeapi.h>
 #endif
 
 #if defined(__linux__)

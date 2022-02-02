@@ -13,7 +13,7 @@
 #elif defined(_MSC_VER)
 	#include <Windows.h>
 	#include <endpointvolume.h>
-	//#include <mmeapi.h>
+	#include <mmeapi.h>
 #endif
 
 /*!
