@@ -761,7 +761,7 @@ namespace Utils
 
 //////////////////////////////////////////////////////////////////////////
 
-//#if !defined(_WIN32)
+#if !(defined(_MSC_VER) && !defined(__clang__))
 		bool isExecutable(const std::string& _path)
 		{
 			const std::string path = getGenericPath(_path);
@@ -778,7 +778,7 @@ namespace Utils
 			return ((info.st_mode & mask) == info.st_mode);
 
 		} // isExecutable
-//#endif // !_WIN32
+#endif //  !(defined(_MSC_VER) && !defined(__clang__))
 
 	} // FileSystem::
 
