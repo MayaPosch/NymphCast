@@ -12,8 +12,7 @@ case "$(uname -s)" in
 		PLATFORM="macos"
 		if [ -x "$(command -v brew)" ]; then
 			brew update
-			brew install sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkg-config curl 
-			brew install --cask vlc
+			brew install sdl2 sdl2_image poco ffmpeg freetype freeimage rapidjson pkg-config curl
 		fi
 		;;
 
@@ -22,13 +21,13 @@ case "$(uname -s)" in
 		PLATFORM="linux"
 		if [ -x "$(command -v apt)" ]; then
 			sudo apt update
-			sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
+			sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev
 		elif [ -x "$(command -v apk)" ]; then
 			sudo apk update
 			sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev pkgconfig
 		elif [ -x "$(command -v pacman)" ]; then
 			sudo pacman -Syy 
-			sudo pacman -S --noconfirm --needed git sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
+			sudo pacman -S --noconfirm --needed git sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl
 		fi
 		;;
 
@@ -37,7 +36,7 @@ case "$(uname -s)" in
 		PLATFORM="mingw"
 		if [ -x "$(command -v pacman)" ]; then
 			pacman -Syy 
-			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl mingw-w64-x86_64-vlc
+			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
 		fi
 		
 		# Bail out here for now until MSYS2 support is implemented for the rest.
