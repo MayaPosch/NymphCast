@@ -15,11 +15,19 @@
 
 echo.
 
+set INSTALL_PREFIX=D:\Programs\NymphCastServer
+
 set NC_LNKCRT=-MD
-::set NC_LNKCRT=-MT
+:: set NC_LNKCRT=-MT
+
+set NC_CONFIG=Release
+:: set NC_CONFIG=Debug
 
 set NCS_TGT_BITS=64
 set NCS_TGT_ARCH=x%NCS_TGT_BITS%
+
+set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows
+:: set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows-static
 
 :: Select static/dynamic linking
 
@@ -44,9 +52,6 @@ if [%LIBNYMPHCAST_ROOT%] == [] (
 )
 
 :: Make sure NymphRPC and LibNymphCast will be build with the same Poco version:
-
-set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows
-::set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows-static
 
 :: TODO check for proper lib, using NC_LNKCRT_MT (to be added above): mt or no mt
 
@@ -209,6 +214,7 @@ if exist "%LIBNYMPHCAST_ROOT%\include\nymphcast_client.h" (
 :: Finally, build NymphCast Server:
 
 nmake -nologo -f NMakefile ^
+         NC_CONFIG=%NC_CONFIG% ^
          NC_LNKCRT=%NC_LNKCRT% ^
          POCO_ROOT=%POCO_ROOT% ^
          SDL2_ROOT=%SDL2_ROOT% ^
@@ -220,6 +226,7 @@ nmake -nologo -f NMakefile ^
          CURL_ROOT=%CURL_ROOT% ^
      NYMPHRPC_ROOT=%NYMPHRPC_ROOT% ^
  LIBNYMPHCAST_ROOT=%LIBNYMPHCAST_ROOT% ^
+    INSTALL_PREFIX=%INSTALL_PREFIX% ^
         %*
 
 echo.

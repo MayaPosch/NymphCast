@@ -39,6 +39,7 @@
 # - `LNKCRT` defaults to `-MD`.
 # - `WARNING` defaults to empty, default compiler behaviour.
 # - `OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - `INSTALL_PREFIX` defaults to `D:\Programs\NymphCastServer`
 # - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
 # - If defined, environment variable `SDL2_ROOT` is used for SDL2 dependency.
 # - If defined, environment variable `FFMPEG_ROOT` is used for SDL2 dependency.
@@ -49,8 +50,6 @@
 # - If defined, environment variable `CURL_ROOT` is used for Curl dependency.
 # - If defined, environment variable `NYMPHRPC_ROOT` is used for NymphRPC dependency.
 # - If defined, environment variable `LIBNYMPHCAST_ROOT` is used for LibNymphCast dependency.
-# - If defined, environment variable `NYMPHCAST_ROOT` is used for target `install`, unless
-#   `INSTALL_PREFIX` is specified on the commandline.
 #
 # Dependencies:
 # - Nymph: NymphRPC, libnymphcast
@@ -63,10 +62,6 @@
 # - rapidjson
 # - curl
 # - [pkgconfig, vlc]
-#
-# Installation destination:
-# - `NYMPHCAST_ROOT`
-# - e.g.: `set NYMPHCAST_ROOT=C:\Libraries\NymphCast`
 #
 # Product build directories:
 # - .\bin\x86_{32|64}-w64-msvc\{Debug|Release}
@@ -150,12 +145,8 @@ ANGELSCRIPT_ROOT = angelscript\angelscript  # This repository
 LIBNYMPHCAST_ROOT = D:\Libraries\LibNymphCast
 !endif
 
-!ifndef NYMPHCAST_ROOT
-NYMPHCAST_ROOT = D:\Programs\NymphCast
-!endif
-
 !ifndef INSTALL_PREFIX
-INSTALL_PREFIX = $(NYMPHCAST_ROOT)
+INSTALL_PREFIX = D:\Programs\NymphCastServer
 !endif
 
 !ifdef NC_OPTIMIZATION
@@ -357,9 +348,11 @@ LIB_LIBS_STATIC = \
     swresample.lib \
     tiff.lib \
     webp.lib \
-    webpdecoder.lib
+    webpdecoder.lib \
+	Ws2_32.lib \
+	iphlpapi.lib
 
-FLAGS    = -EHsc $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(NCS_DEFS) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
+FLAGS    = -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(NCS_DEFS) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(LIB_CPPSTD) $(FLAGS)
 
