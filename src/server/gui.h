@@ -28,7 +28,7 @@
 class Gui {
 	static std::thread* guiThread;
 	static std::atomic<bool> running;
-	static Window window;
+	static Window* window;
 	static SystemScreenSaver* screensaver;
 	static std::string resourceFolder;
 	static uint32_t windowId;

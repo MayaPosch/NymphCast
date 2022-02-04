@@ -35,7 +35,7 @@
 // Static definitions.
 std::thread* Gui::guiThread = 0;
 std::atomic<bool> Gui::running = { false };
-Window Gui::window;
+Window* Gui::window = 0;
 SystemScreenSaver* Gui::screensaver = 0;
 std::string Gui::resourceFolder;
 NymphCastClient* Gui::client = 0;
@@ -75,14 +75,15 @@ bool Gui::init(std::string resFolder) {
 		Utils::FileSystem::setExePath(resFolder);
 	}
 	
-	screensaver = new SystemScreenSaver(&window);
+	window = new Window;
+	screensaver = new SystemScreenSaver(window);
 	PowerSaver::init();
-	ViewController::init(&window);
-	CollectionSystemManager::init(&window);
+	ViewController::init(window);
+	CollectionSystemManager::init(window);
 	MameNames::init();
-	window.pushGui(ViewController::get());
+	window->pushGui(ViewController::get());
 	
-	if (!window.init()) {
+	if (!window->init()) {
 		LOG(LogError) << "Window failed to initialize!";
 		return false;
 	}
@@ -95,10 +96,10 @@ bool Gui::init(std::string resFolder) {
 			progressText = "Loading system config...";
 		}
 		
-		window.renderLoadingScreen(progressText);
+		window->renderLoadingScreen(progressText);
 	}
 
-	if (!SystemData::loadConfig(&window)) {
+	if (!SystemData::loadConfig(window)) {
 		LOG(LogError) << "Error while parsing systems configuration file!";
 		return false;
 	}
@@ -152,7 +153,7 @@ bool Gui::start() {
 			progressText = "Loading system config...";
 		}
 		
-		window.renderLoadingScreen(progressText);
+		window->renderLoadingScreen(progressText);
 	}
 
 	// preload what we can right away instead of waiting for the user to select it
@@ -163,7 +164,7 @@ bool Gui::start() {
 	windowId = Renderer::getWindowId();
 
 	if(splashScreen && splashScreenProgress) {
-		window.renderLoadingScreen("Done.");
+		window->renderLoadingScreen("Done.");
 	}
 
 	//choose which GUI to open depending on if an input configuration already exists
@@ -172,7 +173,7 @@ bool Gui::start() {
 		ViewController::get()->goToStart();
 	}
 	else {
-		window.pushGui(new GuiDetectDevice(&window, true, [] { ViewController::get()->goToStart(); }));
+		window->pushGui(new GuiDetectDevice(window, true, [] { ViewController::get()->goToStart(); }));
 	}
 
 	// flush any queued events before showing the UI and starting the input handling loop
@@ -275,7 +276,7 @@ void Gui::handleEvent(SDL_Event &event) {
 	//if (ps_standby ? SDL_WaitEventTimeout(&event, PowerSaver::getTimeout()) : SDL_PollEvent(&event)) {
 		//do {
 			
-			InputManager::getInstance()->parseEvent(event, &window);
+			InputManager::getInstance()->parseEvent(event, window);
 
 			/* if (event.type == SDL_QUIT) {
 				running = false;
@@ -331,8 +332,8 @@ void Gui::run_updates() {
 
 	// cap deltaTime if it ever goes negative
 	if (deltaTime < 0) { deltaTime = 1000; }
-	window.update(deltaTime);
-	window.render();
+	window->update(deltaTime);
+	window->render();
 	Renderer::swapBuffers();;
 	Log::flush();
 }
@@ -344,11 +345,11 @@ bool Gui::stop() {
 	
 	SdlRenderer::guiEvents(false);
 	
-	while(window.peekGui() != ViewController::get()) {
+	/* while(window.peekGui() != ViewController::get()) {
 		delete window.peekGui();
-	}
+	} */
 	
-	window.deinit();
+	window->deinit();
 
 	MameNames::deinit();
 	CollectionSystemManager::deinit();
@@ -371,6 +372,10 @@ bool Gui::quit() {
 	
 	if (client) {
 		delete client;
+	}
+	
+	if (window) {
+		delete window;
 	}
 	
 	return true;
