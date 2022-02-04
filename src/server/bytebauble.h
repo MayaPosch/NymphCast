@@ -19,6 +19,7 @@
 
 #include <climits>
 #include <cstdint>
+#include <cstddef>
 
 #ifdef _MSC_VER
 #include <stdlib.h>
