@@ -16,3 +16,54 @@
 	Helgrind:Race
 	obj:*/vmwgfx_dri.so
 }
+
+{
+   DataBuffer_write:datarace
+   Helgrind:Race
+   fun:_ZN10DataBuffer5writeEPKcj
+   fun:_Z12session_dataiP12NymphMessagePv
+   fun:_ZSt13__invoke_implIP12NymphMessageRPFS1_iS1_PvEJiS1_S2_EET_St14__invoke_otherOT0_DpOT1_
+   fun:_ZSt10__invoke_rIP12NymphMessageRPFS1_iS1_PvEJiS1_S2_EENSt9enable_ifIX16is_invocable_r_vIT_T0_DpT1_EES7_E4typeEOS8_DpOS9_
+   fun:_ZNSt17_Function_handlerIFP12NymphMessageiS1_PvEPS3_E9_M_invokeERKSt9_Any_dataOiOS1_OS2_
+   fun:_ZNKSt8functionIFP12NymphMessageiS1_PvEEclEiS1_S2_
+   fun:_ZN11NymphMethod12callCallbackEiP12NymphMessage
+   fun:_ZN17NymphRemoteClient18callMethodCallbackEijP12NymphMessageRS1_
+   fun:_ZN12NymphSession3runEv
+   fun:_ZN4Poco3Net19TCPServerConnection5startEv
+   fun:_ZN4Poco3Net19TCPServerDispatcher3runEv
+   fun:_ZN4Poco12PooledThread3runEv
+}
+
+{
+   DataBuffer_reset:datarace
+   Helgrind:Race
+   fun:_ZN10DataBuffer5resetEv
+   fun:_ZN10DataBuffer4seekE14DataBufferSeekl
+   fun:_ZN11FfplayDummy10media_seekEPvli
+   fun:_ZN11FfplayDummy11triggerReadEi
+   fun:_ZSt13__invoke_implIvRPFviEJiEET_St14__invoke_otherOT0_DpOT1_
+   fun:_ZSt10__invoke_rIvRPFviEJiEENSt9enable_ifIX16is_invocable_r_vIT_T0_DpT1_EES4_E4typeEOS5_DpOS6_
+   fun:_ZNSt17_Function_handlerIFviEPS0_E9_M_invokeERKSt9_Any_dataOi
+   fun:_ZNKSt8functionIFviEEclEi
+   fun:_ZSt13__invoke_implIvRSt8functionIFviEEJjEET_St14__invoke_otherOT0_DpOT1_
+   fun:_ZSt10__invoke_rIvRSt8functionIFviEEJjEENSt9enable_ifIX16is_invocable_r_vIT_T0_DpT1_EES5_E4typeEOS6_DpOS7_
+   fun:_ZNSt17_Function_handlerIFvjESt8functionIFviEEE9_M_invokeERKSt9_Any_dataOj
+   fun:_ZNKSt8functionIFvjEEclEj
+}
+
+{
+   DataBuffer_read:datarace
+   Helgrind:Race
+   fun:memmove
+   fun:_ZN10DataBuffer4readEjPh
+   fun:_ZN11FfplayDummy10media_readEPvPhi
+   fun:_ZN11FfplayDummy11triggerReadEi
+   fun:_ZSt13__invoke_implIvRPFviEJiEET_St14__invoke_otherOT0_DpOT1_
+   fun:_ZSt10__invoke_rIvRPFviEJiEENSt9enable_ifIX16is_invocable_r_vIT_T0_DpT1_EES4_E4typeEOS5_DpOS6_
+   fun:_ZNSt17_Function_handlerIFviEPS0_E9_M_invokeERKSt9_Any_dataOi
+   fun:_ZNKSt8functionIFviEEclEi
+   fun:_ZSt13__invoke_implIvRSt8functionIFviEEJjEET_St14__invoke_otherOT0_DpOT1_
+   fun:_ZSt10__invoke_rIvRSt8functionIFviEEJjEENSt9enable_ifIX16is_invocable_r_vIT_T0_DpT1_EES5_E4typeEOS6_DpOS7_
+   fun:_ZNSt17_Function_handlerIFvjESt8functionIFviEEE9_M_invokeERKSt9_Any_dataOj
+   fun:_ZNKSt8functionIFvjEEclEj
+}
