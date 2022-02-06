@@ -1,0 +1,1 @@
+Please note: this version of NymphCast Server does not yet support the LCDapi.
