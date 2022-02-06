@@ -1,0 +1,463 @@
+# NMakefile for NymphCast GUI Player.
+#
+# Build NymphCast NymphCastPlayer QT GUI program (MSVC).
+#
+# Created 17 October 2021.
+# Copyright (c) 2021 Nyanko.ws
+#
+# Usage: nmake -f NMakefile [definitions] [target]
+#
+# Definitions:
+# - NC_CONFIG={Debug|Release}
+# - NC_CPPSTD={flag}
+# - NC_LNKCRT={flag}
+# - NC_WARNING={flag}
+# - NC_OPTIMIZATION={flag}
+# - QT5_ROOT={install-folder}
+# - QT5_INCLUDE_FIX={}
+# - POCO_ROOT={install-folder}]
+# - NYMPHRPC_ROOT={install-folder}
+# - LIBNYMPHCAST_ROOT={install-folder}
+# - INSTALL_PREFIX={install-folder}
+#
+# Targets:
+# - all
+# - bin, same as all
+# - install
+# - clean
+# - dist-clean
+# - real-clean, same as dist-clean
+#
+# Configuration:
+# - `NC_CONFIG` defaults to `Release`
+# - `NC_CPPSTD` defaults to `-std:c++latest`.
+# - `NC_LNKCRT` defaults to `-MD`.
+# - `NC_WARNING` defaults to empty, default compiler behaviour.
+# - `NC_OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - `INSTALL_PREFIX` defaults to `D:\Programs\NymphCastPlayer`
+# - If defined, environment variable `QT5_ROOT` is used for QT dependency [D:\Libraries\Qt\5.15.2\msvc2015_64]
+# - If defined, environment variable `POCO_ROOT` is used for Poco dependency [D:\Libraries\Poco].
+# - If defined, environment variable `NYMPHRPC_ROOT` is used for NymphRPC dependency [D:\Libraries\NymphRPC].
+# - If defined, environment variable `LIBNYMPHCAST_ROOT` is used for LibNymphCast dependency [D:\Libraries\LibNymphCast].
+#
+# Dependencies:
+# - NymphRPC: build and install project NymphRPC with nmake.
+# - LibNymphCast: build and install project NymphRPC with nmake.
+# - Poco: PocoNet, PocoUtil, PocoFoundation, PocoJSON
+# - Qt 5: Qt5Core, Qt5Gui, Qt5Widgets
+#
+# Product build directories:
+# - .\build\x86_{32|64}-w64-msvc\{Debug|Release}
+# - .\obj\static\x86_{32|64}-w64-msvc\{Debug|Release}
+#
+# Use the Microsoft C++ toolset from the command line.
+# https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
+#
+
+# Configuration:
+
+# Note: no space before macro being defined.
+
+!ifdef NC_CONFIG
+LIB_CONFIG = $(NC_CONFIG)
+!else
+LIB_CONFIG = Release
+!endif
+
+LIB_DEF_CPPSTD = -std:c++latest
+
+!ifdef NC_CPPSTD
+LIB_CPPSTD = $(NC_CPPSTD)
+!else
+LIB_CPPSTD = $(LIB_DEF_CPPSTD)
+!endif
+
+LIB_DEF_LNKCRT = -MD
+
+!ifdef NC_LNKCRT
+LIB_LNKCRT = $(NC_LNKCRT)
+!else
+LIB_LNKCRT = $(LIB_DEF_LNKCRT)
+!endif
+
+!if "$(LIB_LNKCRT)" == "-MT"
+LIB_LNKCRT_MT = mt
+!else
+LIB_LNKCRT_MT =
+!endif
+
+!ifndef QT5_ROOT
+QT5_ROOT = D:\Libraries\Qt\5.15.2\msvc2015_64
+QT5_INCLUDE_FIX=
+!endif
+
+!ifndef POCO_ROOT
+POCO_ROOT = D:\Libraries\Poco
+!endif
+
+!ifndef NYMPHRPC_ROOT
+NYMPHRPC_ROOT = D:\Libraries\NymphRPC
+!endif
+
+!ifndef LIBNYMPHCAST_ROOT
+LIBNYMPHCAST_ROOT = D:\Libraries\LibNymphCast
+!endif
+
+!ifndef INSTALL_PREFIX
+INSTALL_PREFIX = D:\Programs\NymphCastPlayer
+!endif
+
+!ifdef NC_OPTIMIZATION
+LIB_OPTIMIZATION = $(NC_OPTIMIZATION)
+!elseif "$(LIB_CONFIG)" == "Release"
+LIB_OPTIMIZATION = -O2
+!else
+LIB_OPTIMIZATION = -Od
+!endif
+
+!ifdef NC_WARNING
+LIB_WARNING = $(NC_WARNING)
+!else
+LIB_WARNING =	# Use default warning level
+!endif
+
+# End Configuration.
+
+# Determine 32, or 64 bit:
+
+!if "$(VSCMD_ARG_TGT_ARCH)" == "x86"
+LIB_BITS     = 32
+LIB_BITS_SFX =
+LIB_BITS_CFG = Win32
+!elseif "$(VSCMD_ARG_TGT_ARCH)" == "x64"
+LIB_BITS     = 64
+LIB_BITS_SFX = 64
+LIB_BITS_CFG = x64
+!else
+!error [Got unexpected target architecture '$(VSCMD_ARG_TGT_ARCH)'. Bailing out.]
+!endif
+
+# Sanity checks:
+
+!if "$(LIB_CONFIG)" != "Debug" && "$(LIB_CONFIG)" != "Release"
+!error [Expecting 'CONFIG=Debug' or 'CONFIG=Release', got 'CONFIG=$(LIB_CONFIG)'. Bailing out.]
+!endif
+
+# !if !exist("$(QT5_ROOT)\include\QtCore\qconfig.h")
+
+!if !exist("$(QT5_ROOT)\include\qt5\QtCore\qconfig.h")
+!error [Cannot find Qt dependency at '$(QT5_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(POCO_ROOT)\include\Poco\Poco.h")
+!error [Cannot find Poco dependency at '$(POCO_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(NYMPHRPC_ROOT)\include\nymph\nymph.h")
+!error [Cannot find NymphRPC dependency at '$(NYMPHRPC_ROOT)'. Bailing out.]
+!endif
+
+!if !exist("$(LIBNYMPHCAST_ROOT)\include\nymphcast_client.h")
+!error [Cannot find libNymphCast dependency at '$(LIBNYMPHCAST_ROOT)'. Bailing out.]
+!endif
+
+# INACTIVE: Setup desired toolset ()
+# Note: did not get this to work; use the NMake from the cmd for the desired toolset.
+
+# !if ["$(VCINSTALLDIR)\Auxiliary\Build\vcvars$(LIB_BITS).bat" ]
+# !endif
+
+# Commands:
+
+CXX   = cl -nologo
+LIB   = lib -nologo
+
+CP    = xcopy /Y
+RM    = del
+CD    = cd
+MKDIR = md		# Note: Do not use MAKEDIR=... as MAKEDIR is an NMake macro.
+
+# Inno Setup Studio compiler:
+SETUP = C:\Program Files (x86)\Inno Script Studio\ISStudio.exe
+SETUP_OPTIONS = -compile
+
+!if !exist("$(SETUP)")
+SETUP = ISStudio.exe
+!endif
+
+# Product-related macros:
+
+# Include the file with the versioning information ('VERSION' variable).
+#!include version
+BIN_VERSION = -D__VERSION="\"v0.1-RC1\""	# TODO obtain version from file; NMake does not support :=
+
+BIN_OUTPUT  = NymphCastPlayer.exe
+
+SETUP_INPUT = Setup-NymphCastPlayer-dynamic.iss
+
+SRC_FOLDER  = .
+#LIB_ARCH   = $(VSCMD_ARG_TGT_ARCH)_$(LIB_BITS)-w64-msvc	# e.g.: x86_32-w64-msvc
+LIB_ARCH    = x86_$(LIB_BITS)-w64-msvc				# e.g.: x86_32-w64-msvc
+BIN_FOLDER  = build/$(LIB_ARCH)/$(LIB_CONFIG)		# e.g.: build\x86_32-w64-msvc\Release
+LIB_FOLDER  = lib/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: lib\x86_32-w64-msvc\Release
+OBJ_FOLDER  = obj/static/$(LIB_ARCH)/$(LIB_CONFIG)	# e.g.: obj\static\x86_32-w64-msvc\Release
+
+LIB_INCLUDE = \
+    -I $(SRC_FOLDER) \
+    -I build \
+    -I $(LIBNYMPHCAST_ROOT)/include \
+    -I $(NYMPHRPC_ROOT)/include \
+    -I $(POCO_ROOT)/include \
+    -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX) \
+    -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX)QtCore \
+    -I $(QT5_ROOT)/include//$(QT5_INCLUDE_FIX)QtGui \
+    -I $(QT5_ROOT)/include//$(QT5_INCLUDE_FIX)QtWidgets \
+    -I litehtml \
+    -I litehtml/include \
+    -I litehtml/include/litehtml \
+    -I litehtml/src/gumbo/include \
+    -I litehtml/src/gumbo/include/gumbo \
+    -I litehtml\src\gumbo\visualc\include
+
+LIB_LIBS = \
+    NymphCast.lib \
+    NymphRPC.lib \
+    PocoFoundation.lib \
+    PocoJSON.lib \
+    PocoNet.lib \
+    PocoUtil.lib \
+    Qt5Core.lib \
+    Qt5Gui.lib \
+    Qt5Widgets.lib
+
+LIB_DLLS = \
+	$(POCO_ROOT)/bin/pcre.dll \
+	$(POCO_ROOT)/bin/PocoFoundation.dll \
+	$(POCO_ROOT)/bin/PocoNet.dll \
+	$(POCO_ROOT)/bin/PocoUtil.dll \
+	$(POCO_ROOT)/bin/libpng16.dll \
+	$(POCO_ROOT)/bin/zlib1.dll \
+	$(QT5_ROOT)/bin/Qt5Core.dll \
+	$(QT5_ROOT)/bin/Qt5Gui.dll \
+	$(QT5_ROOT)/bin/Qt5Widgets.dll \
+	$(QT5_ROOT)/bin/Qt5Svg.dll \
+	$(QT5_ROOT)/bin/icudt69.dll \
+	$(QT5_ROOT)/bin/icuin69.dll \
+	$(QT5_ROOT)/bin/icutu69.dll \
+	$(QT5_ROOT)/bin/icuuc69.dll \
+	$(QT5_ROOT)/bin/pcre2-16.dll \
+	$(QT5_ROOT)/bin/zstd.dll
+
+LIB_DLLS_QT_PLTFRM = \
+	$(QT5_ROOT)/plugins/platforms/qwindows.dll
+
+LIB_FLAGS   = -Zc:strictStrings-
+LIB_DEFS    = -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_DEPRECATED_WARNINGS -DLITEHTML_UTF8 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+CXXFLAGS    = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION) $(LIB_FLAGS)
+
+INST_FOLDER_INC = $(INSTALL_PREFIX)\include
+INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
+INST_FOLDER_BIN = $(INSTALL_PREFIX)\bin
+
+# MSVC and Windows SDK paths:
+
+# Note: provide these specifically to the linker,
+# as they may not be found through the settings made via vcvars{N}.bat.
+
+!if $(LIB_BITS) == 32
+LNK_MACHINE = X86
+!else
+LNK_MACHINE = X64
+!endif
+
+LIB_LIBCPATH    = $(VCTOOLSINSTALLDIR)lib\x$(LIB_BITS)
+LIB_SDKUMPATH   = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)um\$(LNK_MACHINE)
+LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
+
+# Create targets:
+
+LIB_SOURCES_DIR = \
+	$(SRC_FOLDER)/container_qpainter.cpp \
+	$(SRC_FOLDER)/main.cpp \
+	$(SRC_FOLDER)/mainwindow.cpp \
+	$(SRC_FOLDER)/qlitehtmlwidget.cpp \
+	$(SRC_FOLDER)/remotes.cpp \
+	$(SRC_FOLDER)/build/moc_mainwindow.cpp \
+	$(SRC_FOLDER)/build/moc_qlitehtmlwidget.cpp \
+	$(SRC_FOLDER)/build/moc_remotes.cpp \
+	$(SRC_FOLDER)/build/qrc_resources.cpp \
+	$(SRC_FOLDER)/litehtml/src/background.cpp \
+	$(SRC_FOLDER)/litehtml/src/box.cpp \
+	$(SRC_FOLDER)/litehtml/src/context.cpp \
+	$(SRC_FOLDER)/litehtml/src/css_length.cpp \
+	$(SRC_FOLDER)/litehtml/src/css_selector.cpp \
+	$(SRC_FOLDER)/litehtml/src/document.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_anchor.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_base.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_before_after.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_body.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_break.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_cdata.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_comment.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_div.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_font.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_image.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_li.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_link.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_para.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_script.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_space.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_style.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_table.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_td.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_text.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_title.cpp \
+	$(SRC_FOLDER)/litehtml/src/el_tr.cpp \
+	$(SRC_FOLDER)/litehtml/src/element.cpp \
+	$(SRC_FOLDER)/litehtml/src/gumbo/attribute.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/char_ref.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/error.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/parser.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/string_buffer.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/string_piece.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/tag.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/tokenizer.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/utf8.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/util.c \
+	$(SRC_FOLDER)/litehtml/src/gumbo/vector.c \
+	$(SRC_FOLDER)/litehtml/src/html.cpp \
+	$(SRC_FOLDER)/litehtml/src/html_tag.cpp \
+	$(SRC_FOLDER)/litehtml/src/iterators.cpp \
+	$(SRC_FOLDER)/litehtml/src/media_query.cpp \
+	$(SRC_FOLDER)/litehtml/src/num_cvt.cpp \
+	$(SRC_FOLDER)/litehtml/src/style.cpp \
+	$(SRC_FOLDER)/litehtml/src/stylesheet.cpp \
+	$(SRC_FOLDER)/litehtml/src/table.cpp \
+	$(SRC_FOLDER)/litehtml/src/utf8_strings.cpp \
+	$(SRC_FOLDER)/litehtml/src/web_color.cpp
+
+# Two steps:
+
+LIB_OBJECTS_TMP0 = $(LIB_SOURCES_DIR:.cpp=.obj)
+LIB_OBJECTS_TMP  = $(LIB_OBJECTS_TMP0:.c=.obj)
+
+# LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:src/=$(OBJ_FOLDER)/)	# <== This seems to not work.
+
+# TODO ./ => src
+# Write-out all permutations:
+
+!if     "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_32-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "32" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_32-w64-msvc/Release/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Debug"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_64-w64-msvc/Debug/)
+!elseif "$(LIB_BITS)" == "64" && "$(LIB_CONFIG)" == "Release"
+LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_64-w64-msvc/Release/)
+!endif
+
+#
+# Inference rules:
+#
+
+{$(SRC_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/build/}.cpp{$(OBJ_FOLDER)/build/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/litehtml/src/}.cpp{$(OBJ_FOLDER)/litehtml/src/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(SRC_FOLDER)/litehtml/src/gumbo/}.c{$(OBJ_FOLDER)/litehtml/src/gumbo/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+#
+# Targets:
+#
+
+all: print-configuration prg
+
+print-configuration:
+	@echo.
+	@echo Building program '$(BIN_OUTPUT)' with Configuration:
+	@echo "- LIB_CONFIG       : '$(LIB_CONFIG)'"
+	@echo "- LIB_BITS         : '$(LIB_BITS)'"
+	@echo "- LIB_CPPSTD       : '$(LIB_CPPSTD)'"
+	@echo "- LIB_WARNING      : '$(LIB_WARNING)'"
+	@echo "- LIB_OPTIMIZATION : '$(LIB_OPTIMIZATION)'"
+	@echo "- LIB_LNKCRT       : '$(LIB_LNKCRT)'"
+	@echo "- BIN_FOLDER       : '$(BIN_FOLDER)'"
+	@echo "- OBJ_FOLDER       : '$(OBJ_FOLDER)'"
+	@echo "- QT5_ROOT         : '$(QT5_ROOT)'"
+	@echo "- QT5_INCLUDE_FIX  : '$(QT5_INCLUDE_FIX)'"
+	@echo "- POCO_ROOT        : '$(POCO_ROOT)'"
+	@echo "- NYMPHRPC_ROOT    : '$(NYMPHRPC_ROOT)'"
+	@echo "- LIBNYMPHCAST_ROOT: '$(LIBNYMPHCAST_ROOT)'"
+	@echo "- INSTALL_PREFIX   : '$(INSTALL_PREFIX)'"
+	@echo "- LIB_LIBCPATH     : '$(LIB_LIBCPATH)'"
+	@echo "- LIB_SDKUMPATH    : '$(LIB_SDKUMPATH)'"
+	@echo "- LIB_SDKUCRTPATH  : '$(LIB_SDKUCRTPATH)'"
+	@echo.
+#	@echo "- sources: $(LIB_SOURCES_DIR)"
+#	@echo "- objects: $(LIB_OBJECTS_DIR)"
+#	@echo.
+
+prg: makedir-prg qmake $(BIN_FOLDER)\$(BIN_OUTPUT)
+
+makedir-prg:
+	-$(MKDIR) "$(BIN_FOLDER)" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/build" > nul 2>&1
+	-$(MKDIR) "$(OBJ_FOLDER)/litehtml/src/gumbo" > nul 2>&1
+
+# Dependencies:
+
+qmake:
+	cd build & qmake -nocache .. & cd ..
+
+$(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
+
+$(BIN_FOLDER)\$(BIN_OUTPUT): $(LIB_OBJECTS_DIR)
+	$(CXX) -Fe$(BIN_FOLDER)\$(BIN_OUTPUT) $(LIB_OBJECTS_DIR) /link \
+	/machine:"$(LNK_MACHINE)" \
+	/libpath:"$(NYMPHRPC_ROOT)\lib" \
+	/libpath:"$(LIBNYMPHCAST_ROOT)\lib" \
+	/libpath:"$(POCO_ROOT)\lib" \
+	/libpath:"$(QT5_ROOT)\lib" \
+	/libpath:"$(LIB_LIBCPATH)" \
+	/libpath:"$(LIB_SDKUMPATH)" \
+	/libpath:"$(LIB_SDKUCRTPATH)" \
+	$(LIB_LIBS)
+
+# Installation targets:
+
+install: prg makedir-install copy-install
+
+makedir-install:
+	-$(MKDIR) "$(INST_FOLDER_BIN:/=\)" > nul 2>&1
+
+copy-install: copy-install-dll
+	$(CP) "$(BIN_FOLDER:/=\)\$(BIN_OUTPUT)" "$(INST_FOLDER_BIN:/=\)\" > nul 2>&1
+
+copy-install-dll: copy-install-dll-qtpltfrm $(LIB_DLLS:/=\)
+	for %f in ($**) do @$(CP) %f "$(INST_FOLDER_BIN:/=\)\" > nul 2>&1
+
+copy-install-dll-qtpltfrm: $(LIB_DLLS_QT_PLTFRM:/=\)
+	for %f in ($**) do @$(CP) %f "$(INST_FOLDER_BIN:/=\)\platforms\" > nul 2>&1
+
+# Package, create Windows installer with Inno Setup (expected in path):
+
+package:
+	$(CD) installer & "$(SETUP)" $(SETUP_OPTIONS) $(SETUP_INPUT) & cd ..
+
+# Clean targets:
+
+clean:
+	$(RM) /s $(OBJ_FOLDER:/=\)\*.obj > nul 2>&1
+
+dist-clean: clean
+	$(RM) $(BIN_FOLDER:/=\)\$(BIN_OUTPUT)
+
+real-clean: dist-clean
+
+# end of file
