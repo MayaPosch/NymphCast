@@ -18,7 +18,11 @@
 
 #include <lcdapi/api/LCDElement.h>
 #include <lcdapi/api/LCDLock.h>
-#include <unistd.h>
+#ifndef _MSC_VER
+	#include <unistd.h>
+#else
+	#include <process.h>
+#endif
 #include <sstream>
 
 namespace lcdapi {
@@ -43,10 +47,17 @@ LCDElement::LCDElement(const string &id, const string &addCommand, const string 
   {
     const LCDLock l(&LCDElement::_elementMutex);
     ostringstream idBuffer;
+#ifndef _MSC_VER
     idBuffer << "LCDAPI_"
              << getpid()
              << "_"
              << LCDElement::_elementCounter;
+#else
+    idBuffer << "LCDAPI_"
+             << _getpid()
+             << "_"
+             << LCDElement::_elementCounter;
+#endif
 
     LCDElement::_elementCounter++;
     _id = idBuffer.str();

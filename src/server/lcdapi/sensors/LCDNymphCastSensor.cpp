@@ -12,7 +12,9 @@
 
 #include <lcdapi/sensors/LCDNymphCastSensor.h>
 
-#include <unistd.h>
+//#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include "ffplay/ffplay.h"
 
@@ -43,7 +45,9 @@ LCDNymphCastSensor::~LCDNymphCastSensor() { }
 void LCDNymphCastSensor::waitForChange() {
 	//std::cout << "NCSensor: waitForChange()" << std::endl;
 	while (_previousValue == getCurrentValue()) {
-		sleep(1);
+		//sleep(1);
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(1s);
 	}
 	
 	//std::cout << "NCSensor: waitForChange, exited loop." << std::endl;

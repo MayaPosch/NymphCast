@@ -20,6 +20,7 @@
 #define _LCDAPI_API_LCDCONNECTION_H_
 
 #ifdef _WIN32
+#define _WINSOCKAPI_ 
 #include <winsock.h>
 #include <ws2tcpip.h>
 #else

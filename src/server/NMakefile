@@ -323,7 +323,8 @@ LIB_LIBS    = \
     ole32.lib \
     opengl32.lib \
     winmm.lib \
-    ws2_32.lib
+    ws2_32.lib \
+	pthreadVC3.lib
 
 LIB_LIBS_STATIC = \
     brotlicommon-static.lib \
@@ -551,9 +552,7 @@ LIB_SOURCES_DIR = \
 	$(SRC_FOLDER)/gui/core/utils/ProfilingUtil.cpp \
 	$(SRC_FOLDER)/gui/core/utils/StringUtil.cpp \
 	$(SRC_FOLDER)/gui/core/utils/ThreadPool.cpp \
-	$(SRC_FOLDER)/gui/core/utils/TimeUtil.cpp
-
-!if 0
+	$(SRC_FOLDER)/gui/core/utils/TimeUtil.cpp \
 	$(SRC_FOLDER)/lcdapi/api/LCDBar.cpp \
 	$(SRC_FOLDER)/lcdapi/api/LCDBigNumber.cpp \
 	$(SRC_FOLDER)/lcdapi/api/LCDClient.cpp \
@@ -578,7 +577,6 @@ LIB_SOURCES_DIR = \
 	$(SRC_FOLDER)/lcdapi/sensors/LCDSensor.cpp \
 	$(SRC_FOLDER)/lcdapi/sensors/LCDSystemSensor.cpp \
 	$(SRC_FOLDER)/lcdapi/sensors/LCDTimeSensor.cpp
-!endif
 
 LIB_CSOURCES_DIR = \
 	$(SRC_FOLDER)/ffplay/cmdutils.c

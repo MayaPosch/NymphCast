@@ -73,7 +73,7 @@ void LCDFrame::notifyChanged()
   setWidgetParameters(params.str());
 }
 
-void LCDFrame::valueCallback(const std::string& value __attribute__((unused)))
+void LCDFrame::valueCallback(const std::string& /*value*/)
 {
 }
 

@@ -44,7 +44,7 @@ void LCDIcon::set(const string &type, int x, int y)
   }
 }
 
-void LCDIcon::valueCallback(const std::string& value __attribute__((unused)))
+void LCDIcon::valueCallback(const std::string& /*value*/)
 {
 }
 

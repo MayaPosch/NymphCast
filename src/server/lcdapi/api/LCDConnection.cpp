@@ -89,7 +89,11 @@ void LCDConnection::connect(const string &host, const int port) {
 
 void LCDConnection::disconnect() {
   if (isValid()) {
+#ifndef _MSC_VER
     ::close(_sock);
+#else
+	::closesocket(_sock);
+#endif
   }
 }
 
