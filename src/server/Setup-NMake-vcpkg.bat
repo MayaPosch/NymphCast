@@ -180,12 +180,6 @@ if exist "%NYMPHRPC_ROOT%\include\nymph\nymph.h" (
 
     git clone --depth 1 https://github.com/MayaPosch/NymphRPC.git
 
-    :: TODO temporary: Setup for NympRPC not yet in repository.
-    if exist "D:\Own\Martin" (
-        xcopy /y ..\..\..\MartinMoene\NymphCast-Scenarios\code\NMake\NymphRPC\NMakefile NymphRPC
-        xcopy /y ..\..\..\MartinMoene\NymphCast-Scenarios\code\NMake\NymphRPC\Setup-NMake-vcpkg.bat NymphRPC
-    )
-
     cd NymphRPC & call Setup-NMake-vcpkg.bat & cd ..
 
     rmdir /s /q NymphRPC
@@ -199,12 +193,6 @@ if exist "%LIBNYMPHCAST_ROOT%\include\nymphcast_client.h" (
     echo Setup NCS: LibNymphCast not found at "%LIBNYMPHCAST_ROOT%".
 
     git clone --depth 1 https://github.com/MayaPosch/LibNymphCast.git
-
-    :: TODO temporary: Setup for LibNymphCast not yet in repository.
-    if exist "D:\Own\Martin" (
-        xcopy /y ..\..\..\MartinMoene\NymphCast-Scenarios\code\NMake\LibNymphCast\NMakefile LibNymphCast
-        xcopy /y ..\..\..\MartinMoene\NymphCast-Scenarios\code\NMake\LibNymphCast\Setup-NMake-vcpkg.bat LibNymphCast
-    )
 
     cd LibNymphCast & call Setup-NMake-vcpkg.bat & cd ..
 

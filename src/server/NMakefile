@@ -238,7 +238,16 @@ LIB   = lib -nologo
 
 CP    = xcopy /Y
 RM    = del
+CD    = cd
 MKDIR = md		# Note: Do not use MKDIR=... as MKDIR is an NMake macro.
+
+# Inno Setup Studio compiler:
+SETUP = C:\Program Files (x86)\Inno Script Studio\ISStudio.exe
+SETUP_OPTIONS = -compile
+
+!if !exist("$(SETUP)")
+SETUP = ISStudio.exe
+!endif
 
 # Product-related macros:
 
@@ -247,6 +256,8 @@ MKDIR = md		# Note: Do not use MKDIR=... as MKDIR is an NMake macro.
 BIN_VERSION = -D__VERSION="\"v0.1-RC1\""	# TODO obtain version from file; NMake does not support :=
 
 BIN_OUTPUT  = NymphcastServer.exe
+
+SETUP_INPUT = Setup-NymphCastServer-dynamic.iss
 
 NCS_DEFS    = -DNCS_CONFIG_NO_LCDPROC_CLIENT
 LIB_FLAGS   = # -Zc:strictStrings-
@@ -806,6 +817,11 @@ mkdir-install:
 copy-install:
 	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
 	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
+
+# Package, create Windows installer with Inno Setup (expected in path):
+
+package:
+	$(CD) installer & "$(SETUP)" $(SETUP_OPTIONS) $(SETUP_INPUT) & cd ..
 
 # Clean targets:
 
