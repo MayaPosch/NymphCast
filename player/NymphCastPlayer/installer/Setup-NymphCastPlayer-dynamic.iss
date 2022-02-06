@@ -142,8 +142,14 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoFoundation.dll"; DestDir: "{app}/bin
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoNet.dll"       ; DestDir: "{app}/bin"   ; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoUtil.dll"      ; DestDir: "{app}/bin"   ; Flags: ignoreversion
 
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/icudt69.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/icuin69.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/icutu69.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/icuuc69.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libpng16.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre2-16.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/zlib1.dll"         ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/zstd.dll"          ; DestDir: "{app}/bin"; Flags: ignoreversion
 
 #if NC_CONFIG_VCPKG_QT5
 

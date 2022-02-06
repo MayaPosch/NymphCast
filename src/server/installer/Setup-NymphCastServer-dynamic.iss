@@ -235,6 +235,7 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoNetSSL.dll"     ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoUtil.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoXML.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/postproc-55.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pthreadVC3.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/raw.dll"            ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/SDL2.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/SDL2_image.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion

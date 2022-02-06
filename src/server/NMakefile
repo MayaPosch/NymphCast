@@ -306,63 +306,111 @@ LIB_INCLUDE = \
 	-I $(SDL2_ROOT)/include/SDL2
 
 LIB_LIBS    = \
-    NymphCast$(LIB_LNKCRT_MT).lib \
-    NymphRPC$(LIB_LNKCRT_MT).lib \
-    PocoData$(LIB_LNKCRT_MT).lib \
-    PocoDataSQLite$(LIB_LNKCRT_MT).lib \
-    PocoFoundation$(LIB_LNKCRT_MT).lib \
-    PocoJSON$(LIB_LNKCRT_MT).lib \
-    PocoNet$(LIB_LNKCRT_MT).lib \
-    PocoNetSSL$(LIB_LNKCRT_MT).lib \
-    PocoUtil$(LIB_LNKCRT_MT).lib \
-    SDL2.lib \
-    SDL2_image.lib \
-    angelscript$(LIB_BITS_SFX).lib \
-    avcodec.lib \
-    avdevice.lib \
-    avformat.lib \
-    avfilter.lib \
-    avutil.lib \
-    freeimage.lib \
-    freetype.lib \
-    libcurl.lib \
-    postproc.lib \
-    sqlite3.lib \
-    swresample.lib \
-    swscale.lib \
-    zlib.lib \
-    ole32.lib \
-    opengl32.lib \
-    winmm.lib \
-    ws2_32.lib \
-	pthreadVC3.lib
+	NymphCast$(LIB_LNKCRT_MT).lib \
+	NymphRPC$(LIB_LNKCRT_MT).lib \
+	PocoData$(LIB_LNKCRT_MT).lib \
+	PocoDataSQLite$(LIB_LNKCRT_MT).lib \
+	PocoFoundation$(LIB_LNKCRT_MT).lib \
+	PocoJSON$(LIB_LNKCRT_MT).lib \
+	PocoNet$(LIB_LNKCRT_MT).lib \
+	PocoNetSSL$(LIB_LNKCRT_MT).lib \
+	PocoUtil$(LIB_LNKCRT_MT).lib \
+	SDL2.lib \
+	SDL2_image.lib \
+	angelscript$(LIB_BITS_SFX).lib \
+	avcodec.lib \
+	avdevice.lib \
+	avfilter.lib \
+	avformat.lib \
+	avutil.lib \
+	freeimage.lib \
+	freetype.lib \
+	libcurl.lib \
+	ole32.lib \
+	opengl32.lib \
+	postproc.lib \
+	pthreadVC3.lib \
+	sqlite3.lib \
+	swresample.lib \
+	swscale.lib \
+	zlib.lib \
+	winmm.lib \
+	ws2_32.lib
 
 LIB_LIBS_STATIC = \
-    brotlicommon-static.lib \
-    brotlidec-static.lib \
-    bz2.lib \
-    Half-2_5.lib \
-    Iex-2_5.lib \
-    IlmImf-2_5.lib \
-    IlmThread-2_5.lib \
-    Imath-2_5.lib \
-    jasper.lib \
-    jpeg.lib \
-    lcms2.lib \
-    libexpatMD.lib \
-    libpng16.lib \
-    libwebpmux.lib \
-    lzma.lib \
-    openjp2.lib \
-    pcre.lib \
-    postproc.lib \
-    raw_r.lib \
-    swresample.lib \
-    tiff.lib \
-    webp.lib \
-    webpdecoder.lib \
+	brotlicommon-static.lib \
+	brotlidec-static.lib \
+	bz2.lib \
+	Half-2_5.lib \
+	Iex-2_5.lib \
+	IlmImf-2_5.lib \
+	IlmThread-2_5.lib \
+	Imath-2_5.lib \
+	jasper.lib \
+	jpeg.lib \
+	lcms2.lib \
+	libexpatMD.lib \
+	libpng16.lib \
+	libwebpmux.lib \
+	lzma.lib \
+	openjp2.lib \
+	pcre.lib \
+	postproc.lib \
+	pthreadVC3.lib \
+	raw_r.lib \
+	swresample.lib \
+	tiff.lib \
+	webp.lib \
+	webpdecoder.lib \
 	Ws2_32.lib \
 	iphlpapi.lib
+
+LIB_DLLS = \
+	$(POCO_ROOT)/bin/PocoCrypto.dll \
+	$(POCO_ROOT)/bin/PocoData.dll \
+	$(POCO_ROOT)/bin/PocoDataSQLite.dll \
+	$(POCO_ROOT)/bin/PocoFoundation.dll \
+	$(POCO_ROOT)/bin/PocoJSON.dll \
+	$(POCO_ROOT)/bin/PocoNet.dll \
+	$(POCO_ROOT)/bin/PocoNetSSL.dll \
+	$(POCO_ROOT)/bin/PocoUtil.dll \
+	$(POCO_ROOT)/bin/PocoXML.dll \
+	$(POCO_ROOT)/bin/brotlicommon.dll \
+	$(POCO_ROOT)/bin/brotlidec.dll \
+	$(POCO_ROOT)/bin/bz2.dll \
+	$(POCO_ROOT)/bin/Half-2_5.dll \
+	$(POCO_ROOT)/bin/Iex-2_5.dll \
+	$(POCO_ROOT)/bin/IlmImf-2_5.dll \
+	$(POCO_ROOT)/bin/IlmThread-2_5.dll \
+	$(POCO_ROOT)/bin/Imath-2_5.dll \
+	$(POCO_ROOT)/bin/jasper.dll \
+	$(POCO_ROOT)/bin/jpeg62.dll \
+	$(POCO_ROOT)/bin/lcms2.dll \
+	$(POCO_ROOT)/bin/libcurl.dll \
+	$(POCO_ROOT)/bin/libexpat.dll \
+	$(POCO_ROOT)/bin/libpng16.dll \
+	$(POCO_ROOT)/bin/libwebpmux.dll \
+	$(POCO_ROOT)/bin/lzma.dll \
+	$(POCO_ROOT)/bin/openjp2.dll \
+	$(POCO_ROOT)/bin/pcre.dll \
+	$(POCO_ROOT)/bin/pthreadVC3.dll \
+	$(POCO_ROOT)/bin/raw.dll \
+	$(POCO_ROOT)/bin/tiff.dll \
+	$(POCO_ROOT)/bin/webp.dll \
+	$(POCO_ROOT)/bin/webpdecoder.dll \
+	$(POCO_ROOT)/bin/zlib1.dll \
+	$(SDL2_ROOT)/bin/SDL2.dll \
+	$(SDL2_ROOT)/bin/SDL2_image.dll \
+	$(CURL_ROOT)/bin/libcurl.dll \
+	$(FFMPEG_ROOT)/bin/avcodec-58.dll \
+	$(FFMPEG_ROOT)/bin/avdevice-58.dll \
+	$(FFMPEG_ROOT)/bin/avfilter-7.dll \
+	$(FFMPEG_ROOT)/bin/avformat-58.dll \
+	$(FFMPEG_ROOT)/bin/avutil-56.dll \
+	$(FFMPEG_ROOT)/bin/postproc-55.dll \
+	$(FFMPEG_ROOT)/bin/swresample-3.dll \
+	$(FREEIMAGE_ROOT)/bin/freeimage.dll \
+	$(FREETYPE_ROOT)/bin/freetype.dll
 
 FLAGS    = -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(NCS_DEFS) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
 CFLAGS   = $(FLAGS)
@@ -811,12 +859,13 @@ $(BIN_FOLDER)\$(BIN_OUTPUT): angelscript $(LIB_OBJECTS_ASCRIPT_DIR) $(LIB_OBJECT
 install: prg mkdir-install copy-install
 
 mkdir-install:
-	-$(MKDIR) "$(INST_FOLDER_INC:/=\)" > nul 2>&1
-	-$(MKDIR) "$(INST_FOLDER_LIB:/=\)" > nul 2>&1
+	-$(MKDIR) "$(INST_FOLDER_BIN:/=\)" > nul 2>&1
 
-copy-install:
-	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
-	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
+copy-install: copy-install-dll
+	$(CP) "$(BIN_FOLDER:/=\)\$(BIN_OUTPUT)" "$(INST_FOLDER_BIN:/=\)\" > nul 2>&1
+
+copy-install-dll: $(LIB_DLLS:/=\)
+	for %f in ($**) do @$(CP) %f "$(INST_FOLDER_BIN:/=\)\" > nul 2>&1
 
 # Package, create Windows installer with Inno Setup (expected in path):
 

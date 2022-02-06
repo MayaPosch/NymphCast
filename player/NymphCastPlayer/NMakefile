@@ -245,6 +245,7 @@ LIB_DLLS = \
 	$(QT5_ROOT)/bin/icuin69.dll \
 	$(QT5_ROOT)/bin/icutu69.dll \
 	$(QT5_ROOT)/bin/icuuc69.dll \
+	$(QT5_ROOT)/bin/libpng16.dll \
 	$(QT5_ROOT)/bin/pcre2-16.dll \
 	$(QT5_ROOT)/bin/zstd.dll
 
