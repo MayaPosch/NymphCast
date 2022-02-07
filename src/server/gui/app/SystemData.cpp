@@ -88,16 +88,20 @@ void SystemData::populateFolder(FileData* folder) {
 		std::vector<NymphCastRemote> mediaservers = Gui::client->findShares();
 		if (mediaservers.empty()) {
 			LOG(LogInfo) << "No media servers found.";
+			// TODO: Handle no media servers found.
+			
 			return;
 		}
 		
 		for (uint32_t i = 0; i < mediaservers.size(); ++i) {
 			std::vector<NymphMediaFile> files = Gui::client->getShares(mediaservers[i]);
+			// TODO: Handle empty file list event.
 			if (files.empty()) { continue; }
 			
 			NYMPH_LOG_INFORMATION("Adding " + Poco::NumberFormatter::format(files.size()) + " shared files.");
 			for (uint32_t j = 0; j < files.size(); ++j) {
-				//
+				// Check the file type, filter out anything that's not music or video.
+				if (files[j].type == FILE_TYPE_IMAGE) { continue; }
 				FileData* newGame = new FileData(MEDIA, files[j], this);
 				folder->addChild(newGame);
 			}
@@ -121,6 +125,12 @@ void SystemData::populateFolder(FileData* folder) {
 			return;
 		}
 	}
+	
+	// TODO:
+	// If folder path is a remote (NCMS) reference, fetch the remote directory list and ensure
+	// local files exist with that name.
+	// * Create 0 byte files if no such filename exists.
+	// * Update save files from the remote, if remote version is newer.
 
 	std::string filePath;
 	std::string extension;
