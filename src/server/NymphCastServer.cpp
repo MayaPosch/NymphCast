@@ -1757,6 +1757,9 @@ int main(int argc, char** argv) {
 	// Check whether the LCDProc client should be enabled.
 	lcdproc_enabled = config.getValue<bool>("enable_lcdproc", false);
 	
+	// Set target LCDProc host.
+	std::string lcdproc_host = config.getValue<std::string>("lcdproc_host", "localhost");
+	
 	// Open the 'apps.ini' file and parse it.
 	nc_apps.setAppsFolder(appsFolder);
 	if (!nc_apps.readAppList(appsFolder + "apps.ini")) {
@@ -2103,7 +2106,8 @@ int main(int argc, char** argv) {
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
-			static lcdapi::LCDClient lcdclient("localhost", 13666);
+			NYMPH_LOG_INFORMATION("Connecting to LCDProc server at " + lcdproc_host + ":13666");
+			static lcdapi::LCDClient lcdclient(lcdproc_host, 13666);
 			
 			lcdapi_active = true;
 			
