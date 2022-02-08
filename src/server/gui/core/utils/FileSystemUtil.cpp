@@ -25,6 +25,15 @@
 #include <unistd.h>
 #endif // _WIN32
 
+#ifdef __FreeBSD__
+// FreeBSD doesn't have a stat / stat64 distinction: everything is already
+// 64-bit clean.
+#include <sys/stat.h>
+#define stat64 stat
+static inline int lstat64(const char * path, struct stat64 *sb) { return ::lstat(path, sb); }
+#endif
+
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace Utils
