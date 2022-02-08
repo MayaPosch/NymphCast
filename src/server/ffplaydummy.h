@@ -19,6 +19,8 @@
 #include <queue>
 #include <functional>
 
+#include <cmath>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mutex.h>
 
