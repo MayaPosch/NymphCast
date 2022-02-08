@@ -20,4 +20,5 @@ src/server/wallpapers/*.jpeg
 *.iml
 .gradle
 local.properties
+*.dll
 
