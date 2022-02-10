@@ -1663,7 +1663,7 @@ void MainWindow::openCustomRemotesDialog() {
 	
 	std::cout << "Finished CRD dialogue." << std::endl;
 	
-	delete rd;
+	delete crd;
 }
 
 
