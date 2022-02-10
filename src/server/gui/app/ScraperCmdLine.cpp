@@ -5,10 +5,10 @@
 #include "SystemData.h"
 #include <iostream>
 #include <signal.h>
-#if defined(__linux__)
-#include <unistd.h>
-#elif defined(WIN32)
+#if defined(WIN32)
 #include <Windows.h>
+#else
+#include <unistd.h>
 #endif
 
 std::ostream& out = std::cout;
