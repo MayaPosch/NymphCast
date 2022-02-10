@@ -34,7 +34,7 @@ UMCH := $(shell uname -m)
 TARGET_BIN := $(TARGET)/
 
 # Include the file with the versioning information ('VERSION' variable).
-include version
+include version.mk
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_server
@@ -52,8 +52,8 @@ INCLUDE += `sdl2-config --cflags` \
 			`pkg-config --cflags freetype2`
 endif
 
-LIB := -lnymphrpc -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
-		-lPocoDataSQLite -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+LIB := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
+		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
 		-lstdc++fs -lfreetype \
 			 -lcurl -lfreeimage \
@@ -82,6 +82,7 @@ LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_
 ifdef STATIC
 	TARGET_BIN := $(TARGET)-static/
 	TARGET := $(TARGET)-static
+	CPPFLAGS := $(CPPFLAGS) -DPOCO_STATIC
 	#LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(STATIC_LIB)
 	LDFLAGS := -static $(LDFLAGS)
 endif
@@ -113,9 +114,9 @@ SOURCES := $(wildcard *.cpp) \
 GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/core/animations/*.cpp) \
 				$(wildcard gui/core/components/*.cpp) \
-				$(wildcard gui/core/nanosvg/src/*.cpp) \
 				$(wildcard gui/core/guis/*.cpp) \
 				$(wildcard gui/core/math/*.cpp) \
+				$(wildcard gui/core/nanosvg/src/*.cpp) \
 				$(wildcard gui/core/renderers/*.cpp) \
 				$(wildcard gui/core/resources/*.cpp) \
 				$(wildcard gui/core/utils/*.cpp) \
