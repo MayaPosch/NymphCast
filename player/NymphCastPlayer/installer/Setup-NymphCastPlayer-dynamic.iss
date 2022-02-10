@@ -16,12 +16,14 @@
 #define MyAppUpdatesURL     "https://github.com/MayaPosch/NymphCast/releases"
 #define MyAppComments       "Audio and video casting system with support for custom applications."
 
+#define MyAppBinFolder      "../build/x86_64-w64-msvc/release/"
+
 #define MyAppBaseName        MyAppNameNoSpace
 #define MyAppExeName         MyAppBaseName + ".exe"
 #define MyAppIconName        MyAppBaseName + ".ico"
 #define MyAppHomeShortcut    MyAppBaseName + ".url"
-
-#define MyAppDestExeName     MyAppNameNoSpace + ".exe"
+#define MyAppExeSrcPath      MyAppBinFolder + MyAppExeName
+#define MyAppExeDestName     MyAppNameNoSpace + ".exe"
 
 #define MyAppReadme         "Readme.txt"
 #define MyAppChanges        "Changes.txt"
@@ -88,6 +90,7 @@ AppPublisher       = {#MyAppPublisher}
 AppPublisherURL    = {#MyAppPublisherURL}
 AppSupportURL      = {#MyAppSupportURL}
 AppUpdatesURL      = {#MyAppUpdatesURL}
+AppCopyright       = {#MyAppCopyright}
 
 DefaultDirName     = {pf}\{#MyAppBaseName}
 DefaultGroupName   = {#MyAppBaseName}
@@ -135,7 +138,7 @@ Source: "{#WgetPath}"; DestDir: "{tmp}"; Flags: deleteafterinstall;
 
 ; Program and DLLs of dependencies:
 
-Source: "..\build\x86_64-w64-msvc\release\{#MyAppExeName}" ; DestDir: "{app}/bin"; DestName: "{#MyAppDestExeName}"; Flags: ignoreversion
+Source: "{#MyAppExeSrcPath}" ; DestDir: "{app}/bin"; DestName: "{#MyAppExeDestName}"; Flags: ignoreversion
 
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre.dll"          ; DestDir: "{app}/bin"   ; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoFoundation.dll"; DestDir: "{app}/bin"   ; Flags: ignoreversion
