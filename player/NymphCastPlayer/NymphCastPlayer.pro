@@ -91,7 +91,8 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         qlitehtmlwidget.cpp \
-		remotes.cpp
+		remotes.cpp \
+		custom_remotes.cpp
 
 HEADERS += \
         container_qpainter.h \
@@ -165,11 +166,13 @@ HEADERS += \
         mainwindow.h \
         qlitehtml_global.h \
         qlitehtmlwidget.h \
-		remotes.h
+		remotes.h \
+		custom_remotes.h
 
 FORMS += \
         mainwindow.ui \
-		remotes.ui
+		remotes.ui \
+		custom_remotes.ui
 
 LIBS += -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 

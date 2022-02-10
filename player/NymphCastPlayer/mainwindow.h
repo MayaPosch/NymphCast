@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "remotes.h"
+#include "custom_remotes.h"
 
 
 namespace Ui {
@@ -34,6 +35,7 @@ private slots:
 	void loadPlaylist();
 	void savePlaylist();
 	void clearPlaylist();
+	void openCustomRemotesDialog();
 	
     // Player tab
 	void playerRemoteChanged(int index);
@@ -72,6 +74,7 @@ private slots:
 	void updateRemotesList();
 	void updateGroupsList(std::vector<NCRemoteGroup> &groups);
 	void addGroupsToRemotes();
+	void updateRemotesList(std::vector<NCRemoteInstance> &remotes);
 	
 	void positionUpdate();
 	
@@ -82,6 +85,7 @@ private:
 	Ui::MainWindow *ui;
 	
 	std::vector<NCRemoteInstance> remotes;
+	std::vector<NCRemoteInstance> custom_remotes;
 	std::vector<NCRemoteGroup> groups;
     std::vector<std::vector<NymphMediaFile> > mediaFiles;
 	bool muted = false;
@@ -91,6 +95,7 @@ private:
 	QString appDataLocation;
 	int separatorIndex;
 	RemotesDialog* rd;
+	CustomRemotesDialog* crd;
 	QTimer posTimer;
 	
     QByteArray loadResource(const QUrl &name);
@@ -102,6 +107,9 @@ private:
 	
 	bool loadGroups();
 	bool saveGroups();
+	
+	bool loadRemotes();
+	bool saveRemotes();
 };
 
 #endif // MAINWINDOW_H

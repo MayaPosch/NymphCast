@@ -18,6 +18,7 @@
 
 struct NCRemoteInstance {
 	NymphCastRemote remote;
+	bool manual = false;
 	bool connected = false;
 	bool init = true;
 	bool paused = false;

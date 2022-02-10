@@ -18,8 +18,6 @@
 #include <QDataStream>
 #include <QScroller>
 
-#include "remotes.h"
-
 #if defined(Q_OS_ANDROID)
 #include <QtAndroidExtras>
 #include <QAndroidJniEnvironment>
@@ -153,6 +151,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(savePlaylist()));
 	connect(ui->actionLoad, SIGNAL(triggered()), this, SLOT(loadPlaylist()));
 	connect(ui->actionClear, SIGNAL(triggered()), this, SLOT(clearPlaylist()));
+	connect(ui->actionManageGroups, SIGNAL(triggered()), this, SLOT(openRemotesDialog()));
+	connect(ui->actionManageCustom, SIGNAL(triggered()), this, SLOT(openCustomRemotesDialog()));
 	
 	// UI
 	connect(ui->editRemotesButton, SIGNAL(clicked()), this, SLOT(openRemotesDialog()));
@@ -326,13 +326,15 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	
 	playlist.close();
 #endif
-
-	// Obtain initial list of available remotes.
-	remoteListRefresh();
+	// Load any custom remotes.
+	loadRemotes();
 	
 	// Load any saved groups.
 	loadGroups();
-	addGroupsToRemotes();
+	
+	// Obtain initial list of available remotes.
+	// This also updates the combolist with groups and custom remotes.
+	remoteListRefresh();
 	
 	// Restore UI preferences.
 	ui->singlePlayCheckBox->setChecked(settings.value("ui/singlePlayCheckBox", true).toBool());
@@ -662,6 +664,7 @@ void MainWindow::remoteListRefresh() {
 	// Update the list with any changed items.
 	remotes.clear();
 	ui->remotesComboBox->clear();
+	uint32_t idx = 0;
 	for (uint32_t i = 0; i < list.size(); ++i) {
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(list[i].ipv4 + " (" + list[i].name + ")"));
@@ -672,6 +675,22 @@ void MainWindow::remoteListRefresh() {
 		// Add remote to 'remotes' list.
 		NCRemoteInstance nci;
 		nci.remote = list[i];
+		remotes.push_back(nci);
+		idx++;
+	}
+	
+	// Merge in custom remotes, if any.
+	for (uint32_t i = 0; i < custom_remotes.size(); ++i) {
+		QListWidgetItem *newItem = new QListWidgetItem;
+		newItem->setText(QString::fromStdString(custom_remotes[i].remote.ipv4 + " (" + custom_remotes[i].remote.name + ")"));
+		newItem->setData(Qt::UserRole, QVariant((i + ++idx)));
+		ui->remotesComboBox->insertItem(i, QString::fromStdString(custom_remotes[i].remote.ipv4 + 
+													" (" + custom_remotes[i].remote.name + ") [Manual]"), QVariant(i));
+													
+		// Add remote to 'remotes' list.
+		NCRemoteInstance nci;
+		nci.manual = true;
+		nci.remote = custom_remotes[i].remote;
 		remotes.push_back(nci);
 	}
 	
@@ -1464,19 +1483,39 @@ void MainWindow::updateGroupsList(std::vector<NCRemoteGroup> &groups) {
 	// Save new groups to disk.
 	saveGroups();
 }
+
+
+// --- UPDATE REMOTES LIST ---
+void MainWindow::updateRemotesList(std::vector<NCRemoteInstance> &remotes) {
+	this->custom_remotes = remotes;
+	
+	std::cout << "Called updateRemotesList." << std::endl;
+	
+	// Refresh remotes list.
+	remoteListRefresh();
+	
+	// Save new groups to disk.
+	saveRemotes();
+}
 	
 
 // --- ADD GROUPS TO REMOTES ---
 void MainWindow::addGroupsToRemotes() {
 	// Update remotes combo boxes.
-	// Only update the combo boxes on the Player & Shares tabs as these use groups.
 	ui->remotesComboBox->clear();
 	for (uint32_t i = 0; i < remotes.size(); ++i) {
 		QListWidgetItem *newItem = new QListWidgetItem;
-		newItem->setText(QString::fromStdString(remotes[i].remote.ipv4 + " (" + remotes[i].remote.name + ")"));
+		newItem->setText(QString::fromStdString(remotes[i].remote.ipv4 + " (" + 
+													remotes[i].remote.name + ")"));
 		newItem->setData(Qt::UserRole, QVariant(i));
-		ui->remotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
-													" (" + remotes[i].remote.name + ")"), QVariant(i));
+		if (remotes[i].manual) { // Manually added remote.
+			ui->remotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+										" (" + remotes[i].remote.name + ") [Manual]"), QVariant(i));
+		}
+		else {
+			ui->remotesComboBox->insertItem(i, QString::fromStdString(remotes[i].remote.ipv4 + 
+												" (" + remotes[i].remote.name + ")"), QVariant(i));
+		}
 	}
 	
 	// Insert group separator for the relevant combo boxes.
@@ -1493,7 +1532,8 @@ void MainWindow::addGroupsToRemotes() {
 
 // --- ABOUT ---
 void MainWindow::about() {
-	QMessageBox::about(this, tr("About NymphCast Player."), tr("NymphCast Player is the reference player for NymphCast.\n\nRev.: v0.1-rc0"));
+	QMessageBox::about(this, tr("About NymphCast Player."), 
+		tr("NymphCast Player is the reference player for NymphCast.\n\nRev.: v0.1-rc1"));
 }
 
 
@@ -1606,6 +1646,27 @@ void MainWindow::clearPlaylist() {
 }
 
 
+// --- OPEN CUSTOM REMOTES DIALOG ---
+void MainWindow::openCustomRemotesDialog() {
+	//
+	crd = new CustomRemotesDialog;
+	connect(crd, SIGNAL(saveRemotesList(std::vector<NCRemoteInstance>&)),
+				this, SLOT(updateRemotesList(std::vector<NCRemoteInstance>&)));
+	
+	// Set data.
+	crd->setRemoteList(custom_remotes);
+	
+	std::cout << "Set data on CRD dialogue." << std::endl;
+	
+	// Execute dialog.
+	crd->exec();
+	
+	std::cout << "Finished CRD dialogue." << std::endl;
+	
+	delete rd;
+}
+
+
 // --- LOAD GROUPS ---
 // Load the remote groups from file, if exists.
 bool MainWindow::loadGroups() {
@@ -1687,6 +1748,79 @@ bool MainWindow::saveGroups() {
 			ds << QString::fromStdString(groups[i].remotes[j].remote.ipv6);
 			ds << (quint16) groups[i].remotes[j].remote.port;
 		}
+	}
+	
+	return true;
+}
+
+
+// --- LOAD REMOTES ---
+// Load custom remotes.
+bool MainWindow::loadRemotes() {
+	// Open the remotes file.
+	QFile file(appDataLocation + "/remotes.bin");
+	if (!file.exists()) { return false; }
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::warning(this, tr("Error loading remotes"), tr("Error reading the remotes.bin file!"));
+		return false;
+	}
+	
+	// Read in the remotes.
+	QDataStream ds(&file);
+	
+	// First read in the number of remotes.
+	quint32 numRemotes;
+	ds >> numRemotes;
+	
+	// Clear any existing remotes.
+	custom_remotes.clear();
+	
+	// Read the remotes.
+	for (uint32_t j = 0; j < numRemotes; ++j) {
+		QString rname;
+		QString ipv4;
+		QString ipv6;
+		quint16 port;
+		
+		ds >> rname;
+		ds >> ipv4;
+		ds >> ipv6;
+		ds >> port;
+		
+		NymphCastRemote ncr;
+		ncr.name = rname.toStdString();
+		ncr.ipv4 = ipv4.toStdString();
+		ncr.ipv6 = ipv6.toStdString();
+		ncr.port = (uint16_t) port;
+		
+		NCRemoteInstance nci;
+		nci.remote = ncr;
+		
+		custom_remotes.push_back(nci);
+	}
+	
+	return true;
+}
+
+
+// --- SAVE REMOTES ---
+// Save custom remotes.
+bool MainWindow::saveRemotes() {
+	// Open the remotes file.
+	QFile file(appDataLocation + "/remotes.bin");
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		QMessageBox::warning(this, tr("Error saving remotes"), tr("Error opening the remotes.bin file!"));
+		return false;
+	}
+	
+	// Write the remotes.
+	QDataStream ds(&file);
+	ds << (quint32) custom_remotes.size();
+	for (uint32_t j = 0; j < custom_remotes.size(); ++j) {
+		ds << QString::fromStdString(custom_remotes[j].remote.name);
+		ds << QString::fromStdString(custom_remotes[j].remote.ipv4);
+		ds << QString::fromStdString(custom_remotes[j].remote.ipv6);
+		ds << (quint16) custom_remotes[j].remote.port;
 	}
 	
 	return true;

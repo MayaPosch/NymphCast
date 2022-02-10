@@ -617,9 +617,17 @@
     <addaction name="actionSave"/>
     <addaction name="actionClear"/>
    </widget>
+   <widget class="QMenu" name="menuRemotes">
+    <property name="title">
+     <string>Remotes</string>
+    </property>
+    <addaction name="actionManageGroups"/>
+    <addaction name="actionManageCustom"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCast"/>
    <addaction name="menuPlaylist"/>
+   <addaction name="menuRemotes"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -682,6 +690,16 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionManageGroups">
+   <property name="text">
+    <string>Manage groups...</string>
+   </property>
+  </action>
+  <action name="actionManageCustom">
+   <property name="text">
+    <string>Manage custom...</string>
    </property>
   </action>
  </widget>
