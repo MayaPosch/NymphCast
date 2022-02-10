@@ -16,12 +16,14 @@
 #define MyAppUpdatesURL     "https://github.com/MayaPosch/NymphCast/releases"
 #define MyAppComments       "Audio and video casting system with support for custom applications."
 
+#define MyAppBinFolder      "../bin/x86_64-w64-msvc/release/"
+
 #define MyAppBaseName        MyAppNameNoSpace
 #define MyAppExeName         MyAppBaseName + ".exe"
 #define MyAppIconName        MyAppBaseName + ".ico"
 #define MyAppHomeShortcut    MyAppBaseName + ".url"
-
-#define MyAppDestExeName     MyAppNameNoSpace + ".exe"
+#define MyAppExeSrcPath      MyAppBinFolder + MyAppExeName
+#define MyAppExeDestName     MyAppNameNoSpace + ".exe"
 
 #define MyAppReadme         "Readme.txt"
 #define MyAppChanges        "Changes.txt"
@@ -100,6 +102,7 @@ AppPublisher       = {#MyAppPublisher}
 AppPublisherURL    = {#MyAppPublisherURL}
 AppSupportURL      = {#MyAppSupportURL}
 AppUpdatesURL      = {#MyAppUpdatesURL}
+AppCopyright       = {#MyAppCopyright}
 
 DefaultDirName     = {pf}\{#MyAppNameNoSpace}
 DefaultGroupName   = {#MyAppNameNoSpace}
@@ -198,7 +201,7 @@ Source: "../{#NcGuiConfig}"   ; DestDir: "{app}/config"; DestName: "{#NcDefaultC
 
 ; Program and DLLs of dependencies:
 
-Source: "../bin/x86_64-w64-msvc/release/{#MyAppExeName}"; DestDir: "{app}/bin"; DestName: "{#MyAppDestExeName}"; Flags: ignoreversion
+Source: "{#MyAppExeSrcPath}"; DestDir: "{app}/bin"; DestName: "{#MyAppExeDestName}"; Flags: ignoreversion
 
 Source: "{#VcpkgRoot}\{#VcpkgDllFolder}/avcodec-58.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avdevice-58.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
@@ -246,12 +249,20 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/webpdecoder.dll"    ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/zlib1.dll"          ; DestDir: "{app}/bin"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName} - Audio"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppDestExeName}"" --configuration ""{app}/config/{#NcAudioConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with audio configuration.";
-Name: "{group}\{#MyAppName} - Video"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppDestExeName}"" --configuration ""{app}/config/{#NcVideoConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with video configuration.";
-Name: "{group}\{#MyAppName} - GUI"         ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppDestExeName}"" --configuration ""{app}/config/{#NcGuiConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"""       ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with GUI configuration.";
-Name: "{group}\{#MyAppName} - Screen saver"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppDestExeName}"" --configuration ""{app}/config/{#NcScrSvrConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with screen saver configuration.";
-;Name: "{commondesktop}/{#MyAppName}" ; Filename: "{app}/bin/{#MyAppDestExeName}";Parameters: "--configuration {app}/config/nymphcast_video_config.ini"; Tasks: desktopicon
-;Name: "{userappdata}/Microsoft/Internet Explorer/Quick Launch/{#MyAppDestExeName}"; Filename: "{app}/bin/{#MyAppDestExeName}"; Tasks: quicklaunchicon
+Name: "{group}\{#MyAppName} - Audio"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcAudioConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with audio configuration.";
+Name: "{group}\{#MyAppName} - Video"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcVideoConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with video configuration.";
+Name: "{group}\{#MyAppName} - GUI"         ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcGuiConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"""       ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with GUI configuration.";
+Name: "{group}\{#MyAppName} - Screen saver"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcScrSvrConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with screen saver configuration.";
+
+; Note: backslash required in the following folder path:
+Name: "{group}\Reveal config folder in Explorer"; Filename: "{app}\config"
+;Name: "{group}\{#NcAudioConfig}"               ; Filename: "{app}/config/{#NcAudioConfig}"
+;Name: "{group}\{#NcVideoConfig}"               ; Filename: "{app}/config/{#NcVideoConfig}"
+;Name: "{group}\{#NcGuiConfig}"                 ; Filename: "{app}/config/{#NcGuiConfig}"
+;Name: "{group}\{#NcScrSvrConfig}"              ; Filename: "{app}/config/{#NcScrSvrConfig}"
+
+;Name: "{commondesktop}/{#MyAppName}" ; Filename: "{app}/bin/{#MyAppExeDestName}";Parameters: "--configuration {app}/config/nymphcast_video_config.ini"; Tasks: desktopicon
+;Name: "{userappdata}/Microsoft/Internet Explorer/Quick Launch/{#MyAppExeDestName}"; Filename: "{app}/bin/{#MyAppExeDestName}"; Tasks: quicklaunchicon
 
 ; Post-install actions:
 ; - Download and install VC redistributable, if needed.
@@ -273,7 +284,7 @@ Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir:
 Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
 
 ; If requested, run NymphCast Server with [video] configuration:
-Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppDestExeName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 ; Code to determine if installation of VC14.1 (VS2017) runtime is needed.
 ; From: http://stackoverflow.com/questions/11137424/how-to-make-vcredist-x86-reinstall-only-if-not-yet-installed/11172939#11172939

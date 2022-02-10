@@ -9,4 +9,6 @@ Or you can run NymphCast Server with a configuration file from a console:
 
 NymphCastServer.exe -c /path/to/config.ini
 
-Configuration files are provided in the `config` subdirectory of the installation directory.
+Configuration files are provided in the 'config' subdirectory of the installation directory.
+
+There's a shortcut in the Start menu to explore to the 'config' folder.

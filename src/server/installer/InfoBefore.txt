@@ -1,1 +1,7 @@
-Please note: this version of NymphCast Server does not yet support the LCDapi.
+Please note:
+
+Although there's no LCDproc daemon available for MS-Windows, it's possible to specify a hostname or IP-address of an LCDd daemon on the network to display artist and track information on an LCD.
+
+See the configuration files in the 'config' subdirectory where NymphCast Server is installed.
+
+There's a shortcut in the Start menu to explore to the 'config' folder.
