@@ -10,7 +10,6 @@ CROSSC := 1
 else
 # Get the compiler's (GCC or Clang) target triplet and use that as platform.
 TARGET := $(shell g++ -dumpmachine)
-$(info TARGET: $(TARGET))
 endif
 
 ifdef TOOLCHAIN
@@ -23,6 +22,8 @@ STRIP = strip
 MAKEDIR = mkdir -p
 RM = rm
 endif
+
+$(info TARGET: $(TARGET))
 
 export TARGET
 export GPP
