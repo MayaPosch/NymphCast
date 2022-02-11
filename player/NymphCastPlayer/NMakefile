@@ -8,6 +8,7 @@
 # Usage: nmake -f NMakefile [definitions] [target]
 #
 # Definitions:
+# - NC_STATIC={0|1}
 # - NC_CONFIG={Debug|Release}
 # - NC_CPPSTD={flag}
 # - NC_LNKCRT={flag}
@@ -29,6 +30,7 @@
 # - real-clean, same as dist-clean
 #
 # Configuration:
+# - `NC_STATIC` defaults to `0`.
 # - `NC_CONFIG` defaults to `Release`
 # - `NC_CPPSTD` defaults to `-std:c++latest`.
 # - `NC_LNKCRT` defaults to `-MD`.
@@ -57,6 +59,12 @@
 # Configuration:
 
 # Note: no space before macro being defined.
+
+!ifdef NC_STATIC
+LIB_STATIC = $(NC_STATIC)
+!else
+LIB_STATIC = 0
+!endif
 
 !ifdef NC_CONFIG
 LIB_CONFIG = $(NC_CONFIG)
@@ -252,9 +260,15 @@ LIB_DLLS = \
 LIB_DLLS_QT_PLTFRM = \
 	$(QT5_ROOT)/plugins/platforms/qwindows.dll
 
-LIB_FLAGS   = -Zc:strictStrings-
-LIB_DEFS    = -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_DEPRECATED_WARNINGS -DLITEHTML_UTF8 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
-CXXFLAGS    = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION) $(LIB_FLAGS)
+!if $(LIB_STATIC) != 0
+LIB_DEFS_STATIC = -DPOCO_STATIC
+!else
+LIB_DEFS_STATIC =
+!endif
+
+LIB_FLAGS = -Zc:strictStrings-
+LIB_DEFS  = $(LIB_DEFS_STATIC) -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_DEPRECATED_WARNINGS -DLITEHTML_UTF8 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+CXXFLAGS  = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_FLAGS) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
 
 INST_FOLDER_INC = $(INSTALL_PREFIX)\include
 INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
@@ -279,14 +293,16 @@ LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
 
 LIB_SOURCES_DIR = \
 	$(SRC_FOLDER)/container_qpainter.cpp \
+	$(SRC_FOLDER)/custom_remotes.cpp \
 	$(SRC_FOLDER)/main.cpp \
 	$(SRC_FOLDER)/mainwindow.cpp \
 	$(SRC_FOLDER)/qlitehtmlwidget.cpp \
 	$(SRC_FOLDER)/remotes.cpp \
-	$(SRC_FOLDER)/build/moc_mainwindow.cpp \
-	$(SRC_FOLDER)/build/moc_qlitehtmlwidget.cpp \
-	$(SRC_FOLDER)/build/moc_remotes.cpp \
-	$(SRC_FOLDER)/build/qrc_resources.cpp \
+	$(OBJ_FOLDER)/moc_custom_remotes.cpp \
+	$(OBJ_FOLDER)/moc_mainwindow.cpp \
+	$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp \
+	$(OBJ_FOLDER)/moc_remotes.cpp \
+	$(OBJ_FOLDER)/qrc_resources.cpp \
 	$(SRC_FOLDER)/litehtml/src/background.cpp \
 	$(SRC_FOLDER)/litehtml/src/box.cpp \
 	$(SRC_FOLDER)/litehtml/src/context.cpp \
@@ -359,9 +375,13 @@ LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_64-w64-msvc/Release/)
 
 #
 # Inference rules:
+# Note: OBJ_FOLDER contains moc_*.cpp files generated via Qt's moc.exe.
 #
 
 {$(SRC_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
+	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+{$(OBJ_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
 	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
 
 {$(SRC_FOLDER)/build/}.cpp{$(OBJ_FOLDER)/build/}.obj:
@@ -382,6 +402,7 @@ all: print-configuration prg
 print-configuration:
 	@echo.
 	@echo Building program '$(BIN_OUTPUT)' with Configuration:
+	@echo "- LIB_STATIC       : '$(LIB_STATIC)'"
 	@echo "- LIB_CONFIG       : '$(LIB_CONFIG)'"
 	@echo "- LIB_BITS         : '$(LIB_BITS)'"
 	@echo "- LIB_CPPSTD       : '$(LIB_CPPSTD)'"
@@ -404,7 +425,7 @@ print-configuration:
 #	@echo "- objects: $(LIB_OBJECTS_DIR)"
 #	@echo.
 
-prg: makedir-prg qmake $(BIN_FOLDER)\$(BIN_OUTPUT)
+prg: makedir-prg qmake rcc moc $(BIN_FOLDER)\$(BIN_OUTPUT)
 
 makedir-prg:
 	-$(MKDIR) "$(BIN_FOLDER)" > nul 2>&1
@@ -413,8 +434,40 @@ makedir-prg:
 
 # Dependencies:
 
+# Qt dependencies:
+
 qmake:
 	cd build & qmake -nocache .. & cd ..
+
+rcc: $(OBJ_FOLDER)/qrc_resources.cpp
+
+moc: $(OBJ_FOLDER)/moc_mainwindow.cpp $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp $(OBJ_FOLDER)/moc_remotes.cpp $(OBJ_FOLDER)/moc_custom_remotes.cpp
+
+clean-qmake: clean-rcc clean-moc
+#	$(RM) $(OBJ_FOLDER:/=\)\...
+
+clean-rcc:
+	$(RM) $(OBJ_FOLDER:/=\)\qrc_resources.cpp
+
+clean-moc:
+	$(RM) $(OBJ_FOLDER:/=\)\moc_mainwindow.cpp $(OBJ_FOLDER:/=\)\moc_qlitehtmlwidget.cpp $(OBJ_FOLDER:/=\)\moc_remotes.cpp $(OBJ_FOLDER:/=\)\moc_custom_remotes.cpp > nul 2>&1
+
+$(OBJ_FOLDER)/qrc_resources.cpp: resources.qrc
+	cd build & rcc.exe --name resources ../resources.qrc -o ../$(OBJ_FOLDER)/qrc_resources.cpp & cd ..
+
+$(OBJ_FOLDER)/moc_mainwindow.cpp: mainwindow.h mainwindow.ui
+	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../mainwindow.h -o ../$(OBJ_FOLDER)/moc_mainwindow.cpp
+
+$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp: qlitehtmlwidget.h
+	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../qlitehtmlwidget.h -o ../$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
+
+$(OBJ_FOLDER)/moc_remotes.cpp: remotes.h remotes.ui
+	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../remotes.h -o ../$(OBJ_FOLDER)/moc_remotes.cpp
+
+$(OBJ_FOLDER)/moc_custom_remotes.cpp: custom_remotes.h custom_remotes.ui
+	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../custom_remotes.h -o ../$(OBJ_FOLDER)/moc_custom_remotes.cpp
+
+# End Qt dependencies
 
 $(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
 
@@ -453,7 +506,7 @@ package:
 
 # Clean targets:
 
-clean:
+clean: clean-qmake
 	$(RM) /s $(OBJ_FOLDER:/=\)\*.obj > nul 2>&1
 
 dist-clean: clean
