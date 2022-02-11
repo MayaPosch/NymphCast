@@ -8,6 +8,7 @@
 # Usage: nmake -f NMakefile [definitions] [target]
 #
 # Definitions:
+# - NC_STATIC={0|1}
 # - NC_CONFIG={Debug|Release}
 # - NC_CPPSTD={flag}
 # - NC_LNKCRT={flag}
@@ -34,11 +35,12 @@
 # - real-clean, same as dist-clean
 #
 # Configuration:
-# - `CONFIG` defaults to `Release`
-# - `CPPSTD` defaults to `-std:c++17`.
-# - `LNKCRT` defaults to `-MD`.
-# - `WARNING` defaults to empty, default compiler behaviour.
-# - `OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - `NC_STATIC` defaults to `0`.
+# - `NC_CONFIG` defaults to `Release`
+# - `NC_CPPSTD` defaults to `-std:c++17`.
+# - `NC_LNKCRT` defaults to `-MD`.
+# - `NC_WARNING` defaults to empty, default compiler behaviour.
+# - `NC_OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
 # - `INSTALL_PREFIX` defaults to `D:\Programs\NymphCastServer`
 # - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
 # - If defined, environment variable `SDL2_ROOT` is used for SDL2 dependency.
@@ -74,6 +76,12 @@
 # Configuration:
 
 # Note: no space before macro being defined.
+
+!ifdef NC_STATIC
+LIB_STATIC = $(NC_STATIC)
+!else
+LIB_STATIC = 0
+!endif
 
 !ifdef NC_CONFIG
 LIB_CONFIG = $(NC_CONFIG)
@@ -259,10 +267,6 @@ BIN_OUTPUT  = NymphcastServer.exe
 
 SETUP_INPUT = Setup-NymphCastServer-dynamic.iss
 
-NCS_DEFS    = -DNCS_CONFIG_NO_LCDPROC_CLIENT
-LIB_FLAGS   = # -Zc:strictStrings-
-LIB_DEFS    = -DUSE_OPENGL_14 -DCONFIG_AVFILTER -DWIN32 -D_WIN32 -DNOMINMAX -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
-
 SRC_FOLDER  = .
 #LIB_ARCH   = $(VSCMD_ARG_TGT_ARCH)_$(LIB_BITS)-w64-msvc	# e.g.: x86_32-w64-msvc
 LIB_ARCH    = x86_$(LIB_BITS)-w64-msvc				# e.g.: x86_32-w64-msvc
@@ -412,9 +416,19 @@ LIB_DLLS = \
 	$(FREEIMAGE_ROOT)/bin/freeimage.dll \
 	$(FREETYPE_ROOT)/bin/freetype.dll
 
-FLAGS    = -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(NCS_DEFS) $(LIB_FLAGS) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
-CFLAGS   = $(FLAGS)
-CXXFLAGS = $(LIB_CPPSTD) $(FLAGS)
+!if $(LIB_STATIC) != 0
+LIB_DEFS_STATIC = -DPOCO_STATIC
+!else
+LIB_DEFS_STATIC =
+!endif
+
+NCS_DEFS    = # -DNCS_CONFIG_NO_LCDPROC_CLIENT
+LIB_FLAGS   = # -Zc:strictStrings-
+LIB_DEFS    = $(NCS_DEFS) $(LIB_DEFS_STATIC) -DUSE_OPENGL_14 -DCONFIG_AVFILTER -DWIN32 -D_WIN32 -DNOMINMAX -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
+
+FLAGS     = -EHsc -Zi -MP $(LIB_FLAGS) $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
+CFLAGS    = $(FLAGS)
+CXXFLAGS  = $(LIB_CPPSTD) $(FLAGS)
 
 INST_FOLDER_INC = $(INSTALL_PREFIX)\include
 INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
@@ -765,6 +779,7 @@ all: print-configuration prg
 print-configuration:
 	@echo.
 	@echo Building program '$(BIN_OUTPUT)' with Configuration:
+	@echo "- LIB_STATIC       : '$(LIB_STATIC)'"
 	@echo "- LIB_CONFIG       : '$(LIB_CONFIG)'"
 	@echo "- LIB_BITS         : '$(LIB_BITS)'"
 	@echo "- LIB_CPPSTD       : '$(LIB_CPPSTD)'"

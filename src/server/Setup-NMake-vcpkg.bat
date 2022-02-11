@@ -17,24 +17,27 @@ echo.
 
 set INSTALL_PREFIX=D:\Programs\NymphCastServer
 
-set NC_LNKCRT=-MD
-:: set NC_LNKCRT=-MT
+set NC_STATIC=0
+:: set NC_STATIC=1
 
 set NC_CONFIG=Release
 :: set NC_CONFIG=Debug
 
-set NCS_TGT_BITS=64
-set NCS_TGT_ARCH=x%NCS_TGT_BITS%
+set NC_TGT_BITS=64
+set NC_TGT_ARCH=x%NC_TGT_BITS%
 
-set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows
-:: set VCPKG_TRIPLET=%NCS_TGT_ARCH%-windows-static
+set NC_LNKCRT=-MD
+set VCPKG_TRIPLET=x64-windows
 
-:: Select static/dynamic linking
+if [%NC_STATIC%] == [1] (
+    set NC_LNKCRT=-MT
+    set VCPKG_TRIPLET=x64-windows-static
+)
 
 :: Check for 64-bit Native Tools Command Prompt
 
-if not [%VSCMD_ARG_TGT_ARCH%] == [%NCS_TGT_ARCH%] (
-    echo [Make sure to run these commands in a '%NCS_TGT_BITS%-bit Native Tools Command Prompt'; expecting 'NCS_TGT_ARCH', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
+if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
+    echo [Make sure to run these commands in a '%NC_TGT_BITS%-bit Native Tools Command Prompt'; expecting 'NC_TGT_ARCH', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
     endlocal & goto :EOF
 )
 
@@ -202,6 +205,7 @@ if exist "%LIBNYMPHCAST_ROOT%\include\nymphcast_client.h" (
 :: Finally, build NymphCast Server:
 
 nmake -nologo -f NMakefile ^
+         NC_STATIC=%NC_STATIC% ^
          NC_CONFIG=%NC_CONFIG% ^
          NC_LNKCRT=%NC_LNKCRT% ^
          POCO_ROOT=%POCO_ROOT% ^
