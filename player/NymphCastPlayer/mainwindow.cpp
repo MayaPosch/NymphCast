@@ -684,7 +684,7 @@ void MainWindow::remoteListRefresh() {
 		QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(custom_remotes[i].remote.ipv4 + " (" + custom_remotes[i].remote.name + ")"));
 		newItem->setData(Qt::UserRole, QVariant((i + ++idx)));
-		ui->remotesComboBox->insertItem(i, QString::fromStdString(custom_remotes[i].remote.ipv4 + 
+		ui->remotesComboBox->insertItem((i + idx), QString::fromStdString(custom_remotes[i].remote.ipv4 + 
 													" (" + custom_remotes[i].remote.name + ") [Manual]"), QVariant(i));
 													
 		// Add remote to 'remotes' list.
