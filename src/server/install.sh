@@ -32,8 +32,9 @@ sudo install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
 read -p "Install systemd service for NymphCast? [y/n] (default: n): " choice
 if [ "$choice" = "y" ]; then
 	echo "Installing systemd service..."
-	sudo cp systemd/nymphcast.service /etc/systemd/system/nymphcast.service
-	sudo systemctl enable nymphcast.service
+	sudo cp systemd/nymphcast.service /etc/systemd/user/nymphcast.service
+	#sudo systemctl enable nymphcast.service
+	systemctl --user enable nymphcast.service
 else
 	echo "Skipping system service installation..."
 fi

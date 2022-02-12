@@ -221,7 +221,7 @@ install:
 .PHONY: install-systemd
 install-systemd:
 	#install -d $(DESTDIR)$(CONFDIR)/systemd/system/ 
-	sed ${SED_REPLACE} systemd/nymphcast.service > /etc/systemd/system/nymphcast.service
+	sed ${SED_REPLACE} systemd/nymphcast.service > /etc/systemd/user/nymphcast.service
 
 .PHONY: install-openrc
 install-openrc:
