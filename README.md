@@ -178,6 +178,57 @@ The server will listen on all network interfaces for incoming connections. It su
 -v	--version			Output NymphCast server version and exit.
 ```
 
+
+**Server configuration**
+
+In the configuration file supplied to the server, the following options are supported:
+
+<table>
+<tr>
+	<td><b>Option</b></td>
+	<td><b>Values</b></td>
+	<td><b>Default</b></td>
+	<td><b>Description</b></td>
+</tr>
+<tr>
+	<td>fullscreen</td>
+	<td>1 (true), 0 (false)</td>
+	<td>0</td>
+	<td>Whether a window is full-screen. (if <code>disable_video</code> is true).</td>
+</tr>
+<tr>
+	<td>disable_video</td>
+	<td>1 (true), 0 (false)</td>
+	<td>0</td>
+	<td>Disables video output if true. Set to 'true' for NymphCast Audio configuration.</td>
+</tr>
+<tr>
+	<td>enable_gui</td>
+	<td>1 (true), 0 (false)</td>
+	<td>0</td>
+	<td>Enables the GUI mode if true. Set to 'true' for Nymphcast GUI configuration along with <code>disable_video</code> set to 'false'.</td>
+</tr>
+<tr>
+	<td>buffer_size</td>
+	<td>-</td>
+	<td>20971520</td>
+	<td>Size of the internal data buffer. Default is 20 MB.</td>
+</tr>
+<tr>
+	<td>enable_lcdproc</td>
+	<td>1 (true), 0 (false)</td>
+	<td>0</td>
+	<td>Enables the LCDProc client if set to 'true'.</td>
+</tr>
+<tr>
+	<td>lcdproc_host</td>
+	<td>Name/IP</td>
+	<td>'localhost'</td>
+	<td>Sets a custom target for the LCDProc client (if enabled).</td>
+</tr>
+</table>
+
+
 **LCDProc configuration**
 
 NymphCast Server can output basic media file information (artist - title) to an LCDProc daemon on the system. To enable this, set to `1` the option `enable_lcdproc` in the active NymphCast Server configuration file (on Linux: `/usr/local/etc/nymphcast/nymphcast_config.ini`).
