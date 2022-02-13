@@ -24,6 +24,7 @@ sudo make -C src/server/ install
 if [ -d "/run/systemd/system" ]; then
 	echo "Installing systemd service..."
 	sudo make -C src/server/ install-systemd
+	sudo chmod 644 /etc/systemd/user/nymphcast.service
 	#sudo systemctl enable nymphcast.service
 	systemctl --user enable nymphcast.service
 else
