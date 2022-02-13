@@ -47,9 +47,17 @@ void RemotesDialog::setRemoteList(std::vector<NCRemoteInstance> &remotes) {
 	// Update UI.
 	ui->remotesListWidget->clear();
 	for (uint32_t i = 0; i < remotes.size(); ++i) {
-		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.name),
+		QListWidgetItem* item = 0;
+		if (remotes[i].manual) { // Manually added remote.
+			item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.ipv4 + 
+										" (" + remotes[i].remote.name + ") [Manual]"),
 													ui->remotesListWidget);
-		item->setData(Qt::UserRole, QVariant(i));
+		}
+		else {
+			item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.ipv4 + 
+										" (" + remotes[i].remote.name + ")"),
+													ui->remotesListWidget);
+		}
 	}
 }
 
