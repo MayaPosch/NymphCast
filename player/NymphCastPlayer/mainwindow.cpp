@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// Set application options.
 	QCoreApplication::setOrganizationName("Nyanko");
 	QCoreApplication::setApplicationName("NymphCastPlayer");
-	QCoreApplication::setApplicationVersion("v0.1-alpha");
+	QCoreApplication::setApplicationVersion("v0.1");
 	
 	// Set location for user data.
 	appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
