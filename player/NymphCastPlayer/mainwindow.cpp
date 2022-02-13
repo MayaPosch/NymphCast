@@ -18,12 +18,22 @@
 #include <QDataStream>
 #include <QScroller>
 
+
+
+// Hacks to make using an externally supplied string work...
+// Blame the C preprocessor.
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+
 #if defined(Q_OS_ANDROID)
 #include <QtAndroidExtras>
 #include <QAndroidJniEnvironment>
 #include <QtAndroid>
 #include <QStyleFactory>
 #include <QVector>
+
+
 
 const QVector<QString> permissions({"android.permission.INTERNET", 
 									"android.permission.READ_EXTERNAL_STORAGE"});
@@ -112,7 +122,8 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// Set application options.
 	QCoreApplication::setOrganizationName("Nyanko");
 	QCoreApplication::setApplicationName("NymphCastPlayer");
-	QCoreApplication::setApplicationVersion("v0.1");
+	//QCoreApplication::setApplicationVersion("v0.1");
+	QCoreApplication::setApplicationVersion(STR(__NCVERSION));
 	
 	// Set location for user data.
 	appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -1528,12 +1539,6 @@ void MainWindow::addGroupsToRemotes() {
 													" (group)"), QVariant(i));
 	}
 }
-
-
-// Hacks to make using an externally supplied string work...
-// Blame the C preprocessor.
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
 
 
 // --- ABOUT ---
