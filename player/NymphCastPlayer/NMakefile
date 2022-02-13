@@ -179,27 +179,36 @@ LIB_BITS_CFG = x64
 
 CXX   = cl -nologo
 LIB   = lib -nologo
+RC    = rc -nologo
 
-CP    = xcopy /Y
+CP    = copy /Y
 RM    = del
 CD    = cd
 MKDIR = md		# Note: Do not use MAKEDIR=... as MAKEDIR is an NMake macro.
 
-# Inno Setup Studio compiler:
-SETUP = C:\Program Files (x86)\Inno Script Studio\ISStudio.exe
-SETUP_OPTIONS = -compile
+# Inno Setup compiler:
+SETUP = C:\Program Files (x86)\Inno Setup 6\iscc.exe
+SETUP_OPTIONS = -Q -DMyAppVersion=$(PRODUCT_VSTR)
 
 !if !exist("$(SETUP)")
-SETUP = ISStudio.exe
+SETUP = iscc.exe
 !endif
 
 # Product-related macros:
+# Include the Qt-style file with the versioning information ('NCVERSION' variable), see RES_HEADER.
+!include version.pri
 
-# Include the file with the versioning information ('VERSION' variable).
-#!include version
-BIN_VERSION = -D__VERSION="\"v0.1-RC1\""	# TODO obtain version from file; NMake does not support :=
+PRODUCT_NAME = "NymphCast Player"
+PRODUCT_COPY = "Copyright (C) 2019-2022, Nyanko"
+PRODUCT_VSTR = "$(NCVERSION)"
+
+BIN_VERSION = -D__NCVERSION="\"$(NCVERSION)\""	# TODO obtain version from file; NMake does not support :=
 
 BIN_OUTPUT  = NymphCastPlayer.exe
+
+RES_INPUT   = $(BIN_OUTPUT:.exe=.rc)		# version resource
+RES_OUTPUT  = $(BIN_OUTPUT:.exe=.res)		# compiled resource
+RES_HEADER  = NMakefile-version.h			# version header to generate
 
 SETUP_INPUT = Setup-NymphCastPlayer-dynamic.iss
 
@@ -268,7 +277,7 @@ LIB_DEFS_STATIC =
 
 LIB_FLAGS = -Zc:strictStrings-
 LIB_DEFS  = $(LIB_DEFS_STATIC) -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_DEPRECATED_WARNINGS -DLITEHTML_UTF8 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
-CXXFLAGS  = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_FLAGS) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_DEFS) $(LIB_INCLUDE) $(BIN_VERSION)
+CXXFLAGS  = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_FLAGS) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE)
 
 INST_FOLDER_INC = $(INSTALL_PREFIX)\include
 INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
@@ -456,22 +465,22 @@ $(OBJ_FOLDER)/qrc_resources.cpp: resources.qrc
 	cd build & rcc.exe --name resources ../resources.qrc -o ../$(OBJ_FOLDER)/qrc_resources.cpp & cd ..
 
 $(OBJ_FOLDER)/moc_mainwindow.cpp: mainwindow.h mainwindow.ui
-	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../mainwindow.h -o ../$(OBJ_FOLDER)/moc_mainwindow.cpp
+	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../mainwindow.h -o ../$(OBJ_FOLDER)/moc_mainwindow.cpp
 
 $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp: qlitehtmlwidget.h
-	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../qlitehtmlwidget.h -o ../$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
+	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../qlitehtmlwidget.h -o ../$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
 
 $(OBJ_FOLDER)/moc_remotes.cpp: remotes.h remotes.ui
-	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../remotes.h -o ../$(OBJ_FOLDER)/moc_remotes.cpp
+	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../remotes.h -o ../$(OBJ_FOLDER)/moc_remotes.cpp
 
 $(OBJ_FOLDER)/moc_custom_remotes.cpp: custom_remotes.h custom_remotes.ui
-	cd build & moc.exe $(LIB_DEFS) $(LIB_INCLUDE) ../custom_remotes.h -o ../$(OBJ_FOLDER)/moc_custom_remotes.cpp
+	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../custom_remotes.h -o ../$(OBJ_FOLDER)/moc_custom_remotes.cpp
 
 # End Qt dependencies
 
 $(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
 
-$(BIN_FOLDER)\$(BIN_OUTPUT): $(LIB_OBJECTS_DIR)
+$(BIN_FOLDER)\$(BIN_OUTPUT): mk-version-sources $(LIB_OBJECTS_DIR)
 	$(CXX) -Fe$(BIN_FOLDER)\$(BIN_OUTPUT) $(LIB_OBJECTS_DIR) /link \
 	/machine:"$(LNK_MACHINE)" \
 	/libpath:"$(NYMPHRPC_ROOT)\lib" \
@@ -481,6 +490,7 @@ $(BIN_FOLDER)\$(BIN_OUTPUT): $(LIB_OBJECTS_DIR)
 	/libpath:"$(LIB_LIBCPATH)" \
 	/libpath:"$(LIB_SDKUMPATH)" \
 	/libpath:"$(LIB_SDKUCRTPATH)" \
+	$(RES_OUTPUT) \
 	$(LIB_LIBS)
 
 # Installation targets:
@@ -513,5 +523,102 @@ dist-clean: clean
 	$(RM) $(BIN_FOLDER:/=\)\$(BIN_OUTPUT)
 
 real-clean: dist-clean
+
+#
+# Create version resource via here-document.
+#
+
+# Note: no space between '<<' and filename or KEEP:
+
+mk-version-sources: mk-version-header mk-version-rc
+
+mk-version-header: $(RES_HEADER)
+
+mk-version-rc: $(RES_OUTPUT)
+
+$(RES_HEADER): NMakefile # TODO version.mk
+    $(CP) << $(RES_HEADER) > nul
+// Note: Generated from NymphCast-Player NMakefile
+//
+// $(RES_HEADER)
+//
+// Version info for NymphCast Player.
+//
+// Created 12 February 2022.
+// Copyright (c) 2021 Nyanko.ws
+//
+
+#include <Windows.h>
+
+#define NC_VERSION_MAJOR  0
+#define NC_VERSION_MINOR  0
+#define NC_VERSION_PATCH  0
+#define NC_VERSION_BUILD  0
+#define NC_VERSION_RC     ""
+
+#define NC_VER_FILE_DESCRIPTION_STR    $(PRODUCT_NAME)
+#define NC_VER_FILE_VERSION            NC_VERSION_MAJOR, NC_VERSION_MINOR, NC_VERSION_PATCH, NC_VERSION_BUILD
+#define NC_VER_FILE_VERSION_STR        $(PRODUCT_VSTR)
+
+#define NC_VER_PRODUCT_NAME_STR        $(PRODUCT_NAME)
+#define NC_VER_PRODUCT_VERSION         NC_VER_FILE_VERSION
+#define NC_VER_PRODUCT_VERSION_STR     NC_VER_FILE_VERSION_STR
+#define NC_VER_ORIGINAL_FILENAME_STR  "$(BIN_OUTPUT)"
+#define NC_VER_INTERNAL_NAME_STR       NC_VER_ORIGINAL_FILENAME_STR
+#define NC_VER_COPYRIGHT_STR           $(PRODUCT_COPY)
+
+#ifdef _DEBUG
+  #define NC_VER_DEBUG                VS_FF_DEBUG
+#else
+  #define NC_VER_DEBUG                0
+#endif
+
+#define NC_VER_FILEOS                 VOS_NT_WINDOWS32
+#define NC_VER_FILEFLAGS              NC_VER_DEBUG
+#define NC_VER_FILETYPE               VFT_APP
+<<
+
+$(RES_OUTPUT): NMakefile $(RES_HEADER)
+    $(RC) <<$(RES_INPUT)
+// Note: Generated from NymphCast-Player NMakefile
+//
+// $(RES_INPUT)
+//
+// Microsoft Visual C++ resource script for NymphCast Player.
+//
+// Created 12 February 2022.
+// Copyright (c) 2021 Nyanko.ws
+//
+
+#include "$(RES_HEADER)"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION        NC_VER_FILE_VERSION
+ PRODUCTVERSION     NC_VER_PRODUCT_VERSION
+ FILEFLAGSMASK      0x3fL
+ FILEFLAGS          NC_VER_FILEFLAGS
+ FILEOS             NC_VER_FILEOS
+ FILETYPE           NC_VER_FILETYPE
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription",  NC_VER_FILE_DESCRIPTION_STR "\0"
+            VALUE "FileVersion",      NC_VER_FILE_VERSION_STR "\0"
+            VALUE "InternalName",     NC_VER_INTERNAL_NAME_STR "\0"
+            VALUE "LegalCopyright",   NC_VER_COPYRIGHT_STR "\0"
+            VALUE "OriginalFilename", NC_VER_ORIGINAL_FILENAME_STR "\0"
+            VALUE "ProductName",      NC_VER_PRODUCT_NAME_STR
+            VALUE "ProductVersion",   NC_VER_PRODUCT_VERSION_STR "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+<<KEEP
 
 # end of file
