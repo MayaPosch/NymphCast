@@ -180,6 +180,11 @@ win32:LIBS += -lws2_32
 
 RESOURCES     = resources.qrc
 
+# Include version file.
+include($$PWD/version.pri)
+
+DEFINES += __NCVERSION="\"$$NCVERSION\""
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android {

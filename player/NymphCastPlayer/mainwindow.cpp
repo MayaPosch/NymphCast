@@ -1530,10 +1530,17 @@ void MainWindow::addGroupsToRemotes() {
 }
 
 
+// Hacks to make using an externally supplied string work...
+// Blame the C preprocessor.
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+
 // --- ABOUT ---
 void MainWindow::about() {
+	QString version = STR(__NCVERSION);
 	QMessageBox::about(this, tr("About NymphCast Player."), 
-		tr("NymphCast Player is the reference player for NymphCast.\n\nRev.: v0.1-rc1"));
+		"NymphCast Player is the reference player for NymphCast.\n\nRev.: " + version);
 }
 
 
