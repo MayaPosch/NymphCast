@@ -6,7 +6,6 @@
 
 #define MyAppName           "NymphCast Server"
 #define MyAppNameNoSpace    "NymphCastServer"
-#define MyAppVersion        "0.1.0-RC1"
 #define MyAppPublisher      "Nyanko"
 #define MyAppPublisherURL   "http://www.nyanko.ws/"
 #define MyAppContact        "info@nyanko.ws"
@@ -30,6 +29,13 @@
 #define MyAppLicenseFile    "Copying.txt"
 #define MyAppInfoBeforeFile "InfoBefore.txt"
 #define MyAppInfoAfterFile  "InfoAfter.txt"
+
+; Product version string is expected from a definition on
+; the iscc commandline like: `-DMyAppVersion="v0.1[.2][-rc0-yyyymmdd]"`.
+
+#ifndef MyAppVersion
+#define MyAppVersion         "vx.x.x"
+#endif
 
 #define NcConfigTaskGroup   "NymphCast Server Configuration"
 #define NcAudioConfig       "nymphcast_audio_config.ini"
@@ -106,7 +112,7 @@ AppCopyright       = {#MyAppCopyright}
 
 DefaultDirName     = {pf}\{#MyAppNameNoSpace}
 DefaultGroupName   = {#MyAppNameNoSpace}
-OutputBaseFilename = Setup-{#MyAppNameNoSpace}-{#MyAppVersion}-dynamic
+OutputBaseFilename = Setup-{#MyAppNameNoSpace}-{#MyAppVersion}-dll
 
 ; Show welcome page [, license, pre- and postinstall information]:
 
