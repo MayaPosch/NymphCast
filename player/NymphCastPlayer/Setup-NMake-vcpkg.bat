@@ -42,7 +42,7 @@ if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
 )
 
 if [%VCPKG_ROOT%] == [] (
-    echo [Make sure to environment variable 'VCPKG_ROOT' point to you vcpkg installation; it's empty or does not exist. Bailing out.]
+    echo [Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
