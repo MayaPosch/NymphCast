@@ -12,6 +12,12 @@ NymphCast requires the use of a client device in all but the GUI mode. The serve
 
 Client-side core functionality is provided through the NymphCast library.
 
+## NymphCast Audio demo ##
+
+The [following video](https://youtu.be/bc4qn4thHrc) demonstrates NymphCast (v0.1-RC1) in an audio setup with a Raspberry Pi 2B, USB WiFi dongle, Generic 2.1 speaker set and an Android phone.
+
+[![](media/20220111-NymphCast-Audio-Demonstration-(v0.1-RC1).png)](https://youtu.be/bc4qn4thHrc)
+
 ## Usage Scenarios ##
 
 NymphCast can be used in a number of scenarios:
