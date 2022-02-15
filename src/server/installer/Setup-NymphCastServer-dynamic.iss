@@ -46,15 +46,10 @@
 
 #define NcWallPrTaskGroup   "Screen saver Wallpaper Downloads"
 
-#define NcKittenFile        "nymphcast_server-v0.1-rc0.20211225-Linux-armv7l_Bullseye_bcm2837.tar.gz"
-#define NcKittenUrl         "https://github.com/MayaPosch/NymphCast/releases/download/v0.1-rc0/" + NcKittenFile
-#define NcKittenMsgDl       "Downloading kitten wallpapers"
-#define NcKittenMsgEx       "Extracting kitten wallpapers"
-
-#define NcWpTestFile        "nc-wallpapers-standard.7z"
-#define NcWpTestUrl         "https://github.com/martinmoene/NymphCast-Scenarios/releases/download/Test7z/" + NcWpTestFile
-#define NcWpTestMsgDl       "Downloading test archive"
-#define NcWpTestMsgEx       "Extracting test archive"
+#define NcScenicFile        "wallpapers.7z"
+#define NcScenicUrl         "https://github.com/MayaPosch/NymphCast/releases/download/v0.1-rc0/" + NcScenicFile
+#define NcScenicMsgDl       "Downloading scenic wallpapers"
+#define NcScenicMsgEx       "Extracting scenic wallpapers"
 
 ; Paths for DLLs of dependencies to include:
 
@@ -147,9 +142,8 @@ Name: "Video"          ; Description: "Video profile";       GroupDescription: "
 Name: "Screensaver"    ; Description: "Screensaver profile"; GroupDescription: "{#NcConfigTaskGroup}"; Flags: exclusive unchecked
 Name: "GUI"            ; Description: "GUI profile";         GroupDescription: "{#NcConfigTaskGroup}"; Flags: exclusive unchecked
 
-Name: "Standard"       ; Description: "Standard wallpapers"; GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive
-Name: "Cats"           ; Description: "Kitten wallpapers";   GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive unchecked
-Name: "Test"           ; Description: "Test wallpapers";     GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive unchecked
+Name: "Standard"       ; Description: "Standard wallpapers"         ; GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive
+Name: "Scenic"         ; Description: "Scenic wallpapers (170MByte)"; GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive unchecked
 
 Name: "desktopicon"    ; Description: "{cm:CreateDesktopIcon}"    ; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
@@ -279,22 +273,25 @@ Name: "{group}\Reveal config folder in Explorer"; Filename: "{app}\config"
 
 ; If needed, download wallpapers
 ; run wget, unzip
-Filename: "{tmp}/{#Wget}"; Parameters: """{#NcKittenUrl}"""  ; WorkingDir: "{tmp}"; StatusMsg: "{#NcKittenMsgDl}"; Tasks: Cats
-Filename: "{tmp}/{#Wget}"; Parameters: """{#NcWpTestUrl}"""  ; WorkingDir: "{tmp}"; StatusMsg: "{#NcWpTestMsgDl}"; Tasks: Test
+Filename: "{tmp}/{#Wget}"; Parameters: """{#NcScenicUrl}"""  ; WorkingDir: "{tmp}"; StatusMsg: "{#NcScenicMsgDl}"; Tasks: Scenic
 
-Filename: "{tmp}/{#Sz}"  ; Parameters: "x ""{tmp}\{#NcKittenFile}"" -o""{app}\wallpapers"" * -r -aoa"; StatusMsg: "{#NcKittenMsgEx}"; Tasks: Cats; Flags: runhidden runascurrentuser
-Filename: "{tmp}/{#Sz}"  ; Parameters: "x ""{tmp}\{#NcWpTestFile}"" -o""{app}\wallpapers"" * -r -aoa"; StatusMsg: "{#NcWpTestMsgEx}"; Tasks: Test; Flags: runhidden runascurrentuser
+Filename: "{tmp}/{#Sz}"  ; Parameters: "x ""{tmp}\{#NcScenicFile}"" -o""{app}\wallpapers"" * -r -aoa"; StatusMsg: "{#NcScenicMsgEx}"; Tasks: Scenic; Flags: runhidden runascurrentuser
 
 ; If needed, download and install the Visual C++ runtime:
 Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgDl}"; Check: IsWin64 and not VCinstalled
 Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
 
-; If requested, run NymphCast Server with [video] configuration:
-Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+; If requested, run NymphCast Server with default configuration:
+Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 ; Code to determine if installation of VC14.1 (VS2017) runtime is needed.
 ; From: http://stackoverflow.com/questions/11137424/how-to-make-vcredist-x86-reinstall-only-if-not-yet-installed/11172939#11172939
 ;       https://stackoverflow.com/a/45979466/437272
+
+[UninstallDelete]
+Type: files; Name: "{app}/wallpapers/*.jpg" ; Tasks: Scenic
+Type: files; Name: "{app}/wallpapers/*.png" ; Tasks: Scenic
+Type: files; Name: "{app}/wallpapers/*.jpeg"; Tasks: Scenic
 
 [Code]
 
