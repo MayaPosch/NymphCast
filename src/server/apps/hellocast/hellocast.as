@@ -3,7 +3,7 @@
 // 2020/02/13, Maya Posch
 
 
-string command_processor(string input) {
+string command_processor(string input, int type) {
 	// Available commands:
 	// - help
 	// - play
@@ -22,4 +22,10 @@ string command_processor(string input) {
 	}
 	
 	return "Invalid command.";
+}
+
+
+//
+string html_processor(string input) {
+	return command_processor(input, 1);
 }
