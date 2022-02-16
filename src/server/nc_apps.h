@@ -49,14 +49,8 @@ struct NymphCastApp {
 	
 	asIScriptContext* asContext = 0;
 	asIScriptFunction* asFunction = 0;
+	asIScriptFunction* asHtmlFunction = 0;
 };
-
-
-/* enum NymphRemoteStatus {
-	NYMPH_PLAYBACK_STATUS_STOPPED = 1,
-	NYMPH_PLAYBACK_STATUS_PLAYING = 2,
-	NYMPH_PLAYBACK_STATUS_PAUSED = 3
-}; */
 
 
 class NCApps {
@@ -82,6 +76,7 @@ class NCApps {
 	static bool streamTrack(std::string url);
 	static bool storeValue(std::string key, std::string &value);
 	static bool readValue(std::string key, std::string &value, uint64_t age = 0);
+	static bool readTemplate(std::string name, std::string &contents);
 	
 public:
 	NCApps();
@@ -94,7 +89,7 @@ public:
 	bool readAppList(std::string path);
 	std::vector<std::string> appNames();
 	
-	bool runApp(std::string name, std::string message, std::string &result);
+	bool runApp(std::string name, std::string message, uint8_t format, std::string &result);
 };
 
 

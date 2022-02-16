@@ -1545,7 +1545,7 @@ NymphMessage* app_list(int session, NymphMessage* msg, void* data) {
 
 
 // --- APP SEND ---
-// string app_send(string appId, string data)
+// string app_send(string appId, string data, uint8 format)
 NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
@@ -1556,7 +1556,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	// Get the desired output format.
 	// 0 - CLI	- Text with tab (\t) separators and \n terminator.
 	// 1 - HTML	- HTML format.
-	//uint8_t format = ((NymphUint8*) msg->parameters()[1])->getValue();
+	uint8_t format = msg->parameters()[1]->getUint8();
 	
 	// Find the application details.
 	std::string* result = new std::string();
@@ -1571,10 +1571,15 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	
 	NYMPH_LOG_INFORMATION("Found " + appId + " app.");
 	
-	if (!nc_apps.runApp(appId, message, *result)) {
+	if (!nc_apps.runApp(appId, message, format, *result)) {
 		NYMPH_LOG_ERROR("Error running app: " + *result);
 		
-		// TODO: report back error to client.
+		// Report back error to client.
+		NYMPH_LOG_FATAL("Failed to run application for '" + appId + "'.");
+		returnMsg->setResultValue(new NymphType(result, true));
+		msg->discard();
+			
+		return returnMsg;
 	}
 	
 	returnMsg->setResultValue(new NymphType(result, true));
@@ -1988,11 +1993,12 @@ int main(int argc, char** argv) {
 	NymphRemoteClient::registerMethod("app_list", appListFunction);	
 	
 	// AppSend
-	// string app_send(uint32 appId, string data)
+	// string app_send(uint32 appId, string data, uint8 format)
 	// Allows a client to send data to a NymphCast application.
 	parameters.clear();
 	parameters.push_back(NYMPH_STRING);
 	parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_UINT8);
 	NymphMethod appSendFunction("app_send", parameters, NYMPH_STRING, app_send);
 	NymphRemoteClient::registerMethod("app_send", appSendFunction);	
 	

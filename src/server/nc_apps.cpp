@@ -32,6 +32,9 @@
 #include <angelscript/json/json.h>
 #include <angelscript/regexp/regexp.h>
 
+#include <fstream>
+#include <streambuf>
+
 // Debug
 #include <iostream>
 
@@ -79,6 +82,9 @@ NCApps::NCApps() {
 	r = engine->RegisterGlobalFunction(
 								"bool storeValue(string, string &in)", 
 								asFUNCTION(NCApps::storeValue), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction(
+								"bool readTemplate(string, string &in)", 
+								asFUNCTION(NCApps::readTemplate), asCALL_CDECL);
 								
 	// Register further modules.
 	initJson(engine);
@@ -203,6 +209,9 @@ bool NCApps::readAppList(std::string path) {
 		defaultApp = apps.begin()->second;
 	}
 	
+	// TODO: Update apps.html file using the template if apps.ini is newer than the HTML file.
+	
+	
 	return true;
 }
 
@@ -291,33 +300,48 @@ bool NCApps::performHttpQuery(std::string query, std::string &response) {
 
 // --- PERFORM HTTPS QUERY ---
 bool NCApps::performHttpsQuery(std::string query, std::string &response) {
-	// Create Poco HTTP query, send it off, wait for response.
+	// Create Poco HTTPS query, send it off, wait for response.
 	Poco::URI uri(query);
 	std::string path(uri.getPathAndQuery());
 	if (path.empty()) { path = "/"; }
 	
-	/* const Poco::Net::Context::Ptr context = new Poco::Net::Context(
+	// Debug:
+	std::cout << "HTTPS query: " << query << std::endl;
+	
+	const Poco::Net::Context::Ptr context = new Poco::Net::Context(
 		Poco::Net::Context::CLIENT_USE, "", "", "",
 		Poco::Net::Context::VERIFY_RELAXED, 9, false,
-		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"); */
+		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
 	
-	//Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
-	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort());
+	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+	//Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort());
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
 											Poco::Net::HTTPMessage::HTTP_1_1);
 	req.setContentLength(0);
 	req.set("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/75.0");
-	session.sendRequest(req);
+	
+	try {
+		session.sendRequest(req);
+	} 
+	catch (Poco::Exception& exc) {
+		std::cout << "Exception caught while attempting to connect." << std::endl;
+		std::cerr << exc.displayText() << std::endl;
+		return false;
+	}
+	
 	Poco::Net::HTTPResponse httpResponse;
 	std::istream& rs = session.receiveResponse(httpResponse);
+	
+	//
 	std::cout << httpResponse.getStatus() << " " << httpResponse.getReason() << std::endl;
+	
 	if (httpResponse.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
 		Poco::StreamCopier::copyToString(rs, response);
 		
 		// Debug
-		//std::cout << "HTTP response:\n---------------\n";
-		//std::cout << response;
-		//std::cout << "\n---------------\n";
+		std::cout << "HTTP response:\n---------------\n";
+		std::cout << response;
+		std::cout << "\n---------------\n";
 		
 		return true;
 	}
@@ -337,25 +361,6 @@ bool NCApps::performHttpsQuery(std::string query, std::string &response) {
 // --- STREAM TRACK ---
 // Attempt to stream from the indicated URL.
 bool NCApps::streamTrack(std::string url) {
-	// TODO: Check that we're not still streaming, otherwise queue the URL.
-	// TODO: allow to cancel any currently playing track/empty queue?
-	/* if (playerStarted) {
-		// Add to queue.
-		DataBuffer::addStreamTrack(url);
-		
-		return true;
-	}
-	
-	castUrl = url;
-	castingUrl = true;
-	
-	if (!playerStarted) {
-		playerStarted = true;
-		avThread.start(ffplay);
-	}
-	
-	return true; */
-	
 	// FIXME: Call global function. Could be cleaner.
 	return ::streamTrack(url);
 }
@@ -455,26 +460,25 @@ bool NCApps::readValue(std::string key, std::string &value, uint64_t age) {
 }
 
 
+// --- READ TEMPLATE ---
+bool NCApps::readTemplate(std::string name, std::string &contents) {
+	// Try to read indicated file from the active app's template folder.
+	std::ifstream t(appsFolder + activeAppId + "/" + name);
+	if (!t.is_open()) { return false; }
+	
+	t.seekg(0, std::ios::end);   
+	contents.reserve(t.tellg());
+	t.seekg(0, std::ios::beg);
+
+	contents.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+	
+	return true;
+}
+
+
 // --- RUN APP ---
 // string app_send(string appId, string data)
-bool NCApps::runApp(std::string name, std::string message, std::string &result) {
-	/* NymphMessage* returnMsg = msg->getReplyMessage();
-	
-	// Validate the application ID, try to find running instance, else launch new app instance.
-	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
-	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
-	
-	// Find the application details.
-	std::string result = "";
-	//NymphCastApp app = NymphCastApps::findApp(appId);
-	NymphCastApp app = nc_apps.findApp(appId);
-	if (app.id.empty()) {
-		std::cerr << "Failed to find a matching application for '" << appId << "'." << std::endl;
-		returnMsg->setResultValue(new NymphString(result));
-		return returnMsg;
-	}
-	
-	std::cout << "Found " << appId << " app." << std::endl; */
+bool NCApps::runApp(std::string name, std::string message, uint8_t format, std::string &result) {
 	NymphCastApp app = findApp(name);
 	if (app.id.empty()) { 
 		std::cerr << "Failed to find a matching application for '" << name << "'." << std::endl;
@@ -618,10 +622,19 @@ bool NCApps::runApp(std::string name, std::string message, std::string &result) 
 		std::cout << "Find function." << std::endl;
 
 		// Find the function for the function we want to execute.
-		app.asFunction = engine->GetModule(0)->GetFunctionByDecl("string command_processor(string input)");
+		app.asFunction = engine->GetModule(0)->GetFunctionByDecl("string command_processor(string, int)");
 		if (app.asFunction == 0) {
-			std::cout << "The function 'string command_processor(string input)' was not found." << std::endl;
-			result = "The function 'string command_processor(string input)' was not found.";
+			std::cout << "The function 'string command_processor(string, int)' was not found." << std::endl;
+			result = "The function 'string command_processor(string, int)' was not found.";
+			app.asContext->Release();
+			engine->Release();
+			return false;
+		}
+		
+		app.asHtmlFunction = engine->GetModule(0)->GetFunctionByDecl("string html_processor(string)");
+		if (app.asFunction == 0) {
+			std::cout << "The function 'string command_processor(string, int)' was not found." << std::endl;
+			result = "The function 'string command_processor(string, int)' was not found.";
 			app.asContext->Release();
 			engine->Release();
 			return false;
@@ -635,7 +648,14 @@ bool NCApps::runApp(std::string name, std::string message, std::string &result) 
 	// executed. Note, that if you intend to execute the same function several 
 	// times, it might be a good idea to store the function returned by 
 	// GetFunctionByDecl(), so that this relatively slow call can be skipped.
-	int r = app.asContext->Prepare(app.asFunction);
+	int r = 0;
+	if (format == 1) {
+		r = app.asContext->Prepare(app.asHtmlFunction);
+	}
+	else {
+		r = app.asContext->Prepare(app.asFunction);
+	}
+	
 	if (r < 0) {
 		std::cout << "Failed to prepare the context." << std::endl;
 		result = "Failed to prepare the context.";
@@ -648,6 +668,7 @@ bool NCApps::runApp(std::string name, std::string message, std::string &result) 
 	
 	// Pass string to app.
 	app.asContext->SetArgObject(0, (void*) &message);
+	//app.asContext->SetArgAddress(1, &format);
 	
 	// Set the timeout before executing the function. Give the function 30 seconds
 	// to return before we'll abort it.
