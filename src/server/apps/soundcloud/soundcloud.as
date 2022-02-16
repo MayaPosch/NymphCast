@@ -3,6 +3,8 @@
 string clientId;
 //const string baseUrl = "https://api.soundcloud.com";
 const string baseUrl = "https://api-v2.soundcloud.com";
+string template_header;
+string template_footer;
 
 
 string start() {
@@ -67,7 +69,7 @@ bool updateClientId() {
 }
 
 
-string findAlbum(string name) {
+string findAlbum(string name, int type) {
 	// Send query for albums (/playlists)
 	// TODO: HTML encode the query string (spaces, etc.).
 	//string query = baseUrl + "/playlists?client_id=" + clientId + "&q=" + name;
@@ -91,6 +93,13 @@ string findAlbum(string name) {
 	JSONValue collection = root.get("collection");
 	
 	string output = "";
+	if (type == 1) {
+		// Add HTML header for albums.
+		output += template_header;
+		output += "Albums:<br>";
+		output += "<table>";
+	}
+	
 	for (int i = 0; i < collection.get_size(); ++i) {
 		JSONValue jv = collection[i];
 		
@@ -102,14 +111,27 @@ string findAlbum(string name) {
 		string user_id = formatUInt(user.get("id").getUInt());
 		string username = user.get("username").getString();
 		
-		output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+		if (type == 1) {
+			// HTML encode.
+			output += "<tr><td><a href=\"SoundCloud/play/album/" + id + "\">" + username + " - " + 
+						title + "</a></td></tr>";	
+		}
+		else {
+			output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+		}
+	}
+	
+	if (type == 1) {
+		// Add HTML footer for albums.
+		output += "</table>";
+		output += template_footer;
 	}
 	
 	return output;
 }
 
 
-string findTrack(string name) {
+string findTrack(string name, int type) {
 	// Send query for tracks (/tracks)
 	// TODO: HTML encode the query string (spaces, etc.).
 	//string query = baseUrl + "/tracks?client_id=" + clientId + "&q=" + name;
@@ -132,6 +154,13 @@ string findTrack(string name) {
 	JSONValue collection = root.get("collection");
 	
 	string output = "";
+	if (type == 1) {
+		// Add HTML header for tracks.
+		output += template_header;
+		output += "Tracks:<br>";
+		output += "<table>";
+	}
+	
 	for (int i = 0; i < collection.get_size(); ++i) {
 		JSONValue jv = root[i];
 		
@@ -143,16 +172,27 @@ string findTrack(string name) {
 		string user_id = formatUInt(user.get("id").getUInt());
 		string username = user.get("username").getString();
 		
-		output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+		if (type == 1) {
+			// HTML encode.
+			output += "<tr><td><a href=\"SoundCloud/play/track/" + id + "\">" + username + " - " + 
+						title + "</a></td></tr>";	
+		}
+		else {
+			output += id + "\t" + title + "\t" + user_id + "\t" + username + "\n";
+		}
 	}
 	
+	if (type == 1) {
+		// Add HTML footer for tracks.
+		output += "</table>";
+		output += template_footer;
+	}
 	
-	// Parse results, return them.
 	return output;
 }
 
 
-string findArtist(string name) {
+string findArtist(string name, int type) {
 	// Send query for artists (/users).
 	// TODO: HTML encode the query string (spaces, etc.).
 	//string query = baseUrl + "/users?client_id=" + clientId + "&q=" + name;
@@ -176,6 +216,13 @@ string findArtist(string name) {
 	JSONValue collection = root.get("collection");
 	
 	string output = "";
+	if (type == 1) {
+		// Add HTML header for artists.
+		output += template_header;
+		output += "Artists:<br>";
+		output += "<table>";
+	}
+	
 	for (int i = 0; i < collection.get_size(); ++i) {
 		JSONValue user = root[i];
 		
@@ -183,10 +230,22 @@ string findArtist(string name) {
 		string user_id = formatUInt(user.get("id").getUInt());
 		string username = user.get("username").getString();
 		
-		output += user_id + "\t" + username + "\n";
+		if (type == 1) {
+			// HTML encode.
+			output += "<tr><td>" + username + " - " + 
+						user_id + "</td></tr>";	
+		}
+		else {
+			output += user_id + "\t" + username + "\n";
+		}
 	}
 	
-	// Parse results, return them.
+	if (type == 1) {
+		// Add HTML footer for artists.
+		output += "</table>";
+		output += template_footer;
+	}
+	
 	return output;
 }
 
@@ -264,7 +323,10 @@ bool playTrack(int id) {
 }
 
 
-string command_processor(string input) {
+// Arguments:
+// - input 	=> the command(s) as a single string.
+// - type 	=> the desired output format: 0 (tabs), 1 (HTML)
+string command_processor(string input, int type) {
 	// We support a number of commands:
 	// . help
 	// . find album <search string>
@@ -281,12 +343,23 @@ string command_processor(string input) {
 	int len = bits.length();
 	if (len < 3) {
 		// Cannot be a valid command. Return error.
-		return "Invalid command.";
+		return "Invalid command: " + input;
 	}
 	
 	// Ensure the client ID is up to date.
 	if (!updateClientId()) {
 		return "Updating client ID failed.";
+	}
+	
+	// Fetch templates if we're generating HTML.
+	if (type == 1) {
+		if (!readTemplate("header.html", template_header)) {
+			return "Failed to read header template.";
+		}
+		
+		if (!readTemplate("footer.html", template_footer)) {
+			return "Failed to read footer template";
+		}
 	}
 	
 	if (bits[0] == "find") {
@@ -299,13 +372,13 @@ string command_processor(string input) {
 		}
 		
 		if (bits[1] == "album") {
-			return findAlbum(name);
+			return findAlbum(name, type);
 		}
 		else if (bits[1] == "track") {
-			return findTrack(name);
+			return findTrack(name, type);
 		}
 		else if (bits[1] == "artist") {
-			return findArtist(name);
+			return findArtist(name, type);
 		}
 		else {
 			// Error.
@@ -332,4 +405,10 @@ string command_processor(string input) {
 	}
 	
 	return "Invalid command.";
+}
+
+
+//
+string html_processor(string input) {
+	return command_processor(input, 1);
 }
