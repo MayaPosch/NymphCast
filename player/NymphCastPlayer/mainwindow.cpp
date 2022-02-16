@@ -1308,10 +1308,10 @@ void MainWindow::anchorClicked(const QUrl &link) {
 		}
 		
 		// TODO: validate app names here.
-		// TODO: Use client method that returns HTML.
+		// Request the return of HTML with last parameter.
 		std::string response = client.sendApplicationMessage(remotes[ncid].handle, 
 																appStr, 
-																cmdStr);
+																cmdStr, 1);
 																
 		// Response contains the new HTML to display. Load this into the view.
 		ui->appTabGuiTextBrowser->setHtml(QString::fromStdString(response));
