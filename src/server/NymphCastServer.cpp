@@ -427,16 +427,6 @@ void seekingHandler(uint32_t session, int64_t offset) {
 // Called at the end of playback of a stream or file.
 // If a stream is queued, play it, otherwise end playback.
 void finishPlayback() {
-	// Check whether we have any queued URLs to stream next.
-	if (DataBuffer::hasStreamTrack()) {
-		std::string castUrl = DataBuffer::getStreamTrack();
-		
-		// Schedule next track URL.
-		ffplay.streamTrack(castUrl);
-		
-		return;
-	}
-	
 	// Send message to client indicating that we're done.
 	uint32_t handle = DataBuffer::getSessionHandle();
 	std::vector<NymphType*> values;
@@ -1556,7 +1546,7 @@ NymphMessage* app_send(int session, NymphMessage* msg, void* data) {
 	// Get the desired output format.
 	// 0 - CLI	- Text with tab (\t) separators and \n terminator.
 	// 1 - HTML	- HTML format.
-	uint8_t format = msg->parameters()[1]->getUint8();
+	uint8_t format = msg->parameters()[2]->getUint8();
 	
 	// Find the application details.
 	std::string* result = new std::string();
