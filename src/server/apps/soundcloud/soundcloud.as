@@ -162,7 +162,7 @@ string findTrack(string name, int type) {
 	}
 	
 	for (int i = 0; i < collection.get_size(); ++i) {
-		JSONValue jv = root[i];
+		JSONValue jv = collection[i];
 		
 		// Get the ID, artist and album name from the Object.
 		JSONValue idVal = jv.get("id");
@@ -224,7 +224,7 @@ string findArtist(string name, int type) {
 	}
 	
 	for (int i = 0; i < collection.get_size(); ++i) {
-		JSONValue user = root[i];
+		JSONValue user = collection[i];
 		
 		// Get the ID, artist name from the Object.
 		string user_id = formatUInt(user.get("id").getUInt());
