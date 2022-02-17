@@ -326,11 +326,20 @@ void Ffplay::run() {
 	playerStarted = false;
 	std::mutex playbackMtx;
 	while (running) {
-		// Wait in condition variable until triggered. Ensure an event is waiting to deal with
-		// spurious wake-ups.
-		std::unique_lock<std::mutex> lk(playbackMtx);
-		using namespace std::chrono_literals;
-		playbackCv.wait(lk);
+		// Check whether we have any queued URLs to stream next.
+		if (DataBuffer::hasStreamTrack()) {
+			castUrl = DataBuffer::getStreamTrack();
+			castingUrl = true;
+		
+			return;
+		}
+		else {
+			// Wait in condition variable until triggered. Ensure an event is waiting to deal with
+			// spurious wake-ups.
+			std::unique_lock<std::mutex> lk(playbackMtx);
+			using namespace std::chrono_literals;
+			playbackCv.wait(lk);
+		}
 		
 		if (!running) {
 			av_log(NULL, AV_LOG_INFO, "Terminating AV thread...\n");
