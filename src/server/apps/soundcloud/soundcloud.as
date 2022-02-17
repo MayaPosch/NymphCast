@@ -392,7 +392,7 @@ string command_processor(string input, int type) {
 			return "Playing album...";
 		}
 		else if (bits[1] == "track") {
-			if (playTrack(parseInt(bits[2]))) {
+			if (!playTrack(parseInt(bits[2]))) {
 				return "Streaming failed.";
 			}
 			
