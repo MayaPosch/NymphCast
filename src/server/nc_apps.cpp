@@ -308,13 +308,13 @@ bool NCApps::performHttpsQuery(std::string query, std::string &response) {
 	// Debug:
 	std::cout << "HTTPS query: " << query << std::endl;
 	
-	const Poco::Net::Context::Ptr context = new Poco::Net::Context(
+	/* const Poco::Net::Context::Ptr context = new Poco::Net::Context(
 		Poco::Net::Context::CLIENT_USE, "", "", "",
 		Poco::Net::Context::VERIFY_RELAXED, 9, false,
-		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+		"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"); */
 	
-	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
-	//Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort());
+	//Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort(), context);
+	Poco::Net::HTTPSClientSession session(uri.getHost(), uri.getPort());
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, 
 											Poco::Net::HTTPMessage::HTTP_1_1);
 	req.setContentLength(0);
