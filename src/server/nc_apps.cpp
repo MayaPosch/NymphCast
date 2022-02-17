@@ -339,9 +339,9 @@ bool NCApps::performHttpsQuery(std::string query, std::string &response) {
 		Poco::StreamCopier::copyToString(rs, response);
 		
 		// Debug
-		std::cout << "HTTP response:\n---------------\n";
-		std::cout << response;
-		std::cout << "\n---------------\n";
+		//std::cout << "HTTP response:\n---------------\n";
+		//std::cout << response;
+		//std::cout << "\n---------------\n";
 		
 		return true;
 	}
@@ -463,7 +463,7 @@ bool NCApps::readValue(std::string key, std::string &value, uint64_t age) {
 // --- READ TEMPLATE ---
 bool NCApps::readTemplate(std::string name, std::string &contents) {
 	// Try to read indicated file from the active app's template folder.
-	std::ifstream t(appsFolder + activeAppId + "/" + name);
+	std::ifstream t(appsFolder + activeAppId + "/templates/" + name);
 	if (!t.is_open()) { return false; }
 	
 	t.seekg(0, std::ios::end);   
@@ -632,7 +632,7 @@ bool NCApps::runApp(std::string name, std::string message, uint8_t format, std::
 		}
 		
 		app.asHtmlFunction = engine->GetModule(0)->GetFunctionByDecl("string html_processor(string)");
-		if (app.asFunction == 0) {
+		if (app.asHtmlFunction == 0) {
 			std::cout << "The function 'string command_processor(string, int)' was not found." << std::endl;
 			result = "The function 'string command_processor(string, int)' was not found.";
 			app.asContext->Release();
@@ -650,6 +650,7 @@ bool NCApps::runApp(std::string name, std::string message, uint8_t format, std::
 	// GetFunctionByDecl(), so that this relatively slow call can be skipped.
 	int r = 0;
 	if (format == 1) {
+		std::cout << "Running with HTML output." << std::endl;
 		r = app.asContext->Prepare(app.asHtmlFunction);
 	}
 	else {
