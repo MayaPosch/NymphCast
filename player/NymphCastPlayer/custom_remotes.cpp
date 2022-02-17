@@ -40,8 +40,7 @@ void CustomRemotesDialog::setRemoteList(std::vector<NCRemoteInstance> &remotes) 
 	ui->remotesListWidget->clear();
 	for (uint32_t i = 0; i < remotes.size(); ++i) {
 		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.name 
-											+ "(" + remotes[i].remote.ipv4 + ", " 
-											+ remotes[i].remote.ipv6 + ")"),
+											+ " (" + remotes[i].remote.ipv4 + ")"),
 													ui->remotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}
@@ -56,13 +55,13 @@ void CustomRemotesDialog::addRemote() {
 	// TODO: validate values.
 	NymphCastRemote ncr;
 	ncr.name = ui->remoteNameEdit->text().toStdString();
-	ncr.ipv4 = ui->remoteIPv4Edit->text().toStdString();
-	ncr.ipv6 = ui->remoteIPv6Edit->text().toStdString();
+	ncr.ipv4 = ui->remoteHostEdit->text().toStdString();
+	//ncr.ipv6 = ui->remoteIPv6Edit->text().toStdString();
 	ncr.port = ui->portSpinBox->value();
 	
 	// Add to list.
 	QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(ncr.name + " (" 
-											+ ncr.ipv4 + ", " + ncr.ipv6 + ")"),
+											+ ncr.ipv4 + ")"),
 													ui->remotesListWidget);
 	item->setData(Qt::UserRole, QVariant(remotes.size()));
 	
@@ -96,8 +95,7 @@ void CustomRemotesDialog::removeRemote() {
 	ui->remotesListWidget->clear();
 	for (uint32_t i = 0; i < remotes.size(); ++i) {
 		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.name 
-											+ " (" + remotes[i].remote.ipv4 + ", " 
-											+ remotes[i].remote.ipv6 + ")"),
+											+ " (" + remotes[i].remote.ipv4 + ")"),
 													ui->remotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}

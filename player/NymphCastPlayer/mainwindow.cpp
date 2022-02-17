@@ -642,7 +642,7 @@ bool MainWindow::connectRemote(NCRemoteInstance &instance) {
 	if (instance.connected) { return true; }
 	
 	// Connect to NymphRPC server, standard port.
-	if (!client.connectServer(instance.remote.ipv4, 0, instance.handle)) {
+	if (!client.connectServer(instance.remote.ipv4, instance.remote.port, instance.handle)) {
 		QMessageBox::warning(this, tr("Failed to connect"), tr("The selected server could not be connected to."));
 		return false;
 	}
