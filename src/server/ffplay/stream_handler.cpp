@@ -406,6 +406,9 @@ void StreamHandler::stream_seek(VideoState *is, int64_t pos, int64_t rel, int se
         is->seek_req = 1;
         SDL_CondSignal(is->continue_read_thread);
     }
+	
+	// Update remotes.
+	sendGlobalStatusUpdate();
 }
 
 void StreamHandler::step_to_next_frame(VideoState *is) {
@@ -567,10 +570,13 @@ int StreamHandler::read_thread(void *arg) {
         AVStream *st = ic->streams[i];
         enum AVMediaType type = st->codecpar->codec_type;
         st->discard = AVDISCARD_ALL;
-        if (type >= 0 && wanted_stream_spec[type] && st_index[type] == -1)
-            if (avformat_match_stream_specifier(ic, st, wanted_stream_spec[type]) > 0)
+        if (type >= 0 && wanted_stream_spec[type] && st_index[type] == -1) {
+            if (avformat_match_stream_specifier(ic, st, wanted_stream_spec[type]) > 0) {
                 st_index[type] = i;
+			}
+		}
     }
+	
     for (i = 0; i < AVMEDIA_TYPE_NB; i++) {
         if (wanted_stream_spec[i] && st_index[i] == -1) {
             av_log(NULL, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n", wanted_stream_spec[i], av_get_media_type_string((AVMediaType) i));
@@ -661,28 +667,19 @@ int StreamHandler::read_thread(void *arg) {
 	
 	
 	// Set new title after clearing it.
-	//FileMetaInfo::setTitle("");
 	file_meta.setTitle("");
 	if (t = av_dict_get(ic->metadata, "title", NULL, 0)) {
-		//FileMetaInfo::setTitle(t->value);
 		file_meta.setTitle(t->value);
 	}
 
-	//file_meta.setArtist(""); // clear old artist.
-	//FileMetaInfo::setArtist(""); // clear old artist.
 	file_meta.setArtist(""); // clear old artist.
     if (t = av_dict_get(ic->metadata, "author", NULL, 0)) {
-		//FileMetaInfo::setArtist(t->value);
 		file_meta.setArtist(t->value);
 	}
     else if (t = av_dict_get(ic->metadata, "artist", NULL, 0)) {
-		//FileMetaInfo::setArtist(t->value);
 		file_meta.setArtist(t->value);
 	}
 	
-	//file_meta.duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	//FileMetaInfo::duration = is->ic->duration / AV_TIME_BASE; // Convert to seconds.
-	//FileMetaInfo::setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
 	file_meta.setDuration(is->ic->duration / AV_TIME_BASE); // Convert to seconds.
 	
 	// Update clients with status.
