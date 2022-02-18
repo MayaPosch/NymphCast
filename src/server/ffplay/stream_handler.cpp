@@ -406,9 +406,6 @@ void StreamHandler::stream_seek(VideoState *is, int64_t pos, int64_t rel, int se
         is->seek_req = 1;
         SDL_CondSignal(is->continue_read_thread);
     }
-	
-	// Update remotes.
-	sendGlobalStatusUpdate();
 }
 
 void StreamHandler::step_to_next_frame(VideoState *is) {
@@ -742,8 +739,12 @@ int StreamHandler::read_thread(void *arg) {
             is->seek_req = 0;
             is->queue_attachments_req = 1;
             is->eof = 0;
-            if (is->paused)
+            if (is->paused) {
                 StreamHandler::step_to_next_frame(is);
+			}
+			
+			// Send update to remotes.
+			sendGlobalStatusUpdate();
         }
 		
         if (is->queue_attachments_req) {
