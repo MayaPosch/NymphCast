@@ -14,6 +14,7 @@
 # - NC_LNKCRT={flag}
 # - NC_WARNING={flag}
 # - NC_OPTIMIZATION={flag}
+# - VS_YEAR={year}
 # - POCO_ROOT={install-folder}
 # - SDL2_ROOT={install-folder}
 # - FFMPEG_ROOT={install-folder}
@@ -36,12 +37,13 @@
 #
 # Configuration:
 # - `NC_STATIC` defaults to `0`.
-# - `NC_CONFIG` defaults to `Release`
+# - `NC_CONFIG` defaults to `Release`.
 # - `NC_CPPSTD` defaults to `-std:c++17`.
 # - `NC_LNKCRT` defaults to `-MD`.
 # - `NC_WARNING` defaults to empty, default compiler behaviour.
 # - `NC_OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
-# - `INSTALL_PREFIX` defaults to `D:\Programs\NymphCastServer`
+# - `INSTALL_PREFIX` defaults to `D:\Programs\NymphCastServer`.
+# - `VS_YEAR` defaults to 2017.
 # - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
 # - If defined, environment variable `SDL2_ROOT` is used for SDL2 dependency.
 # - If defined, environment variable `FFMPEG_ROOT` is used for SDL2 dependency.
@@ -185,6 +187,20 @@ LIB_BITS_SFX = 64
 LIB_BITS_CFG = x64
 !else
 !error [Got unexpected target architecture '$(VSCMD_ARG_TGT_ARCH)'. Bailing out.]
+!endif
+
+# Unless specified, set Visual Studio year to 2017:
+
+!ifndef VS_YEAR
+VS_YEAR = 2017
+!endif
+
+!if     "$(VS_YEAR)" == "2017"
+!elseif "$(VS_YEAR)" == "2019"
+!elseif "$(VS_YEAR)" == "2022"
+# Ok, one of above.
+!else
+!error [Expecting Visual Studio year '2017', 2019, or '2022'; got '$(VS_YEAR)'. Bailing out.]
 !endif
 
 # Sanity checks:
@@ -809,6 +825,8 @@ print-configuration:
 	@echo "- NYMPHRPC_ROOT    : '$(NYMPHRPC_ROOT)'"
 	@echo "- LIBNYMPHCAST_ROOT: '$(LIBNYMPHCAST_ROOT)'"
 	@echo "- INSTALL_PREFIX   : '$(INSTALL_PREFIX)'"
+	@echo "- VS_YEAR          : '$(VS_YEAR)'"
+	@echo "- VSINSTALLDIR     : '$(VSINSTALLDIR)'"
 	@echo "- LIB_LIBCPATH     : '$(LIB_LIBCPATH)'"
 	@echo "- LIB_SDKUMPATH    : '$(LIB_SDKUMPATH)'"
 	@echo "- LIB_SDKUCRTPATH  : '$(LIB_SDKUCRTPATH)'"
@@ -853,8 +871,8 @@ mkdir-prg:
 angelscript: angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib
 
 angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib: \
-    angelscript/angelscript/projects/msvc2017/angelscript.sln
-	devenv /nologo angelscript/angelscript/projects/msvc2017/angelscript.sln /Build "Release|$(LIB_BITS_CFG)"
+    angelscript/angelscript/projects/msvc$(VS_YEAR)/angelscript.sln
+	devenv /nologo angelscript/angelscript/projects/msvc$(VS_YEAR)/angelscript.sln /Build "Release|$(LIB_BITS_CFG)"
 
 $(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
 
@@ -900,7 +918,7 @@ package:
 # Clean targets:
 
 clean-angelscript:
-	devenv /nologo angelscript/angelscript/projects/msvc2017/angelscript.sln /Build "Release|$(LIB_BITS_CFG)" clean
+	devenv /nologo angelscript/angelscript/projects/msvc$(VS_YEAR)/angelscript.sln /Build "Release|$(LIB_BITS_CFG)" clean
 
 dist-clean-angelscript: clean-angelscript
 	-$(RM) angelscript\angelscript\lib\angelscript$(LIB_BITS_SFX).lib

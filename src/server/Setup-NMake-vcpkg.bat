@@ -17,6 +17,7 @@ echo.
 
 set INSTALL_PREFIX=D:\Programs\NymphCastServer
 
+:: Note: static building does not yet work.
 set NC_STATIC=0
 :: set NC_STATIC=1
 
@@ -32,17 +33,40 @@ set VCPKG_TRIPLET=x64-windows
 if [%NC_STATIC%] == [1] (
     set NC_LNKCRT=-MT
     set VCPKG_TRIPLET=x64-windows-static
+    echo [Setup NCS: static build does not yet work. Continuing.]
 )
+
+:: Determine Visual Studio year:
+
+:: VSINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\
+
+set VS_YEAR=%VSINSTALLDIR%
+set VS_YEAR=%VS_YEAR:C:=%
+set VS_YEAR=%VS_YEAR:D:=%
+set VS_YEAR=%VS_YEAR:E:=%
+set VS_YEAR=%VS_YEAR:\Community\=%
+set VS_YEAR=%VS_YEAR:\Preview\=%
+set VS_YEAR=%VS_YEAR:\Programs\=%
+set VS_YEAR=%VS_YEAR:\Program Files\=%
+set VS_YEAR=%VS_YEAR:\Program Files (x86)\=%
+set VS_YEAR=%VS_YEAR:Microsoft Visual Studio\=%
+
+if not [%VS_YEAR%] == [2017] (
+if not [%VS_YEAR%] == [2019] (
+if not [%VS_YEAR%] == [2022] (
+    echo [Setup NCS: Expecting Visual Studio year '2017', 2019, or '2022'; got '%VS_YEAR%'. Bailing out.]
+    endlocal & goto :EOF
+)))
 
 :: Check for 64-bit Native Tools Command Prompt
 
 if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
-    echo [Make sure to run these commands in a '%NC_TGT_BITS%-bit Native Tools Command Prompt'; expecting 'NC_TGT_ARCH', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
+    echo [Setup NCS: Make sure to run these commands in a '%NC_TGT_BITS%-bit Native Tools Command Prompt'; expecting 'NC_TGT_ARCH', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
     endlocal & goto :EOF
 )
 
 if [%VCPKG_ROOT%] == [] (
-    echo [Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
+    echo [Setup NCS: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
@@ -208,6 +232,7 @@ nmake -nologo -f NMakefile ^
          NC_STATIC=%NC_STATIC% ^
          NC_CONFIG=%NC_CONFIG% ^
          NC_LNKCRT=%NC_LNKCRT% ^
+           VS_YEAR=%VS_YEAR% ^
          POCO_ROOT=%POCO_ROOT% ^
          SDL2_ROOT=%SDL2_ROOT% ^
        FFMPEG_ROOT=%FFMPEG_ROOT% ^
