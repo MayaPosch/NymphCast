@@ -1417,20 +1417,15 @@ NymphMessage* cycle_subtitle(int session, NymphMessage* msg, void* data) {
 }
 
 
-enum {
-	NYMPH_SEEK_TYPE_BYTES = 1,
-	NYMPH_SEEK_TYPE_PERCENTAGE = 2
-};
-
-
 // --- PLAYBACK SEEK ---
 // uint8 playback_seek(uint64)
 NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
-	uint8_t type = msg->parameters()[0]->getUint8();
+	std::vector<NymphType*>* valArray = msg->parameters()[0]->getArray();
+	NymphSeekType type = static_cast<NymphSeekType>((*valArray)[0]->getUint8());
 	if (type == NYMPH_SEEK_TYPE_PERCENTAGE) {
-		uint8_t percentage = msg->parameters()[1]->getUint8();
+		uint8_t percentage = (*valArray)[1]->getUint8();
 		
 		// Sanity check.
 		// We accept a value from 0 - 100.
@@ -1444,10 +1439,16 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 		SDL_PushEvent(&event);
 	}
 	else if (type == NYMPH_SEEK_TYPE_BYTES) {
-		// TODO: implement.
+		NYMPH_LOG_FATAL("Error: Seeking by byte offset is not implemented.");
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		return returnMsg;
 	}
 	else {
+		NYMPH_LOG_FATAL("Error: Unknown seeking type requested: " + 
+										Poco::NumberFormatter::format(type));
 		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
 		return returnMsg;
 	}
 	
