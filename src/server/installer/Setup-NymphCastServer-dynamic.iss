@@ -159,18 +159,12 @@ Name: "{app}/config"
 Name: "{app}/assets"
 Name: "{app}/wallpapers"
 
-; User data (usually {userappdata}):
-Name: "{userappdata}/.emulationstation"
-Name: "{userappdata}/.emulationstation/collections"
-Name: "{userappdata}/.emulationstation/resources"
-Name: "{userappdata}/.emulationstation/themes"
-Name: "{userappdata}/.emulationstation/tmp"
-; User data NCS uses {%USERPROFILE}, 20220204:
-Name: "{%USERPROFILE}/.emulationstation"
-Name: "{%USERPROFILE}/.emulationstation/collections"
-Name: "{%USERPROFILE}/.emulationstation/resources"
-Name: "{%USERPROFILE}/.emulationstation/themes"
-Name: "{%USERPROFILE}/.emulationstation/tmp"
+; User data NCS uses {%HOMEPATH} (or {%USERPROFILE}):
+Name: "{%HOMEPATH}/.emulationstation"
+Name: "{%HOMEPATH}/.emulationstation/collections"
+Name: "{%HOMEPATH}/.emulationstation/resources"
+Name: "{%HOMEPATH}/.emulationstation/themes"
+Name: "{%HOMEPATH}/.emulationstation/tmp"
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -178,13 +172,12 @@ Name: "{%USERPROFILE}/.emulationstation/tmp"
 Source:  "{#WgetPath}"            ; DestDir: "{tmp}"; Flags: deleteafterinstall;
 Source:  "{#SzPath}"              ; DestDir: "{tmp}"; Flags: deleteafterinstall;
 
-Source: "../apps/*.*"             ; DestDir: "{app}/apps"                      ; Flags: ignoreversion
-Source: "../apps/hellocast/*.*"   ; DestDir: "{app}/apps/hellocast"            ; Flags: ignoreversion
-Source: "../apps/soundcloud/*.*"  ; DestDir: "{app}/apps/soundcloud"           ; Flags: ignoreversion
-Source: "../*.ini"                ; DestDir: "{app}/config"                    ; Flags: ignoreversion
-Source: "../assets/*.*"           ; DestDir: "{app}/assets"                    ; Flags: ignoreversion
-Source: "../.emulationstation/*.*"; DestDir: "{%USERPROFILE}/.emulationstation"; Flags: ignoreversion recursesubdirs
-Source: "../.emulationstation/*.*"; DestDir: "{userappdata}/.emulationstation" ; Flags: ignoreversion recursesubdirs
+Source: "../apps/*.*"             ; DestDir: "{app}/apps"                   ; Flags: ignoreversion
+Source: "../apps/hellocast/*.*"   ; DestDir: "{app}/apps/hellocast"         ; Flags: ignoreversion
+Source: "../apps/soundcloud/*.*"  ; DestDir: "{app}/apps/soundcloud"        ; Flags: ignoreversion
+Source: "../*.ini"                ; DestDir: "{app}/config"                 ; Flags: ignoreversion
+Source: "../assets/*.*"           ; DestDir: "{app}/assets"                 ; Flags: ignoreversion
+Source: "../.emulationstation/*.*"; DestDir: "{%HOMEPATH}/.emulationstation"; Flags: ignoreversion recursesubdirs
 
 ; Standard wallpapers:
 ;Source: "../wallpapers/*.*"                ; DestDir: "{app}/wallpapers"; Flags: ignoreversion
