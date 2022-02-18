@@ -68,8 +68,8 @@ The following features are considered **experimental** and will exist as a poten
 Category | Status | Description | Notes
 ---|----|---|---
 SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
-Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation and other bugs remain.
-Apps | 25% | NymphCast Apps | AngelScript-based apps. Currently implemented as CLI-based interface with limited runtime APIs. GUI implementation is highly experimental.
+Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation likely to be far from perfect.
+Apps | 25% | NymphCast Apps | AngelScript-based apps. Implemented as CLI-based interface as well as an HTML-based GUI implementation.
 
 
 ## NymphCast Ecosystem ##
@@ -110,7 +110,7 @@ Video-capable* | Platform |  OS | Notes
 ---|---|---|--
 Yes |x86_64 | Windows | Using MSYS2 as compile & runtime environment.
 Yes | x86_64 | Linux | Stock install of Manjaro, Raspbian and Debian/Mint.
-Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS.
+Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS (h.264). Note limited support for hardware-acceleration and currently no HEVC support.
 \- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
 \- | Odroid-C2 | Armbian, Ubuntu Mate | No hardware accelerated video decoding present with ffmpeg.
 \- | Banana Pro | Armbian | No hardware accelerated video decoding present with ffmpeg.
@@ -150,8 +150,13 @@ NymphCast is currently in Beta stage. Releases are available on Github (see the 
 
 Some packages also exist for selected distros.
 
+For **FreeBSD** and similar:
 
-For **Alpine Linux** and postmarketOS:
+- The server: [nymphcast](https://www.freshports.org/multimedia/nymphcast/).
+	- Install package with `pkg install NymphCast`.
+
+
+For **Alpine Linux** and PostmarketOS:
 
 * the server: [nymphcast-server](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-server)
 * libnymphcast: [libnymphcast](https://pkgs.alpinelinux.org/packages?name=libnymphcast&branch=edge)
@@ -160,7 +165,7 @@ For **Alpine Linux** and postmarketOS:
 Player client releases for **Android** and **Windows**:
 
 * APK for installation on Android, see ['Releases'](https://github.com/MayaPosch/NymphCast/releases) 
-* desktop client for Windows(x64), see ['Releases'](https://github.com/MayaPosch/NymphCast/releases)   
+* desktop client for Windows (x64), see ['Releases'](https://github.com/MayaPosch/NymphCast/releases)   
 
 If pre-compiled releases for your target device or operating system are currently not listed above or on the releases page, you may need to build the server and client applications from source. See the Setup Guides listed under the Usage Scenarios section at the beginning of this document.
 
