@@ -1082,8 +1082,8 @@ void MainWindow::seek() {
 	
 	uint8_t value = ui->positionSlider->value();
 	
-	// Seek bar is in percentages. Pick the right function with a cast.
-	client.playbackSeek(handle, (uint8_t) value);
+	// Seek bar is in percentages.
+	client.playbackSeek(handle, NYMPH_SEEK_TYPE_PERCENTAGE, value);
 }
 
 
