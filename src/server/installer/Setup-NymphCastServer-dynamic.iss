@@ -37,12 +37,16 @@
 #define MyAppVersion         "vx.x.x"
 #endif
 
+; Tasks:
+
 #define NcConfigTaskGroup   "NymphCast Server Configuration"
 #define NcAudioConfig       "nymphcast_audio_config.ini"
 #define NcVideoConfig       "nymphcast_video_config.ini"
 #define NcScrSvrConfig      "nymphcast_screensaver_config.ini"
 #define NcGuiConfig         "nymphcast_gui_config.ini"
 #define NcDefaultConfig     "nymphcast_configuration.ini"
+
+#define NcConfigAutorunTask "Autorun NymphCast Server with Default Configuration"
 
 #define NcWallPrTaskGroup   "Screen saver Wallpaper Downloads"
 
@@ -141,6 +145,8 @@ Name: "Audio"          ; Description: "Audio profile";       GroupDescription: "
 Name: "Video"          ; Description: "Video profile";       GroupDescription: "{#NcConfigTaskGroup}"; Flags: exclusive unchecked
 Name: "Screensaver"    ; Description: "Screensaver profile"; GroupDescription: "{#NcConfigTaskGroup}"; Flags: exclusive unchecked
 Name: "GUI"            ; Description: "GUI profile";         GroupDescription: "{#NcConfigTaskGroup}"; Flags: exclusive unchecked
+
+Name: "Autorun"        ; Description: "Autorun server";      GroupDescription: "{#NcConfigAutorunTask}"; Flags: unchecked
 
 Name: "Standard"       ; Description: "Standard wallpapers"         ; GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive
 Name: "Scenic"         ; Description: "Scenic wallpapers (170MByte)"; GroupDescription: "{#NcWallprTaskGroup}"; Flags: exclusive unchecked
@@ -247,6 +253,9 @@ Name: "{group}\{#MyAppName} - Video"       ; Filename: "{%COMSPEC}"; Parameters:
 Name: "{group}\{#MyAppName} - GUI"         ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcGuiConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"""       ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with GUI configuration.";
 Name: "{group}\{#MyAppName} - Screen saver"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcScrSvrConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with screen saver configuration.";
 
+; {userstartup}, or {commonstartup}:
+Name: "{userstartup}\{#MyAppName} - Default"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with default configuration."; Tasks: Autorun
+
 ; Note: backslash required in the following folder path:
 Name: "{group}\Reveal config folder in Explorer"; Filename: "{app}\config"
 ;Name: "{group}\{#NcAudioConfig}"               ; Filename: "{app}/config/{#NcAudioConfig}"
@@ -275,7 +284,7 @@ Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir:
 Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
 
 ; If requested, run NymphCast Server with default configuration:
-Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"" --wallpaper ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 ; Code to determine if installation of VC14.1 (VS2017) runtime is needed.
 ; From: http://stackoverflow.com/questions/11137424/how-to-make-vcredist-x86-reinstall-only-if-not-yet-installed/11172939#11172939
