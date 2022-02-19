@@ -218,17 +218,18 @@ LIB_ARCH    = x86_$(LIB_BITS)-w64-msvc				# e.g.: x86_32-w64-msvc
 BIN_FOLDER  = build/$(LIB_ARCH)/$(LIB_CONFIG)		# e.g.: build\x86_32-w64-msvc\Release
 LIB_FOLDER  = lib/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: lib\x86_32-w64-msvc\Release
 OBJ_FOLDER  = obj/static/$(LIB_ARCH)/$(LIB_CONFIG)	# e.g.: obj\static\x86_32-w64-msvc\Release
+OBJ_FOLDER_BS = $(OBJ_FOLDER:/=\)					# use backslashes when required
 
 LIB_INCLUDE = \
     -I $(SRC_FOLDER) \
-    -I build \
+    -I $(OBJ_FOLDER) \
     -I $(LIBNYMPHCAST_ROOT)/include \
     -I $(NYMPHRPC_ROOT)/include \
     -I $(POCO_ROOT)/include \
     -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX) \
     -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX)QtCore \
-    -I $(QT5_ROOT)/include//$(QT5_INCLUDE_FIX)QtGui \
-    -I $(QT5_ROOT)/include//$(QT5_INCLUDE_FIX)QtWidgets \
+    -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX)QtGui \
+    -I $(QT5_ROOT)/include/$(QT5_INCLUDE_FIX)QtWidgets \
     -I litehtml \
     -I litehtml/include \
     -I litehtml/include/litehtml \
@@ -393,9 +394,6 @@ LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:./=obj/static/x86_64-w64-msvc/Release/)
 {$(OBJ_FOLDER)/}.cpp{$(OBJ_FOLDER)/}.obj:
 	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
 
-{$(SRC_FOLDER)/build/}.cpp{$(OBJ_FOLDER)/build/}.obj:
-	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
-
 {$(SRC_FOLDER)/litehtml/src/}.cpp{$(OBJ_FOLDER)/litehtml/src/}.obj:
 	$(CXX) -c $(CXXFLAGS) -Fo$@ $<
 
@@ -438,7 +436,6 @@ prg: makedir-prg qmake rcc moc $(BIN_FOLDER)\$(BIN_OUTPUT)
 
 makedir-prg:
 	-$(MKDIR) "$(BIN_FOLDER)" > nul 2>&1
-	-$(MKDIR) "$(OBJ_FOLDER)/build" > nul 2>&1
 	-$(MKDIR) "$(OBJ_FOLDER)/litehtml/src/gumbo" > nul 2>&1
 
 # Dependencies:
@@ -446,35 +443,47 @@ makedir-prg:
 # Qt dependencies:
 
 qmake:
-	cd build & qmake -nocache .. & cd ..
+	cd $(OBJ_FOLDER) & qmake -nocache ../../../..
 
 rcc: $(OBJ_FOLDER)/qrc_resources.cpp
 
 moc: $(OBJ_FOLDER)/moc_mainwindow.cpp $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp $(OBJ_FOLDER)/moc_remotes.cpp $(OBJ_FOLDER)/moc_custom_remotes.cpp
 
-clean-qmake: clean-rcc clean-moc
-#	$(RM) $(OBJ_FOLDER:/=\)\...
+clean-qmake: clean-rcc clean-moc clean-uic
+#	$(RM) $(OBJ_FOLDER_BS)\...
 
 clean-rcc:
-	$(RM) $(OBJ_FOLDER:/=\)\qrc_resources.cpp
+	$(RM) $(OBJ_FOLDER_BS)\qrc_resources.cpp
 
 clean-moc:
-	$(RM) $(OBJ_FOLDER:/=\)\moc_mainwindow.cpp $(OBJ_FOLDER:/=\)\moc_qlitehtmlwidget.cpp $(OBJ_FOLDER:/=\)\moc_remotes.cpp $(OBJ_FOLDER:/=\)\moc_custom_remotes.cpp > nul 2>&1
+	$(RM) $(OBJ_FOLDER_BS)\moc_mainwindow.cpp $(OBJ_FOLDER_BS)\moc_qlitehtmlwidget.cpp $(OBJ_FOLDER_BS)\moc_remotes.cpp $(OBJ_FOLDER_BS)\moc_custom_remotes.cpp > nul 2>&1
+
+clean-uic:
+		$(RM) $(OBJ_FOLDER_BS)\ui_mainwindow.h $(OBJ_FOLDER_BS)\ui_remotes.h $(OBJ_FOLDER_BS)\ui_custom_remotes.h
 
 $(OBJ_FOLDER)/qrc_resources.cpp: resources.qrc
-	cd build & rcc.exe --name resources ../resources.qrc -o ../$(OBJ_FOLDER)/qrc_resources.cpp & cd ..
+	rcc.exe --name resources resources.qrc -o $(OBJ_FOLDER)/qrc_resources.cpp
 
-$(OBJ_FOLDER)/moc_mainwindow.cpp: mainwindow.h mainwindow.ui
-	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../mainwindow.h -o ../$(OBJ_FOLDER)/moc_mainwindow.cpp
+$(OBJ_FOLDER)/moc_mainwindow.cpp: mainwindow.h mainwindow.ui $(OBJ_FOLDER)/ui_mainwindow.h
+	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) mainwindow.h -o $(OBJ_FOLDER)/moc_mainwindow.cpp
 
 $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp: qlitehtmlwidget.h
-	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../qlitehtmlwidget.h -o ../$(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
+	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) qlitehtmlwidget.h -o $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
 
-$(OBJ_FOLDER)/moc_remotes.cpp: remotes.h remotes.ui
-	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../remotes.h -o ../$(OBJ_FOLDER)/moc_remotes.cpp
+$(OBJ_FOLDER)/moc_remotes.cpp: remotes.h remotes.ui $(OBJ_FOLDER)/ui_remotes.h
+	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) remotes.h -o $(OBJ_FOLDER)/moc_remotes.cpp
 
-$(OBJ_FOLDER)/moc_custom_remotes.cpp: custom_remotes.h custom_remotes.ui
-	cd build & moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) ../custom_remotes.h -o ../$(OBJ_FOLDER)/moc_custom_remotes.cpp
+$(OBJ_FOLDER)/moc_custom_remotes.cpp: custom_remotes.h custom_remotes.ui $(OBJ_FOLDER)/ui_custom_remotes.h
+	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) custom_remotes.h -o $(OBJ_FOLDER)/moc_custom_remotes.cpp
+
+$(OBJ_FOLDER)/ui_mainwindow.h: mainwindow.ui qlitehtmlwidget.h qlitehtml_global.h
+	uic.exe mainwindow.ui -o $(OBJ_FOLDER)/ui_mainwindow.h
+
+$(OBJ_FOLDER)/ui_remotes.h: remotes.ui
+	uic.exe remotes.ui -o $(OBJ_FOLDER)/ui_remotes.h
+
+$(OBJ_FOLDER)/ui_custom_remotes.h: custom_remotes.ui
+	uic.exe custom_remotes.ui -o $(OBJ_FOLDER)/ui_custom_remotes.h
 
 # End Qt dependencies
 
@@ -517,7 +526,7 @@ package:
 # Clean targets:
 
 clean: clean-qmake
-	$(RM) /s $(OBJ_FOLDER:/=\)\*.obj > nul 2>&1
+	$(RM) /s $(OBJ_FOLDER_BS)\*.obj > nul 2>&1
 
 dist-clean: clean
 	$(RM) $(BIN_FOLDER:/=\)\$(BIN_OUTPUT)

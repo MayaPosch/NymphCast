@@ -11,12 +11,14 @@
 :: Install vcpkg tool:
 :: > git clone https://github.com/microsoft/vcpkg
 :: > .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+:: > set VCPKG_ROOT=/path/to/vcpkg-folder
 ::
 
 echo.
 
 set INSTALL_PREFIX=D:\Programs\NymphCastPlayer
 
+:: Note: static building does not yet work.
 set NC_STATIC=0
 :: set NC_STATIC=1
 
@@ -32,19 +34,26 @@ set VCPKG_TRIPLET=x64-windows
 if [%NC_STATIC%] == [1] (
     set NC_LNKCRT=-MT
     set VCPKG_TRIPLET=x64-windows-static
+    echo [Setup NCP: static build does not yet work. Continuing.]
 )
 
 :: Check for 64-bit Native Tools Command Prompt
 
 if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
-    echo [Make sure to run these commands in a '64-bit Native Tools Command Prompt'; expecting 'x64', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
+    echo [Setup NCP: Make sure to run these commands in a '64-bit Native Tools Command Prompt'; expecting 'x64', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
     endlocal & goto :EOF
 )
 
+:: Check for vcpkg:
+
+set vcpkg=%VCPKG_ROOT%\vcpkg.exe
+
 if [%VCPKG_ROOT%] == [] (
-    echo [Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
+    echo [Setup NCP: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
+
+:: NymphRPC and LibNymphCast libraries:
 
 if [%NYMPHRPC_ROOT%] == [] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
@@ -64,7 +73,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco" (
     echo Setup NCP: Poco is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco".
 ) else (
     echo Installing vcpkg Poco; please be patient, this may take about 10 minutes...
-    vcpkg install --triplet %VCPKG_TRIPLET% poco
+    %vcpkg% install --triplet %VCPKG_TRIPLET% poco
 )
 
 echo Setup NCP: Using POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -82,8 +91,8 @@ if not [%QT5_ROOT%] == [] (
     if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Qt5" (
         echo Setup NCP: Qt is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Qt5".
     ) else (
-        echo Installing vcpkg Qt5; please be patient, this may take about 10 minutes...
-        vcpkg install --triplet %VCPKG_TRIPLET% qt5
+        echo Installing vcpkg Qt5; please be patient, this may take about 2 hours...
+        %vcpkg% install --triplet %VCPKG_TRIPLET% qt5
     )
 
     echo Setup NCP: Using QT5_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
