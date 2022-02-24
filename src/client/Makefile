@@ -7,7 +7,7 @@ MAKEDIR = mkdir -p
 RM = rm
 
 # Include the file with the versioning information ('VERSION' variable).
-include version
+include version.mk
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_client
