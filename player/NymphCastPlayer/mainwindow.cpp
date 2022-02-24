@@ -1083,7 +1083,14 @@ void MainWindow::seek() {
 	uint8_t value = ui->positionSlider->value();
 	
 	// Seek bar is in percentages.
-	client.playbackSeek(handle, NYMPH_SEEK_TYPE_PERCENTAGE, value);
+	uint8_t res = client.playbackSeek(handle, NYMPH_SEEK_TYPE_PERCENTAGE, value);
+	if (res == 0) { // Success
+		// Stop the position timer if it's active.
+		if (posTimer.isActive()) {
+			// Stop timer.
+			posTimer.stop();
+		}
+	}
 }
 
 
