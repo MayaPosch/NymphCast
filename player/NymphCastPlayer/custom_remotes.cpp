@@ -63,7 +63,7 @@ void CustomRemotesDialog::addRemote() {
 	QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(ncr.name + " (" 
 											+ ncr.ipv4 + ")"),
 													ui->remotesListWidget);
-	item->setData(Qt::UserRole, QVariant(remotes.size()));
+	item->setData(Qt::UserRole, QVariant((uint32_t) remotes.size()));
 	
 	NCRemoteInstance remote;
 	remote.remote = ncr;
