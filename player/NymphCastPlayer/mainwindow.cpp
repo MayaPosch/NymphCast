@@ -1080,7 +1080,7 @@ void MainWindow::seek() {
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
 	
-	uint8_t value = ui->positionSlider->value();
+	uint8_t value = (ui->positionSlider->value() / 10);
 	
 	// Seek bar is in percentages.
 	uint8_t res = client.playbackSeek(handle, NYMPH_SEEK_TYPE_PERCENTAGE, value);
