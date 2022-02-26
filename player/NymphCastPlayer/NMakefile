@@ -186,6 +186,15 @@ RM    = del
 CD    = cd
 MKDIR = md		# Note: Do not use MAKEDIR=... as MAKEDIR is an NMake macro.
 
+# Qt programs:
+# Note: error on QMAKE_MSC_VER: remove .qmake.stash file(s) under obj/...;
+# see also targets clean-qmake, clean-stash.
+QT_BIN   = $(QT5_ROOT)\tools\qt5\bin
+QT_QMAKE = $(QT_BIN)\qmake.exe
+QT_MOC   = $(QT_BIN)\moc.exe
+QT_RCC   = $(QT_BIN)\rcc.exe
+QT_UIC   = $(QT_BIN)\uic.exe
+
 # Inno Setup compiler:
 SETUP = C:\Program Files (x86)\Inno Setup 6\iscc.exe
 SETUP_OPTIONS = -Q -DMyAppVersion=$(PRODUCT_VSTR)
@@ -443,14 +452,17 @@ makedir-prg:
 # Qt dependencies:
 
 qmake:
-	cd $(OBJ_FOLDER) & qmake -nocache ../../../..
+	cd $(OBJ_FOLDER) & $(QT_QMAKE) -nocache ../../../..
 
 rcc: $(OBJ_FOLDER)/qrc_resources.cpp
 
 moc: $(OBJ_FOLDER)/moc_mainwindow.cpp $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp $(OBJ_FOLDER)/moc_remotes.cpp $(OBJ_FOLDER)/moc_custom_remotes.cpp
 
-clean-qmake: clean-rcc clean-moc clean-uic
+clean-qmake: clean-stash clean-rcc clean-moc clean-uic
 #	$(RM) $(OBJ_FOLDER_BS)\...
+
+clean-stash:
+	$(RM) $(OBJ_FOLDER_BS)\.qmake.stash
 
 clean-rcc:
 	$(RM) $(OBJ_FOLDER_BS)\qrc_resources.cpp
@@ -462,28 +474,28 @@ clean-uic:
 		$(RM) $(OBJ_FOLDER_BS)\ui_mainwindow.h $(OBJ_FOLDER_BS)\ui_remotes.h $(OBJ_FOLDER_BS)\ui_custom_remotes.h
 
 $(OBJ_FOLDER)/qrc_resources.cpp: resources.qrc
-	rcc.exe --name resources resources.qrc -o $(OBJ_FOLDER)/qrc_resources.cpp
+	$(QT_RCC) --name resources resources.qrc -o $(OBJ_FOLDER)/qrc_resources.cpp
 
 $(OBJ_FOLDER)/moc_mainwindow.cpp: mainwindow.h mainwindow.ui $(OBJ_FOLDER)/ui_mainwindow.h
-	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) mainwindow.h -o $(OBJ_FOLDER)/moc_mainwindow.cpp
+	$(QT_MOC) $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) mainwindow.h -o $(OBJ_FOLDER)/moc_mainwindow.cpp
 
 $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp: qlitehtmlwidget.h
-	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) qlitehtmlwidget.h -o $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
+	$(QT_MOC) $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) qlitehtmlwidget.h -o $(OBJ_FOLDER)/moc_qlitehtmlwidget.cpp
 
 $(OBJ_FOLDER)/moc_remotes.cpp: remotes.h remotes.ui $(OBJ_FOLDER)/ui_remotes.h
-	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) remotes.h -o $(OBJ_FOLDER)/moc_remotes.cpp
+	$(QT_MOC) $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) remotes.h -o $(OBJ_FOLDER)/moc_remotes.cpp
 
 $(OBJ_FOLDER)/moc_custom_remotes.cpp: custom_remotes.h custom_remotes.ui $(OBJ_FOLDER)/ui_custom_remotes.h
-	moc.exe $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) custom_remotes.h -o $(OBJ_FOLDER)/moc_custom_remotes.cpp
+	$(QT_MOC) $(BIN_VERSION) $(LIB_DEFS) $(LIB_INCLUDE) custom_remotes.h -o $(OBJ_FOLDER)/moc_custom_remotes.cpp
 
 $(OBJ_FOLDER)/ui_mainwindow.h: mainwindow.ui qlitehtmlwidget.h qlitehtml_global.h
-	uic.exe mainwindow.ui -o $(OBJ_FOLDER)/ui_mainwindow.h
+	$(QT_UIC) mainwindow.ui -o $(OBJ_FOLDER)/ui_mainwindow.h
 
 $(OBJ_FOLDER)/ui_remotes.h: remotes.ui
-	uic.exe remotes.ui -o $(OBJ_FOLDER)/ui_remotes.h
+	$(QT_UIC) remotes.ui -o $(OBJ_FOLDER)/ui_remotes.h
 
 $(OBJ_FOLDER)/ui_custom_remotes.h: custom_remotes.ui
-	uic.exe custom_remotes.ui -o $(OBJ_FOLDER)/ui_custom_remotes.h
+	$(QT_UIC) custom_remotes.ui -o $(OBJ_FOLDER)/ui_custom_remotes.h
 
 # End Qt dependencies
 
