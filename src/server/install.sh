@@ -70,13 +70,13 @@ if [ "$PLATFORM" = "linux" ]; then
 		echo "Skipping system service installation..."
 	fi
 elif [ "$PLATFORM" = "mingw" ]; then
-	sudo install -d /usr/local/etc/nymphcast/ \
+	install -d /usr/local/etc/nymphcast/ \
 			-d /usr/local/share/nymphcast/apps/ \
 			-d /usr/local/share/nymphcast/wallpapers/
-	sudo install -m 755 bin/nymphcast_server /usr/local/bin/
-	sudo install -m 644 *.ini /usr/local/etc/nymphcast/
-	sudo cp -r apps/* /usr/local/share/nymphcast/apps/
-	sudo install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
+	install -m 755 bin/nymphcast_server /usr/local/bin/
+	install -m 644 *.ini /usr/local/etc/nymphcast/
+	cp -r apps/* /usr/local/share/nymphcast/apps/
+	install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
 fi
 
 
