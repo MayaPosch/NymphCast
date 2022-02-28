@@ -270,12 +270,16 @@ package:
 	$(MAKEDIR) out/nymphcast/lib
 	$(MAKEDIR) out/nymphcast/systemd
 	cp bin/$(TARGET_BIN)$(OUTPUT) out/nymphcast/bin/.
+ifndef OS
 	cp -a /usr/lib/libnymphrpc.* out/nymphcast/lib/.
 	cp -a /usr/lib/libnymphcast.* out/nymphcast/lib/.
+endif
 	cp nymphcast_*_config.ini out/nymphcast/.
 	cp -r apps/ out/nymphcast/.
 	cp -r wallpapers/ out/nymphcast/.
+ifndef OS
 	cp systemd/nymphcast_filled.service out/nymphcast/systemd/nymphcast.service
+endif
 	cp install.sh out/nymphcast/.
 	#tar -C bin/$(TARGET_BIN) -cvzf bin/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT)
 	tar -C out/ -cvzf out/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz nymphcast
