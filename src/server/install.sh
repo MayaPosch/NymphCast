@@ -69,6 +69,36 @@ if [ "$PLATFORM" = "linux" ]; then
 	else
 		echo "Skipping system service installation..."
 	fi
+	
+	# Set the requested configuration file.
+	read -p "Desired NymphCast receiver configuration? [audio/video/screensaver/gui] " choice
+
+	case $choice in
+		audio)
+			echo "Setting audio configuration..."
+			sudo cp nymphcast_audio_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
+			;;
+			
+		video)
+			echo "Setting video configuration..."
+			sudo cp nymphcast_video_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
+			;;
+			
+		screensaver)
+			echo "Setting screensaver configuration..."
+			sudo cp nymphcast_screensaver_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
+			;;
+			
+		gui)
+			echo "Setting GUI configuration..."
+			sudo cp nymphcast_gui_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
+			;;
+			
+		*)
+			echo "Unrecognised choice. Please set configuration manually."
+			
+			;;
+	esac
 elif [ "$PLATFORM" = "mingw" ]; then
 	install -d /usr/local/etc/nymphcast/ \
 			-d /usr/local/share/nymphcast/apps/ \
@@ -78,34 +108,3 @@ elif [ "$PLATFORM" = "mingw" ]; then
 	cp -r apps/* /usr/local/share/nymphcast/apps/
 	install -m 644 wallpapers/* /usr/local/share/nymphcast/wallpapers/
 fi
-
-
-# Set the requested configuration file.
-read -p "Desired NymphCast receiver configuration? [audio/video/screensaver/gui] " choice
-
-case $choice in
-	audio)
-		echo "Setting audio configuration..."
-		sudo cp nymphcast_audio_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
-		;;
-		
-	video)
-		echo "Setting video configuration..."
-		sudo cp nymphcast_video_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
-		;;
-		
-	screensaver)
-		echo "Setting screensaver configuration..."
-		sudo cp nymphcast_screensaver_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
-		;;
-		
-	gui)
-		echo "Setting GUI configuration..."
-		sudo cp nymphcast_gui_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
-		;;
-		
-	*)
-		echo "Unrecognised choice. Please set configuration manually."
-		
-		;;
-esac
