@@ -146,9 +146,9 @@ To start using NymphCast, you need a device on which the server will be running 
 
 ### **Releases** ###
 
-NymphCast is currently in Beta stage. Releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
+NymphCast is currently in RC stage. Releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
 
-Some packages also exist for selected distros.
+Some packages also exist for selected platforms.
 
 For **FreeBSD** and similar:
 
@@ -163,7 +163,7 @@ For **Alpine Linux** and PostmarketOS:
 * the player client: [nymphcast-client](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-client)
 
 Player client releases for **Android** and **Windows**:
-
+* NymphCast Player on [the Google Play Store](https://play.google.com/store/apps/details?id=com.nyanko.nymphcastplayer).
 * APK for installation on Android, see ['Releases'](https://github.com/MayaPosch/NymphCast/releases) 
 * desktop client for Windows (x64), see ['Releases'](https://github.com/MayaPosch/NymphCast/releases)   
 
