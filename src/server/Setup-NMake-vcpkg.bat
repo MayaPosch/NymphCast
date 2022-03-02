@@ -11,6 +11,7 @@
 :: Install vcpkg tool:
 :: > git clone https://github.com/microsoft/vcpkg
 :: > .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+:: > set VCPKG_ROOT=/path/to/vcpkg-folder
 ::
 
 echo.
@@ -65,10 +66,16 @@ if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
     endlocal & goto :EOF
 )
 
+:: Check for vcpkg:
+
+set vcpkg=%VCPKG_ROOT%\vcpkg.exe
+
 if [%VCPKG_ROOT%] == [] (
     echo [Setup NCS: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
+
+:: NymphRPC and LibNymphCast libraries:
 
 if [%NYMPHRPC_ROOT%] == [] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
@@ -89,7 +96,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco" (
     echo Setup NCS: Poco[core] is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco".
 ) else (
     echo [Installing vcpkg openssl poco[core,netssl,sqlite3]; please be patient, this may take 30 to 60 minutes...]
-    vcpkg install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
+    %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
 )
 
 :: Poco[netssl]:
@@ -98,8 +105,8 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Net\HTTPSClientSes
     echo Setup NCS: OpenSSL Poco[core,netssl] is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Net\HTTPSClientSession.h".
 ) else (
     echo [Installing vcpkg openssl poco[core,netssl,sqlite3]; please be patient, this may take 30 to 60 minutes...]
-    @REM vcpkg install --recurse --triplet %VCPKG_TRIPLET% openssl poco[netssl]
-    vcpkg install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
+    @REM %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% openssl poco[netssl]
+    %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
 )
 
 :: Poco[sqlite3]:
@@ -108,7 +115,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Data\SQLite\Connec
     echo Setup NCS: OpenSSL Poco[core,netssl,sqlite3] is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Data\SQLite\Connector.h".
 ) else (
     echo [Installing vcpkg openssl poco[core,netssl,sqlite3]; please be patient, this may take 30 to 60 minutes...]
-    vcpkg install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
+    %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
 )
 
 set POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -119,7 +126,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\pthread.h" (
     echo Setup NCS: Pthreads is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\pthread.h".
 ) else (
     echo [Installing vcpkg Pthreads; please be patient, this may take about a minute...]
-    vcpkg install --triplet %VCPKG_TRIPLET% pthreads
+    %vcpkg% install --triplet %VCPKG_TRIPLET% pthreads
 )
 
 ::set PTHREADS_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -130,14 +137,14 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\SDL2" (
     echo Setup NCS: SDL2 is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\SDL2".
 ) else (
     echo [Installing vcpkg SDL2[]; please be patient, this may take several minutes...]
-    vcpkg install --triplet %VCPKG_TRIPLET% sdl2
+    %vcpkg% install --triplet %VCPKG_TRIPLET% sdl2
 )
 
 if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\SDL2\SDL_image.h" (
     echo Setup NCS: SDL2-image is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\SDL2\SDL_image.h".
 ) else (
     echo [Installing vcpkg SDL2-image; please be patient, this may take several minutes...]
-    vcpkg install --recurse --triplet %VCPKG_TRIPLET% sdl2-image[libjpeg-turbo,libwebp]
+    %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% sdl2-image[libjpeg-turbo,libwebp]
 )
 
 set SDL2_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -148,7 +155,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\libpostproc" (
     echo Setup NCS: Ffmpeg is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\libpostproc".
 ) else (
     echo [Installing vcpkg Ffmpeg; please be patient, this may take a long time, in the about 30 minutes...]
-    vcpkg install --recurse --triplet %VCPKG_TRIPLET% ffmpeg[postproc]
+    %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% ffmpeg[postproc]
 )
 
 set FFMPEG_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -160,7 +167,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\FreeImage.h" (
     echo Setup NCS: FreeImage is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\FreeImage.h".
 ) else (
     echo [Installing vcpkg FreeImage; please be patient, this may take about 10 minutes...]
-    vcpkg install --triplet %VCPKG_TRIPLET% freeimage
+    %vcpkg% install --triplet %VCPKG_TRIPLET% freeimage
 )
 
 set FREEIMAGE_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -171,7 +178,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\freetype" (
     echo Setup NCS: FreeType is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\freetype".
 ) else (
     echo [Installing vcpkg FreeType; please be patient, this may take about several minutes...]
-    vcpkg install --triplet %VCPKG_TRIPLET% freetype
+    %vcpkg% install --triplet %VCPKG_TRIPLET% freetype
 )
 
 set FREETYPE_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -182,7 +189,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\rapidjson" (
     echo Setup NCS: RapidJSON is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\rapidjson".
 ) else (
     echo [Installing vcpkg RapidJSON; please be patient, this may take about a minute...]
-    vcpkg install --triplet %VCPKG_TRIPLET% rapidjson
+    %vcpkg% install --triplet %VCPKG_TRIPLET% rapidjson
 )
 
 set RAPIDJSON_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -193,7 +200,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\curl" (
     echo Setup NCS: Curl is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\curl".
 ) else (
     echo [Installing vcpkg Curl; please be patient, this may take about several minutes...]
-    vcpkg install --triplet %VCPKG_TRIPLET% curl
+    %vcpkg% install --triplet %VCPKG_TRIPLET% curl
 )
 
 set CURL_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
