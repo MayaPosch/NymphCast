@@ -415,15 +415,19 @@ LIB_DLLS = \
 	$(POCO_ROOT)/bin/jasper.dll \
 	$(POCO_ROOT)/bin/jpeg62.dll \
 	$(POCO_ROOT)/bin/lcms2.dll \
+	$(POCO_ROOT)/bin/libcrypto-1_1-x64.dll \
 	$(POCO_ROOT)/bin/libcurl.dll \
 	$(POCO_ROOT)/bin/libexpat.dll \
 	$(POCO_ROOT)/bin/libpng16.dll \
+	$(POCO_ROOT)/bin/libssl-1_1-x64.dll \
 	$(POCO_ROOT)/bin/libwebpmux.dll \
 	$(POCO_ROOT)/bin/lzma.dll \
 	$(POCO_ROOT)/bin/openjp2.dll \
 	$(POCO_ROOT)/bin/pcre.dll \
 	$(POCO_ROOT)/bin/pthreadVC3.dll \
 	$(POCO_ROOT)/bin/raw.dll \
+	$(POCO_ROOT)/bin/sqlite3.dll \
+	$(POCO_ROOT)/bin/swscale-5.dll \
 	$(POCO_ROOT)/bin/tiff.dll \
 	$(POCO_ROOT)/bin/webp.dll \
 	$(POCO_ROOT)/bin/webpdecoder.dll \
