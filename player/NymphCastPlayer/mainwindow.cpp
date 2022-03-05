@@ -323,19 +323,21 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// Reload stored file paths, if any.
 	QFile playlist;
 	playlist.setFileName(appDataLocation + "/filepaths.conf");
-	playlist.open(QIODevice::ReadOnly);
-	QTextStream textStream(&playlist);
-	textStream.setCodec("UTF-8");
-	QString line;
-	while (!(line = textStream.readLine()).isNull()) {
-		QFileInfo finf(line);
-		QListWidgetItem *newItem = new QListWidgetItem;
-		newItem->setText(finf.fileName());
-		newItem->setData(Qt::UserRole, QVariant(line));
-		ui->mediaListWidget->addItem(newItem);
+	if (playlist.exists()) {
+		playlist.open(QIODevice::ReadOnly);
+		QTextStream textStream(&playlist);
+		textStream.setCodec("UTF-8");
+		QString line;
+		while (!(line = textStream.readLine()).isNull()) {
+			QFileInfo finf(line);
+			QListWidgetItem *newItem = new QListWidgetItem;
+			newItem->setText(finf.fileName());
+			newItem->setData(Qt::UserRole, QVariant(line));
+			ui->mediaListWidget->addItem(newItem);
+		}
+		
+		playlist.close();
 	}
-	
-	playlist.close();
 #endif
 	// Load any custom remotes.
 	loadRemotes();
