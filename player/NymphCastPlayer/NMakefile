@@ -268,6 +268,8 @@ LIB_DLLS = \
 	$(QT5_ROOT)/bin/Qt5Gui.dll \
 	$(QT5_ROOT)/bin/Qt5Widgets.dll \
 	$(QT5_ROOT)/bin/Qt5Svg.dll \
+	$(QT5_ROOT)/bin/freetype.dll \
+	$(QT5_ROOT)/bin/harfbuzz.dll \
 	$(QT5_ROOT)/bin/icudt69.dll \
 	$(QT5_ROOT)/bin/icuin69.dll \
 	$(QT5_ROOT)/bin/icutu69.dll \
