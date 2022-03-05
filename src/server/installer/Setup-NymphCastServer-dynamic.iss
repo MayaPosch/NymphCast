@@ -130,6 +130,11 @@ ChangesAssociations = no
 ChangesEnvironment  = SetEnvSdlAudioDriver
 ; Update of other applications (explorer) needed: for Win7 (onlybelow Win8)
 
+; Ensure 64-bit install:
+
+ArchitecturesAllowed            = x64
+ArchitecturesInstallIn64BitMode = x64
+
 ; Cosmetic:
 
 ;SetupIconFile        = {#MyAppIconName}
