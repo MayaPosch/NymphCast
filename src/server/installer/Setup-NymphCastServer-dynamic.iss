@@ -127,8 +127,8 @@ PrivilegesRequired  = none
 Compression         = lzma
 SolidCompression    = yes
 ChangesAssociations = no
-ChangesEnvironment  = no
-; No update of other applications (explorer) needed
+ChangesEnvironment  = SetEnvSdlAudioDriver
+; Update of other applications (explorer) needed: for Win7 (onlybelow Win8)
 
 ; Cosmetic:
 
@@ -252,13 +252,10 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/webpdecoder.dll"    ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/zlib1.dll"          ; DestDir: "{app}/bin"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName} - Audio"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcAudioConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with audio configuration.";
-Name: "{group}\{#MyAppName} - Video"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcVideoConfig}"" --apps ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with video configuration.";
-Name: "{group}\{#MyAppName} - GUI"         ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcGuiConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"""       ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with GUI configuration.";
-Name: "{group}\{#MyAppName} - Screen saver"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcScrSvrConfig}"" --apps ""{app}/apps"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with screen saver configuration.";
-
-; {userstartup}, or {commonstartup}:
-Name: "{userstartup}\{#MyAppName} - Default"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"" --wallpaper ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with default configuration."; Tasks: Autorun
+Name: "{group}\{#MyAppName} - Audio"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcAudioConfig}"" -a ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with audio configuration.";
+Name: "{group}\{#MyAppName} - Video"       ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcVideoConfig}"" -a ""{app}/apps""" ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with video configuration.";
+Name: "{group}\{#MyAppName} - GUI"         ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcGuiConfig}"" -a ""{app}/apps"" -r ""{app}/assets"""       ; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with GUI configuration.";
+Name: "{group}\{#MyAppName} - Screen saver"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcScrSvrConfig}"" -a ""{app}/apps"" -w ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with screen saver configuration.";
 
 ; Note: backslash required in the following folder path:
 Name: "{group}\Reveal config folder in Explorer"; Filename: "{app}\config"
@@ -267,8 +264,10 @@ Name: "{group}\Reveal config folder in Explorer"; Filename: "{app}\config"
 ;Name: "{group}\{#NcGuiConfig}"                 ; Filename: "{app}/config/{#NcGuiConfig}"
 ;Name: "{group}\{#NcScrSvrConfig}"              ; Filename: "{app}/config/{#NcScrSvrConfig}"
 
-;Name: "{commondesktop}/{#MyAppName}" ; Filename: "{app}/bin/{#MyAppExeDestName}";Parameters: "--configuration {app}/config/nymphcast_video_config.ini"; Tasks: desktopicon
-;Name: "{userappdata}/Microsoft/Internet Explorer/Quick Launch/{#MyAppExeDestName}"; Filename: "{app}/bin/{#MyAppExeDestName}"; Tasks: quicklaunchicon
+; {userstartup}, or {commonstartup}:
+Name: "{userstartup}\{#MyAppName} - Default"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcDefaultConfig}"" -a ""{app}/apps"" -r ""{app}/assets"" -w ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with default configuration."; Tasks: Autorun
+Name: "{commondesktop}\{#MyAppName}"        ; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcDefaultConfig}"" -a ""{app}/apps"" -r ""{app}/assets"" -w ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with default configuration."; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcDefaultConfig}"" -a ""{app}/apps"" -r ""{app}/assets"" -w ""{app}/wallpapers"""; WorkingDir: "{autodocs}"; Comment: "Run NymphCast Server with default configuration."; Tasks: quicklaunchicon
 
 ; Post-install actions:
 ; - Download and install VC redistributable, if needed.
@@ -288,7 +287,7 @@ Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir:
 Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
 
 ; If requested, run NymphCast Server with default configuration:
-Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" --configuration ""{app}/config/{#NcDefaultConfig}"" --apps ""{app}/apps"" --resources ""{app}/assets"" --wallpaper ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcDefaultConfig}"" -a ""{app}/apps"" -r ""{app}/assets"" -w ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 ; Code to determine if installation of VC14.1 (VS2017) runtime is needed.
 ; From: http://stackoverflow.com/questions/11137424/how-to-make-vcredist-x86-reinstall-only-if-not-yet-installed/11172939#11172939
@@ -299,7 +298,17 @@ Type: files; Name: "{app}/wallpapers/*.jpg" ; Tasks: Scenic
 Type: files; Name: "{app}/wallpapers/*.png" ; Tasks: Scenic
 Type: files; Name: "{app}/wallpapers/*.jpeg"; Tasks: Scenic
 
+[Registry]
+; `Set SDL_AUDIODRIVER=directsound` on Win7:
+Check: SetEnvSdlAudioDriver; Root: "HKCU"; Subkey: "Environment"; ValueType: string; ValueName: "SDL_AUDIODRIVER"; ValueData: "directsound"; Flags: preservestringtype
+
 [Code]
+
+function SetEnvSdlAudioDriver: Boolean;
+// Return True if below Win8:
+begin
+  Result := (GetWindowsVersion < $06020000);
+end;
 
 function VCinstalled: Boolean;
  // Function for Inno Setup Compiler
