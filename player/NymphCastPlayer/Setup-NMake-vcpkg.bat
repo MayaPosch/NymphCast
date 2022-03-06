@@ -25,6 +25,9 @@ set NC_STATIC=0
 set NC_CONFIG=Release
 :: set NC_CONFIG=Debug
 
+set NC_CONSOLE=NOCONSOLE
+:: set NC_CONSOLE=CONSOLE
+
 set NC_TGT_BITS=64
 set NC_TGT_ARCH=x%NC_TGT_BITS%
 
@@ -134,6 +137,7 @@ if exist "%LIBNYMPHCAST_ROOT%\include\nymphcast_client.h" (
 nmake -nologo -f NMakefile ^
          NC_STATIC=%NC_STATIC% ^
          NC_CONFIG=%NC_CONFIG% ^
+        NC_CONSOLE=%NC_CONSOLE% ^
          NC_LNKCRT=%NC_LNKCRT% ^
           QT5_ROOT=%QT5_ROOT% ^
    QT5_INCLUDE_FIX=%QT5_INCLUDE_FIX% ^

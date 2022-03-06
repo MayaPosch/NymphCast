@@ -10,6 +10,7 @@
 # Definitions:
 # - NC_STATIC={0|1}
 # - NC_CONFIG={Debug|Release}
+# - NC_CONSOLE={CONSOLE|other}
 # - NC_CPPSTD={flag}
 # - NC_LNKCRT={flag}
 # - NC_WARNING={flag}
@@ -70,6 +71,12 @@ LIB_STATIC = 0
 LIB_CONFIG = $(NC_CONFIG)
 !else
 LIB_CONFIG = Release
+!endif
+
+!ifdef NC_CONSOLE
+LIB_CONSOLE = $(NC_CONSOLE)
+!else
+LIB_CONSOLE = NOCONSOLE
 !endif
 
 LIB_DEF_CPPSTD = -std:c++latest
@@ -306,6 +313,14 @@ LNK_MACHINE = X86
 LNK_MACHINE = X64
 !endif
 
+!if "$(LIB_CONSOLE)" == "CONSOLE"
+LNK_SUBSYSTEM = console
+LNK_ENTRY     = mainCRTStartup
+!else
+LNK_SUBSYSTEM = windows
+LNK_ENTRY     = mainCRTStartup
+!endif
+
 LIB_LIBCPATH    = $(VCTOOLSINSTALLDIR)lib\x$(LIB_BITS)
 LIB_SDKUMPATH   = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)um\$(LNK_MACHINE)
 LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
@@ -505,6 +520,8 @@ $(LIB_OBJECTS_DIR): $(LIB_SOURCES_DIR)
 
 $(BIN_FOLDER)\$(BIN_OUTPUT): mk-version-sources $(LIB_OBJECTS_DIR)
 	$(CXX) -Fe$(BIN_FOLDER)\$(BIN_OUTPUT) $(LIB_OBJECTS_DIR) /link \
+	/entry:"$(LNK_ENTRY)" \
+	/subsystem:"$(LNK_SUBSYSTEM)" \
 	/machine:"$(LNK_MACHINE)" \
 	/libpath:"$(NYMPHRPC_ROOT)\lib" \
 	/libpath:"$(LIBNYMPHCAST_ROOT)\lib" \
