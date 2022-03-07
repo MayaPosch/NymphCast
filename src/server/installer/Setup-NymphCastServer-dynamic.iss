@@ -228,10 +228,10 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/lcms2.dll"          ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libcrypto-1_1-x64.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libcurl.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libexpat.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/liblzma.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libpng16.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libssl-1_1-x64.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpmux.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/lzma.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/openjp2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoCrypto.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion

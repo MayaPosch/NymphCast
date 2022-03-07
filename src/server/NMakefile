@@ -417,10 +417,10 @@ LIB_DLLS = \
 	$(POCO_ROOT)/bin/lcms2.dll \
 	$(POCO_ROOT)/bin/libcrypto-1_1-x64.dll \
 	$(POCO_ROOT)/bin/libexpat.dll \
+	$(POCO_ROOT)/bin/liblzma.dll \
 	$(POCO_ROOT)/bin/libpng16.dll \
 	$(POCO_ROOT)/bin/libssl-1_1-x64.dll \
 	$(POCO_ROOT)/bin/libwebpmux.dll \
-	$(POCO_ROOT)/bin/lzma.dll \
 	$(POCO_ROOT)/bin/openjp2.dll \
 	$(POCO_ROOT)/bin/pcre.dll \
 	$(POCO_ROOT)/bin/pthreadVC3.dll \
