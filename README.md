@@ -2,11 +2,11 @@
 
 # What is NymphCast? #
 
-NymphCast is a software solution which turns your choice of Linux-capable hardware into an audio and video source for a television or powered speakers. It enables the streaming of audio and video over the network from a wide range of client devices, as well as the streaming of internet media to a NymphCast server, controlled by a client device, or directly on the receiver.
+NymphCast is a software solution which turns your choice of hardware into an audio and video source for a television or (powered) speakers. It enables the streaming of audio and video over the network from a client device or media server, as well as the streaming of internet media to a NymphCast server, controlled by a client device, or directly on the receiver.
 
 In addition, the server supports NymphCast apps (currently in preview status) written in AngelScript to extend the overall NymphCast functionality with e.g. 3rd party audio / video streaming protocol support on the server side, and customisable UIs in the client application.
 
-NymphCast requires the use of a client device in all but the GUI mode. The server application (receiver) runs on a target device, while the client device functions as a remote control device:
+NymphCast requires the use of a client device in all but the GUI ('Smart TV') mode. The server application (receiver) runs on a target device, while the client device functions as a remote control device:
 
 ![NymphCast diagram](doc/nymphcast_layout.png)
 
@@ -43,21 +43,21 @@ NymphCast can be used in a number of scenarios:
 
 All of these ports have to be reachable on a system running NymphCast Server.
 
-Systems running the [NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) need to have UDP & TCP ports 4005 reachable.
+Systems running the [NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) also need to have UDP & TCP ports 4005 reachable.
 
 Please ensure that these ports are whitelisted in e.g. firewall rules if applicable.
 
 
 ## Features & Status ##
 
-The current development version is v0.1-beta0. Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
+Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
 
 Category | Status | Description | Notes
 ---|----|---|---
-File Streaming |100% | Streaming media files from client to server | 
+File Streaming |100% | Streaming media files from client to server | -
 Subtitles & streams | 75% | Subtitle & stream selection support | Implemented but untested.
-MediaServer | 100% | Streaming from NymphCast MediaServer instances | 
-URL Streaming | 100% | Streaming from URLs | 
+MediaServer | 100% | Streaming from NymphCast MediaServer instances | -
+URL Streaming | 100% | Streaming from URLs | -
 Codec support | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
 
 
@@ -68,7 +68,7 @@ The following features are considered **experimental** and will exist as a poten
 Category | Status | Description | Notes
 ---|----|---|---
 SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
-Multi-cast | 50% | Synchronised multi-room playback | Basic implementation exists, synchronisation likely to be far from perfect.
+Multi-cast | 75% | Synchronised multi-room playback | Basic implementation exists, synchronisation likely to be far from perfect.
 Apps | 25% | NymphCast Apps | AngelScript-based apps. Implemented as CLI-based interface as well as an HTML-based GUI implementation.
 
 
@@ -79,11 +79,11 @@ The NymphCast project consists out of multiple components:
 
 Component | Purpose | Status
 ---|---|---
-NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1-beta0
-[LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1-beta0
-NymphCast Client | CLI-based NymphCast client. | v0.1-beta0
-NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1-beta0
-[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1-beta0
+NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1
+[LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1
+NymphCast Client | CLI-based NymphCast client. | v0.1
+NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1
+[NymphCast MediaServer](https://github.com/MayaPosch/NymphCast-MediaServer) | Server application for making media content available to NymphCast clients. | v0.1
 
 ### **NymphCast Player Client** ###
 

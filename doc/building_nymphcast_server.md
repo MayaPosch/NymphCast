@@ -1,4 +1,4 @@
-# NymphCast Server #
+:D# NymphCast Server #
 
 NymphCast Server (NCS) forms the core of the [NymphCast](https://github.com/MayaPosch/NymphCast) project. It provides the software that is installed on the receiver system that is connected to the speakers, television or similar. See the [NymphCast README](https://github.com/MayaPosch/NymphCast) for detailed instructions on installing and running NCS.
 
@@ -28,25 +28,25 @@ A C++17-capable GCC toolchain is required in addition to the below dependencies:
 On **Debian** & derivatives:
 
 ```
-sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev libvlc-dev
+sudo apt -y install git g++ libsdl2-image-dev libsdl2-dev libpoco-dev libswscale-dev libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev libpostproc-dev libswresample-dev pkg-config libfreetype6-dev libfreeimage-dev rapidjson-dev libcurl4-gnutls-dev
 ```
 
 On **Arch** & derivatives:
 
 ```
-sudo pacman -S --noconfirm --needed git sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl vlc
+sudo pacman -S --noconfirm --needed git sdl2 sdl2_image poco ffmpeg freetype2 freeimage rapidjson pkgconf curl
 ```
 
 On **Alpine** & derivatives:
 
 ```
-sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev vlc-dev pkg-config
+sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev pkg-config
 ```
 
 On **MSYS2**:
 
 ```
-pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl mingw-w64-x86_64-vlc
+pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
 ```
 
 ## Building The Server ##
