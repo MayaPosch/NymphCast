@@ -1,4 +1,4 @@
-:D# NymphCast Server #
+# NymphCast Server #
 
 NymphCast Server (NCS) forms the core of the [NymphCast](https://github.com/MayaPosch/NymphCast) project. It provides the software that is installed on the receiver system that is connected to the speakers, television or similar. See the [NymphCast README](https://github.com/MayaPosch/NymphCast) for detailed instructions on installing and running NCS.
 
