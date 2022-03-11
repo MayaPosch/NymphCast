@@ -91,7 +91,7 @@ int screen_left = SDL_WINDOWPOS_CENTERED;
 int screen_top = SDL_WINDOWPOS_CENTERED;
 int audio_disable;
 int video_disable;
-int subtitle_disable;
+bool subtitle_disable = true;
 const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
 int seek_by_bytes = -1;
 float seek_interval = 10;
@@ -271,6 +271,11 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((uint8_t) audio_volume.load());
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		key = new std::string("subtitle_disable");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(subtitle_disable);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	else {
 		if (playerStopped) {
@@ -320,6 +325,11 @@ std::map<std::string, NymphPair>* getPlaybackStatus() {
 		key = new std::string("volume");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType((uint8_t) audio_volume.load());
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		key = new std::string("subtitle_disable");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(subtitle_disable);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 	}
 	
@@ -1459,6 +1469,22 @@ NymphMessage* playback_seek(int session, NymphMessage* msg, void* data) {
 }
 
 
+// --- SUBTITLES SET --
+// uint8 subtitles_set()
+NymphMessage* subtitles_set(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Set global subtitle_disable variable.
+	bool stat = msg->parameters()[0]->getBool();
+	subtitle_disable = !stat; // Invert to match intent.
+	
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
+	return returnMsg;
+}
+
+
 // --- PLAYBACK URL ---
 // uint8 playback_url(string)
 NymphMessage* playback_url(int session, NymphMessage* msg, void* data) {
@@ -1956,6 +1982,14 @@ int main(int argc, char** argv) {
 	parameters.push_back(NYMPH_ARRAY);
 	NymphMethod playbackSeekFunction("playback_seek", parameters, NYMPH_UINT8, playback_seek);
 	NymphRemoteClient::registerMethod("playback_seek", playbackSeekFunction);
+	
+	// SubtitlesSet
+	// uint8 subtitles_set()
+	// Turn subtitles on or off.
+	// Returns success or error number.
+	parameters.clear();
+	NymphMethod subtitlesSetFunction("subtitles_set", parameters, NYMPH_UINT8, subtitles_set);
+	NymphRemoteClient::registerMethod("subtitles_set", subtitlesSetFunction);
 	
 	// PlaybackUrl.
 	// uint8 playback_url(string)
