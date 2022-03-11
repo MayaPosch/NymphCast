@@ -182,6 +182,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
+	connect(ui->subtitlesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(toggleSubtitles(int)));
 	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
 	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
 	connect(ui->cycleVideoButton, SIGNAL(clicked()), this, SLOT(cycleVideo()));
@@ -530,6 +531,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->positionSlider->setValue(0);
 		
 		ui->volumeSlider->setValue(status.volume);
+		ui->subtitlesCheckBox->setCheckState((status.subtitles_off) ? Qt::Unchecked : Qt::Checked);
 			
 	}
 	else if (paused) {
@@ -579,6 +581,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->positionSlider->setValue((status.position / status.duration) * 1000);
 		
 		ui->volumeSlider->setValue(status.volume);
+		ui->subtitlesCheckBox->setCheckState((status.subtitles_off) ? Qt::Unchecked : Qt::Checked);
 	}
 	else {
         std::cout << "Status: Set not playing..." << std::endl;
@@ -599,6 +602,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 		ui->positionSlider->setValue(0);
 		
 		ui->volumeSlider->setValue(status.volume);
+		ui->subtitlesCheckBox->setCheckState((status.subtitles_off) ? Qt::Unchecked : Qt::Checked);
 		
 		if (singleCast) {
 			singleCast = false;
@@ -1124,6 +1128,17 @@ void MainWindow::adjustVolume(int value) {
 	if (value < 0 || value > 128) { return; }
 	
 	client.volumeSet(handle, value);
+}
+
+
+// --- TOGGLE SUBTITLES --
+void MainWindow::toggleSubtitles(int state) {
+	uint32_t handle;
+	if (!remoteEnsureConnected(handle)) { return; }
+	
+	bool stat = (state == Qt::Checked) ? true : false;
+	
+	client.enableSubtitles(handle, stat);
 }
 
 

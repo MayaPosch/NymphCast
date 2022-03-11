@@ -393,6 +393,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="subtitlesCheckBox">
+          <property name="text">
+           <string>Enable subtitles (for next video)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
            <widget class="QPushButton" name="cycleSubtitleButton">
