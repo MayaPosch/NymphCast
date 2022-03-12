@@ -1478,6 +1478,9 @@ NymphMessage* subtitles_set(int session, NymphMessage* msg, void* data) {
 	bool stat = msg->parameters()[0]->getBool();
 	subtitle_disable = !stat; // Invert to match intent.
 	
+	// Send status update to clients.
+	sendGlobalStatusUpdate();
+	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
 	
