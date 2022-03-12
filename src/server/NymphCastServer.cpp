@@ -1991,6 +1991,7 @@ int main(int argc, char** argv) {
 	// Turn subtitles on or off.
 	// Returns success or error number.
 	parameters.clear();
+	parameters.push_back(NYMPH_BOOL);
 	NymphMethod subtitlesSetFunction("subtitles_set", parameters, NYMPH_UINT8, subtitles_set);
 	NymphRemoteClient::registerMethod("subtitles_set", subtitlesSetFunction);
 	
