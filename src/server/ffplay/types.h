@@ -393,7 +393,7 @@ extern int screen_left;
 extern int screen_top;
 extern int audio_disable;
 extern int video_disable;
-extern int subtitle_disable;
+extern bool subtitle_disable;
 extern const char* wanted_stream_spec[AVMEDIA_TYPE_NB];
 extern int seek_by_bytes;
 extern float seek_interval;
