@@ -294,9 +294,9 @@ Or (building and running on Windows & other **desktop** platforms):
 With **MSVC** toolchain:
 
 1. Download or clone the project repository.
-2. Ensure [vcpkg](https://vcpkg.io/) is installed and on the system path.
+2. Ensure [vcpkg](https://vcpkg.io/) is installed with the VCPKG_ROOT environment variable defined.
 3. Compile from native x64 MSVC shell using `Setup-NMake-vcpkg.bat`.
-4. Create [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer using `Setup-NMake-vcpkg.bat package` with IS binaries on the system path.
+4. Create [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer using `Setup-NMake-vcpkg.bat package` with the IS root folder in the system path.
 
 On **Android**:
 

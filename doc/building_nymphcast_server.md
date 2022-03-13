@@ -77,7 +77,7 @@ In order to use Clang instead of GCC/MinGW, call `make` as follows:
 
 ## MSVC ##
 
-To compile the server with MSVC (2017, 2019 or 2022), ensure [vcpkg](https://vcpkg.io/) is installed and call the provided .bat file from a native x64 MSVC shell:
+To compile the server with MSVC (2017, 2019 or 2022), ensure [vcpkg](https://vcpkg.io/) is installed with the `VCPKG_ROOT` environment variable defined, and call the provided .bat file from a native x64 MSVC shell:
 
 `Setup-NMake-vcpkg.bat`
 
