@@ -10,7 +10,7 @@ This document covers building NCS from source.
 
 ## Dependencies ##
 
-A C++17-capable GCC toolchain is required in addition to the below dependencies:
+A C++17-capable GCC, Clang or MSVC toolchain is required in addition to the below dependencies:
 
 - [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 - [LibNymphCast](https://github.com/MayaPosch/libnymphcast)
@@ -59,7 +59,7 @@ Or:
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
 
-Else, use the manual procedure:
+Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 2. Install NymphRPC with `sudo make install`.
@@ -68,3 +68,23 @@ Else, use the manual procedure:
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. Use `sudo make install` to install the server and associated files.
 7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
+
+## Clang ##
+
+In order to use Clang instead of GCC/MinGW, call `make` as follows:
+
+`make TOOLCHAIN=clang`
+
+## MSVC ##
+
+To compile the server with MSVC (2017, 2019 or 2022), ensure [vcpkg](https://vcpkg.io/) is installed and call the provided .bat file from a native x64 MSVC shell:
+
+`Setup-NMake-vcpkg.bat`
+
+To remove intermediate build files:
+
+`Setup-NMake-vcpkg.bat clean`
+
+And to create an [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer (with IS binaries on the system path):
+
+`Setup-NMake-vcpkg.bat package`

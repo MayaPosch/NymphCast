@@ -55,7 +55,7 @@ Version 0.1 will be the first release. The following list contains the major fea
 Category | Status | Description | Notes
 ---|----|---|---
 File Streaming |100% | Streaming media files from client to server | -
-Subtitles & streams | 75% | Subtitle & stream selection support | Implemented but untested.
+Subtitles & streams | 75% | Subtitle & stream selection support | Supports embedded bitmap (e.g. PGS) subtitles. Text & external subtitles will be added in v0.2.
 MediaServer | 100% | Streaming from NymphCast MediaServer instances | -
 URL Streaming | 100% | Streaming from URLs | -
 Codec support | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
@@ -79,7 +79,7 @@ The NymphCast project consists out of multiple components:
 
 Component | Purpose | Status
 ---|---|---
-NymphCast Server | Receiver end-point for clients. Connected to the audiovisual device. | v0.1
+NymphCast Server | Receiver end-point for clients. Connected to the display, speakers, etc.. | v0.1
 [LibNymphCast](https://github.com/MayaPosch/libnymphcast) | Library for developing NymphCast clients with. | v0.1
 NymphCast Client | CLI-based NymphCast client. | v0.1
 NymphCast Player | Graphical, Qt-based NymphCast client. SDK reference implementation. | v0.1
@@ -108,7 +108,7 @@ FFmpeg and SDL2 libraries are used for audio and video playback. Both of which a
 
 Video-capable* | Platform |  OS | Notes
 ---|---|---|--
-Yes |x86_64 | Windows | Using MSYS2 as compile & runtime environment.
+Yes |x86_64 | Windows | Using MinGW or MSVC to compile.
 Yes | x86_64 | Linux | Stock install of Manjaro, Raspbian and Debian/Mint.
 Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS (h.264). Note limited support for hardware-acceleration and currently no HEVC support.
 \- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
@@ -286,10 +286,17 @@ For **Windows** (x64):
 Or (building and running on Windows & other **desktop** platforms):
 
 1. Download or clone the project repository 
-5. Ensure the Qt5 SDK is installed along with libPoco, NymphRPC & LibNymphCast.
-6. Create `player/NymphCastPlayer/build` folder and change into it.
-7. Execute `qmake ..` followed by `make`.
-8. The player binary is created either in the same build folder or in a `debug/` sub-folder.
+2. Ensure the Qt5 SDK is installed along with libPoco, NymphRPC & LibNymphCast.
+3. Create `player/NymphCastPlayer/build` folder and change into it.
+4. Execute `qmake ..` followed by `make`.
+5. The player binary is created either in the same build folder or in a `debug/` sub-folder.
+
+With **MSVC** toolchain:
+
+1. Download or clone the project repository.
+2. Ensure [vcpkg](https://vcpkg.io/) is installed and on the system path.
+3. Compile from native x64 MSVC shell using `Setup-NMake-vcpkg.bat`.
+4. Create [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer using `Setup-NMake-vcpkg.bat package` with IS binaries on the system path.
 
 On **Android**:
 
