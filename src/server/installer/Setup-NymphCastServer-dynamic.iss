@@ -50,10 +50,10 @@
 
 #define NcWallPrTaskGroup   "Screen saver Wallpaper Downloads"
 
-#define NcScenicFile        "wallpapers.7z"
+#define NcScenicFile        "wallpapers.zip"
 #define NcScenicUrl         "https://github.com/MayaPosch/NymphCast/releases/download/v0.1-rc0/" + NcScenicFile
-#define NcScenicMsgDl       "Downloading scenic wallpapers"
-#define NcScenicMsgEx       "Extracting scenic wallpapers"
+#define NcScenicMsg         "Extracting scenic wallpapers..."
+; Note: with non-pre-releases, above URL can be changed to use '.../releases/latest/download/...'.
 
 ; Paths for DLLs of dependencies to include:
 
@@ -64,21 +64,7 @@
 
 #define VcRedistFile        "vc_redist.x64.exe"
 #define VcRedistUrl         "https://aka.ms/vs/17/release/" + VcRedistFile
-#define VcRedistMsgDl       "Downloading Microsoft Visual C++ 14.1 RunTime..."
-#define VcRedistMsgIn       "Installing Microsoft Visual C++ 14.1 RunTime..."
-
-; Tools 7z, wget Expected in {NymphCast}/tools/
-;   7z.exe: https://www.7-zip.org/
-; wget.exe: https://eternallybored.org/misc/wget/
-; Both expected in {NymphCast}/tools/
-
-#define ToolPath            "../../../tools/"
-
-#define Wget                "wget.exe"
-#define WgetPath             ToolPath + Wget
-
-#define Sz                  "7z.exe"
-#define SzPath               ToolPath + Sz
+#define VcRedistMsg         "Installing Microsoft Visual C++ 14.1 RunTime..."
 
 [Setup]
 
@@ -180,8 +166,8 @@ Name: "{%HOMEPATH}/.emulationstation/tmp"
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
-Source:  "{#WgetPath}"            ; DestDir: "{tmp}"; Flags: deleteafterinstall;
-Source:  "{#SzPath}"              ; DestDir: "{tmp}"; Flags: deleteafterinstall;
+; Downloaded items: Visual C++ runtime, wallpapers:
+Source: "{tmp}/{#VcRedistFile}"   ; DestDir: "{tmp}"; Flags: external; Check: not VCinstalled
 
 Source: "../apps/*.*"             ; DestDir: "{app}/apps"                   ; Flags: ignoreversion
 Source: "../apps/hellocast/*.*"   ; DestDir: "{app}/apps/hellocast"         ; Flags: ignoreversion
@@ -281,15 +267,11 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 
 [Run]
 
-; If needed, download wallpapers
-; run wget, unzip
-Filename: "{tmp}/{#Wget}"; Parameters: """{#NcScenicUrl}"""  ; WorkingDir: "{tmp}"; StatusMsg: "{#NcScenicMsgDl}"; Tasks: Scenic
+; If needed, unzip the wallpaper archive to {app}/wallpapers; print.exe figures as a no-op here:
+Filename: "print.exe"; AfterInstall: UnzipScenicWallpapers; StatusMsg: "{#NcScenicMsg}"; Tasks: Scenic
 
-Filename: "{tmp}/{#Sz}"  ; Parameters: "x ""{tmp}\{#NcScenicFile}"" -o""{app}\wallpapers"" * -r -aoa"; StatusMsg: "{#NcScenicMsgEx}"; Tasks: Scenic; Flags: runhidden runascurrentuser
-
-; If needed, download and install the Visual C++ runtime:
-Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgDl}"; Check: IsWin64 and not VCinstalled
-Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
+; If needed, download (see TDownloadWizardPage) and install the Visual C++ runtime:
+Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsg}"; Check: not VCinstalled
 
 ; If requested, run NymphCast Server with default configuration:
 Filename: "{%COMSPEC}"; Parameters: "/k """"{app}\bin\{#MyAppExeDestName}"" -c ""{app}/config/{#NcDefaultConfig}"" -a ""{app}/apps"" -r ""{app}/assets"" -w ""{app}/wallpapers"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
@@ -340,5 +322,79 @@ function VCinstalled: Boolean;
     end;
   end;
  end;
+
+var
+  DownloadPage: TDownloadWizardPage;
+
+function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
+begin
+  if Progress = ProgressMax then
+    Log(Format('Successfully downloaded file to {tmp}: %s', [FileName]));
+  Result := True;
+end;
+
+procedure InitializeWizard;
+begin
+  DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @OnDownloadProgress);
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  if (CurPageID = wpReady) and ((not VCinstalled) or WizardIsTaskSelected('Scenic')) then begin
+    DownloadPage.Clear;
+    if not VCinstalled then begin
+      DownloadPage.Add('{#VcRedistUrl}', '{#VcRedistFile}', '');
+    end;
+    if WizardIsTaskSelected('Scenic') then begin
+      DownloadPage.Add('{#NcScenicUrl}', '{#NcScenicFile}', '');
+    end;
+    DownloadPage.Show;
+    try
+      try
+        DownloadPage.Download; // This downloads the files to {tmp}
+        Result := True;
+      except
+        if DownloadPage.AbortedByUser then
+          Log('Aborted by user.')
+        else
+          SuppressibleMsgBox(AddPeriod(GetExceptionMessage), mbCriticalError, MB_OK, IDOK);
+        Result := False;
+      end;
+    finally
+      DownloadPage.Hide;
+    end;
+  end else
+    Result := True;
+end;
+
+const
+  SHCONTCH_NOPROGRESSBOX = 4;
+  SHCONTCH_RESPONDYESTOALL = 16;
+
+procedure UnZip(ZipPath, TargetPath: string);
+var
+  Shell: Variant;
+  ZipFile: Variant;
+  TargetFolder: Variant;
+begin
+  Shell := CreateOleObject('Shell.Application');
+
+  ZipFile := Shell.NameSpace(ZipPath);
+  if VarIsClear(ZipFile) then
+    RaiseException(
+      Format('ZIP file "%s" does not exist or cannot be opened', [ZipPath]));
+
+  TargetFolder := Shell.NameSpace(TargetPath);
+  if VarIsClear(TargetFolder) then
+    RaiseException(Format('Target path "%s" does not exist', [TargetPath]));
+
+  TargetFolder.CopyHere(
+    ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
+end;
+
+procedure UnzipScenicWallpapers;
+begin
+  Unzip(ExpandConstant('{tmp}') + '\{#NcScenicFile}', ExpandConstant('{app}') + '\wallpapers');
+end;
 
 (* End of file *)

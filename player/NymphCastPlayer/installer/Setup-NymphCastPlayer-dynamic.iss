@@ -51,17 +51,7 @@
 
 #define VcRedistFile        "vc_redist.x64.exe"
 #define VcRedistUrl         "https://aka.ms/vs/17/release/" + VcRedistFile
-#define VcRedistMsgDl       "Downloading Microsoft Visual C++ 14.1 RunTime..."
-#define VcRedistMsgIn       "Installing Microsoft Visual C++ 14.1 RunTime..."
-
-; Tools 7z, wget Expected in {NymphCast}/tools/
-; wget.exe: https://eternallybored.org/misc/wget/
-; Expected in {NymphCast}/tools/
-
-#define ToolPath            "../../../tools/"
-
-#define Wget                "wget.exe"
-#define WgetPath             ToolPath + Wget
+#define VcRedistMsg         "Installing Microsoft Visual C++ 14.1 RunTime..."
 
 ; Workaround for vcpkg Qt5 not ready:
 
@@ -144,8 +134,8 @@ Name: "{app}/bin"
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
-; Tools:
-Source: "{#WgetPath}"; DestDir: "{tmp}"; Flags: deleteafterinstall;
+; Visual C++ runtime:
+Source: "{tmp}/{#VcRedistFile}"; DestDir: "{tmp}"; Flags: external; Check: not VCinstalled
 
 ; Program and DLLs of dependencies:
 
@@ -195,9 +185,8 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 
 [Run]
 
-; If needed, download and install the Visual C++ runtime:
-Filename: "{tmp}/{#Wget}"        ; Parameters: """{#VcRedistUrl}"""; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgDl}"; Check: IsWin64 and not VCinstalled
-Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsgIn}"; Check: IsWin64 and not VCinstalled
+; If needed, download (see TDownloadWizardPage) and install the Visual C++ runtime:
+Filename: "{tmp}/{#VcRedistFile}"; Parameters: "/install /passive" ; WorkingDir: "{tmp}"; StatusMsg: "{#VcRedistMsg}"; Check: not VCinstalled
 
 ; If requested, run NymphCast Player:
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
@@ -233,5 +222,44 @@ function VCinstalled: Boolean;
     end;
   end;
  end;
+
+var
+  DownloadPage: TDownloadWizardPage;
+
+function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
+begin
+  if Progress = ProgressMax then
+    Log(Format('Successfully downloaded file to {tmp}: %s', [FileName]));
+  Result := True;
+end;
+
+procedure InitializeWizard;
+begin
+  DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @OnDownloadProgress);
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  if (CurPageID = wpReady) and (not VCinstalled) then begin
+    DownloadPage.Clear;
+    DownloadPage.Add('{#VcRedistUrl}', '{#VcRedistFile}', '');
+    DownloadPage.Show;
+    try
+      try
+        DownloadPage.Download; // This downloads the files to {tmp}
+        Result := True;
+      except
+        if DownloadPage.AbortedByUser then
+          Log('Aborted by user.')
+        else
+          SuppressibleMsgBox(AddPeriod(GetExceptionMessage), mbCriticalError, MB_OK, IDOK);
+        Result := False;
+      end;
+    finally
+      DownloadPage.Hide;
+    end;
+  end else
+    Result := True;
+end;
 
 (* End of file *)
