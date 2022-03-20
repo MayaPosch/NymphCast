@@ -268,49 +268,11 @@ The **NymphCast Player** is a GUI-based application and accepts no command line 
 <a id="id-bfs"></a>
 ## Building From Source ##
 
-**Note:** This section is for building the project from source. Pre-built binaries are provided in the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder.
+**Note:** This section is for building the project from source. Pre-built binaries are provided on the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) page.
 
-**Server:**
+**Server:** [Server building instructions](doc/building_nymphcast_server.md)
 
-[Server building instructions](doc/building_nymphcast_server.md)
-
-
-### **Building The NymphCast Player Client** ###
-
-This demonstration client uses Qt5 to provide user interface functionality. The binary release comes with the necessary dependencies, but when building it from source, make sure Qt5.x is installed or get it from [www.qt.io](https://www.qt.io/download).
-
-For **Windows** (x64):
-
-1. Download and extract the binary release.
-
-Or (building and running on Windows & other **desktop** platforms):
-
-1. Download or clone the project repository 
-2. Ensure the Qt5 SDK is installed along with libPoco, NymphRPC & LibNymphCast.
-3. Create `player/NymphCastPlayer/build` folder and change into it.
-4. Execute `qmake ..` followed by `make`.
-5. The player binary is created either in the same build folder or in a `debug/` sub-folder.
-
-With **MSVC** toolchain:
-
-1. Download or clone the project repository.
-2. Ensure [vcpkg](https://vcpkg.io/) is installed with the VCPKG_ROOT environment variable defined.
-3. Compile from native x64 MSVC shell using `Setup-NMake-vcpkg.bat`.
-4. Create [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer using `Setup-NMake-vcpkg.bat package` with the IS root folder in the system path.
-
-On **Android**:
-
-**Note:** Poco for Android must be built using the patches provided with the [alternate Poco build system](https://github.com/MayaPosch/Poco-build) for certain network functionality to function.
-
-1. Download or clone the project repository.
-2. Compile the dependencies (LibNymphCast, NymphRPC & Poco) for the target Android platforms.
-3. Ensure dependency libraries along with their headers are installed in the Android NDK, under `<ANDROID_SDK>/ndk/<VERSION>/toolchains/llvm/prebuilt/<HOST_OS>/sysroot/usr/lib/<TARGET>` where `TARGET` is the target Android platform (ARMv7, AArch64, x86, x86_64). Header files are placed in the accompanying `usr/include` folder.
-4. Open the Qt project in a Qt Creator instance which has been configured for building for Android targets, and build the project.
-5. An APK is produced, which can be loaded on any supported Android device.
-
-
-Now you should be able to execute the player binary, connect to the server instance using its IP address and start casting media from a file or URL.
-
+**Player:** [Player building instructions](doc/building_nymphcast_player.md)
 
 
 <a id="id-dg"></a>
