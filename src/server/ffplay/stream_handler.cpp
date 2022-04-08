@@ -112,7 +112,7 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
 	
     avctx->pkt_timebase = ic->streams[stream_index]->time_base;
 
-    codec = avcodec_find_decoder(avctx->codec_id);
+    codec = (AVCodec*) avcodec_find_decoder(avctx->codec_id);
 
     switch(avctx->codec_type){
         case AVMEDIA_TYPE_AUDIO   : is->last_audio_stream    = stream_index; forced_codec_name =    audio_codec_name; break;
@@ -121,7 +121,7 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
     }
 	
     if (forced_codec_name)
-        codec = avcodec_find_decoder_by_name(forced_codec_name);
+        codec = (AVCodec*) avcodec_find_decoder_by_name(forced_codec_name);
 	
     if (!codec) {
         if (forced_codec_name) av_log(NULL, AV_LOG_WARNING,
