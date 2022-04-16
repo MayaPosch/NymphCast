@@ -40,7 +40,8 @@ extern "C" {
 #include "libavfilter/buffersrc.h"
 #endif
 
-#include "cmdutils.h"
+//#include "cmdutils.h"
+#include "libavcodec/avcodec.h"
 }
 
 
@@ -458,6 +459,12 @@ extern const uint32_t nymph_seek_event;
 extern Poco::Condition gCon;
 extern Poco::Condition playerCon;
 extern Poco::Mutex playerMutex;
+
+//extern AVCodecContext *avcodec_opts[AVMEDIA_TYPE_NB];
+//extern AVFormatContext *avformat_opts;
+extern AVDictionary *sws_dict;
+extern AVDictionary *swr_opts;
+extern AVDictionary *format_opts, *codec_opts, *resample_opts;
 
 
 #endif

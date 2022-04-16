@@ -63,7 +63,7 @@ static void do_exit(VideoState *is) {
 		StreamHandler::stream_close(is);
 	}
 	
-	uninit_opts();
+	//uninit_opts();
 #if CONFIG_AVFILTER
 	av_freep(&vfilters_list);
 #endif
@@ -210,9 +210,14 @@ bool Ffplay::playTrack() {
 }
 
 
+void init_opts(void) {
+    av_dict_set(&sws_dict, "flags", "bicubic", 0);
+}
+
+
 // --- RUN ---
 void Ffplay::run() {
-	init_dynload();
+	//init_dynload();
 
 	avdevice_register_all();
 	avformat_network_init();

@@ -9,6 +9,10 @@
 #include "sdl_renderer.h"
 #include "decoder.h"
 
+extern "C" {
+#include "libavutil/display.h"
+}
+
 #include "ffplay.h"
 
 
@@ -266,6 +270,25 @@ fail:
 }
 
 
+double get_rotation(AVStream *st) {
+    uint8_t* displaymatrix = av_stream_get_side_data(st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
+    double theta = 0;
+    if (displaymatrix) {
+        theta = -av_display_rotation_get((int32_t*) displaymatrix);
+	}
+
+    theta -= 360*floor(theta/360 + 0.9/360);
+
+    if (fabs(theta - 90*round(theta/90)) > 2)
+        av_log(NULL, AV_LOG_WARNING, "Odd rotation angle.\n"
+               "If you want to help, upload a sample "
+               "of this file to ftp://upload.ffmpeg.org/incoming/ "
+               "and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)");
+
+    return theta;
+}
+
+
 static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const char *vfilters, AVFrame *frame)
 {
     enum AVPixelFormat pix_fmts[FF_ARRAY_ELEMS(sdl_texture_format_map)];
@@ -289,7 +312,7 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
     }
     pix_fmts[nb_pix_fmts] = AV_PIX_FMT_NONE;
 
-    while ((e = av_dict_get(sws_dict, "", e, AV_DICT_IGNORE_SUFFIX))) {
+   while ((e = av_dict_get(sws_dict, "", e, AV_DICT_IGNORE_SUFFIX))) {
         if (!strcmp(e->key, "sws_flags")) {
             av_strlcatf(sws_flags_str, sizeof(sws_flags_str), "%s=%s:", "flags", e->value);
         } else
