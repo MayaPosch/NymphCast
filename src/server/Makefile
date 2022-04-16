@@ -128,7 +128,7 @@ GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/app/views/*.cpp) \
 				$(wildcard gui/app/views/gamelist/*.cpp) \
 				$(wildcard gui/app/pugixml/src/*.cpp)
-C_SOURCES := 	$(wildcard *.c) $(wildcard ffplay/*.c)
+#C_SOURCES := 	$(wildcard *.c) $(wildcard ffplay/*.c)
 OBJECTS := 		$(addprefix obj/$(TARGET_BIN),$(notdir) $(SOURCES:.cpp=.o))
 GUI_OBJECTS := 	$(addprefix obj/$(TARGET_BIN),$(notdir) $(GUI_SOURCES:.cpp=.o))
 C_OBJECTS := 	$(addprefix obj/$(TARGET_BIN),$(notdir) $(C_SOURCES:.c=.o))
