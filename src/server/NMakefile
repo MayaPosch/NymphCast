@@ -483,8 +483,7 @@ LIB_SDKUCRTPATH = $(WINDOWSSDKDIR)LIB\$(WINDOWSSDKLIBVERSION)ucrt\$(LNK_MACHINE)
 !if 0
 
 LIB_SOURCES_DIR = \
-	$(SRC_FOLDER)/ffplay/ffplay.cpp \
-	$(SRC_FOLDER)/ffplay/cmdutils.c
+	$(SRC_FOLDER)/ffplay/ffplay.cpp
 
 !else
 
@@ -679,8 +678,10 @@ LIB_SOURCES_DIR = \
 	$(SRC_FOLDER)/lcdapi/sensors/LCDSystemSensor.cpp \
 	$(SRC_FOLDER)/lcdapi/sensors/LCDTimeSensor.cpp
 
-LIB_CSOURCES_DIR = \
-	$(SRC_FOLDER)/ffplay/cmdutils.c
+# Note: LIB_CSOURCES_DIR previously used for ./ffplay/cmdutils.c:
+
+LIB_CSOURCES_DIR =
+
 !endif
 
 # Two steps:
