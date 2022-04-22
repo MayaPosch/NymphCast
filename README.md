@@ -50,7 +50,7 @@ Please ensure that these ports are whitelisted in e.g. firewall rules if applica
 
 ## Features & Status ##
 
-Version 0.1 will be the first release. The following list contains the major features that are planned for the v0.1 release, along with their implementation status.
+Version 0.1 is the initial release. The following list contains the major features that are in the v0.1 release, along with status notes.
 
 Category | Status | Description | Notes
 ---|----|---|---
@@ -63,7 +63,7 @@ Codec support | 100% | Audio & Video codec support | Supports all codecs support
 
 **Experimental features:**
 
-The following features are considered **experimental** and will exist as a potential v0.2 preview in v0.1-release:
+The following features are considered **experimental** and exist as a potential v0.2 preview in v0.1:
 
 Category | Status | Description | Notes
 ---|----|---|---
@@ -146,7 +146,7 @@ To start using NymphCast, you need a device on which the server will be running 
 
 ### **Releases** ###
 
-NymphCast is currently in RC stage. Releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
+NymphCast releases are available on Github (see the ['Releases'](https://github.com/MayaPosch/NymphCast/releases) folder).
 
 Some packages also exist for selected platforms.
 
