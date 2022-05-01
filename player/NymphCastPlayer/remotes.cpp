@@ -52,11 +52,13 @@ void RemotesDialog::setRemoteList(std::vector<NCRemoteInstance> &remotes) {
 			item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.ipv4 + 
 										" (" + remotes[i].remote.name + ") [Manual]"),
 													ui->remotesListWidget);
+			item->setData(Qt::UserRole, QVariant(i));
 		}
 		else {
 			item = new QListWidgetItem(QString::fromStdString(remotes[i].remote.ipv4 + 
 										" (" + remotes[i].remote.name + ")"),
 													ui->remotesListWidget);
+			item->setData(Qt::UserRole, QVariant(i));
 		}
 	}
 }
@@ -133,6 +135,7 @@ void RemotesDialog::addToGroup() {
 		for (uint32_t j = 0; j < group.remotes.size(); ++j) {
 			if (remote.handle == group.remotes[j].handle) {
 				// Remote is already in the list. Skip.
+				QMessageBox::warning(this, tr("Already in group"), tr("The selected remote is already in the group."));
 				found = true;
 				break;
 			}
