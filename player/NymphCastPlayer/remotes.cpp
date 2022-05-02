@@ -133,7 +133,7 @@ void RemotesDialog::addToGroup() {
 		NCRemoteInstance& remote = remotes[items[i]->data(Qt::UserRole).toUInt()];
 		bool found = false;
 		for (uint32_t j = 0; j < group.remotes.size(); ++j) {
-			if (remote.handle == group.remotes[j].handle) {
+			if (remote.remote.name == group.remotes[j].remote.name) {
 				// Remote is already in the list. Skip.
 				QMessageBox::warning(this, tr("Already in group"), tr("The selected remote is already in the group."));
 				found = true;
@@ -144,8 +144,9 @@ void RemotesDialog::addToGroup() {
 		if (!found) {
 			// Add to UI & groups.
 			group.remotes.push_back(remote);
-			QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remote.remote.name),
-													ui->groupRemotesListWidget);
+			QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remote.remote.name)
+										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
+										")", ui->groupRemotesListWidget);
 			item->setData(Qt::UserRole, QVariant((uint32_t) group.remotes.size() - 1));
 		}
 	}
@@ -166,8 +167,9 @@ void RemotesDialog::changeActiveGroup(int index) {
 	ui->groupRemotesListWidget->clear();
 	std::vector<NCRemoteInstance>& rem = groups[index].remotes;
 	for (uint32_t i = 0; i < rem.size(); ++i) {
-		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name),
-													ui->groupRemotesListWidget);
+		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name)
+										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
+										")", ui->groupRemotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}
 	
@@ -194,8 +196,9 @@ void RemotesDialog::deleteGroupRemote() {
 	ui->groupRemotesListWidget->clear();
 	std::vector<NCRemoteInstance>& rem = group.remotes;
 	for (uint32_t i = 0; i < rem.size(); ++i) {
-		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name),
-													ui->groupRemotesListWidget);
+		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name)
+										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
+										")", ui->groupRemotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}
 }
