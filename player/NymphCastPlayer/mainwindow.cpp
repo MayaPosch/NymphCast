@@ -1192,17 +1192,19 @@ bool MainWindow::remoteEnsureConnected(uint32_t &handle) {
 	
 	if (index > separatorIndex) {
 		NCRemoteGroup& group = groups[id];
-		handle = group.remotes[0].handle;
 		if (!group.remotes[0].connected) {
 			if (!connectRemote(group.remotes[0])) { return false; }
 		}
+		
+		handle = group.remotes[0].handle;
 	}
 	else {
 		// Ensure the remote is connected.
-		handle = remotes[id].handle;
 		if (!remotes[id].connected) {
 			if (!connectRemote(remotes[id])) { return false; }
 		}
+		
+		handle = remotes[id].handle;
 	}
 	
 	return true;
