@@ -1337,6 +1337,11 @@ void MainWindow::anchorClicked(const QUrl &link) {
 																appStr, 
 																cmdStr, 1);
 																
+		if (response.size() < 20) {
+			// No full page received, retain last content.
+			return;
+		}
+																
 		// Response contains the new HTML to display. Load this into the view.
 		ui->appTabGuiTextBrowser->setHtml(QString::fromStdString(response));
     }
