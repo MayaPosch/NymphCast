@@ -29,7 +29,7 @@ NymphCast Release Notes
 	
 **Notes**
 
-As an initial release, NymphCast v0.1 is primarily focused on the core functionality of streaming media content, whether from a (HTTP/RTSP) URL, or a NC Client or MediaServer instance. 
+As an initial release, NymphCast v0.1 is primarily focused on the core functionality of streaming media content, whether from a (HTTP/RTSP) URL, or a NymphCast Client or MediaServer instance. 
 
 Supported media formats are those which are supported by the used ffmpeg (LibAV) libraries. This includes all common types and many less common ones. Playback performance is limited by the used hardware.
 
