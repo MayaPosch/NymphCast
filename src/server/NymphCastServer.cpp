@@ -416,8 +416,51 @@ void sendGlobalStatusUpdate() {
 // --- START SLAVE PLAYBACK ---
 // [Master] Signal slaves that they can begin playback.
 bool startSlavePlayback() {
-	//
-	for (uint32_t i = 0; i < slave_remotes.size(); ++i) {
+	// Start slaves according to the average connection latency.
+	Poco::Timestamp ts;
+	int64_t now = (int64_t) ts.epochMicroseconds();
+	//then = now + (slaveLatencyMax * 2);
+		
+	// Timing: 	Multiply the max slave latency by the number of slaves. After sending this delay
+	// 			to the first slave (minus half its recorded latency), 
+	// 			subtract the time it took to send to this slave from the
+	//			first delay, then send this new delay to the second slave, and so on.
+	int64_t countdown = slaveLatencyMax * slave_remotes.size();
+	
+	int64_t then = 0;
+	for (int i = 0; i < slave_remotes.size(); ++i) {
+		NymphCastSlaveRemote& rm = slave_remotes[i];
+		//then = slaveLatencyMax - rm.delay;
+		then = countdown - (rm.delay / 2);
+			
+		int64_t send = (int64_t) ts.epochMicroseconds();
+		
+		// Prepare data vector.
+		std::vector<NymphType*> values;
+		values.push_back(new NymphType(then));
+			
+		std::string result;
+		NymphType* returnValue = 0;
+		if (!NymphRemoteServer::callMethod(rm.handle, "slave_start", values, returnValue, result)) {
+			NYMPH_LOG_ERROR("Calling slave_start failed: " + result);
+			return false;
+		}
+			
+		delete returnValue;
+			
+		int64_t receive = (int64_t) ts.epochMicroseconds();
+			
+		countdown -= (receive - send);
+	}
+		
+	// Wait out the countdown before returning.
+	std::condition_variable cv;
+	std::mutex cv_m;
+	std::unique_lock<std::mutex> lk(cv_m);
+	std::chrono::microseconds dur(countdown);
+	while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
+	
+	/* for (uint32_t i = 0; i < slave_remotes.size(); ++i) {
 		//
 		NymphType* resVal = 0;
 		std::string result;
@@ -426,7 +469,7 @@ bool startSlavePlayback() {
 			NYMPH_LOG_ERROR("Calling slave_start failed: " + result);
 			return false;
 		}
-	}
+	} */
 	
 	return true;
 }
@@ -666,6 +709,7 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
 	// Playback is started in its own function, which is called by the master when it's ready.
+	int64_t then = 0;
 	if (!ffplay.playbackActive()) {
 		// Start the player when the delay in 'when' has been reached.
 		std::condition_variable cv;
@@ -701,9 +745,9 @@ NymphMessage* slave_start(int session, NymphMessage* msg, void* data) {
 	// Extract data blob and add it to the buffer.
 	//NymphType* mediaData = msg->parameters()[0];
 	//bool done = msg->parameters()[1]->getBool();
-	//int64_t when = msg->parameters()[0]->getInt64();
+	int64_t when = msg->parameters()[0]->getInt64();
 	
-	/* if (!ffplay.playbackActive()) {
+	if (!ffplay.playbackActive()) {
 		// Start the player when the delay in 'when' has been reached.
 		std::condition_variable cv;
 		std::mutex cv_m;
@@ -713,10 +757,7 @@ NymphMessage* slave_start(int session, NymphMessage* msg, void* data) {
 		std::chrono::time_point<std::chrono::system_clock> then(dur);
 		//while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
 		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
-		
-		// Start player.
-		ffplay.playTrack();
-	} */
+	}
 	
 	// Trigger the playback start condition variable that will resume the read_thread of this slave
 	// receiver's ffplay module.
@@ -1948,7 +1989,7 @@ int main(int argc, char** argv) {
 	// Receives data chunks for playback.
 	// uint8 slave_start(sint64 when)
 	parameters.clear();
-	//parameters.push_back(NYMPH_SINT64);
+	parameters.push_back(NYMPH_SINT64);
 	NymphMethod slaveStartFunction("slave_start", parameters, NYMPH_UINT8, slave_start);
 	NymphRemoteClient::registerMethod("slave_start", slaveStartFunction);
 	
