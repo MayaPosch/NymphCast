@@ -551,11 +551,11 @@ static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     }
 }
 
-static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial) {
-    /* update current video pts */
+/* static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial) {
+    // update current video pts
     ClockC::set_clock(&is->vidclk, pts, serial);
     ClockC::sync_clock_to_slave(&is->extclk, &is->vidclk);
-}
+} */
 
 
 /* this thread gets the stream from the disk or the network */
@@ -610,11 +610,14 @@ int StreamHandler::read_thread(void *arg) {
     }
 	
 	// Open the input file or stream.
+	// If in slave mode, ignore any errors here.
     err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
     if (err < 0) {
         print_error(is->filename, err);
-        ret = -1;
-        goto fail;
+		if (serverMode != NCS_MODE_SLAVE) {
+			ret = -1;
+			goto fail;
+		}
     }
 	
 	// Log stream info.
@@ -807,6 +810,17 @@ int StreamHandler::read_thread(void *arg) {
 	
 	// Buffering ahead can now commence as all headers etc. should have been seeked to.
 	DataBuffer::startBufferAhead();
+	
+	// TODO: Start slave playback here if we're in master mode. In slave mode wait here.
+	if (serverMode == NCS_MODE_SLAVE) {
+		slavePlayMutex.lock();
+		slavePlayCon.wait(slavePlayMutex);
+		slavePlayMutex.unlock();
+	}
+	else if (serverMode == NCS_MODE_MASTER) {
+		//
+		startSlavePlayback();
+	}
 
 	// Start the main processing loop.
 	run = true;

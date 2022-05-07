@@ -151,6 +151,8 @@ struct CastClient {
 std::atomic<bool> playerPaused = { false };
 std::atomic<bool> playerStopped = { false };	// Playback was stopped by the user.
 Poco::Thread avThread;
+Poco::Condition slavePlayCon;
+Poco::Mutex slavePlayMutex;
 
 //#ifndef _MSC_VER
 // LCDProc client.
@@ -173,7 +175,27 @@ std::string loggerName = "NymphCastServer";
 
 NCApps nc_apps;
 std::map<int, CastClient> clients;
+
+
+// Data structure.
+struct SessionParams {
+	int max_buffer;
+};
+
+struct NymphCastSlaveRemote {
+	std::string name;
+	std::string ipv4;
+	std::string ipv6;
+	uint16_t port;
+	uint32_t handle;
+	int64_t delay;
+};
+
+NcsMode serverMode = NCS_MODE_STANDALONE;
+std::vector<NymphCastSlaveRemote> slave_remotes;
+uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 // ---
+
 
 
 // --- MEDIA READ CALLBACK ---
@@ -391,6 +413,25 @@ void sendGlobalStatusUpdate() {
 }
 
 
+// --- START SLAVE PLAYBACK ---
+// [Master] Signal slaves that they can begin playback.
+bool startSlavePlayback() {
+	//
+	for (uint32_t i = 0; i < slave_remotes.size(); ++i) {
+		//
+		NymphType* resVal = 0;
+		std::string result;
+		std::vector<NymphType*> values;
+		if (!NymphRemoteClient::callCallback(slave_remotes[i].handle, "slave_start", values, result)) {
+			NYMPH_LOG_ERROR("Calling slave_start failed: " + result);
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+
 // --- DATA REQUEST HANDLER ---
 // Allows the DataBuffer to request more file data from a client.
 bool dataRequestHandler(uint32_t session) {
@@ -418,6 +459,22 @@ bool dataRequestHandler(uint32_t session) {
 // --- SEEKING HANDLER ---
 void seekingHandler(uint32_t session, int64_t offset) {
 	if (DataBuffer::seeking()) {
+		if (serverMode == NCS_MODE_MASTER) {
+			// Send data buffer reset notification. This ensures that those are all reset as well.
+			for (int i = 0; i < slave_remotes.size(); ++i) {
+				NymphCastSlaveRemote& rm = slave_remotes[i];
+				std::vector<NymphType*> values;
+				std::string result;
+				NymphType* returnValue = 0;
+				if (!NymphRemoteServer::callMethod(rm.handle, "slave_buffer_reset", values, returnValue, result)) {
+					// TODO: Handle error. Check return value.
+					NYMPH_LOG_ERROR("Calling slave_buffer_reset failed.");
+				}
+				
+				delete returnValue;
+			}	
+		}
+		
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;
 		values.push_back(new NymphType((uint64_t) offset));
@@ -504,32 +561,6 @@ void signal_handler(int signal) {
 	NYMPH_LOG_INFORMATION("SIGINT handler called. Shutting down...");
 	SdlRenderer::stop_event_loop();
 }
-
-
-// Data structure.
-struct SessionParams {
-	int max_buffer;
-};
-
-struct NymphCastSlaveRemote {
-	std::string name;
-	std::string ipv4;
-	std::string ipv6;
-	uint16_t port;
-	uint32_t handle;
-	int64_t delay;
-};
-
-
-enum NcsMode {
-	NCS_MODE_STANDALONE = 0,
-	NCS_MODE_MASTER,
-	NCS_MODE_SLAVE
-};
-
-NcsMode serverMode = NCS_MODE_STANDALONE;
-std::vector<NymphCastSlaveRemote> slave_remotes;
-uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
 
 
 // Callback for the connect function.
@@ -621,8 +652,8 @@ NymphMessage* connectMaster(int session, NymphMessage* msg, void* data) {
 
 
 // --- RECEIVE DATA MASTER ---
-// Receives data chunks for playback.
-// uint8 receiveDataMaster(blob data)
+// Receives data chunks for playback from a master receiver. (Slave-only)
+// uint8 receiveDataMaster(blob data, bool done, sint64 when)
 NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
@@ -634,6 +665,7 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	// Write string into buffer.
 	DataBuffer::write(mediaData->getChar(), mediaData->string_length());
 	
+	// Playback is started in its own function, which is called by the master when it's ready.
 	if (!ffplay.playbackActive()) {
 		// Start the player when the delay in 'when' has been reached.
 		std::condition_variable cv;
@@ -651,6 +683,45 @@ NymphMessage* receiveDataMaster(int session, NymphMessage* msg, void* data) {
 	
 	if (done) {
 		DataBuffer::setEof(done);
+	}
+	
+	msg->discard();
+	
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	return returnMsg;
+}
+
+
+// --- SLAVE START ---
+// Receives data chunks for playback from a master receiver. (Slave-only)
+// uint8 slave_start(int64 when)
+NymphMessage* slave_start(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Extract data blob and add it to the buffer.
+	//NymphType* mediaData = msg->parameters()[0];
+	//bool done = msg->parameters()[1]->getBool();
+	//int64_t when = msg->parameters()[0]->getInt64();
+	
+	/* if (!ffplay.playbackActive()) {
+		// Start the player when the delay in 'when' has been reached.
+		std::condition_variable cv;
+		std::mutex cv_m;
+		std::unique_lock<std::mutex> lk(cv_m);
+		//std::chrono::system_clock::time_point then = std::chrono::system_clock::from_time_t(when);
+		std::chrono::microseconds dur(when);
+		std::chrono::time_point<std::chrono::system_clock> then(dur);
+		//while (cv.wait_until(lk, then) != std::cv_status::timeout) { }
+		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
+		
+		// Start player.
+		ffplay.playTrack();
+	} */
+	
+	// Trigger the playback start condition variable that will resume the read_thread of this slave
+	// receiver's ffplay module.
+	if (serverMode == NCS_MODE_SLAVE) {
+		slavePlayCon.signal();
 	}
 	
 	msg->discard();
@@ -824,6 +895,25 @@ NymphMessage* session_meta(int session, NymphMessage* msg, void* data) {
 // int session_add_slave(array servers);
 NymphMessage* session_add_slave(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Disconnect slaves and clear array.
+	// TODO: Maybe merge this with proper session management.
+	for (uint32_t i = 0; i < slave_remotes.size(); ++i) {
+		NymphCastSlaveRemote& rm = slave_remotes[i];
+		std::string result;
+		if (!NymphRemoteServer::disconnect(rm.handle, result)) {
+			// Failed to connect, error out. Disconnect from any already connected slaves.
+			NYMPH_LOG_ERROR("Slave disconnection error: " + result);
+			
+			returnMsg->setResultValue(new NymphType((uint8_t) 1));
+			msg->discard();
+			
+			return returnMsg;
+		}
+	}
+	
+	slave_remotes.clear();
+	slaveLatencyMax = 0;
 	
 	// Extract the array.
 	std::vector<NymphType*>* remotes = msg->parameters()[0]->getArray();
@@ -1053,6 +1143,29 @@ NymphMessage* session_end(int session, NymphMessage* msg, void* data) {
 	}
 	
 	it->second.sessionActive = false;
+	
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	
+	return returnMsg;
+}
+
+
+// --- SLAVE BUFFER RESET ---
+// Called to reset the slave's local data buffer.
+// Returns: OK (0), ERROR (1).
+// int slave_buffer_reset()
+NymphMessage* slave_buffer_reset(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Call DataBuffer's reset function.
+	if (!DataBuffer::reset()) {
+		NYMPH_LOG_ERROR("Resetting data buffer failed.");
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		
+		return returnMsg;
+	}
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
 	msg->discard();
@@ -1802,8 +1915,8 @@ int main(int argc, char** argv) {
 	
 	// Initialise the server.
 	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
-	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
 	
 	
 	// Define all of the RPC methods we want to export for clients.
@@ -1831,6 +1944,13 @@ int main(int argc, char** argv) {
 	parameters.push_back(NYMPH_SINT64);
 	NymphMethod receivedataMasterFunction("receiveDataMaster", parameters, NYMPH_UINT8, receiveDataMaster);
 	NymphRemoteClient::registerMethod("receiveDataMaster", receivedataMasterFunction);
+	
+	// Receives data chunks for playback.
+	// uint8 slave_start(sint64 when)
+	parameters.clear();
+	//parameters.push_back(NYMPH_SINT64);
+	NymphMethod slaveStartFunction("slave_start", parameters, NYMPH_UINT8, slave_start);
+	NymphRemoteClient::registerMethod("slave_start", slaveStartFunction);
 	
 	// Client disconnects from server.
 	// bool disconnect()
@@ -1880,6 +2000,13 @@ int main(int argc, char** argv) {
 	parameters.clear();
 	NymphMethod sessionEndFunction("session_end", parameters, NYMPH_UINT8, session_end);
 	NymphRemoteClient::registerMethod("session_end", sessionEndFunction);
+	
+	// Reset slave data buffer.
+	// Returns: OK (0), ERROR (1).
+	// int slave_buffer_reset()
+	parameters.clear();
+	NymphMethod slaveBufferResetFunction("slave_buffer_reset", parameters, NYMPH_UINT8, slave_buffer_reset);
+	NymphRemoteClient::registerMethod("slave_buffer_reset", slaveBufferResetFunction);
 	
 	// Playback control methods.
 	//

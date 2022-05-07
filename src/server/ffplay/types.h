@@ -459,6 +459,17 @@ extern const uint32_t nymph_seek_event;
 extern Poco::Condition gCon;
 extern Poco::Condition playerCon;
 extern Poco::Mutex playerMutex;
+extern Poco::Condition slavePlayCon;
+extern Poco::Mutex slavePlayMutex;
+
+
+enum NcsMode {
+	NCS_MODE_STANDALONE = 0,
+	NCS_MODE_MASTER,
+	NCS_MODE_SLAVE
+};
+
+extern NcsMode serverMode;
 
 //extern AVCodecContext *avcodec_opts[AVMEDIA_TYPE_NB];
 //extern AVFormatContext *avformat_opts;

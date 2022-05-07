@@ -74,8 +74,9 @@ struct FileMetaInfo {
 // --- Globals ---
 extern FileMetaInfo file_meta;
 	
-void finishPlayback(); // Defined in NymphCastServer.cpp
-void sendGlobalStatusUpdate();
+void finishPlayback(); 			// Defined in NymphCastServer.cpp
+void sendGlobalStatusUpdate();	// Defined in NymphCastServer.cpp
+bool startSlavePlayback();		// Defined in NymphCastServer.cpp
 
 	
 class Ffplay : public Poco::Runnable {
