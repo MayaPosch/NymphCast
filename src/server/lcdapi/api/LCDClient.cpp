@@ -119,11 +119,12 @@ LCDClient::~LCDClient()
     const LCDLock l(&_sendMutex);
     _serverConnection << "bye";
   }
-
+#ifndef __ANDROID__
   if (::pthread_cancel(_mainThread) == 0)
   {
     ::pthread_join(_mainThread, 0);
   }
+#endif
   ::pthread_mutex_destroy(&_sendMutex);
   ::pthread_cond_destroy(&_gotAnswer);
 }
@@ -224,7 +225,9 @@ void LCDClient::menuSetMain(const std::string& id)
 
 void LCDClient::mainLoop()
 {
+#ifndef __ANDROID__
   ::pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+#endif
   string reply;
   while(true)
   {

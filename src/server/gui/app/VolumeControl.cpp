@@ -24,6 +24,8 @@ VolumeControl::VolumeControl()
 	: originalVolume(0), internalVolume(0)
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	, mixerIndex(0), mixerHandle(nullptr), mixerElem(nullptr), mixerSelemId(nullptr)
 #elif defined(_MSC_VER)
@@ -40,6 +42,8 @@ VolumeControl::VolumeControl(const VolumeControl & right):
 	originalVolume(0), internalVolume(0)
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	, mixerIndex(0), mixerHandle(nullptr), mixerElem(nullptr), mixerSelemId(nullptr)
 #elif defined(_MSC_VER)
@@ -83,6 +87,8 @@ void VolumeControl::init()
 	//initialize audio mixer interface
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	//try to open mixer device
 	if (mixerHandle == nullptr)
@@ -231,6 +237,8 @@ void VolumeControl::deinit()
 	//deinitialize audio mixer interface
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	if (mixerHandle != nullptr) {
 		snd_mixer_detach(mixerHandle, mixerCard);
@@ -258,6 +266,8 @@ int VolumeControl::getVolume() const
 
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	if (mixerElem != nullptr)
 	{
@@ -352,6 +362,8 @@ void VolumeControl::setVolume(int volume)
 	internalVolume = volume;
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	//
 #elif defined(__linux__)
 	if (mixerElem != nullptr)
 	{

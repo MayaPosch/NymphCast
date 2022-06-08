@@ -25,14 +25,18 @@ namespace lcdapi {
 LCDLock::LCDLock(LCDMutex *mutex)
   : _lcdMutex(mutex), _posixMutex(NULL), _useLCD(true)
 {
+#ifndef __ANDROID__
   ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
+#endif
   _lcdMutex->lock();
 }
 
 LCDLock::LCDLock(::pthread_mutex_t *mutex)
   : _lcdMutex(NULL), _posixMutex(mutex), _useLCD(false)
 {
+#ifndef __ANDROID__
   ::pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
+#endif
   ::pthread_mutex_lock(_posixMutex);
 }
 
@@ -42,7 +46,9 @@ LCDLock::~LCDLock() {
   } else {
     ::pthread_mutex_unlock(_posixMutex);
   }
+#ifndef __ANDROID__
   ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
+#endif
 }
 
 } // end of lcdapi namespace

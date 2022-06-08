@@ -2306,6 +2306,7 @@ int main(int argc, char** argv) {
 	NyanSD::startListener(4004);
 	
 //#ifndef _MSC_VER
+#ifndef __ANDROID__
 	if (lcdproc_enabled) {
 		// Try to connect to the local LCDProc daemon if it's running.
 		try {
@@ -2340,7 +2341,7 @@ int main(int argc, char** argv) {
 			lcdapi_active = false;
 		}
 	}
-//#endif
+#endif
 	
 	// Start idle wallpaper & clock display.
 	// Transition time is 15 seconds.

@@ -6,6 +6,10 @@
 
 #if defined (__APPLE__)
     #error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	#include <unistd.h>
+	#include <fcntl.h>
+	//#include <tinyalsa/asoundlib.h>
 #elif defined(__linux__)
 	#include <unistd.h>
 	#include <fcntl.h>
@@ -23,6 +27,11 @@ class VolumeControl
 {
 #if defined (__APPLE__)
     #error TODO: Not implemented for MacOS yet!!!
+#elif defined (__ANDROID__)
+	// TODO:
+    static const char * mixerName;
+    static const char * mixerCard;
+    int mixerIndex;
 #elif defined(__linux__)
     static const char * mixerName;
     static const char * mixerCard;

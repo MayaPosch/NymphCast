@@ -46,17 +46,25 @@ LCDSensor::LCDSensor()
 LCDSensor::~LCDSensor() {
 	_exist = false;
 	if (_onChangeThreadStarted) {
+#ifndef __ANDROID__
 		if (::pthread_cancel(_onChangeThread) == 0) {
+#endif
 			::pthread_join(_onChangeThread, 0);
+#ifndef __ANDROID__
 		}
+#endif
 		_onChangeThreadStarted = false;
 	}
 
 	for (WidgetTimeOutList::const_iterator it = _onTimeOutList.begin();
 			 it != _onTimeOutList.end(); ++it) {
+#ifndef __ANDROID__
 		if (::pthread_cancel(it->second._thread) == 0) {
+#endif
 			::pthread_join(it->second._thread, 0);
+#ifndef __ANDROID__
 		}
+#endif
 	}
 }
 
@@ -144,9 +152,11 @@ void LCDSensor::removeOnChangeWidget(LCDWidget *widget) {
 void LCDSensor::removeOnChangeWidget(const string& id) {
 	_onChangeList.erase(id);
 	if (_onChangeList.empty() && _onChangeThreadStarted) {
+#ifndef __ANDROID__
 		if (::pthread_cancel(_onChangeThread) == 0) {
 			::pthread_join(_onChangeThread, 0);
 		}
+#endif
 		_onChangeThreadStarted = false;
 	}
 }
@@ -169,14 +179,18 @@ void LCDSensor::removeOnTimeOutWidget(LCDWidget *widget) {
 }
 
 void LCDSensor::removeOnTimeOutWidget(const string& id) {
+#ifndef __ANDROID__
 	if (::pthread_cancel(_onTimeOutList[id]._thread) == 0) {
 		::pthread_join(_onTimeOutList[id]._thread, 0);
 	}
+#endif
 	_onTimeOutList.erase(id);
 }
 
 void *updateWhenChanged(void *param) {
+#ifndef __ANDROID__
 	::pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, 0);
+#endif
 
 	LCDSensor *daddy = static_cast<LCDSensor*>(param);
 
@@ -189,7 +203,9 @@ void *updateWhenChanged(void *param) {
 }
 
 void *updateEach(void *param) {
+#ifndef __ANDROID__
 	::pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, 0);
+#endif
 
 	LCDSensor *daddy = static_cast<LCDSensor*>(param);
 
@@ -208,7 +224,9 @@ void *updateEach(void *param) {
 			//usleep(widgetInfo._timeOut * 100000);
 			using namespace std::chrono_literals;
 			std::this_thread::sleep_for(std::chrono::microseconds(widgetInfo._timeOut * 100000));
+#ifndef __ANDROID__
 			::pthread_testcancel();
+#endif
 		} else {
 			daddy->removeOnTimeOutWidget(widgetInfo._widgetId);
 		}
