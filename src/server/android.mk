@@ -49,31 +49,37 @@ GCC := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
+STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROID64
 GCC := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
+STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROIDX86
 GCC := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
+STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROIDX64
 GCC := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
+STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef WASM
 GCC = emc++
 MAKEDIR = mkdir -p
 RM = rm
 AR = ar 
+STRIP = strip
 else
 GCC = g++
 MAKEDIR = mkdir -p
 RM = rm
 AR = ar
+STRIP = strip
 endif
 
 
@@ -203,7 +209,7 @@ obj/static/$(ARCH)%.o: %.cpp
 obj/shared/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(SHARED_FLAGS) $(CPPFLAGS)
 	
-lib/$(ARCH)$(OUTPUT).a: $(OBJECTS)
+lib/$(ARCH)$(OUTPUT).a: $(OBJECTS) $(GUI_OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
@@ -239,7 +245,9 @@ angelscript:
 gui: $(GUI_OBJECTS)
 	
 lib/$(ARCH)$(LIBNAME): angelscript $(OBJECTS) $(GUI_OBJECTS)
-	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
+	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(GUI_OBJECTS) $(LIBS)
+	cp $@ $@.debug
+	$(STRIP) -S --strip-unneeded $@
 	
 test: test-client test-server
 	
@@ -254,7 +262,7 @@ clean: clean-lib clean-angelscript clean-gui
 clean-test: clean-test-client clean-test-server
 
 clean-lib:
-	$(RM) $(OBJECTS) $(SHARED_OBJECTS)
+	$(RM) $(OBJECTS) $(GUI_OBJECTS)
 	
 clean-angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ clean
@@ -275,21 +283,21 @@ PREFIX = /mingw64
 endif
 
 .PHONY: install angelscript gui
-install:
-	install -d $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
-ifndef OS
-	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
-endif
-	install -d $(DESTDIR)$(PREFIX)/include/nymph
-	install -m 644 src/*.h $(DESTDIR)$(PREFIX)/include/nymph/
-ifndef OS
-	cd $(DESTDIR)$(PREFIX)/lib && \
-		if [ -f $(OUTPUT).so ]; then \
-			rm $(OUTPUT).so; \
-		fi && \
-		ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
-endif
+# install:
+	# install -d $(DESTDIR)$(PREFIX)/lib/
+	# install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
+# ifndef OS
+	# install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
+# endif
+	# install -d $(DESTDIR)$(PREFIX)/include/nymph
+	# install -m 644 src/*.h $(DESTDIR)$(PREFIX)/include/nymph/
+# ifndef OS
+	# cd $(DESTDIR)$(PREFIX)/lib && \
+		# if [ -f $(OUTPUT).so ]; then \
+			# rm $(OUTPUT).so; \
+		# fi && \
+		# ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
+# endif
 
-package:
-	tar -C lib/$(ARCH) -cvzf lib/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT).a $(OUTPUT).so.$(VERSION)
+# package:
+	# tar -C lib/$(ARCH) -cvzf lib/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz $(OUTPUT).a $(OUTPUT).so.$(VERSION)
