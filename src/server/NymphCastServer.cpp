@@ -78,6 +78,10 @@ using namespace Poco;
 #include "nc_apps.h"
 #include "gui.h"
 
+#ifdef __ANDROID__
+#include <android_native_app_glue.h>
+#endif
+
 
 /* options specified by the user */
 AVInputFormat *file_iformat;
@@ -2416,3 +2420,19 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+
+
+#ifdef __ANDROID__
+/**
+ * This is the main entry point of a native application that is using
+ * android_native_app_glue.  It runs in its own thread, with its own
+ * event loop for receiving input events and doing other things.
+ */
+void android_main(struct android_app* /*state*/) {
+	// Call main() here with the appropriate command line arguments defined in argv.
+	int argc = 2;
+	char* argv[] = { "NymphCastServer", "-c", "nymphcast_screensaver_config.ini" };
+	
+	main(argc, argv);
+}
+#endif

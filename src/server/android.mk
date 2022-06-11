@@ -46,36 +46,42 @@ UMCH := $(shell uname -m)
 ifdef ANDROID
 #GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
 GCC := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CC := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROID64
 GCC := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CC := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROIDX86
 GCC := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CC := i686-linux-android$(ANDROID_ABI_LEVEL)-clang$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef ANDROIDX64
 GCC := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CC := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 STRIP = $(TOOLCHAIN_PREFIX)strip
 else ifdef WASM
 GCC = emc++
+CC = em
 MAKEDIR = mkdir -p
 RM = rm
 AR = ar 
 STRIP = strip
 else
 GCC = g++
+CC = gcc
 MAKEDIR = mkdir -p
 RM = rm
 AR = ar
@@ -116,7 +122,8 @@ INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_o
 			-I gui/app/scrapers -I gui/app/views -I gui/app/gamelist \
 			-I gui/core/nanosvg \
 			-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/SDL2 \
-			-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/freetype2
+			-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/freetype2 \
+			-I$(NDK_HOME)/sources/android/native_app_glue
 LIBS := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
 		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
@@ -175,6 +182,7 @@ SOURCES := $(wildcard *.cpp) \
 			$(wildcard angelscript/regexp/*.cpp) \
 			$(wildcard lcdapi/api/*.cpp) \
 			$(wildcard lcdapi/sensors/*.cpp)
+C_SOURCES := $(NDK_HOME)/sources/android/native_app_glue/android_native_app_glue.c
 GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/core/animations/*.cpp) \
 				$(wildcard gui/core/components/*.cpp) \
@@ -193,18 +201,20 @@ GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/app/pugixml/src/*.cpp)
 OBJECTS := 		$(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 GUI_OBJECTS := 	$(addprefix obj/shared/$(ARCH),$(notdir) $(GUI_SOURCES:.cpp=.o))
-
-# SOURCES := $(wildcard src/*.cpp)
-# OBJECTS := $(addprefix obj/static/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
-# SHARED_OBJECTS := $(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
+C_OBJECTS := 	$(addprefix obj/shared/$(ARCH)sources/android/native_app_glue/,$(notdir $(C_SOURCES:.c=.o)))
 
 all: lib
 
-#lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(LIBNAME)
-lib: makedir lib/$(ARCH)$(LIBNAME)
+lib: makedir android_glue lib/$(ARCH)$(LIBNAME)
 	
 obj/static/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CPPFLAGS)
+	
+# %.c:
+	# $(CC) -c -o $@ obj/shared/$(ARCH)sources/android/native_app_glue/%.o $(CFLAGS)
+
+android_glue:
+	$(CC) -c -o obj/shared/$(ARCH)sources/android/native_app_glue/android_native_app_glue.o $(NDK_HOME)/sources/android/native_app_glue/android_native_app_glue.c $(CFLAGS)
 	
 obj/shared/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(SHARED_FLAGS) $(CPPFLAGS)
@@ -238,6 +248,7 @@ makedir:
 	$(MAKEDIR) obj/shared/$(ARCH)gui/app/pugixml/src
 	$(MAKEDIR) obj/shared/$(ARCH)lcdapi/api
 	$(MAKEDIR) obj/shared/$(ARCH)lcdapi/sensors
+	$(MAKEDIR) obj/shared/$(ARCH)sources/android/native_app_glue
 	
 angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
@@ -245,7 +256,7 @@ angelscript:
 gui: $(GUI_OBJECTS)
 	
 lib/$(ARCH)$(LIBNAME): angelscript $(OBJECTS) $(GUI_OBJECTS)
-	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(GUI_OBJECTS) $(LIBS)
+	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(GUI_OBJECTS) $(C_OBJECTS) $(LIBS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 	
