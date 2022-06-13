@@ -102,7 +102,8 @@ VERSION = 0.1
 
 # Use -soname on Linux/BSD, -install_name on Darwin (MacOS).
 SONAME = -soname
-LIBNAME = $(OUTPUT).so.$(VERSION)
+#LIBNAME = $(OUTPUT).so.$(VERSION)
+LIBNAME = $(OUTPUT).so
 ifeq ($(shell uname -s),Darwin)
 	SONAME = -install_name
 	LIBNAME = $(OUTPUT).0.dylib
