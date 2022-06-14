@@ -96,7 +96,7 @@ export GPP
 #export PLATFORM_FLAGS
 
 
-OUTPUT = nymphcast
+OUTPUT = libnymphcastserver
 VERSION = 0.1
 
 
