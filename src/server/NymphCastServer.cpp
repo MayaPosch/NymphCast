@@ -1869,6 +1869,29 @@ int main(int argc, char** argv) {
 	std::ostringstream dummy;
 	dummy << 0;
 	
+#ifdef __ANDROID__
+	// Set default parameters.
+	// TODO: make configurable.
+	// TODO: enable wallpaper storage & access.
+	// TODO: enable app storage & access.
+	appsFolder = "apps/";
+	std::string wallpapersFolder = "wallpapers/";
+	std::string resourceFolder = "";
+	
+	// Settings.
+	is_full_screen = false;
+	display_disable = false;
+	screensaver_enable = false;
+	
+	// Check for 'enable_gui' boolean value. If 'true', use the GUI interface.
+	gui_enable = false;
+	
+	// Check whether the LCDProc client should be enabled.
+	lcdproc_enabled = false;
+	
+	// Set target LCDProc host.
+	std::string lcdproc_host = "localhost";
+#else
 	// Parse the command line arguments.
 	Sarge sarge;
 	sarge.setArgument("h", "help", "Get this help message.", false);
@@ -1949,6 +1972,7 @@ int main(int argc, char** argv) {
 		std::cerr << "Failed to read in app list." << std::endl;
 		return 1;
 	}
+#endif // if not Android
 	
 	// Initialise Poco.
 	Poco::Data::SQLite::Connector::registerConnector();
@@ -2271,7 +2295,11 @@ int main(int argc, char** argv) {
 	NymphRemoteServer::registerCallback("MediaStatusCallback", MediaStatusCallback, 0);
 	
 	// Initialise buffer of the desired size.
+#ifdef __ANDROID__
+	uint32_t buffer_size = 20971520; // Default 20 MB.
+#else
 	uint32_t buffer_size = config.getValue<uint32_t>("buffer_size", 20971520); // Default 20 MB.
+#endif
 	DataBuffer::init(buffer_size);
 	DataBuffer::setSeekRequestCallback(seekingHandler);
 	DataBuffer::setDataRequestCallback(dataRequestHandler);
