@@ -128,10 +128,10 @@ INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_o
 LIBS := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
 		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
-		-lfreetype -lcurl -lfreeimage -lfreetype \
+		-lcurl -lfreeimage \
 		-lSDL2main -lSDL2 \
 		-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
-		# -lstdc++fs 
+		# -lstdc++fs -lfreetype \ -> FreeType is in the FfmpegKit binaries.
 FLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1
 CFLAGS := $(FLAGS) $(INCLUDE) -g3 -std=c11
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(VERSIONINFO)
