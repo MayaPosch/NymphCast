@@ -126,12 +126,13 @@ INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_o
 			-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/freetype2 \
 			-I$(NDK_HOME)/sources/android/native_app_glue
 LIBS := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
-		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
 		-lcurl -lfreeimage \
 		-lSDL2main -lSDL2 \
 		-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
 		# -lstdc++fs -lfreetype \ -> FreeType is in the FfmpegKit binaries.
+		# -lpostproc
 FLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1
 CFLAGS := $(FLAGS) $(INCLUDE) -g3 -std=c11
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(VERSIONINFO)
