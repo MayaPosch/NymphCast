@@ -131,22 +131,24 @@ LIBS := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPoc
 		-lcurl -lfreeimage \
 		-lSDL2main -lSDL2 \
 		-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
-		# -lstdc++fs -lfreetype \ -> FreeType is in the FfmpegKit binaries.
-		# -lpostproc
+		# -lstdc++fs -> not needed with Bionic.
+		# -lfreetype \ -> FreeType is in the FfmpegKit binaries.
+		# -lpostproc -> unneeded
 FLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1
 CFLAGS := $(FLAGS) $(INCLUDE) -g3 -std=c11
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(VERSIONINFO)
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
-LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/shared/$(ARCH)/$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
+#LDFLAGS := -u ANativeActivity_onCreate -Wl,--gc-sections -Wl,-Map,bin/shared/$(ARCH)/$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
+LDFLAGS := -Wl,-u,ANativeActivity_onCreate -Wl,--gc-sections
 
 ifdef ANDROID
 CFLAGS += -fPIC
 else ifdef ANDROID64
-#CFLAGS += -fPIC
+CFLAGS += -fPIC
 else ifdef ANDROIDX86
 CFLAGS += -fPIC
 else ifdef ANDROIDX64
-#CFLAGS += -fPIC
+CFLAGS += -fPIC
 endif
 
 # Check for MinGW and patch up POCO
@@ -190,7 +192,6 @@ GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/core/components/*.cpp) \
 				$(wildcard gui/core/guis/*.cpp) \
 				$(wildcard gui/core/math/*.cpp) \
-				$(wildcard gui/core/nanosvg/src/*.cpp) \
 				$(wildcard gui/core/renderers/*.cpp) \
 				$(wildcard gui/core/resources/*.cpp) \
 				$(wildcard gui/core/utils/*.cpp) \
@@ -201,13 +202,15 @@ GUI_SOURCES := 	$(wildcard gui/core/*.cpp) \
 				$(wildcard gui/app/views/*.cpp) \
 				$(wildcard gui/app/views/gamelist/*.cpp) \
 				$(wildcard gui/app/pugixml/src/*.cpp)
+				#$(wildcard gui/core/nanosvg/src/*.cpp) 
 OBJECTS := 		$(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 GUI_OBJECTS := 	$(addprefix obj/shared/$(ARCH),$(notdir) $(GUI_SOURCES:.cpp=.o))
 C_OBJECTS := 	$(addprefix obj/shared/$(ARCH)sources/android/native_app_glue/,$(notdir $(C_SOURCES:.c=.o)))
+ANDROID_GLUE := obj/shared/$(ARCH)sources/android/native_app_glue/android_native_app_glue.o
 
 all: lib
 
-lib: makedir android_glue lib/$(ARCH)$(LIBNAME)
+lib: makedir objfile android_glue lib/$(ARCH)$(LIBNAME)
 	
 obj/static/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CPPFLAGS)
@@ -216,7 +219,7 @@ obj/static/$(ARCH)%.o: %.cpp
 	# $(CC) -c -o $@ obj/shared/$(ARCH)sources/android/native_app_glue/%.o $(CFLAGS)
 
 android_glue:
-	$(CC) -c -o obj/shared/$(ARCH)sources/android/native_app_glue/android_native_app_glue.o $(NDK_HOME)/sources/android/native_app_glue/android_native_app_glue.c $(CFLAGS)
+	$(CC) -c -o $(ANDROID_GLUE) $(NDK_HOME)/sources/android/native_app_glue/android_native_app_glue.c $(CFLAGS)
 	
 obj/shared/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(SHARED_FLAGS) $(CPPFLAGS)
@@ -256,9 +259,12 @@ angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ static
 	
 gui: $(GUI_OBJECTS)
+		
+objfile:
+	$(file >obj/shared/$(ARCH)s_objects.psr, $(OBJECTS) $(GUI_OBJECTS))
 	
 lib/$(ARCH)$(LIBNAME): angelscript $(OBJECTS) $(GUI_OBJECTS)
-	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(GUI_OBJECTS) $(C_OBJECTS) $(LIBS)
+	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(LDFLAGS) @obj/shared/$(ARCH)s_objects.psr $(ANDROID_GLUE) $(LIBS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 	
@@ -275,7 +281,7 @@ clean: clean-lib clean-angelscript clean-gui
 clean-test: clean-test-client clean-test-server
 
 clean-lib:
-	$(RM) $(OBJECTS) $(GUI_OBJECTS)
+	$(RM) $(OBJECTS)
 	
 clean-angelscript:
 	make -C angelscript/angelscript/projects/gnuc/ clean
