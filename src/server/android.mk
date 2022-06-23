@@ -126,7 +126,7 @@ INCLUDE = -I . -I ffplay -I angelscript/angelscript/include -I angelscript/add_o
 			-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/freetype2 \
 			-I$(NDK_HOME)/sources/android/native_app_glue
 LIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoData \
-		-lcurl -lfreeimage \
+		-lcurl -lfreeimage -lfreetype \
 		-lSDL2main -lSDL2 -lSDL2_image \
 		-lPocoFoundation -Langelscript/angelscript/lib-$(TARGET) -langelscript \
 		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
@@ -135,7 +135,6 @@ LIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoDat
 		-lEGL -lGLESv2 \
 		-lssl -lcrypto -llog -landroid
 		# -lstdc++fs -> not needed with Bionic.
-		# -lfreetype \ -> FreeType is in the FfmpegKit binaries.
 		# -lpostproc -> unneeded
 FLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1
 CFLAGS := $(FLAGS) $(INCLUDE) -g3 -std=c11
