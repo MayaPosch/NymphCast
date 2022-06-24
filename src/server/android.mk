@@ -133,7 +133,9 @@ LIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoDat
 		-lswscale -lavcodec -lavdevice -lavformat -lavutil -lswresample -lavfilter \
 		-lSDL2main -lSDL2 -lSDL2_image \
 		-lEGL -lGLESv2 \
-		-lssl -lcrypto -llog -landroid
+		-llog -landroid \
+		-lssl -lcrypto 
+		#-lnghttp2 -lssh2
 		# -lstdc++fs -> not needed with Bionic.
 		# -lpostproc -> unneeded
 FLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1
