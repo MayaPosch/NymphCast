@@ -114,7 +114,7 @@ int start_logger(const char* app_name) {
     dup2(pfd[1], 2);
 
     /* spawn the logging thread */
-    if (pthread_create(&thr, 0, thread_func, 0) == -1) { return -1; }    
+    if (pthread_create(&thr, 0, thread_func, 0) == -1) { return -1; }
     pthread_detach(thr);
     return 0;
 }
@@ -1902,7 +1902,15 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 void logFunction(int level, std::string logStr);
 
 
+#ifdef __ANDROID__
+int main_func() {
+	std::cout << "In main_func()..." << std::endl;
+	
+    // We need to redirect stdout/stderr. This requires starting a new thread here.
+    start_logger(tag);
+#else
 int main(int argc, char** argv) {
+#endif
 	// Do locale initialisation here to appease Valgrind (prevent data-race reporting).
 	std::ostringstream dummy;
 	dummy << 0;
@@ -2489,16 +2497,81 @@ int main(int argc, char** argv) {
 
 
 #ifdef __ANDROID__
+void* start_func(void* /*val*/) {
+	__android_log_print(ANDROID_LOG_INFO, "Entered start_func()", "n");
+	std::cout << "In start_func()..." << std::endl;
+	main_func();
+	
+	void* retval = 0;
+	return retval;
+}
+
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
  * event loop for receiving input events and doing other things.
  */
-void android_main(struct android_app* /*state*/) {
+void android_main(struct android_app* state) {
+	// native_app_glue spawns a new thread, calling android_main() when the
+	// activity onStart() or onRestart() methods are called.
+
 	// Call main() here with the appropriate command line arguments defined in argv.
-	int argc = 2;
-	char* argv[] = { "NymphCastServer", "-c", "nymphcast_screensaver_config.ini" };
+	//int argc = 2;
+	//char* argv[] = { "NymphCastServer", "-c", "nymphcast_screensaver_config.ini" };
 	
-	main(argc, argv);
+	//struct engine engine; 
+	
+	// Suppress link-time optimization that removes unreferenced code // to make sure glue isn't stripped. 
+	// FIXME: Obsolete, can be removed. https://github.com/android-ndk/ndk/issues/381.
+	//app_dummy(); 
+	
+	/* memset(&engine, 0, sizeof(engine)); 
+	state->userData = &engine; 
+	state->onAppCmd = engine_handle_cmd; 
+	state->onInputEvent = engine_handle_input; 
+	engine.app = state; */
+	
+	//LOGI("Starting NymphCast...");
+	__android_log_print(ANDROID_LOG_INFO, "NymphCast starting...", "n");
+	std::cout << "Starting NymphCast..." << std::endl;
+	
+	// TODO: Restore state?
+	
+	// Start application in its own thread.
+	pthread_t main_thr;
+	if (pthread_create(&main_thr, 0, start_func, 0) == -1) { 
+		std::cerr << "Couldn't create thread." << std::endl;
+		return; 
+	}
+	
+	//main(argc, argv);
+	
+	while (true) {
+		// Read all pending events
+		int ident;
+		int events;
+		struct android_poll_source* source;
+		
+		// If not animating, we will block forever waiting for events.
+        // If animating, we loop until all events are read, then continue
+        // to draw the next frame of animation.
+		//if ((ident = ALooper_pollAll(-1, NULL, &events, (void**) &source)) >= 0) {
+        /*while ((ident=ALooper_pollAll(engine.animating ? 0 : -1, nullptr, &events,
+                                      (void**)&source)) >= 0) {*/
+		while ((ident = ALooper_pollAll(-1, nullptr, &events, (void**) &source)) >= 0) {
+            // Process this event.
+            if (source != nullptr) {
+                source->process(state, source);
+			}
+			
+			// Check if we are exiting.
+            if (state->destroyRequested != 0) {
+				// TODO: Ensure application has terminated.
+				//engine_term_display(&engine);
+				return;
+            }
+		}
+	}
 }
 #endif
