@@ -143,7 +143,8 @@ CFLAGS := $(FLAGS) $(INCLUDE) -g3 -std=c11
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(VERSIONINFO)
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 #LDFLAGS := -u ANativeActivity_onCreate -Wl,--gc-sections -Wl,-Map,bin/shared/$(ARCH)/$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
-LDFLAGS := -Wl,-u,ANativeActivity_onCreate -Wl,--gc-sections
+LDFLAGS := -Wl,--gc-sections
+#-Wl,-u,ANativeActivity_onCreate 
 
 ifdef ANDROID
 CFLAGS += -fPIC
@@ -214,7 +215,8 @@ ANDROID_GLUE := obj/shared/$(ARCH)sources/android/native_app_glue/android_native
 
 all: lib
 
-lib: makedir objfile android_glue lib/$(ARCH)$(LIBNAME)
+lib: makedir objfile lib/$(ARCH)$(LIBNAME)
+#android_glue
 	
 obj/static/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CPPFLAGS)
@@ -268,7 +270,7 @@ objfile:
 	$(file >obj/shared/$(ARCH)s_objects.psr, $(OBJECTS) $(GUI_OBJECTS))
 	
 lib/$(ARCH)$(LIBNAME): angelscript $(OBJECTS) $(GUI_OBJECTS)
-	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(LDFLAGS) @obj/shared/$(ARCH)s_objects.psr $(ANDROID_GLUE) $(LIBS)
+	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(LDFLAGS) @obj/shared/$(ARCH)s_objects.psr $(LIBS)
 	cp $@ $@.debug
 	$(STRIP) -S --strip-unneeded $@
 	

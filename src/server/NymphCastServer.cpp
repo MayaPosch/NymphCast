@@ -79,7 +79,7 @@ using namespace Poco;
 #include "gui.h"
 
 #ifdef __ANDROID__
-#include <android_native_app_glue.h>
+//#include <android_native_app_glue.h>
 
 // Set up native logging by redirecting stdout to Android logging.
 static int pfd[2];
@@ -177,9 +177,10 @@ std::atomic<uint32_t> audio_volume = { 100 };
 std::atomic<bool> muted = { false };
 std::atomic<uint32_t> muted_volume;
 
-
+#ifndef __ANDROID__
 #ifdef main
 #undef main
+#endif
 #endif
 
 struct CastClient {
@@ -1902,14 +1903,12 @@ NymphMessage* app_loadResource(int session, NymphMessage* msg, void* data) {
 void logFunction(int level, std::string logStr);
 
 
+int main(int argc, char** argv) {
 #ifdef __ANDROID__
-int main_func() {
-	std::cout << "In main_func()..." << std::endl;
+	std::cout << "In main()..." << std::endl;
 	
     // We need to redirect stdout/stderr. This requires starting a new thread here.
     start_logger(tag);
-#else
-int main(int argc, char** argv) {
 #endif
 	// Do locale initialisation here to appease Valgrind (prevent data-race reporting).
 	std::ostringstream dummy;
@@ -2496,15 +2495,17 @@ int main(int argc, char** argv) {
 }
 
 
-#ifdef __ANDROID__
-void* start_func(void* /*val*/) {
+//#ifdef __ANDROID__
+//void* start_func(void* /*val*/) {
+/* int main() {
 	__android_log_print(ANDROID_LOG_INFO, "Entered start_func()", "n");
 	std::cout << "In start_func()..." << std::endl;
 	main_func();
 	
-	void* retval = 0;
+	//void* retval = 0;
+	int retval = 0;
 	return retval;
-}
+} */
 
 
 /**
@@ -2512,7 +2513,7 @@ void* start_func(void* /*val*/) {
  * android_native_app_glue.  It runs in its own thread, with its own
  * event loop for receiving input events and doing other things.
  */
-void android_main(struct android_app* state) {
+/* void android_main(struct android_app* state) {
 	// native_app_glue spawns a new thread, calling android_main() when the
 	// activity onStart() or onRestart() methods are called.
 
@@ -2525,12 +2526,6 @@ void android_main(struct android_app* state) {
 	// Suppress link-time optimization that removes unreferenced code // to make sure glue isn't stripped. 
 	// FIXME: Obsolete, can be removed. https://github.com/android-ndk/ndk/issues/381.
 	//app_dummy(); 
-	
-	/* memset(&engine, 0, sizeof(engine)); 
-	state->userData = &engine; 
-	state->onAppCmd = engine_handle_cmd; 
-	state->onInputEvent = engine_handle_input; 
-	engine.app = state; */
 	
 	//LOGI("Starting NymphCast...");
 	__android_log_print(ANDROID_LOG_INFO, "NymphCast starting...", "n");
@@ -2557,8 +2552,6 @@ void android_main(struct android_app* state) {
         // If animating, we loop until all events are read, then continue
         // to draw the next frame of animation.
 		//if ((ident = ALooper_pollAll(-1, NULL, &events, (void**) &source)) >= 0) {
-        /*while ((ident=ALooper_pollAll(engine.animating ? 0 : -1, nullptr, &events,
-                                      (void**)&source)) >= 0) {*/
 		while ((ident = ALooper_pollAll(-1, nullptr, &events, (void**) &source)) >= 0) {
             // Process this event.
             if (source != nullptr) {
@@ -2573,5 +2566,5 @@ void android_main(struct android_app* state) {
             }
 		}
 	}
-}
-#endif
+} */
+//#endif
