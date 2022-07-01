@@ -756,10 +756,10 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
         if (!SDLActivity.isDeXMode() || (Build.VERSION.SDK_INT >= 27)) {
             if (enabled) {
 				// FIXME: Required API level 26.
-                //SDLActivity.getContentView().requestPointerCapture();
+                SDLActivity.getContentView().requestPointerCapture();
             } else {
 				// FIXME: Required API level 26.
-                //SDLActivity.getContentView().releasePointerCapture();
+                SDLActivity.getContentView().releasePointerCapture();
             }
             mRelativeModeEnabled = enabled;
             return true;
