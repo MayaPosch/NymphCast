@@ -1904,17 +1904,16 @@ void logFunction(int level, std::string logStr);
 
 
 int main(int argc, char** argv) {
-#ifdef __ANDROID__
-	std::cout << "In main()..." << std::endl;
-	
-    // We need to redirect stdout/stderr. This requires starting a new thread here.
-    start_logger(tag);
-#endif
 	// Do locale initialisation here to appease Valgrind (prevent data-race reporting).
 	std::ostringstream dummy;
 	dummy << 0;
 	
 #ifdef __ANDROID__
+	std::cout << "In main()..." << std::endl;
+	
+    // We need to redirect stdout/stderr. This requires starting a new thread here.
+    start_logger(tag);
+
 	// Set default parameters.
 	// TODO: make configurable.
 	// TODO: enable wallpaper storage & access.
@@ -1924,9 +1923,10 @@ int main(int argc, char** argv) {
 	std::string resourceFolder = "";
 	
 	// Settings.
-	is_full_screen = false;
+	is_full_screen = true;
 	display_disable = false;
 	screensaver_enable = false;
+	audio_disable = false;
 	
 	// Check for 'enable_gui' boolean value. If 'true', use the GUI interface.
 	gui_enable = false;
