@@ -12,6 +12,9 @@
 #ifndef TESTING
 #include "../gui.h"
 #endif
+#ifdef __ANDROID__
+#include "SDL2/SDL_hints.h"
+#endif
 
 
 // Globals
@@ -36,6 +39,13 @@ std::atomic<bool> SdlRenderer::windowShouldBeVisible = { false };
 
 
 bool SdlRenderer::init() {
+#ifdef __ANDROID__
+	// Ensure the event loop and audio output aren't blocked when the app is paused.
+	// FIXME: seems to worsen playback stuttering and pacing?
+	SDL_SetHintWithPriority(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, "0", SDL_HINT_OVERRIDE);
+	SDL_SetHintWithPriority(SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO, "0", SDL_HINT_OVERRIDE);
+#endif
+
 	int flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 	if (display_disable) { flags &= ~SDL_INIT_VIDEO; }
 	if (audio_disable) { flags &= ~SDL_INIT_AUDIO; }
@@ -100,12 +110,27 @@ bool SdlRenderer::init() {
 				if (!SDL_GetRendererInfo(renderer, &renderer_info))
 					av_log(NULL, AV_LOG_VERBOSE, "Initialized %s renderer.\n", renderer_info.name);
 			}
+			
+#ifdef __ANDROID__			
+			// Wait for a moment, to ensure that the window has the right pixel format.
+			//SDL_Delay(300);
+#endif
 		}
 		
 		if (!window || !renderer || !renderer_info.num_texture_formats) {
 			av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
 			return false;
 		}
+		
+		// Debug
+		uint32_t pixelFormat = SDL_GetWindowPixelFormat(window);
+		av_log(NULL, AV_LOG_WARNING, "Created texture with pixel format %s.\n", SDL_GetPixelFormatName(pixelFormat));
+#ifdef __ANDROID__			
+			// Wait for a moment, to ensure that the window has the right pixel format.
+			SDL_Delay(300);
+#endif
+		pixelFormat = SDL_GetWindowPixelFormat(window);
+		av_log(NULL, AV_LOG_WARNING, "Created texture with pixel format %s.\n", SDL_GetPixelFormatName(pixelFormat));
 	}
 	
 	windowVisible = false;
