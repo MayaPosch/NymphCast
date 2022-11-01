@@ -1,5 +1,9 @@
 #!/sbin/openrc-run
 
 supervisor=supervise-daemon
+
+name="NymphCast"
+description="NymphCast audio/video casting server"
+
 command="@BIN@"
 command_args="-c @CONFIG@ -a @APPS@ -w @WALLPAPERS@"
