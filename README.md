@@ -158,7 +158,7 @@ For **FreeBSD** and similar:
 
 For **Alpine Linux** and PostmarketOS:
 
-* the server: [nymphcast-server](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-server)
+* the server: [nymphcast](https://pkgs.alpinelinux.org/package/edge/community/x86_64/nymphcast)
 * libnymphcast: [libnymphcast](https://pkgs.alpinelinux.org/packages?name=libnymphcast&branch=edge)
 * the player client: [nymphcast-client](https://pkgs.alpinelinux.org/package/edge/testing/x86_64/nymphcast-client)
 
