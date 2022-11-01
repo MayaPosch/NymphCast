@@ -11,6 +11,7 @@ error_log="${error_log:-$log_dir/error.log}"
 
 command="@BIN@"
 command_args="-c @CONFIG@ -a @APPS@ -w @WALLPAPERS@"
+command_user=${command_user:-nymphcast:nymphcast}
 
 start_pre() {
 	checkpath --directory --owner=$command_user $log_dir
