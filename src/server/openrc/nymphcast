@@ -5,5 +5,14 @@ supervisor=supervise-daemon
 name="NymphCast"
 description="NymphCast audio/video casting server"
 
+log_dir="/var/log/$RC_SVCNAME"
+output_log="${output_log:-$log_dir/output.log}"
+error_log="${error_log:-$log_dir/error.log}"
+
 command="@BIN@"
 command_args="-c @CONFIG@ -a @APPS@ -w @WALLPAPERS@"
+
+start_pre() {
+	checkpath --directory --owner=$command_user $log_dir
+	checkpath --file --owner=$command_user $output_log $error_log
+}
