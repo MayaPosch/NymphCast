@@ -132,15 +132,27 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
 	// Skip stylesheet if file isn't found.
 	QSettings settings;
 	if (!settings.contains("stylesheet")) {
-		settings.setValue("stylesheet", "default.css");
+#if defined(Q_OS_ANDROID)
+		settings.setValue("stylesheet", "dark_teal.css");
+#else
+	settings.setValue("stylesheet", "default.css");
+#endif
 	}
 	
+#if defined(Q_OS_ANDROID)
+	QString sFile = settings.value("stylesheet", ":/css/dark_teal.css").toString();
+#else
 	QString sFile = settings.value("stylesheet", "default.css").toString();
+#endif
 	
 	if (!QFile::exists(sFile)) {
 		// Use stylesheet from resource bundle.
 		std::cout << "Using stylesheet from resources." << std::endl;
+#if defined(Q_OS_ANDROID)
+		sFile = ":/css/dark_teal.css";
+#else
 		sFile = ":/css/default.css";
+#endif
 	}
 	
 	QFile file(sFile);
