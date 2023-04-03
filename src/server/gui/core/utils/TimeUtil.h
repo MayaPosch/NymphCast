@@ -3,6 +3,7 @@
 #define ES_CORE_UTILS_TIME_UTIL_H
 
 #include <string>
+#include <time.h>
 
 namespace Utils
 {
