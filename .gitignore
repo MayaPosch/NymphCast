@@ -16,6 +16,7 @@ src/server/wallpapers/*.png
 src/server/wallpapers/*.jpeg
 *.class
 *.txt
+!CMakeLists.txt
 *.out.*
 *.iml
 .gradle
