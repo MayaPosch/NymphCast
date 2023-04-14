@@ -691,13 +691,22 @@ void MainWindow::remoteListRefresh() {
 	std::vector<NymphCastRemote> list = client.findServers();
 	
 	// Update the list with any changed items.
+	// First clear the remotes list, then set the non-selectable default items.
 	remotes.clear();
 	ui->remotesComboBox->clear();
+	
+	// Set the default, non-selectable item.
+	/* QListWidgetItem *defaultItem = new QListWidgetItem;
+	defaultItem->setText("-- Select Remote ---");
+	defaultItem->setData(Qt::UserRole, QVariant(i)); */
+	//ui->remotesComboBox->insertItem(i, "-- Select Remote ---", QVariant(i));
+	
+	// Add auto-discovered remotes.
 	uint32_t idx = 0;
 	for (uint32_t i = 0; i < list.size(); ++i) {
-		QListWidgetItem *newItem = new QListWidgetItem;
+		/* QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(list[i].ipv4 + " (" + list[i].name + ")"));
-		newItem->setData(Qt::UserRole, QVariant(i));
+		newItem->setData(Qt::UserRole, QVariant(i)); */
 		ui->remotesComboBox->insertItem(i, QString::fromStdString(list[i].ipv4 + 
 													" (" + list[i].name + ")"), QVariant(i));
 													
@@ -710,9 +719,9 @@ void MainWindow::remoteListRefresh() {
 	
 	// Merge in custom remotes, if any.
 	for (uint32_t i = 0; i < custom_remotes.size(); ++i) {
-		QListWidgetItem *newItem = new QListWidgetItem;
+		/* QListWidgetItem *newItem = new QListWidgetItem;
 		newItem->setText(QString::fromStdString(custom_remotes[i].remote.ipv4 + " (" + custom_remotes[i].remote.name + ")"));
-		newItem->setData(Qt::UserRole, QVariant((i + ++idx)));
+		newItem->setData(Qt::UserRole, QVariant((i + ++idx))); */
 		ui->remotesComboBox->insertItem((i + idx), QString::fromStdString(custom_remotes[i].remote.ipv4 + 
 													" (" + custom_remotes[i].remote.name + ") [Manual]"), QVariant(i));
 													
@@ -732,6 +741,9 @@ void MainWindow::remoteListRefresh() {
 		ui->remotesComboBox->addItem(QString::fromStdString(groups[i].name + 
 													" (group)"), QVariant(i));
 	}
+	
+	// Set none selected.
+	ui->remotesComboBox->setCurrentIndex(-1);
 }
 
 
