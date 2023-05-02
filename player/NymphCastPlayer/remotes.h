@@ -47,6 +47,7 @@ class RemotesDialog : public QDialog {
 	Ui::RemotesDialog* ui;
 	std::vector<NCRemoteInstance> remotes;
 	std::vector<NCRemoteGroup> groups;
+	std::string hostname;
 	
 public:
 	explicit RemotesDialog(QWidget* parent = nullptr);

@@ -15,6 +15,12 @@
 // Debug
 #include <iostream>
 
+#ifdef NPOCO
+	#include <npoco/Net/DNS.h>
+#else
+	#include <Poco/Net/DNS.h>
+#endif
+
 
 // --- CONSTRUCTOR ---
 RemotesDialog::RemotesDialog(QWidget* parent) : QDialog(parent), ui(new Ui::RemotesDialog) {
@@ -31,6 +37,9 @@ RemotesDialog::RemotesDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Remo
 	
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptClose()));
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+	
+	// Get the hostname.
+	hostname = Poco::Net::DNS::hostName();
 }
 
 
@@ -102,7 +111,17 @@ void RemotesDialog::createGroup() {
 		
 		// Add the selected remotes.
 		for (uint32_t i = 0; i < (uint32_t) items.size(); ++i) {
-			group.remotes.push_back(remotes[items[i]->data(Qt::UserRole).toUInt()]);
+			//group.remotes.push_back(remotes[items[i]->data(Qt::UserRole).toUInt()]);
+			uint32_t id = items[i]->data(Qt::UserRole).toUInt();
+			
+			// Use the remote ID to fetch the remote. Check the host name, if host name matches
+			// the local system, ensure this remote is put in index 0 of the group.
+			if (remotes[id].remote.name == hostname) {
+				group.remotes.insert(group.remotes.begin(), remotes[id]);
+			}
+			else {
+				group.remotes.push_back(remotes[id]);
+			}
 		}
 		
 		groups.push_back(group);
@@ -143,7 +162,14 @@ void RemotesDialog::addToGroup() {
 		
 		if (!found) {
 			// Add to UI & groups.
-			group.remotes.push_back(remote);
+			if (remote.remote.name == hostname) {
+				// New item is on the local system, add as index 0.
+				group.remotes.insert(group.remotes.begin(), remote);
+			}
+			else {
+				group.remotes.push_back(remote);
+			}
+			
 			QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(remote.remote.name)
 										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
 										")", ui->groupRemotesListWidget);
