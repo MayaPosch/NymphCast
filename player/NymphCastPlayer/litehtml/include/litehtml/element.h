@@ -1,6 +1,7 @@
 #ifndef LH_ELEMENT_H
 #define LH_ELEMENT_H
 
+#include <cstdint>
 #include <memory>
 #include "stylesheet.h"
 #include "css_offsets.h"

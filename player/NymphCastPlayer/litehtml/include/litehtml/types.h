@@ -5,6 +5,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <cstdint>
 
 namespace litehtml
 {

@@ -1,6 +1,8 @@
 #ifndef LH_OS_TYPES_H
 #define LH_OS_TYPES_H
 
+#include <cstdint>
+
 namespace litehtml
 {
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WINCE )
