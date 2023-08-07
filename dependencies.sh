@@ -33,9 +33,11 @@ case "$(uname -s)" in
 	CYGWIN*|MINGW32*|MSYS*|MINGW*)
 		echo 'MS Windows/MinGW'
 		PLATFORM="mingw"
+		PF=${MINGW_PACKAGE_PREFIX}-
 		if [ -x "$(command -v pacman)" ]; then
 			pacman -Syy 
-			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
+			#pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
+			pacman -S --noconfirm --needed git ${PF}gcc ${PF}SDL2 ${PF}SDL2_image ${PF}poco ${PF}ffmpeg ${PF}freetype ${PF}freeimage ${PF}rapidjson pkgconf curl
 		fi
 		
 		# Bail out here for now until MSYS2 support is implemented for the rest.

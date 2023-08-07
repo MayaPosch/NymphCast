@@ -34,9 +34,11 @@ case "$(uname -s)" in
 	CYGWIN*|MINGW32*|MSYS*|MINGW*)
 		echo 'MS Windows/MinGW'
 		PLATFORM="mingw"
+		PF=${MINGW_PACKAGE_PREFIX}-
 		if [ -x "$(command -v pacman)" ]; then
 			pacman -Syy 
-			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
+			#pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
+			pacman -S --noconfirm --needed git ${PF}gcc ${PF}SDL2 ${PF}SDL2_image ${PF}poco ${PF}ffmpeg ${PF}freetype ${PF}freeimage ${PF}rapidjson pkgconf curl
 		fi
 		
 		# Bail out here for now until MSYS2 support is implemented for the rest.
@@ -58,16 +60,20 @@ if [ -n "${UPDATE}" ]; then
 			sudo rm -rf /usr/local/include/nymph
 		fi
 	elif [ "${PLATFORM}" == "mingw" ]; then
-		if [ -f "/mingw64/lib/libnymphrpc.a" ]; then
-			rm /mingw64/lib/libnymphrpc.a
+		#if [ -f "/mingw64/lib/libnymphrpc.a" ]; then
+		if [ -f "${MINGW_PREFIX}/lib/libnymphrpc.a" ]; then
+			#rm /mingw64/lib/libnymphrpc.a
+			rm ${MINGW_PREFIX}/lib/libnymphrpc.a
 		fi
 	fi
 fi
 
 if [ -f "/usr/lib/libnymphrpc.so" ]; then
 	echo "NymphRPC dynamic library found in /usr/lib. Skipping installation."
-elif [ -f "/mingw64/lib/libnymphrpc.so" ]; then
-	echo "NymphRPC dynamic library found in /mingw64/lib. Skipping installation."
+#elif [ -f "/mingw64/lib/libnymphrpc.so" ]; then
+elif [ -f "${MINGW_PREFIX}/lib/libnymphrpc.so" ]; then
+	#echo "NymphRPC dynamic library found in /mingw64/lib. Skipping installation."
+	echo "NymphRPC dynamic library found in ${MINGW_PREFIX}/lib. Skipping installation."
 else
 	# Obtain current version of NymphRPC
 	git clone --depth 1 https://github.com/MayaPosch/NymphRPC.git
@@ -90,8 +96,10 @@ rm -rf NymphRPC
 #make -C src/client_lib/
 if [ -f "/usr/lib/libnymphcast.so" ]; then
 	echo "LibNymphCast dynamic library found in /usr/lib. Skipping installation."
-elif [ -f "/mingw64/lib/libnymphcast.so" ]; then
-	echo "LibNymphCast dynamic library found in /mingw64/lib. Skipping installation."
+#elif [ -f "/mingw64/lib/libnymphcast.so" ]; then
+elif [ -f "${MINGW_PREFIX}/lib/libnymphcast.so" ]; then
+	#echo "LibNymphCast dynamic library found in /mingw64/lib. Skipping installation."
+	echo "LibNymphCast dynamic library found in ${MINGW_PREFIX}/lib. Skipping installation."
 else
 	# Obtain current version of LibNymphCast
 	git clone --depth 1 https://github.com/MayaPosch/libnymphcast.git
