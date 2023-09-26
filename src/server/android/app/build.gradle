@@ -41,7 +41,7 @@ android {
 	
 	externalNativeBuild {
         ndkBuild {
-            path 'SDL/Android.mk'
+            path 'jni/Android.mk'
         }
     }
     buildFeatures {
