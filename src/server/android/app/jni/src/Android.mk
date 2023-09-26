@@ -2,12 +2,15 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := main
+LOCAL_MODULE := nymphcastserver
 
 SDL_PATH := ../SDL
 SRC_PATH := ../../../../
 # Server Root: SR.
-SR := $(SRC_PATH)
+SR := $(LOCAL_PATH)/$(SRC_PATH)
+
+# Work around the limited command length on Windows.
+LOCAL_SHORT_COMMANDS := true
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
 					-I $(SR). -I $(SR)ffplay \
@@ -19,7 +22,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
 					-I $(SR)gui/app/animations -I $(SR)gui/app/components -I $(SR)gui/app/guis \
 					-I $(SR)gui/app/scrapers -I $(SR)gui/app/views -I $(SR)gui/app/gamelist \
 					-I $(SR)gui/core/nanosvg \
-					-I freetype2
+					-I$(NDK_HOME)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/freetype2
+					#-I freetype2
 
 VERSION = v0.2-alpha0.20220505
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
@@ -29,12 +33,6 @@ LOCAL_CPPFLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1 -s
 # Add your application source files here.
 LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)ffplay/*.cpp) \
-					$(wildcard $(SR)angelscript/add_on/scriptstdstring/*.cpp) \
-					$(wildcard $(SR)angelscript/add_on/scriptbuilder/*.cpp) \
-					$(wildcard $(SR)angelscript/add_on/scriptarray/*.cpp) \
-					$(wildcard $(SR)angelscript/add_on/scriptdictionary/*.cpp) \
-					$(wildcard $(SR)angelscript/json/*.cpp) \
-					$(wildcard $(SR)angelscript/regexp/*.cpp) \
 					$(wildcard $(SR)lcdapi/api/*.cpp) \
 					$(wildcard $(SR)lcdapi/sensors/*.cpp) \
 					$(wildcard $(SR)gui/core/*.cpp) \
@@ -53,11 +51,15 @@ LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)gui/app/views/gamelist/*.cpp) \
 					$(wildcard $(SR)gui/app/pugixml/src/*.cpp)
 
-LOCAL_SHARED_LIBRARIES := nymphrpc PocoUtil PocoNetSSL PocoJSON PocoDataDSQLite PocoData curl \
-							freeimage freetype SDL2 SDL2_image PocoFoundation nymphcast PocoCrypto \
-							PocoUtil PocoNet PocoFoundation lwscale avcodec avdevice avformat \
-							avutil swresample avfilter ssl crypto
+LOCAL_SHARED_LIBRARIES :=  SDL2 libangelscript
 
-LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
+LOCAL_LDLIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoData \
+		-lcurl -lfreeimage -lfreetype \
+		-lSDL2_image \
+		-lPocoFoundation \
+		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
+		-lswscale -lavcodec -lavdevice -lavformat -lavutil -lswresample -lavfilter \
+		-lssl -lcrypto -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
+		#-L$(SR)angelscript/angelscript/lib-$(TARGET) -langelscript \
 
 include $(BUILD_SHARED_LIBRARY)
