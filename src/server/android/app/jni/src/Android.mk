@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := nymphcastserver
 
-SDL_PATH := ../SDL
+SDL_PATH := ../SDL2
 SRC_PATH := ../../../../
 # Server Root: SR.
 SR := $(LOCAL_PATH)/$(SRC_PATH)
@@ -33,6 +33,12 @@ LOCAL_CPPFLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1 -s
 # Add your application source files here.
 LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)ffplay/*.cpp) \
+					$(wildcard angelscript/add_on/scriptstdstring/*.cpp) \
+					$(wildcard angelscript/add_on/scriptbuilder/*.cpp) \
+					$(wildcard angelscript/add_on/scriptarray/*.cpp) \
+					$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
+					$(wildcard angelscript/json/*.cpp) \
+					$(wildcard angelscript/regexp/*.cpp) \
 					$(wildcard $(SR)lcdapi/api/*.cpp) \
 					$(wildcard $(SR)lcdapi/sensors/*.cpp) \
 					$(wildcard $(SR)gui/core/*.cpp) \
