@@ -49,6 +49,7 @@ LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)gui/core/renderers/*.cpp) \
 					$(wildcard $(SR)gui/core/resources/*.cpp) \
 					$(wildcard $(SR)gui/core/utils/*.cpp) \
+					$(wildcard $(SR)gui/core/nanosvg/src/*.cpp ) \
 					$(wildcard $(SR)gui/app/*.cpp) \
 					$(wildcard $(SR)gui/app/components/*.cpp) \
 					$(wildcard $(SR)gui/app/guis/*.cpp) \
@@ -65,7 +66,7 @@ LOCAL_LDLIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -
 		-lPocoFoundation \
 		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
 		-lswscale -lavcodec -lavdevice -lavformat -lavutil -lswresample -lavfilter \
-		-lssl -lcrypto -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
+		-lssl -lcrypto -lssh2 -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 		#-L$(SR)angelscript/angelscript/lib-$(TARGET) -langelscript \
 
 include $(BUILD_SHARED_LIBRARY)
