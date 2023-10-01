@@ -1,0 +1,90 @@
+# sdl2_image cmake project-config input for CMakeLists.txt script
+
+include(FeatureSummary)
+set_package_properties(SDL2_image PROPERTIES
+    URL "https://www.libsdl.org/projects/SDL_image/"
+    DESCRIPTION "SDL_image is an image file loading library"
+)
+
+set(SDL2_image_FOUND ON)
+
+set(SDL2IMAGE_AVIF  @SDL2IMAGE_AVIF@)
+set(SDL2IMAGE_BMP   @SDL2IMAGE_BMP@)
+set(SDL2IMAGE_GIF   @SDL2IMAGE_GIF@)
+set(SDL2IMAGE_JPG   @SDL2IMAGE_JPG@)
+set(SDL2IMAGE_JXL   @SDL2IMAGE_JXL@)
+set(SDL2IMAGE_LBM   @SDL2IMAGE_LBM@)
+set(SDL2IMAGE_PCX   @SDL2IMAGE_PCX@)
+set(SDL2IMAGE_PNG   @SDL2IMAGE_PNG@)
+set(SDL2IMAGE_PNM   @SDL2IMAGE_PNM@)
+set(SDL2IMAGE_QOI   @SDL2IMAGE_QOI@)
+set(SDL2IMAGE_SVG   @SDL2IMAGE_SVG@)
+set(SDL2IMAGE_TGA   @SDL2IMAGE_TGA@)
+set(SDL2IMAGE_TIF   @SDL2IMAGE_TIF@)
+set(SDL2IMAGE_XCF   @SDL2IMAGE_XCF@)
+set(SDL2IMAGE_XPM   @SDL2IMAGE_XPM@)
+set(SDL2IMAGE_XV    @SDL2IMAGE_XV@)
+set(SDL2IMAGE_WEBP  @SDL2IMAGE_WEBP@)
+
+set(SDL2IMAGE_JPG_SAVE @SDL2IMAGE_JPG_SAVE@)
+set(SDL2IMAGE_PNG_SAVE @SDL2IMAGE_PNG_SAVE@)
+
+set(SDL2IMAGE_VENDORED  @SDL2IMAGE_VENDORED@)
+
+set(SDL2IMAGE_BACKEND_IMAGEIO   @SDL2IMAGE_BACKEND_IMAGEIO@)
+set(SDL2IMAGE_BACKEND_STB       @SDL2IMAGE_BACKEND_STB@)
+set(SDL2IMAGE_BACKEND_WIC       @SDL2IMAGE_BACKEND_WIC@)
+
+set(SDL2IMAGE_SDL2_REQUIRED_VERSION  @SDL_REQUIRED_VERSION@)
+
+if(NOT SDL2IMAGE_VENDORED)
+    set(_sdl_cmake_module_path "${CMAKE_MODULE_PATH}")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+endif()
+
+include(CMakeFindDependencyMacro)
+
+if(SDL2IMAGE_AVIF AND NOT SDL2IMAGE_VENDORED AND NOT TARGET avif)
+    find_dependency(libavif @LIBAVIF_MINIMUM_VERSION@)
+endif()
+
+if(SDL2IMAGE_JPG AND NOT SDL2IMAGE_VENDORED AND NOT TARGET JPEG::JPEG)
+    find_dependency(JPEG)
+endif()
+
+if(SDL2IMAGE_JXL AND NOT SDL2IMAGE_VENDORED AND NOT TARGET libjxl::libjxl)
+    list(APPEND libjxl_ROOT "${CMAKE_CURRENT_LIST_DIR}")
+    find_dependency(libjxl)
+endif()
+
+if(SDL2IMAGE_PNG AND NOT SDL2IMAGE_VENDORED AND NOT TARGET PNG::PNG)
+    find_dependency(PNG)
+endif()
+
+if(SDL2IMAGE_TIF AND NOT SDL2IMAGE_VENDORED AND NOT TARGET TIFF::TIFF)
+    find_dependency(TIFF)
+endif()
+
+if(SDL2IMAGE_WEBP AND NOT SDL2IMAGE_VENDORED AND NOT TARGET WebP::webp)
+    list(APPEND webp_ROOT "${CMAKE_CURRENT_LIST_DIR}")
+    find_dependency(webp)
+endif()
+
+#FIXME: can't add SDL2IMAGE_SDL2_REQUIRED_VERSION since not all SDL2 installs ship SDL2ConfigVersion.cmake
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2_image-shared-targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL2_image-shared-targets.cmake")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2_image-static-targets.cmake")
+    include(CheckLanguage)
+    check_language(CXX)
+    if(SDL2IMAGE_VENDORED AND NOT CMAKE_CXX_COMPILER AND NOT _sdl2image_nowarning)
+        message(WARNING "CXX language not enabled. Linking to SDL2_image::SDL2_image-static might fail.")
+    endif()
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL2_image-static-targets.cmake")
+endif()
+
+if(NOT SDL2IMAGE_VENDORED)
+    set(CMAKE_MODULE_PATH "${_sdl_cmake_module_path}")
+    unset(_sdl_cmake_module_path)
+endif()
