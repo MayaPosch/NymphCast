@@ -33,12 +33,12 @@ LOCAL_CPPFLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1 -s
 # Add your application source files here.
 LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)ffplay/*.cpp) \
-					$(wildcard angelscript/add_on/scriptstdstring/*.cpp) \
-					$(wildcard angelscript/add_on/scriptbuilder/*.cpp) \
-					$(wildcard angelscript/add_on/scriptarray/*.cpp) \
-					$(wildcard angelscript/add_on/scriptdictionary/*.cpp) \
-					$(wildcard angelscript/json/*.cpp) \
-					$(wildcard angelscript/regexp/*.cpp) \
+					$(wildcard $(SR)angelscript/add_on/scriptstdstring/*.cpp) \
+					$(wildcard $(SR)angelscript/add_on/scriptbuilder/*.cpp) \
+					$(wildcard $(SR)angelscript/add_on/scriptarray/*.cpp) \
+					$(wildcard $(SR)angelscript/add_on/scriptdictionary/*.cpp) \
+					$(wildcard $(SR)angelscript/json/*.cpp) \
+					$(wildcard $(SR)angelscript/regexp/*.cpp) \
 					$(wildcard $(SR)lcdapi/api/*.cpp) \
 					$(wildcard $(SR)lcdapi/sensors/*.cpp) \
 					$(wildcard $(SR)gui/core/*.cpp) \
@@ -60,7 +60,7 @@ LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 LOCAL_SHARED_LIBRARIES :=  SDL2 libangelscript
 
 LOCAL_LDLIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoData \
-		-lcurl -lfreeimage -lfreetype \
+		-lcurl -lfreeimage -lfreetype -lnghttp2 \
 		-lSDL2_image \
 		-lPocoFoundation \
 		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
