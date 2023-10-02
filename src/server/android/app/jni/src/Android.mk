@@ -58,16 +58,15 @@ LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)gui/app/views/gamelist/*.cpp) \
 					$(wildcard $(SR)gui/app/pugixml/src/*.cpp)
 
-LOCAL_SHARED_LIBRARIES :=  SDL2 SDL2_image libangelscript
+LOCAL_SHARED_LIBRARIES :=  SDL2 SDL2_image libangelscript freetype harfbuzz
 
 LOCAL_LDLIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -lPocoData \
-		-lcurl -lfreeimage -lfreetype -lnghttp2 \
-		-lSDL2_image \
+		-lcurl -lfreeimage -lnghttp2 \
 		-lPocoFoundation \
 		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
 		-lswscale -lavcodec -lavdevice -lavformat -lavutil -lswresample -lavfilter \
 		-lssl -lcrypto -lssh2 -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
-		#-L$(SR)angelscript/angelscript/lib-$(TARGET) -langelscript \
-		# -ljxl
+		#-L$(SR)angelscript/angelscript/lib-$(TARGET) -langelscript \-lSDL2_image \
+		# -ljxl  -lfreetype
 
 include $(BUILD_SHARED_LIBRARY)
