@@ -65,8 +65,8 @@ LOCAL_LDLIBS := -lnymphrpc -lPocoUtil -lPocoNetSSL -lPocoJSON -lPocoDataSQLite -
 		-lPocoFoundation \
 		-lnymphcast -lPocoCrypto -lPocoUtil -lPocoNet -lPocoFoundation \
 		-lswscale -lavcodec -lavdevice -lavformat -lavutil -lswresample -lavfilter \
-		-lssl -lcrypto -lssh2 -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
+		-lssl -lcrypto -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 		#-L$(SR)angelscript/angelscript/lib-$(TARGET) -langelscript \-lSDL2_image \
-		# -ljxl  -lfreetype
+		# -ljxl  -lfreetype  -lssh2
 
 include $(BUILD_SHARED_LIBRARY)
