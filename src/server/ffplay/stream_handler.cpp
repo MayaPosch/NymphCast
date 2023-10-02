@@ -612,7 +612,11 @@ int StreamHandler::read_thread(void *arg) {
 	
 	// Open the input file or stream.
 	// If in slave mode, ignore any errors here.
+#ifdef __ANDROID__
+    err = avformat_open_input(&ic, is->filename, is->iformat, NULL);
+#else
     err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
+#endif
     if (err < 0) {
         print_error(is->filename, err);
 		if (serverMode != NCS_MODE_SLAVE) {
@@ -622,7 +626,11 @@ int StreamHandler::read_thread(void *arg) {
     }
 	
 	// Log stream info.
+#ifdef __ANDROID__
+	av_log(NULL, AV_LOG_INFO, "Format %s, duration %lld us", ic->iformat->name, ic->duration);
+#else
 	av_log(NULL, AV_LOG_INFO, "Format %s, duration %lld us", ic->iformat->long_name, ic->duration);
+#endif
 	
     if (scan_all_pmts_set)
         av_dict_set(&format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE);
