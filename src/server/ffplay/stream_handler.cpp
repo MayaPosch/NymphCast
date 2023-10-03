@@ -647,6 +647,12 @@ int StreamHandler::read_thread(void *arg) {
     av_format_inject_global_side_data(ic);
 
     if (find_stream_info) {
+#ifdef __ANDROID__
+		// FIXME: skipping setup_find_stream_info_opts due to segfault. Similar to issue on ESP32. 
+
+		// Extract info on the individual audio/video & subtitle streams.
+        err = avformat_find_stream_info(ic, NULL);
+#else
         AVDictionary **opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
@@ -655,6 +661,7 @@ int StreamHandler::read_thread(void *arg) {
 
         for (i = 0; i < orig_nb_streams; i++) { av_dict_free(&opts[i]); }
         av_freep(&opts);
+#endif
 
         if (err < 0) {
             av_log(NULL, AV_LOG_WARNING, "%s: could not find codec parameters\n", is->filename);
