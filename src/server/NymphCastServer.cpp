@@ -219,6 +219,12 @@ std::string loggerName = "NymphCastServer";
 NCApps nc_apps;
 std::map<int, CastClient> clients;
 
+// -- BLOCK SIZE ---
+// This defines the size of the data blocks requested from the client with a read request.
+// Defined in kilobytes.
+uint32_t readBlockSize = 200;
+// ---
+
 
 // Data structure.
 struct SessionParams {
@@ -532,6 +538,7 @@ bool dataRequestHandler(uint32_t session) {
 
 	// Request more data.
 	std::vector<NymphType*> values;
+	values.push_back(new NymphType(readBlockSize));
 	std::string result;
 	if (!NymphRemoteClient::callCallback(DataBuffer::getSessionHandle(), "MediaReadCallback", values, result)) {
 		NYMPH_LOG_ERROR("Calling callback failed: " + result);
@@ -564,6 +571,7 @@ void seekingHandler(uint32_t session, int64_t offset) {
 		// Send message to client indicating that we're seeking in the file.
 		std::vector<NymphType*> values;
 		values.push_back(new NymphType((uint64_t) offset));
+		values.push_back(new NymphType(readBlockSize));
 		std::string result;
 		NymphType* resVal = 0;
 		if (!NymphRemoteClient::callCallback(session, "MediaSeekCallback", values, result)) {
@@ -2025,7 +2033,7 @@ int main(int argc, char** argv) {
 	// Initialise the client component (RemoteServer) for use with slave remotes.
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
-	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	//NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	// Initialise the server.
 	//NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
@@ -2290,7 +2298,7 @@ int main(int argc, char** argv) {
 	//
 	// MediaReadCallback
 	parameters.clear();
-	//parameters.push_back(NYMPH_STRING);
+	parameters.push_back(NYMPH_UINT32);
 	NymphMethod mediaReadCallback("MediaReadCallback", parameters, NYMPH_NULL);
 	mediaReadCallback.enableCallback();
 	NymphRemoteClient::registerCallback("MediaReadCallback", mediaReadCallback);
@@ -2307,6 +2315,7 @@ int main(int argc, char** argv) {
 	// void MediaSeekCallback(uint64)
 	parameters.clear();
 	parameters.push_back(NYMPH_UINT64);
+	parameters.push_back(NYMPH_UINT32);
 	NymphMethod mediaSeekCallback("MediaSeekCallback", parameters, NYMPH_NULL);
 	mediaSeekCallback.enableCallback();
 	NymphRemoteClient::registerCallback("MediaSeekCallback", mediaSeekCallback);
