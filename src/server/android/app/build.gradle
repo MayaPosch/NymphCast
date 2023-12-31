@@ -49,10 +49,17 @@ android {
         viewBinding true
 		prefab true
     }
+	
+	/* DEBUG */
+	packagingOptions {
+        jniLibs {
+			useLegacyPackaging true
+		}
+	}
 }
 
+/*implementation 'com.arthenica:ffmpeg-kit-full-gpl:5.1.LTS'*/
 dependencies {
-	implementation 'com.arthenica:ffmpeg-kit-full-gpl:5.1.LTS'
 	implementation 'io.github.vvb2060.ndk:curl:7.83.0-h3'
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.3.0'

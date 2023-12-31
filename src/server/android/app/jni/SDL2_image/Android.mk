@@ -1,5 +1,8 @@
 SDL_IMAGE_LOCAL_PATH := $(call my-dir)
 
+# DEBUG
+LOCAL_ARM_MODE := arm
+
 
 # Enable this if you want PNG and JPG support with minimal dependencies
 USE_STBIMAGE ?= true

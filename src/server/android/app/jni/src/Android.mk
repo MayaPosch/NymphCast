@@ -2,6 +2,9 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
+# DEBUG
+LOCAL_ARM_MODE := arm
+
 LOCAL_MODULE := nymphcastserver
 
 SDL_PATH := ../SDL2
