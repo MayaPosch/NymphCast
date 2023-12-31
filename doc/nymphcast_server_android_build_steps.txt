@@ -1,0 +1,115 @@
+Building NymphCast Server for Android
+
+===
+
+= 0. Set up Android NDK =
+
+- Install Android SDK either with full IDE or stand-alone SDK (e.g. https://www.techspot.com/downloads/5425-android-sdk.html)
+- Install the latest r21 NDK, e.g. 21.4.x.
+- Install the Java 11 JDK for the Gradle build tool.
+
+
+XX= 0.5. Install OpenSSL =XX OBSOLETE XX
+- Obtain and copy the Android SSL libraries and headers: within Qt Creator or from https://github.com/KDAB/android_openssl
+- Copy the header folders (crypto, internal, openssl) into [..]\Android\Sdk\ndk\21.x.xx\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\include
+- Copy the libs from ssl_1.1/<arch> into [..]\Android\Sdk\ndk\21.x.xx\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\lib\<arch>
+		
+
+= 0.5. Obtain Curl & OpenSSL =
+
+- Get binary release from: https://github.com/ibaoger/libcurl-android
+- Copy headers to Sysroot.
+- Copy static libs to Sysroot: ${NDK_HOME}\toolchains\llvm\prebuilt\windows-x86_64\usr\usr\lib\<arch>
+
+
+= 1. Build Poco for Android =
+
+- Clone https://github.com/MayaPosch/Poco-build
+- Obtain Poco ZIP file (1.11.x release?) from https://github.com/pocoproject/poco/releases
+- Extract Poco release into a folder.
+- Copy contents of Poco-build project into the Poco release folder, overwriting existing files.
+- Create OS variable `NDK_HOME` with the root NDK folder (e.g. [..]\Android\Sdk\ndk\21.x.xx) value.
+[!] - for MSYS2, add this variable to ~/.bashrc or equivalent.
+- Add the NDK folder with the Android Clang toolchain to the OS PATH (e.g. ${NDK_HOME}\toolchains\llvm\prebuilt\windows-x86_64\bin)
+[!] - for MSYS2, add toolchain folder to the MSYS2 PATH in ~/.bashrc or equivalent.
+- Run `make TARGET=android_aarch64` and `make TARGET=android_x64` to get the 64-bit libs.
+- Copy the static (.a) libs from `build/<arch>/poco/lib` as in section 0.5.
+- Copy the header files from `build/<arch>/poco/include` as in section 0.5.
+
+
+= 2. Compile NymphRPC =
+
+- Clone NymphRPC project: https://github.com/MayaPosch/NymphRPC
+- In root folder, run `make ANDROID64=1` and `make ANDROIDX64=1` to create 64-bit libraries.
+- Create new `nymph` folder in the sysroot include folder & copy all NymphRPC header files into it.
+- Copy the static libs under `lib/` into the usual sysroot arch folders.
+
+
+= 3. Compile libnymphcast =
+
+- Clone libnymphcast project: https://github.com/MayaPosch/libnymphcast
+- In root folder, run `make ANDROID64=1` and `make ANDROIDX64` to create 64-bit libraries.
+- Copy `src/nymphcast_client.h` to NDK sysroot include folder.
+- Copy the static libs under `lib/` into the usual sysroot arch folders.
+
+
+= 6. Prepare NymphCast Server =
+
+- Clone NymphCast project: https://github.com/MayaPosch/NymphCast.
+
+
+= 7. Update SDL2 Java files =
+
+- Optional. Files are already in the NC source tree.
+- Obtain curent SDL2 release from: https://github.com/libsdl-org/SDL/releases
+- Extract archive to folder, navigate to `android-project\app\src\main\java\org\libsdl\app`.
+- Copy all files into `src\server\android\app\src\main\java\org\libsdl\app`.
+
+
+= 7.5. Copy SDL2 files =
+
+- Copy all SDL2 header files from app/jni/SDL2/include into <Sysroot>/include/SDL2.
+- Copy SDL_image.h from app/jni/SDL2_image to the same folder.
+
+
+= 8. Obtain Termux packages =
+
+- Get precompiled static libraries from Termux: https://packages.termux.dev/
+	- FreeImage-static => https://packages.termux.dev/apt/termux-main/pool/main/f/
+		- Also get the shared version (without -static) to extract the header files from.
+		- Easiest to extract .deb with 7Zip (extract to <named folder>).
+		- Inside extracted folder, [Extract Here] `data.tar.xz` with WinRar or similar to skip separate tar extraction.
+		- Navigate inside extracted data archive to usr/include & usr/lib deep inside hierarchy.
+		- Copy header file(s) into Sysroot include folder.
+		- Copy static lib for each arch
+	- RapidJSON => https://packages.termux.dev/apt/termux-main/pool/main/r/
+		- This is a header-only package, only copy the `rapidjson` folder to the Sysroot include.
+	- NGHTTP2 => https://packages.termux.dev/apt/termux-main/pool/main/libn/libnghttp2-static/
+		- Dependency from Curl, headers are already in Curl, apparently?
+		
+
+= 9. Obtain prebuilt ffmpeg =
+
+- Get ffmpeg libraries from https://github.com/arthenica/ffmpeg-kit/releases/ (6.x, latest native).
+- Download the archive called `ffmpeg-kit-full-gpl-<version>.aar`
+- Also download the 'MacOS Framework' release for that 'full-gpl' version.
+- Extract the AAR archive as zip file and extract the libraries from the jni/ folder.
+- Copy these libraries to their respective lib/<arch> folders in NDK Sysroot & JNI libs.
+- Extract the MacOS framework archive and copy the header files into Sysroot for each library.
+	- Copy into Sysroot/include/<library>, where <library> is e.g. 'libavcodec'.
+- [!] Skip the `libc++_shared.so` library. Gradle will copy this for us.
+
+
+= 10. Obtain Freetype =
+
+- Optional: the following steps are already integrated into the source tree.
+- Get Freetype: https://github.com/libsdl-org/freetype/tree/fd08bbe13c52e305f037448e805e7e3c6ea1b1e4
+- Get Harfbuzz: https://github.com/libsdl-org/harfbuzz/tree/c248ad57f98c3b069b80e6b5223c6f5ab082f15d
+- Extract the contents (with Android.mk as root) in a 'freetype' and 'harfbuzz' folder in `app/jni/`.
+
+
+= 11. Create APK =
+
+- In src/server/android, execute `./gradlew assembleDebug` to build an APK.
+- The APK can be found under `NymphCast\build\outputs\apk\debug`.
+- Install APK on connected device with `./gradlew installDebug`.
