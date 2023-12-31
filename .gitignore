@@ -21,4 +21,5 @@ src/server/wallpapers/*.jpeg
 .gradle
 local.properties
 *.dll
+*.so
 
