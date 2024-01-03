@@ -5,15 +5,9 @@ Building NymphCast Server for Android
 = 0. Set up Android NDK =
 
 - Install Android SDK either with full IDE or stand-alone SDK (e.g. https://www.techspot.com/downloads/5425-android-sdk.html)
-- Install the latest r21 NDK, e.g. 21.4.x.
+- Install NDK version 25.1.8937393 (Note: may happen automatically with gradle build?).
 - Install the Java 11 JDK for the Gradle build tool.
 
-
-XX= 0.5. Install OpenSSL =XX OBSOLETE XX
-- Obtain and copy the Android SSL libraries and headers: within Qt Creator or from https://github.com/KDAB/android_openssl
-- Copy the header folders (crypto, internal, openssl) into [..]\Android\Sdk\ndk\21.x.xx\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\include
-- Copy the libs from ssl_1.1/<arch> into [..]\Android\Sdk\ndk\21.x.xx\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\lib\<arch>
-		
 
 = 0.5. Obtain Curl & OpenSSL =
 
@@ -48,7 +42,7 @@ XX= 0.5. Install OpenSSL =XX OBSOLETE XX
 = 3. Compile libnymphcast =
 
 - Clone libnymphcast project: https://github.com/MayaPosch/libnymphcast
-- In root folder, run `make ANDROID64=1` and `make ANDROIDX64` to create 64-bit libraries.
+- In root folder, run `make ANDROID64=1` and `make ANDROIDX64=1` to create 64-bit libraries.
 - Copy `src/nymphcast_client.h` to NDK sysroot include folder.
 - Copy the static libs under `lib/` into the usual sysroot arch folders.
 
