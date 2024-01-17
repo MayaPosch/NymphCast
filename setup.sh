@@ -45,6 +45,14 @@ case "$(uname -s)" in
 		#echo 'Install libnymphrpc & libnymphcast before building server.'
 		#exit
 		;;
+		
+	Haiku)
+		echo 'Haiku'
+		PLATFORM="haiku"
+		if [ -x "$(command -v pkgman)" ]; then
+			pkgman install git poco poco_devel libsdl2 libsdl2_devel sdl2_image sdl2_image_devel ffmpeg ffmpeg_devel freetype freetype_devel freeimage freeimage_devel rapidjson rapidjson_source pkgconf curl curl_devel
+		fi
+		;;
 
 	*)
 		echo 'Unsupported OS'
@@ -71,7 +79,7 @@ fi
 if [ -f "/usr/lib/libnymphrpc.so" ]; then
 	echo "NymphRPC dynamic library found in /usr/lib. Skipping installation."
 #elif [ -f "/mingw64/lib/libnymphrpc.so" ]; then
-elif [ -f "${MINGW_PREFIX}/lib/libnymphrpc.so" ]; then
+elif [ -f "${MINGW_PREFIX}/lib/libnymphrpc.a" ]; then
 	#echo "NymphRPC dynamic library found in /mingw64/lib. Skipping installation."
 	echo "NymphRPC dynamic library found in ${MINGW_PREFIX}/lib. Skipping installation."
 else
@@ -97,7 +105,7 @@ rm -rf NymphRPC
 if [ -f "/usr/lib/libnymphcast.so" ]; then
 	echo "LibNymphCast dynamic library found in /usr/lib. Skipping installation."
 #elif [ -f "/mingw64/lib/libnymphcast.so" ]; then
-elif [ -f "${MINGW_PREFIX}/lib/libnymphcast.so" ]; then
+elif [ -f "${MINGW_PREFIX}/lib/libnymphcast.a" ]; then
 	#echo "LibNymphCast dynamic library found in /mingw64/lib. Skipping installation."
 	echo "LibNymphCast dynamic library found in ${MINGW_PREFIX}/lib. Skipping installation."
 else
