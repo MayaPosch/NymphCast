@@ -25,7 +25,7 @@
 #include <unistd.h>
 #endif // _WIN32
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__HAIKU__)
 // FreeBSD doesn't have a stat / stat64 distinction: everything is already
 // 64-bit clean.
 #include <sys/stat.h>
