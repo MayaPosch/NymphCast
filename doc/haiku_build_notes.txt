@@ -1,0 +1,29 @@
+Haiku build notes for NymphCast Server
+
+---
+
+-> Use /boot/system/non-packaged/develop/{headers/lib} for the NymphRPC & libnymphcast headers & libs when installing them from locally compiled sources and not a package.
+
+-> Haiku lstat is 64-bit clean, just like FreeBSD: lstat64 instances should be changed to lstat.
+
+-> Always update packages with 'pkgman update' before anything else.
+
+-> Network library is libnetwork => -lnetwork
+
+----
+
+Old issues:
+
+- Link error: -lpostproc -lstdc++fs -lasound
+	=> remove all three -> FIXED
+	
+---
+
+Current issues:
+
+- Crash on start: Poco::IOException: I/O Error 
+	=> In 'Poco::Net::SocketImpl::setOption.
+	=> (from strace:) setsockopt(0x5, 0x29, 0x1e, 0x[..], 0x4) operation not supported
+	-> terminate called.
+	=> apparently due to lack of Datagram socket support in Beta 4.
+		=> https://dev.haiku-os.org/ticket/18204
