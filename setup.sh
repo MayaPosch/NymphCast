@@ -78,6 +78,8 @@ fi
 
 if [ -f "/usr/lib/libnymphrpc.so" ]; then
 	echo "NymphRPC dynamic library found in /usr/lib. Skipping installation."
+elif [ -f "/boot/system/non-packaged/develop/lib/libnymphrpc.a" ]; then
+	echo "NymphRPC dynamic library found in /boot/system/non-packaged/develop/lib. Skipping installation."
 #elif [ -f "/mingw64/lib/libnymphrpc.so" ]; then
 elif [ -f "${MINGW_PREFIX}/lib/libnymphrpc.a" ]; then
 	#echo "NymphRPC dynamic library found in /mingw64/lib. Skipping installation."
@@ -104,6 +106,8 @@ rm -rf NymphRPC
 #make -C src/client_lib/
 if [ -f "/usr/lib/libnymphcast.so" ]; then
 	echo "LibNymphCast dynamic library found in /usr/lib. Skipping installation."
+elif [ -f "/boot/system/non-packaged/develop/lib/libnymphcast.a" ]; then
+	echo "LibNymphCast dynamic library found in /boot/system/non-packaged/develop/lib. Skipping installation."
 #elif [ -f "/mingw64/lib/libnymphcast.so" ]; then
 elif [ -f "${MINGW_PREFIX}/lib/libnymphcast.a" ]; then
 	#echo "LibNymphCast dynamic library found in /mingw64/lib. Skipping installation."
