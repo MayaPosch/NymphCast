@@ -91,7 +91,7 @@ Building NymphCast Server for Android
 - Copy these libraries to their respective lib/<arch> folders in NDK Sysroot & JNI libs.
 - Extract the MacOS framework archive and copy the header files into Sysroot for each library.
 	- Copy into Sysroot/include/<library>, where <library> is e.g. 'libavcodec'.
-- [!] Skip the `libc++_shared.so` library. Gradle will copy this for us.
+- [!] Skip the `libc++_shared.so` library. Gradle will copy this for us from the NDK.
 
 
 = 10. Obtain Freetype =
