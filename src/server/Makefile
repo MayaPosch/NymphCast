@@ -32,6 +32,11 @@ export PLATFORM_FLAGS
 USYS := $(shell uname -s)
 UMCH := $(shell uname -m)
 
+ifeq ($(USYS),Haiku)
+	# PREFIX := /boot/system/non-packaged/develop
+	HAIKU := true
+endif
+
 TARGET_BIN := $(TARGET)/
 
 # Include the file with the versioning information ('VERSION' variable).
@@ -53,21 +58,22 @@ INCLUDE += `sdl2-config --cflags` \
 			`pkg-config --cflags freetype2`
 endif
 
-LIB := -lnymphrpc -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
-		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+LIB := -lnymphrpc -lnymphcast -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPocoData -lPocoDataSQLite \
+		-lPocoFoundation -lswscale -lavcodec -lavdevice -lavformat -lavutil \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
-		-lstdc++fs -lfreetype \
-			 -lcurl -lfreeimage \
-			-lnymphcast -lPocoNet -lPocoUtil -lPocoFoundation
-			# -lvlc
+		-lfreetype -lcurl -lfreeimage
+			# -lvlc -lpostproc
+ifndef HAIKU
+	LIB += -lstdc++fs
+endif
 
-STATIC_LIB := -Wl,-Bstatic -lnymphrpc -lswscale -lavcodec -lavdevice -lavformat -lavutil -lpostproc \
+STATIC_LIB := -Wl,-Bstatic -lnymphrpc -lswscale -lavcodec -lavdevice -lavformat -lavutil \
 		-lswresample -lavfilter -lSDL2_image -Langelscript/angelscript/lib-$(TARGET) -langelscript \
 		-lstdc++fs -lfreetype -lcurl -lfreeimage -lnymphcast \
 		`pkg-config --libs freetype2` `sdl2-config --libs` \
 		 -Wl,-Bdynamic -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoFoundation -lPocoJSON -lPocoData \
 		-lPocoDataSQLite -lPocoNet -lPocoUtil -lPocoFoundation
-		# -lvlc
+		# -lvlc -lpostproc
 ifdef CROSSC
 LIB := -L $(SYSROOT)/usr/lib $(PLATFORM_LDFLAGS) -lfreetype -lSDL2main -lSDL2 $(LIB) -lpthread -lc
 else
@@ -94,6 +100,8 @@ ifdef OS
 	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
 	LDFLAGS += -lws2_32 -lopengl32 -lwinmm -lole32
 	OUTPUT := $(OUTPUT).exe
+else ifdef HAIKU
+	LDFLAGS += -pthread -latomic -lGL -lnetwork
 else
 	LDFLAGS += -pthread -latomic -lGL -lasound
 endif
