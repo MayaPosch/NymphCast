@@ -16,14 +16,25 @@ Old issues:
 
 - Link error: -lpostproc -lstdc++fs -lasound
 	=> remove all three -> FIXED
+
+- Crash on start: Poco::IOException: I/O Error 
+	=> Starts with bind6() call (NymphServer::start()).
+	=> In 'Poco::Net::SocketImpl::setOption. (IPv6-only?)
+	=> (from strace:) setsockopt(0x5, 0x29, 0x1e, 0x[..], 0x4) operation not supported
+	-> terminate called.
+	=> possibly due to lack of/incomplete Datagram socket support in Beta 4 & 5.
+		=> https://dev.haiku-os.org/ticket/18204
+	=> Using Poco::Net::ServerSocket::bind() instead seems to work.
+
+- NyanSD discovery fails with "Failed to convert remote IP to local."
+	=> IP to convert: 192.168.31.131 (Haiku VM IPv4)
+	=> Converted IP: 0x831fa8c0
+	=> Bug NyanSD: mixed up IPv4/IPv6 sections (nyansd.cpp:440 - 470)
+	=> Haiku only has IPv6 loopback, no local IPv6 address.
+	=> NyanSD discovery works after fixing NyanSD bug (see above).
 	
 ---
 
 Current issues:
-
-- Crash on start: Poco::IOException: I/O Error 
-	=> In 'Poco::Net::SocketImpl::setOption.
-	=> (from strace:) setsockopt(0x5, 0x29, 0x1e, 0x[..], 0x4) operation not supported
-	-> terminate called.
-	=> apparently due to lack of Datagram socket support in Beta 4.
-		=> https://dev.haiku-os.org/ticket/18204
+		
+- Install .so files into /boot/system/non-packaged/lib ?
