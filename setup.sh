@@ -91,7 +91,7 @@ else
 	# Build NymphRPC and install it.
 	echo "Installing NymphRPC..."
 	make -C NymphRPC/ lib
-	if [ "${PLATFORM}" == "mingw" ]; then
+	if [ "${PLATFORM}" == "mingw" ] || [ "${PLATFORM}" == "haiku" ]; then
 		make -C NymphRPC/ install
 	else
 		sudo make -C NymphRPC/ install
@@ -119,7 +119,7 @@ else
 	# Build libnymphcast and install it.
 	echo "Installing LibNymphCast..."
 	make -C libnymphcast/ lib
-	if [ "${PLATFORM}" == "mingw" ]; then
+	if [ "${PLATFORM}" == "mingw" ] || [ "${PLATFORM}" == "haiku" ]; then
 		make -C libnymphcast/ install
 	else 
 		sudo make -C libnymphcast/ install
