@@ -27,39 +27,6 @@
 
 
 #if defined(Q_OS_ANDROID)
-#include <QtAndroidExtras>
-#include <QAndroidJniEnvironment>
-#include <QtAndroid>
-#include <QStyleFactory>
-#include <QVector>
-
-
-
-const QVector<QString> permissions({"android.permission.INTERNET", 
-									"android.permission.READ_EXTERNAL_STORAGE"});
-
-class MediaItem : public QObject {
-	Q_OBJECT
-	Q_PROPERTY(QString title READ title CONSTANT)
-	Q_PROPERTY(QString album READ album CONSTANT)
-	Q_PROPERTY(QString artist READ artist CONSTANT)
-	Q_PROPERTY(QString path READ path CONSTANT)
-	
-	QString m_title;
-	QString m_album;
-	QString m_artist;
-	QString m_path;
-	
-public:
-	MediaItem(const QString title, const QString album, const QString artist, const QString path, 
-																		QObject *parent = nullptr) 
-		: QObject(parent), m_title(title), m_album(album), m_artist(artist), m_path(path) { }
-	
-	QString title() const { return m_title; }
-	QString album() const { return m_album; }
-	QString artist() const { return m_artist; }
-	QString path() const { return m_path; }
-};
 
 static int pfd[2];
 static pthread_t thr;
