@@ -29,22 +29,27 @@ sudo pacman -S qt5-base
 
 ## Building ##
 
-Option 1: The project's `.pro` file can be loaded in the Qt Creator IDE and the project built from there.
-
-Option 2: Manual building using `qmake` & `make` commands.
-
-
+The project can be built with QMake or with CMake.
 Either way, obtain and install the NymphRPC & LibNymphCast dependencies:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library per the provided instructions.
 2. Check-out [LibNymphCast](https://github.com/MayaPosch/libnymphcast) elsewhere and build the library per the provided instructions.
 
 When building on the command line, follow one of the following sections.
+Otherwise both options can be loaded into any IDE like the Qt Creator IDE and built from there.
 
 ### **Linux and similar** ###
 
-1. Download or clone the project repository 
-2. Navigate to `player/NymphCastPlayer` folder in the project files.
+#### CMake
+1. Download or clone the project repository
+2. Navigate to the `player` folder in the project files.
+3. Trigger CMake `cmake -B build`
+4. Build it: `cmake --build build`
+5. The player binary is created as `build/NymphCastPlayer/nymphcast-player`
+
+#### QMake
+1. Download or clone the project repository
+2. Navigate to the `player/NymphCastPlayer` folder in the project files.
 3. Create build folder: `mkdir build` and enter it: `cd build`
 4. Trigger QMake: `qmake ..`
 5. Build with Make: `make`
