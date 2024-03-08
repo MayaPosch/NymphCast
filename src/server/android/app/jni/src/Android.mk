@@ -31,7 +31,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
 VERSION = v0.2-alpha0.20220505
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 LOCAL_CPPFLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1 -std=c++17 \
-					$(VERSIONINFO) -DUSE_OPENGL_14
+					$(VERSIONINFO) -DUSE_OPENGLES_20
+#-DUSE_OPENGL_14
 
 # Add your application source files here.
 LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \

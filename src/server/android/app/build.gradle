@@ -8,11 +8,11 @@ android {
     defaultConfig {
         applicationId "com.nyanko.nymphcast"
         minSdk 27
-        targetSdk 32
-        versionCode 1
+        targetSdk 33
+        versionCode 2
         versionName "1.0"
 		ndkVersion '25.1.8937393'
-		
+
 		ndk {
 			// Specifies the ABI configurations of native
 			// libraries Gradle should build and package.
@@ -32,14 +32,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-			debuggable true
+			debuggable false
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-	
+
 	externalNativeBuild {
         ndkBuild {
             path 'jni/Android.mk'
@@ -49,13 +49,14 @@ android {
         viewBinding true
 		prefab true
     }
-	
+
 	/* DEBUG */
-	packagingOptions {
+	/*packagingOptions {
         jniLibs {
 			useLegacyPackaging true
 		}
-	}
+	}*/
+    namespace 'com.nyanko.nymphcast'
 }
 
 /*implementation 'com.arthenica:ffmpeg-kit-full-gpl:5.1.LTS'*/
