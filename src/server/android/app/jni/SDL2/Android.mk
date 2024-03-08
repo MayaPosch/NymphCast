@@ -8,9 +8,6 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-# DEBUG
-LOCAL_ARM_MODE := arm
-
 LOCAL_MODULE := SDL2
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
