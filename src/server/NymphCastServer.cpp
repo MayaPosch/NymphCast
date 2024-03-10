@@ -1273,9 +1273,9 @@ NymphMessage* volume_set(int session, NymphMessage* msg, void* data) {
 	
 	uint8_t volume = msg->parameters()[0]->getUint8();
 	
-	std::vector<NymphType*> values;
-	values.push_back(new NymphType(volume));
 	if (serverMode == NCS_MODE_MASTER) {
+		std::vector<NymphType*> values;
+		values.push_back(new NymphType(volume));
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
 			std::string result;
