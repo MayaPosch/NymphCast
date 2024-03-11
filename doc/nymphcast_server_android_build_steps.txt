@@ -88,7 +88,8 @@ Building NymphCast Server for Android
 - Download the archive called `ffmpeg-kit-full-gpl-<version>.aar`
 - Also download the 'MacOS Framework' release for that 'full-gpl' version.
 - Extract the AAR archive as zip file and extract the libraries from the jni/ folder.
-- Copy these libraries to their respective lib/<arch> folders in NDK Sysroot & JNI libs.
+- Copy these libraries to their respective lib/<arch> folders in NDK Sysroot & app/src/main/jniLibs.
+	- Copy to 'arm64_v8a' and 'x86_64' folders.
 - Extract the MacOS framework archive and copy the header files into Sysroot for each library.
 	- Copy into Sysroot/include/<library>, where <library> is e.g. 'libavcodec'.
 - [!] Skip the `libc++_shared.so` library. Gradle will copy this for us from the NDK.
