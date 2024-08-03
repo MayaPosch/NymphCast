@@ -85,6 +85,10 @@ CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
 CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
 LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
 
+ifeq ($(GPP),g++)
+	CPPFLAGS += -fext-numeric-literals
+endif
+
 # Check for a static build.
 ifdef STATIC
 	TARGET_BIN := $(TARGET)-static/
@@ -97,7 +101,8 @@ endif
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
-	CPPFLAGS += -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8=1
+	# Old: -U__STRICT_ANSI__
+	CPPFLAGS += -DPOCO_WIN32_UTF8=1
 	LDFLAGS += -lws2_32 -lopengl32 -lwinmm -lole32
 	OUTPUT := $(OUTPUT).exe
 else ifdef HAIKU
