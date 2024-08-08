@@ -97,7 +97,7 @@ public:
 	void setVolume(uint8_t volume);
 	bool playbackActive() { return playerStarted.load(); }
 	bool streamTrack(std::string url);
-	bool playTrack();
+	bool playTrack(int64_t delay = 0);
 	void quit();
 };
 

@@ -195,8 +195,14 @@ bool Ffplay::streamTrack(std::string url) {
 
 
 // --- PLAY TRACK ---
-bool Ffplay::playTrack() {
+bool Ffplay::playTrack(int64_t delay) {
 	if (!playerStarted) {
+		if (delay > 0) {
+			// Wait here for the indicated delay in microseconds.
+			// FIXME: only waits for ms resolution. Replace with better function from e.g. C++11.
+			Poco::Thread::sleep(delay / 1000);
+		}
+		
 		playingTrack = true;
 		
 		playbackCv.notify_one();
