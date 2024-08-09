@@ -194,7 +194,7 @@ void RemotesDialog::changeActiveGroup(int index) {
 	std::vector<NCRemoteInstance>& rem = groups[index].remotes;
 	for (uint32_t i = 0; i < rem.size(); ++i) {
 		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name)
-										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
+										+ " (" + QString::fromStdString(rem[i].remote.ipv4) + 
 										")", ui->groupRemotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}
@@ -223,7 +223,7 @@ void RemotesDialog::deleteGroupRemote() {
 	std::vector<NCRemoteInstance>& rem = group.remotes;
 	for (uint32_t i = 0; i < rem.size(); ++i) {
 		QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(rem[i].remote.name)
-										+ " (" + QString::fromStdString(remotes[i].remote.ipv4) + 
+										+ " (" + QString::fromStdString(rem[i].remote.ipv4) + 
 										")", ui->groupRemotesListWidget);
 		item->setData(Qt::UserRole, QVariant(i));
 	}
