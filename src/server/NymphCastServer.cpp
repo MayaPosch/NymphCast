@@ -1140,8 +1140,8 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 	int64_t then = 0;
 	if (serverMode == NCS_MODE_MASTER) {
 		Poco::Timestamp ts;
-		int64_t now;
-		int64_t countdown;
+		int64_t now = 0;
+		int64_t countdown = 0;
 		if (!ffplay.playbackActive()) {
 			now = (int64_t) ts.epochMicroseconds();
 			//then = now + (slaveLatencyMax * 2);
@@ -1151,7 +1151,7 @@ NymphMessage* session_data(int session, NymphMessage* msg, void* data) {
 		for (int i = 0; i < slave_remotes.size(); ++i) {
 			NymphCastSlaveRemote& rm = slave_remotes[i];
 			
-			int64_t send;
+			int64_t send = 0;
 			if (!ffplay.playbackActive()) {
 				//then = slaveLatencyMax - rm.delay;
 				then = countdown - (rm.delay / 2);
