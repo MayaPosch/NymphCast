@@ -29,7 +29,7 @@ void ct_cb(int /*unused*/) {
 	// Fetch time, output to stdout.
 	Poco::Timestamp ts;
 	sfinished = ts.epochMicroseconds();
-	NYMPH_LOG_DEBUG("Slave at: " + Poco::NumberFormatter::format(sfinished) + " microseconds.");
+	NYMPH_LOG_WARNING("Slave at: " + Poco::NumberFormatter::format(sfinished) + " microseconds.");
 }
 
 
@@ -181,7 +181,7 @@ int main() {
 	// Set up the callback functions
 	std::cout << "Initialising server...\n";
 	long timeout = 5000; // 5 seconds.
-	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_WARNING, timeout);
 	
 	std::cout << "Registering methods...\n";
 	std::vector<NymphTypes> parameters;
@@ -275,13 +275,13 @@ int main() {
 	
 	//rm.delay = theirs - now;
 	rm.delay = pong - now;
-	NYMPH_LOG_DEBUG("Slave delay: " + Poco::NumberFormatter::format(rm.delay) + 
+	NYMPH_LOG_WARNING("Slave delay: " + Poco::NumberFormatter::format(rm.delay) + 
 						" microseconds.");
-	NYMPH_LOG_DEBUG("Current max slave delay: " + 
+	NYMPH_LOG_WARNING("Current max slave delay: " + 
 						Poco::NumberFormatter::format(slaveLatencyMax));
 	if (rm.delay > slaveLatencyMax) { 
 		slaveLatencyMax = rm.delay;
-		NYMPH_LOG_DEBUG("Max slave latency increased to: " + 
+		NYMPH_LOG_WARNING("Max slave latency increased to: " + 
 							Poco::NumberFormatter::format(slaveLatencyMax) + " microseconds.");
 	}
 	
@@ -342,7 +342,7 @@ int main() {
 	// Note time at countdown end.
 	ts.update();
 	int64_t finished = ts.epochMicroseconds();
-	NYMPH_LOG_DEBUG("Finished at: " + Poco::NumberFormatter::format(finished) + " microseconds.");
+	NYMPH_LOG_WARNING("Finished at: " + Poco::NumberFormatter::format(finished) + " microseconds.");
 	
 	// Cleanup.
 	if (!NymphRemoteServer::disconnect(rm.handle, result)) {
@@ -355,8 +355,8 @@ int main() {
 	Poco::Thread::sleep(2000); // Wait for 2 seconds.
 	ct.stop(); // Finish ChronoTrigger timer.
 	
-	uint64_t delta = sfinished - finished;
-	NYMPH_LOG_DEBUG("Slave delta: " + Poco::NumberFormatter::format(delta) + " microseconds.");
+	int64_t delta = sfinished - finished;
+	NYMPH_LOG_WARNING("Slave delta: " + Poco::NumberFormatter::format(delta) + " microseconds.");
 	
 	return 0;
 }
