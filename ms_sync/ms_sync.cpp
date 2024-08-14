@@ -333,15 +333,20 @@ int main() {
 	
 	// Start locally too.
 	// Wait out the countdown.
-	std::condition_variable cv;
-	std::mutex cv_m;
-	std::unique_lock<std::mutex> lk(cv_m);
-	std::chrono::microseconds dur(countdown);
-	while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
-	
+	if (countdown > 0) {
+		std::condition_variable cv;
+		std::mutex cv_m;
+		std::unique_lock<std::mutex> lk(cv_m);
+		std::chrono::microseconds dur(countdown);
+		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
+	}
+		
 	// Note time at countdown end.
 	ts.update();
 	int64_t finished = ts.epochMicroseconds();
+	NYMPH_LOG_WARNING("send: " + Poco::NumberFormatter::format(send) + " microseconds.");
+	NYMPH_LOG_WARNING("receive: " + Poco::NumberFormatter::format(receive) + " microseconds.");
+	NYMPH_LOG_WARNING("countdown: " + Poco::NumberFormatter::format(countdown) + " microseconds.");
 	NYMPH_LOG_WARNING("Finished at: " + Poco::NumberFormatter::format(finished) + " microseconds.");
 	
 	// Cleanup.
