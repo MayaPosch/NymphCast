@@ -481,7 +481,7 @@ bool startSlavePlayback() {
 		NymphCastSlaveRemote& rm = slave_remotes[i];
 		//then = slaveLatencyMax - rm.delay;
 		then = countdown - (rm.delay / 2);
-			
+		ts.update();
 		int64_t send = (int64_t) ts.epochMicroseconds();
 		
 		// Prepare data vector.
@@ -497,17 +497,20 @@ bool startSlavePlayback() {
 			
 		delete returnValue;
 			
+		ts.update();
 		int64_t receive = (int64_t) ts.epochMicroseconds();
 			
 		countdown -= (receive - send);
 	}
-		
-	// Wait out the countdown before returning.
-	std::condition_variable cv;
-	std::mutex cv_m;
-	std::unique_lock<std::mutex> lk(cv_m);
-	std::chrono::microseconds dur(countdown);
-	while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
+	
+	if (countdown > 0) {
+		// Wait out the countdown before returning.
+		std::condition_variable cv;
+		std::mutex cv_m;
+		std::unique_lock<std::mutex> lk(cv_m);
+		std::chrono::microseconds dur(countdown);
+		while (cv.wait_for(lk, dur) != std::cv_status::timeout) { }
+	}
 	
 	/* for (uint32_t i = 0; i < slave_remotes.size(); ++i) {
 		//
