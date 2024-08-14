@@ -24,11 +24,12 @@ uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds (? 
 
 // --- CT CB ---
 // ChronoTrigger callback.
+int64_t sfinished = 0;
 void ct_cb(int /*unused*/) {
 	// Fetch time, output to stdout.
 	Poco::Timestamp ts;
-	int64_t finished = ts.epochMicroseconds();
-	NYMPH_LOG_DEBUG("Slave at: " + Poco::NumberFormatter::format(finished) + " microseconds.");
+	sfinished = ts.epochMicroseconds();
+	NYMPH_LOG_DEBUG("Slave at: " + Poco::NumberFormatter::format(sfinished) + " microseconds.");
 }
 
 
@@ -353,6 +354,9 @@ int main() {
 	
 	Poco::Thread::sleep(2000); // Wait for 2 seconds.
 	ct.stop(); // Finish ChronoTrigger timer.
+	
+	uint64_t delta = sfinished - finished;
+	NYMPH_LOG_DEBUG("Slave delta: " + Poco::NumberFormatter::format(delta) + " microseconds.");
 	
 	return 0;
 }
