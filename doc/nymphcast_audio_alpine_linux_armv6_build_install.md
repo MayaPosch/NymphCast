@@ -19,6 +19,8 @@ The tar.gz archive is the easiest way to install. Simply extract the contents of
 	
 	=> https://wiki.alpinelinux.org/wiki/Raspberry_Pi
 	
+Create a `usercfg.txt` file in the root of the SD card and add the string `dtparam=audio=on` to it.
+	
 Boot from SD card, log in as 'root', no password. Next, run:
 
 $ setup-alpine
@@ -38,9 +40,15 @@ NCA can be subsequently installed either from an existing package (for x86, ARMv
 
 $ apk add nymphcast
 
-It may be necessary to add the 'edge' package repository if we get an error:
+It may be necessary to add the 'edge' package repository if we get an error. Edit the file `/etc/apk/repositories` for this.
 
-$ 
+Enable the NymphCast service:
+
+$ rc-update add nymphcast
+
+And start it:
+
+$ rc-service nymphcast start
 
 Make sure to save our changes:
 
