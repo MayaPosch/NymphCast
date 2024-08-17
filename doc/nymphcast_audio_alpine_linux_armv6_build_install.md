@@ -28,7 +28,9 @@ $ setup-alpine
 Update Alpine & commit changes to SD card:
 
 $ apk update
+
 $ apk upgrade
+
 $ lbu commit -d
 
 
@@ -40,9 +42,15 @@ NCA can be subsequently installed either from an existing package (for x86, ARMv
 
 $ apk add nymphcast
 
-It may be necessary to add the 'edge' package repository if we get an error. Edit the file `/etc/apk/repositories` for this.
+It may be necessary to add the 'edge' package repository if we get an error. Edit the file `/etc/apk/repositories` for this, changing the release version to `edge`.
 
-Enable the NymphCast service:
+	=> https://wiki.alpinelinux.org/wiki/Repositories
+
+Also install ALSA and add our user(s) to the `audio` group: https://wiki.alpinelinux.org/wiki/ALSA
+
+By default we use the HDMI audio output.
+
+Next, enable the NymphCast service:
 
 $ rc-update add nymphcast
 
@@ -54,6 +62,8 @@ Make sure to save our changes:
 
 $ lbu commit -d
 
+We can now shut down with `poweroff`. Powercycling without safe shutdown should also work.
+
 
 **Compile source**
 
@@ -64,6 +74,7 @@ $ git clone --depth 1 https://github.com/MayaPosch/NymphCast
 Next, run the `setup.sh` script:
 
 $ cd NymphCast
+
 $ ./setup.sh
 
 Next, install NCA:
