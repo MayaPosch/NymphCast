@@ -14,7 +14,7 @@ A C++17-capable GCC, Clang or MSVC toolchain is required in addition to the belo
 
 - [NymphRPC](https://github.com/MayaPosch/NymphRPC)
 - [LibNymphCast](https://github.com/MayaPosch/libnymphcast)
-- Ffmpeg [(LibAV)](https://trac.ffmpeg.org/wiki/Using%20libav*) (v4+) 
+- Ffmpeg [(LibAV)](https://trac.ffmpeg.org/wiki/Using%20libav*) (v5.1+) 
 - LibSDL2
 - LibSDL2_Image
 - LibPOCO (1.5+)
