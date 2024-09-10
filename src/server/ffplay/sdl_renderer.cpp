@@ -657,7 +657,8 @@ void SdlRenderer::video_audio_display(VideoState *s) {
 	nb_freq = 1 << (rdft_bits - 1);
 
 	/* compute display index : center on currently output samples */
-	channels = s->audio_tgt.channels;
+	//channels = s->audio_tgt.channels;
+	channels = s->audio_tgt.ch_layout.nb_channels;
 	nb_display_channels = channels;
 	if (!s->paused) {
 		int data_used= s->show_mode == SHOW_MODE_WAVES ? s->width.load() : (2*nb_freq);

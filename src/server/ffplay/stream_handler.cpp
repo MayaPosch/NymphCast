@@ -173,14 +173,14 @@ int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
         return channel_count1 != channel_count2 || fmt1 != fmt2;
 }
 
-static inline
+/* static inline
 int64_t get_valid_channel_layout(int64_t channel_layout, int channels)
 {
     if (channel_layout && av_get_channel_layout_nb_channels(channel_layout) == channels)
         return channel_layout;
     else
         return 0;
-}
+} */
 
 
 int StreamHandler::get_master_sync_type(VideoState *is) {
@@ -212,8 +212,9 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
     const char *forced_codec_name = NULL;
     AVDictionary *opts = NULL;
     AVDictionaryEntry *t = 0;
-    int sample_rate, nb_channels;
-    int64_t channel_layout;
+    int sample_rate; //, nb_channels;
+    AVChannelLayout ch_layout = {};
+    //int64_t channel_layout;
     int ret = 0;
     int stream_lowres = lowres;
 
@@ -298,8 +299,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
             AVFilterContext *sink;
 
             is->audio_filter_src.freq           = avctx->sample_rate;
-            is->audio_filter_src.channels       = avctx->channels;
-            is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+            //is->audio_filter_src.channels       = avctx->channels;
+            //is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+			ret = av_channel_layout_copy(&is->audio_filter_src.ch_layout, &avctx->ch_layout);
+            if (ret < 0)
+                goto fail;
             is->audio_filter_src.fmt            = avctx->sample_fmt;
             if ((ret = AudioRenderer::configure_audio_filters(is, afilters, 0)) < 0) {
 				av_log(NULL, AV_LOG_ERROR, "Failed to configure audio filters: %d.\n", ret);
@@ -308,8 +312,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
 			
             sink = is->out_audio_filter;
             sample_rate    = av_buffersink_get_sample_rate(sink);
-            nb_channels    = av_buffersink_get_channels(sink);
-            channel_layout = av_buffersink_get_channel_layout(sink);
+            //nb_channels    = av_buffersink_get_channels(sink);
+            //channel_layout = av_buffersink_get_channel_layout(sink);
+			ret = av_buffersink_get_ch_layout(sink, &ch_layout);
+            if (ret < 0)
+                goto fail;
         }
 #else
         sample_rate    = avctx->sample_rate;
@@ -318,7 +325,8 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
 #endif
 
         /* prepare audio output */
-        if ((ret = AudioRenderer::audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0) {
+        //if ((ret = AudioRenderer::audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0) {
+		if ((ret = AudioRenderer::audio_open(is, &ch_layout, sample_rate, &is->audio_tgt)) < 0) {
 			av_log(NULL, AV_LOG_ERROR, "Failed to open audio output.\n");
             goto fail;
 		}
@@ -338,8 +346,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
         is->audio_stream = stream_index;
         is->audio_st = ic->streams[stream_index];
 
-        DecoderC::decoder_init(&is->auddec, avctx, &is->audioq, is->continue_read_thread);
-        if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !is->ic->iformat->read_seek) {
+        if ((ret = DecoderC::decoder_init(&is->auddec, avctx, &is->audioq, is->continue_read_thread)) < 0)
+            goto fail;
+		
+        //if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !is->ic->iformat->read_seek) {
+		if (is->ic->iformat->flags & AVFMT_NOTIMESTAMPS) {
             is->auddec.start_pts = is->audio_st->start_time;
             is->auddec.start_pts_tb = is->audio_st->time_base;
         }
@@ -1166,7 +1177,7 @@ void StreamHandler::stream_cycle_channel(VideoState *is, int codec_type) {
             switch (codec_type) {
             case AVMEDIA_TYPE_AUDIO:
                 if (st->codecpar->sample_rate != 0 &&
-                    st->codecpar->channels != 0)
+                    st->codecpar->ch_layout.nb_channels != 0)
                     goto the_end;
                 break;
             case AVMEDIA_TYPE_VIDEO:

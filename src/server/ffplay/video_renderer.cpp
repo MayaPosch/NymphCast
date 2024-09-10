@@ -207,7 +207,7 @@ display:
 			//file_meta.position = master_clock;	// Copy to FleMetaInfo structure for the current file.
 			//FileMetaInfo::position = master_clock;	// Copy to FleMetaInfo structure for the current file.
 			//FileMetaInfo::setPosition(master_clock);
-			file_meta.setPosition(master_clock);
+			file_meta.setPosition(master_clock);/* 
             av_log(NULL, AV_LOG_INFO,
                    "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%" PRId64"/%" PRId64"   \r",
                    master_clock,
@@ -218,7 +218,16 @@ display:
                    vqsize / 1024,
                    sqsize,
                    is->video_st ? is->viddec.avctx->pts_correction_num_faulty_dts : 0,
-                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_pts : 0);
+                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_pts : 0); */
+            av_log(NULL, AV_LOG_INFO,
+                   "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB  \r",
+                   master_clock,
+                   (is->audio_st && is->video_st) ? "A-V" : (is->video_st ? "M-V" : (is->audio_st ? "M-A" : "   ")),
+                   av_diff,
+                   is->frame_drops_early + is->frame_drops_late,
+                   aqsize / 1024,
+                   vqsize / 1024,
+                   sqsize);
             fflush(stdout);
             last_time = cur_time;
         }

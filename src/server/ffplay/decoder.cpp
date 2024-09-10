@@ -7,13 +7,14 @@
 
 
 
-void DecoderC::decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) {
+int DecoderC::decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) {
     memset(d, 0, sizeof(Decoder));
     d->avctx = avctx;
     d->queue = queue;
     d->empty_queue_cond = empty_queue_cond;
     d->start_pts = AV_NOPTS_VALUE;
     d->pkt_serial = -1;
+	return 0;
 }
 
 int DecoderC::decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub) {
