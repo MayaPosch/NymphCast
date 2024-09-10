@@ -53,11 +53,8 @@ pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_i
 
 If using a compatible OS (e.g. **Debian**, Alpine Linux or Arch Linux), one can use the setup script: 
 
-1. Run the `install_linux.sh` script in the project root to compile & install the binaries and set up a systemd/OpenRC service on Linux systems.
-
-Or:
-
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
+2. Run the `install_linux.sh` script in the project root to compile & install the binaries and set up a systemd/OpenRC service on Linux systems.
 
 Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
 
@@ -88,3 +85,7 @@ To remove intermediate build files:
 And to create an [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer (with IS binaries on the system path):
 
 `Setup-NMake-vcpkg.bat package`
+
+## Uninstall ##
+
+An (experimental) uninstall script is provided in the project root called `uninstall_linux.sh`, which should work on all supported Linux distributions.

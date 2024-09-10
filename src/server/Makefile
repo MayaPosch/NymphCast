@@ -231,6 +231,12 @@ install:
 	cp -r apps/* $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	chmod --recursive a+X $(DESTDIR)$(PREFIX)/share/nymphcast/apps/
 	install -m 644 wallpapers/*.jpg $(DESTDIR)$(PREFIX)/share/nymphcast/wallpapers/
+	
+.PHONY: uninstall
+uninstall:
+	rm -r $(DESTDIR)$(PREFIX)/share/nymphcast/
+	rm -r $(DESTDIR)$(CONFDIR)/nymphcast/
+	rm $(DESTDIR)$(PREFIX)/bin/$(OUTPUT)
 
 .PHONY: install-systemd
 install-systemd:
@@ -242,6 +248,9 @@ install-openrc:
 	install -d $(DESTDIR)$(CONFDIR)/init.d/	
 	sed ${SED_REPLACE} openrc/nymphcast > $(DESTDIR)$(CONFDIR)/init.d/nymphcast
 	chmod 0755 $(DESTDIR)$(CONFDIR)/init.d/nymphcast
+	
+uninstall-openrc:
+	rm $(DESTDIR)$(CONFDIR)/init.d/nymphcast
 
 
 # Construct an archive for Raspbian: audio-only, or full.
