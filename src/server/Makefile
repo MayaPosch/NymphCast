@@ -81,8 +81,8 @@ LIB += `pkg-config --libs freetype2` `sdl2-config --libs`
 endif
 
 FLAGS := -ffunction-sections -fdata-sections -g3 -O0 $(PLATFORM_FLAGS) -DPOCO_DATA_NO_SQL_PARSER
-CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(PLATFORM_FLAGS)
-CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(PLATFORM_FLAGS) $(VERSIONINFO)
+CFLAGS := $(FLAGS) $(INCLUDE) -std=c11 $(CFLAGS)
+CPPFLAGS := $(FLAGS) $(INCLUDE) -std=c++17 $(CXXFLAGS) $(VERSIONINFO)
 LDFLAGS := -Wl,--gc-sections -Wl,-Map,bin/$(TARGET_BIN)$(OUTPUT).map $(PLATFORM_LDFLAGS) $(LIB)
 
 ifeq ($(GPP),g++)
