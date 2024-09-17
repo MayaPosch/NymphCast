@@ -1953,7 +1953,7 @@ int main(int argc, char** argv) {
 	audio_disable = false;
 	
 	// Check for 'enable_gui' boolean value. If 'true', use the GUI interface.
-	gui_enable = true;
+	gui_enable = false;
 	
 	// Check whether the LCDProc client should be enabled.
 	lcdproc_enabled = false;
