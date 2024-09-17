@@ -918,6 +918,7 @@ int StreamHandler::read_thread(void *arg) {
                     goto fail;
                 PacketQueueC::packet_queue_put(&is->videoq, &copy);
                 PacketQueueC::packet_queue_put_nullpacket(&is->videoq, is->video_stream);
+				//PacketQueueC::packet_queue_put_nullpacket(&is->subtitleq, &copy, is->subtitle_stream);
             }
             is->queue_attachments_req = 0;
         }
@@ -959,22 +960,43 @@ int StreamHandler::read_thread(void *arg) {
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
 			// FIXME: hack.
-			if (ret == AVERROR_EOF) { eof = true; break; }
+			if (ret == AVERROR_EOF && (file_meta.position >= file_meta.duration)) { 
+				eof = true; 
+				break; 
+			}
 			
-			av_log(NULL, AV_LOG_WARNING, "av_read_frame() returned <0, no EOF.\n");
+			//av_log(NULL, AV_LOG_WARNING, "av_read_frame() returned <0, no EOF.\n");
 			
 			// EOF or error. 
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
-                if (is->video_stream >= 0)
+				//av_log(NULL, AV_LOG_WARNING, "Inserting null packet...\n");
+                if (is->video_stream >= 0) {
                     PacketQueueC::packet_queue_put_nullpacket(&is->videoq, is->video_stream);
-                if (is->audio_stream >= 0)
+                    //PacketQueueC::packet_queue_put_nullpacket(&is->videoq, pkt, is->video_stream);
+				}
+				
+                if (is->audio_stream >= 0) {
+					//av_log(NULL, AV_LOG_WARNING, "Insert audio null packet.\n");
                     PacketQueueC::packet_queue_put_nullpacket(&is->audioq, is->audio_stream);
-                if (is->subtitle_stream >= 0)
+                    //PacketQueueC::packet_queue_put_nullpacket(&is->audioq, pkt, is->audio_stream);
+				}
+				
+                if (is->subtitle_stream >= 0) {
                     PacketQueueC::packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream);
+                    //PacketQueueC::packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
+				}
+				
                 is->eof = 1;
             }
 			
-            if (ic->pb && ic->pb->error) { break; }
+            if (ic->pb && ic->pb->error) {
+				av_log(NULL, AV_LOG_WARNING, "PB error, checking autoexit.\n");
+                if (autoexit) { goto fail; }
+                else { break; }
+			}
+			
+			//av_log(NULL, AV_LOG_WARNING, "av_read_frame() returned <0, entering wait.\n");
+			
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
