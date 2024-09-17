@@ -119,8 +119,9 @@ fail:
     return ret;
 }
 
-
+extern "C" {
 #include "libavutil/bprint.h"
+}
 
 
 int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters, int force_output_format) {
@@ -139,6 +140,8 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
     if (!(is->agraph = avfilter_graph_alloc()))
         return AVERROR(ENOMEM);
     is->agraph->nb_threads = filter_nbthreads;
+
+    av_bprint_init(&bp, 0, AV_BPRINT_SIZE_AUTOMATIC);
 
     while ((e = av_dict_get(swr_opts, "", e, AV_DICT_IGNORE_SUFFIX)))
         av_strlcatf(aresample_swr_opts, sizeof(aresample_swr_opts), "%s=%s:", e->key, e->value);
