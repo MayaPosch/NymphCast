@@ -56,11 +56,11 @@ android {
     }
 
 	/* DEBUG */
-	packagingOptions {
+	/* packagingOptions {
         jniLibs {
 			useLegacyPackaging true
 		}
-	}
+	} */
     namespace 'com.nyanko.nymphcast'
 }
 

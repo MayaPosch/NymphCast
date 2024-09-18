@@ -10,7 +10,7 @@ APP_ABI := arm64-v8a x86_64
 # Min runtime API level
 APP_PLATFORM=android-24
 
-APP_CFLAGS := -fsanitize=address -fno-omit-frame-pointer
-APP_LDFLAGS := -fsanitize=address
+#APP_CFLAGS := -fsanitize=address -fno-omit-frame-pointer
+#APP_LDFLAGS := -fsanitize=address
 
 #APP_SHORT_COMMANDS := true
