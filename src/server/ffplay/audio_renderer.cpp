@@ -75,7 +75,7 @@ static int synchronize_audio(VideoState *is, int nb_samples)
     return wanted_nb_samples;
 }
 
-#if CONFIG_AVFILTER
+
 static int configure_filtergraph(AVFilterGraph *graph, const char *filtergraph,
                                  AVFilterContext *source_ctx, AVFilterContext *sink_ctx)
 {
@@ -119,6 +119,7 @@ fail:
     return ret;
 }
 
+
 extern "C" {
 #include "libavutil/bprint.h"
 }
@@ -128,7 +129,7 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE };
     int sample_rates[2] = { 0, -1 };
     int64_t channel_layouts[2] = { 0, -1 };
-    int channels[2] = { 0, -1 };
+    //int channels[2] = { 0, -1 };
     AVFilterContext *filt_asrc = NULL, *filt_asink = NULL;
     char aresample_swr_opts[512] = "";
     AVDictionaryEntry *e = NULL;
@@ -143,10 +144,15 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
 
     av_bprint_init(&bp, 0, AV_BPRINT_SIZE_AUTOMATIC);
 
-    while ((e = av_dict_get(swr_opts, "", e, AV_DICT_IGNORE_SUFFIX)))
+    while ((e = av_dict_get(swr_opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
+	//while ((e = av_dict_iterate(swr_opts, e))) {
         av_strlcatf(aresample_swr_opts, sizeof(aresample_swr_opts), "%s=%s:", e->key, e->value);
-    if (strlen(aresample_swr_opts))
+	}
+	
+    if (strlen(aresample_swr_opts)) {
         aresample_swr_opts[strlen(aresample_swr_opts)-1] = '\0';
+	}
+	
     av_opt_set(is->agraph, "aresample_swr_opts", aresample_swr_opts, 0);
 
     /* ret = snprintf(asrc_args, sizeof(asrc_args),
@@ -222,7 +228,6 @@ end:
         avfilter_graph_free(&is->agraph);
     return ret;
 }
-#endif  /* CONFIG_AVFILTER */
 
 
 /**
@@ -504,7 +509,7 @@ int AudioRenderer::audio_open(void *opaque, AVChannelLayout* wanted_channel_layo
     if (spec.channels != wanted_spec.channels) {
         //wanted_channel_layout = av_get_default_channel_layout(spec.channels);
 		av_channel_layout_uninit(wanted_channel_layout);
-		av_channel_layout_default(wanted_channel_layout, wanted_spec.channels);
+		av_channel_layout_default(wanted_channel_layout, spec.channels);
         //if (!wanted_channel_layout) {
 		if (wanted_channel_layout->order != AV_CHANNEL_ORDER_NATIVE) {
             av_log(NULL, AV_LOG_ERROR,
