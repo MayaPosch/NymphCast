@@ -233,6 +233,7 @@ void Ffplay::run() {
 	//parse_options(NULL, argc, argv.data(), options, opt_input_file);
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	//av_log_set_level(AV_LOG_TRACE);
+	//av_log_set_level(AV_LOG_DEBUG);
 	av_log_set_level(AV_LOG_INFO);
 	
 	// Start main loop.

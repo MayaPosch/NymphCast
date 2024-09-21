@@ -270,22 +270,37 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
         avctx->flags2 |= AV_CODEC_FLAG2_FAST;
 
     opts = filter_codec_opts(codec_opts, avctx->codec_id, ic, ic->streams[stream_index], codec);
+    /* ret = filter_codec_opts(codec_opts, avctx->codec_id, ic,
+                            ic->streams[stream_index], codec, &opts);
+    if (ret < 0)
+        goto fail; */
+	
     if (!av_dict_get(opts, "threads", NULL, 0))
         av_dict_set(&opts, "threads", "auto", 0);
 	
     if (stream_lowres)
         av_dict_set_int(&opts, "lowres", stream_lowres, 0);
 	
-    if (avctx->codec_type == AVMEDIA_TYPE_VIDEO || avctx->codec_type == AVMEDIA_TYPE_AUDIO)
-        av_dict_set(&opts, "refcounted_frames", "1", 0);
+    /* if (avctx->codec_type == AVMEDIA_TYPE_VIDEO || avctx->codec_type == AVMEDIA_TYPE_AUDIO)
+        av_dict_set(&opts, "refcounted_frames", "1", 0); */
+	
+	av_dict_set(&opts, "flags", "+copy_opaque", AV_DICT_MULTIKEY);
+
+    /* if (avctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+        ret = create_hwaccel(&avctx->hw_device_ctx);
+        if (ret < 0)
+            goto fail;
+    } */
 	
     if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
 		av_log(NULL, AV_LOG_ERROR, "avcodec_open2() failed.\n");
         goto fail;
     }
 	
-    if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX)) && t == 0) {
-        av_log(NULL, AV_LOG_ERROR, "Option not found.\n");
+    //if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX)) && t == 0) {
+	if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+        //av_log(NULL, AV_LOG_ERROR, "Option not found.\n");
+		av_log(NULL, AV_LOG_ERROR, "Option %s not found.\n", t->key);
         ret =  AVERROR_OPTION_NOT_FOUND;
         goto fail;
     }
@@ -294,7 +309,7 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
     ic->streams[stream_index]->discard = AVDISCARD_DEFAULT;
     switch (avctx->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
-#if CONFIG_AVFILTER
+//#if CONFIG_AVFILTER
         {
             AVFilterContext *sink;
 
@@ -318,11 +333,11 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
             if (ret < 0)
                 goto fail;
         }
-#else
+/* #else
         sample_rate    = avctx->sample_rate;
         nb_channels    = avctx->channels;
         channel_layout = avctx->channel_layout;
-#endif
+#endif */
 
         /* prepare audio output */
         //if ((ret = AudioRenderer::audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0) {
@@ -383,6 +398,7 @@ int StreamHandler::stream_component_open(VideoState *is, int stream_index) {
 fail:
     avcodec_free_context(&avctx);
 out:
+    av_channel_layout_uninit(&ch_layout);
     av_dict_free(&opts);
 
     return ret;
