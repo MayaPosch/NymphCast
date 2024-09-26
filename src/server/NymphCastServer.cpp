@@ -79,6 +79,9 @@ using namespace Poco;
 #include "gui.h"
 
 #ifdef __ANDROID__
+// Define screen to show when idle.
+std::string idleScreen = "androidIdleScreen.jpg";
+
 //#include <android_native_app_glue.h>
 
 // Set up native logging by redirecting stdout to Android logging.
@@ -622,11 +625,16 @@ void finishPlayback() {
 			ScreenSaver::start(15);
 		}
 		else {
+#ifdef __ANDROID__
+			// Show placeholder.
+			SdlRenderer::screensaverUpdate(idleScreen);
+#else
 			// Hide window.
 			SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_UNDERSCORE;
 			SDL_PushEvent(&event);
+#endif
 		}
 	}
 }
@@ -2470,8 +2478,13 @@ int main(int argc, char** argv) {
 			ScreenSaver::start(15);
 		}
 		else {
+#ifdef __ANDROID__
+			// Show placeholder.
+			SdlRenderer::screensaverUpdate(idleScreen);
+#else
 			// 
 			SdlRenderer::hideWindow();
+#endif
 		}
 		
 		// Set full-screen mode.
