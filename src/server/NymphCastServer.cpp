@@ -2014,7 +2014,9 @@ int main(int argc, char** argv) {
 		std::cout << "Setting wallpapers folder to default location." << std::endl;
 	}
 
-	if (wallpapersFolder.back() != '/') {
+	std::string l = ".list";
+	if (wallpapersFolder.back() != '/' && 
+			wallpapersFolder.compare(wallpapersFolder.size() - 5, 5, l) != 0) {
 		wallpapersFolder.append("/");
 	}
 	

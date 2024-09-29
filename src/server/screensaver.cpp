@@ -68,6 +68,12 @@ void ScreenSaver::start(uint32_t changeSecs) {
 	
 	std::cout << "Found " << images.size() << " wallpapers." << std::endl;
 	
+	if (images.size() == 0) {
+		// Aborting screensaver...
+		std::cerr << "Abort screensaver due to lack of images.";
+		return;
+	}
+	
 	// Display initial image.
 	changeImage(0);
 	
