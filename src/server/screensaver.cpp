@@ -56,7 +56,7 @@ void ScreenSaver::setDataPath(std::string path) {
 	else {
 		for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
 			std::string ext = entry.path().extension().string();
-			if (ext == ".txt" || ext == ".sh") { continue; }
+			if (ext == ".txt" || ext == ".sh" || ext == ".list") { continue; }
 			images.push_back(entry.path().string());
 		}
 	}
