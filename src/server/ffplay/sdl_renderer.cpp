@@ -420,8 +420,22 @@ void SdlRenderer::image_display(std::string image) {
 	av_log(NULL, AV_LOG_INFO, "Resizing window for texture with w/h: %d, %d.\n", w, h);
 	resizeWindow(w, h); */
 	
+	// Resize texture to target surface.
+	// static void calculate_display_rect(SDL_Rect *rect,
+	//							   int scr_xleft, int scr_ytop, int scr_width, int scr_height,
+	//							   int pic_width, int pic_height, AVRational pic_sar)
+	SDL_Rect rect;
+	int xleft = 0;
+	int ytop = 0;
+	int twidth = 0;
+	int theight = 0;
+    SDL_QueryTexture(texture, NULL, NULL, &twidth, &theight);
+	AVRational sar = { 1, 1 };
+	calculate_display_rect(&rect, xleft, ytop, screen_width, screen_height, 
+							twidth, theight, sar);
+	
 	SDL_RenderClear(renderer);
-	if (SDL_RenderCopy(renderer, texture, 0, 0) < 0) {
+	if (SDL_RenderCopy(renderer, texture, NULL, &rect) < 0) {
 		av_log(NULL, AV_LOG_FATAL, "Cannot copy SDL texture %s\n", SDL_GetError());
 		return;
 	}
