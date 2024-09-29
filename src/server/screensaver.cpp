@@ -4,6 +4,7 @@
 
 #include <filesystem> 		// C++17
 #include <iostream>
+#include <fstream>
 
 #include "ffplay/sdl_renderer.h"
 
@@ -41,10 +42,23 @@ void ScreenSaver::setDataPath(std::string path) {
 	dataPath = path;
 	
 	// Read in image names.
-	for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
-		std::string ext = entry.path().extension().string();
-		if (ext == ".txt" || ext == ".sh") { continue; }
-        images.push_back(entry.path().string());
+	// If the path ends with a '.list` file, assume it's a text document containing one image name
+	// per line, and read this is instead of iterating the folder.
+	std::string l = ".list";
+	std::string line;
+	if (path.compare(path.size() - 5, 5, l) == 0) {
+		// Read in list file.
+		std::ifstream FILE(path);
+		while (std::getline(FILE, line)) {
+			images.push_back(line);
+		}
+	}
+	else {
+		for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
+			std::string ext = entry.path().extension().string();
+			if (ext == ".txt" || ext == ".sh") { continue; }
+			images.push_back(entry.path().string());
+		}
 	}
 }
 

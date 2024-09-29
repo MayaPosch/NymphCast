@@ -1951,7 +1951,7 @@ int main(int argc, char** argv) {
 	// TODO: enable wallpaper storage & access.
 	// TODO: enable app storage & access.
 	appsFolder = "apps/";
-	std::string wallpapersFolder = "wallpapers/";
+	std::string wallpapersFolder = "wallpapers/wallpapers.list";
 	std::string resourceFolder = "";
 	
 	// Settings.
