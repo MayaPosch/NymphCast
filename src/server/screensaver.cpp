@@ -5,6 +5,7 @@
 #include <filesystem> 		// C++17
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 
 #include "ffplay/sdl_renderer.h"
 
@@ -48,10 +49,25 @@ void ScreenSaver::setDataPath(std::string path) {
 	std::string line;
 	if (path.compare(path.size() - 5, 5, l) == 0) {
 		// Read in list file.
-		std::ifstream FILE(path);
+		/* std::ifstream FILE(path);
 		while (std::getline(FILE, line)) {
 			images.push_back(line);
+		} */
+		
+		FILE* pFile;
+		char cline[100];
+		pFile = fopen(path.c_str(), "r");
+		if (pFile == NULL) { 
+			std::cerr << "Error opening file";
+			return;
 		}
+		
+		if (fgets(cline, 100, pFile) != NULL) {
+			line = std::string(cline);
+			images.push_back(line);
+		}
+			
+		fclose (pFile);
 	}
 	else {
 		for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
