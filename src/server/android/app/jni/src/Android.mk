@@ -15,7 +15,8 @@ SR := $(LOCAL_PATH)/$(SRC_PATH)
 # Work around the limited command length on Windows.
 LOCAL_SHORT_COMMANDS := true
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
+LOCAL_C_INCLUDES := $(LOCAL_PATH) \
+					$(LOCAL_PATH)/$(SDL_PATH)/include \
 					-I $(SR). -I $(SR)ffplay \
 					-I $(SR)angelscript/angelscript/include -I $(SR)angelscript/add_on \
 					-I $(SR)angelscript/json -I $(SR)angelscript/regexp \
@@ -32,10 +33,12 @@ VERSION = v0.2-alpha0.20220505
 VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 LOCAL_CPPFLAGS := -Dmain=SDL_main -ffunction-sections -fdata-sections -g3 -O1 -std=c++17 \
 					$(VERSIONINFO) -DUSE_OPENGLES_20
+LOCAL_CFLAGS :=	-include "android_fopen.h"
 #-DUSE_OPENGL_14
 
 # Add your application source files here.
-LOCAL_SRC_FILES := 	$(wildcard $(SR)*.cpp) \
+LOCAL_SRC_FILES := 	$(LOCAL_PATH)/android_fopen.c \
+					$(wildcard $(SR)*.cpp) \
 					$(wildcard $(SR)ffplay/*.cpp) \
 					$(wildcard $(SR)angelscript/add_on/scriptstdstring/*.cpp) \
 					$(wildcard $(SR)angelscript/add_on/scriptbuilder/*.cpp) \
