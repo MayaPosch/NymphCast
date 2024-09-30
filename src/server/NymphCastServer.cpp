@@ -2482,6 +2482,7 @@ int main(int argc, char** argv) {
 		else {
 #ifdef __ANDROID__
 			// Show placeholder.
+			SdlRenderer::showWindow();
 			SdlRenderer::screensaverUpdate(idleScreen);
 #else
 			// 
