@@ -62,7 +62,8 @@ void ScreenSaver::setDataPath(std::string path) {
 			return;
 		}
 		
-		if (fgets(cline, 100, pFile) != NULL) {
+		while (fgets(cline, 100, pFile) != NULL) {
+			cline[strcspn(cline, "\r\n")] = 0;
 			line = std::string(cline);
 			images.push_back(line);
 		}
