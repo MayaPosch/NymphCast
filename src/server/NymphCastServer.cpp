@@ -2459,6 +2459,9 @@ int main(int argc, char** argv) {
 	// Transition time is 15 seconds.
 	bool init_success = true;
 	if (!display_disable) {
+		// Set full-screen mode.
+		SdlRenderer::set_fullscreen(is_full_screen);
+		
 		if (gui_enable) {
 			// Start the GUI with the specified resource folder.
 			if (!Gui::init(resourceFolder)) {
@@ -2483,15 +2486,13 @@ int main(int argc, char** argv) {
 #ifdef __ANDROID__
 			// Show placeholder.
 			SdlRenderer::showWindow();
+			//Thread::sleep(200); // 200 milliseconds.
 			SdlRenderer::screensaverUpdate(idleScreen);
 #else
 			// 
 			SdlRenderer::hideWindow();
 #endif
 		}
-		
-		// Set full-screen mode.
-		SdlRenderer::set_fullscreen(is_full_screen);
 	}
 	
 	// Start AV thread.
