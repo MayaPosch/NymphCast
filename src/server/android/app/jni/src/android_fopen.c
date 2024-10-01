@@ -42,6 +42,7 @@ static AAssetManager* createAssetManager() {
     jobject global_asset_manager = (*env)->NewGlobalRef(env, asset_manager);
 
     pAssetManager = AAssetManager_fromJava(env, global_asset_manager);
+	//android_fopen_set_asset_manager(AAssetManager_fromJava(env, android_java_asset_manager));
 	return pAssetManager;
 }
 
