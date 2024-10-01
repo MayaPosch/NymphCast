@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 
 #include "ffplay/sdl_renderer.h"
 
@@ -49,16 +50,44 @@ void ScreenSaver::setDataPath(std::string path) {
 	std::string line;
 	if (path.compare(path.size() - 5, 5, l) == 0) {
 		// Read in list file.
+#if __ANDROID__
+		// Use the SDL file API as it handles Android assets directly.
+		SDL_RWops* FILE = SDL_RWFromFile("file.txt", "r");
+		if(FILE) {
+			// get the size of the file
+			Sint64 size = SDL_RWsize(FILE);
+			if (size < 10) {
+				std::cerr << "Empty wallpaper list file. Skipping." << std::endl;
+				return;
+			}
+
+			// read the file into a buffer
+			char* buffer = new char[size];
+			SDL_RWread(FILE, buffer, sizeof(char), size);
+			
+			// Parse the lines in the buffer.
+			char* cline = strtok(buffer, "\n");
+			while (cline != NULL) {
+				cline[strcspn(cline, "\r\n")] = 0;
+				line = std::string(cline);
+				images.push_back(line);
+				cline = strtok(buffer, "\n");
+			}
+			
+			// Close the file & delete temporary buffer.
+			SDL_RWclose(FILE);
+			delete[] buffer;
+		}
+#else
 		/* std::ifstream FILE(path);
 		while (std::getline(FILE, line)) {
 			images.push_back(line);
 		} */
-		
 		FILE* pFile;
 		char cline[100];
 		pFile = fopen(path.c_str(), "r");
 		if (pFile == NULL) { 
-			std::cerr << "Error opening file";
+			std::cerr << "Error opening file" << std::endl;
 			return;
 		}
 		
@@ -69,6 +98,7 @@ void ScreenSaver::setDataPath(std::string path) {
 		}
 			
 		fclose (pFile);
+#endif
 	}
 	else {
 		for (const fs::directory_entry& entry : fs::directory_iterator(dataPath)) {
