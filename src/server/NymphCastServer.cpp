@@ -2490,7 +2490,7 @@ int main(int argc, char** argv) {
 #ifdef __ANDROID__
 			// Show placeholder.
 			SdlRenderer::showWindow();
-			//Thread::sleep(200); // 200 milliseconds.
+			// FIXME: fixes initial rejected SurfaceFlinger buffer bug on Android...
 			SdlRenderer::image_display(idleScreen);
 			SdlRenderer::screensaverUpdate(idleScreen);
 #else
