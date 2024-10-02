@@ -2480,6 +2480,10 @@ int main(int argc, char** argv) {
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);
 			SdlRenderer::showWindow();
+#ifdef __ANDROID__
+			// FIXME: fixes initial rejected SurfaceFlinger buffer bug on Android...
+			SdlRenderer::image_display(idleScreen);
+#endif
 			ScreenSaver::start(15);
 		}
 		else {
@@ -2487,6 +2491,7 @@ int main(int argc, char** argv) {
 			// Show placeholder.
 			SdlRenderer::showWindow();
 			//Thread::sleep(200); // 200 milliseconds.
+			SdlRenderer::image_display(idleScreen);
 			SdlRenderer::screensaverUpdate(idleScreen);
 #else
 			// 
