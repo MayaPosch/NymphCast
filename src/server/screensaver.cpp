@@ -71,12 +71,16 @@ void ScreenSaver::setDataPath(std::string path) {
 				cline[strcspn(cline, "\r\n")] = 0;
 				line = std::string(cline);
 				images.push_back(line);
-				cline = strtok(buffer, "\n");
+				cline = strtok(NULL, "\n");
 			}
 			
 			// Close the file & delete temporary buffer.
 			SDL_RWclose(FILE);
 			delete[] buffer;
+		}
+		else {
+				std::cerr << "Cannot open wallpapers list file." << std::endl;
+				return;
 		}
 #else
 		/* std::ifstream FILE(path);
