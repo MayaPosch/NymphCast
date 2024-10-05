@@ -71,7 +71,9 @@ LIB := -lnymphrpc -lnymphcast -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoJSON -lPoc
 		-lfreetype -lcurl -lfreeimage
 			# -lvlc -lpostproc
 ifndef HAIKU
+ifndef FREEBSD
 	LIB += -lstdc++fs
+endif
 endif
 
 STATIC_LIB := -Wl,-Bstatic -lnymphrpc -lswscale -lavcodec -lavdevice -lavformat -lavutil \
