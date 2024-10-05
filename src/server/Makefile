@@ -40,6 +40,7 @@ endif
 MAKE := make
 ifeq ($(USYS),FreeBSD)
 	MAKE := gmake
+	FREEBSD := true
 endif
 
 TARGET_BIN := $(TARGET)/
@@ -112,6 +113,8 @@ ifdef OS
 	OUTPUT := $(OUTPUT).exe
 else ifdef HAIKU
 	LDFLAGS += -pthread -latomic -lGL -lnetwork
+else ifdef FREEBSD
+	LDFLAGS += -pthread -latomic -GL
 else
 	LDFLAGS += -pthread -latomic -lGL -lasound
 endif
