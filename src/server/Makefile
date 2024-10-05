@@ -41,6 +41,7 @@ MAKE := make
 ifeq ($(USYS),FreeBSD)
 	MAKE := gmake
 	FREEBSD := true
+	PLATFORM_LDFLAGS += -L/usr/local/lib
 endif
 
 TARGET_BIN := $(TARGET)/
@@ -114,7 +115,7 @@ ifdef OS
 else ifdef HAIKU
 	LDFLAGS += -pthread -latomic -lGL -lnetwork
 else ifdef FREEBSD
-	LDFLAGS += -pthread -latomic -GL
+	LDFLAGS += -pthread -latomic -lGL
 else
 	LDFLAGS += -pthread -latomic -lGL -lasound
 endif
