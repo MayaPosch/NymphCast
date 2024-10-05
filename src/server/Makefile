@@ -37,6 +37,11 @@ ifeq ($(USYS),Haiku)
 	HAIKU := true
 endif
 
+MAKE := make
+ifeq ($(USYS),FreeBSD)
+	MAKE := gmake
+endif
+
 TARGET_BIN := $(TARGET)/
 
 # Include the file with the versioning information ('VERSION' variable).
@@ -191,7 +196,7 @@ makedir:
 	$(MAKEDIR) bin/$(TARGET)
 	
 angelscript:
-	make -C angelscript/angelscript/projects/gnuc/ static
+	$(MAKE) -C angelscript/angelscript/projects/gnuc/ static
 	
 gui: $(GUI_OBJECTS)
 
@@ -212,7 +217,7 @@ clean-objects:
 	$(RM) $(OBJECTS) $(C_OBJECTS)
 	
 clean-angelscript:
-	make -C angelscript/angelscript/projects/gnuc/ clean
+	$(MAKE) -C angelscript/angelscript/projects/gnuc/ clean
 	
 clean-gui:
 	$(RM) $(GUI_OBJECTS)

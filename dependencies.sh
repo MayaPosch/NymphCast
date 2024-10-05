@@ -45,6 +45,12 @@ case "$(uname -s)" in
 		#exit
 		;;
 		
+	FreeBSD)
+		echo 'Detected FreeBSD'
+		PLATFORM="freebsd"
+		pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson curl
+		;;
+		
 	Haiku)
 		echo 'Haiku'
 		PLATFORM="haiku"

@@ -46,6 +46,12 @@ case "$(uname -s)" in
 		#exit
 		;;
 		
+	FreeBSD)
+		echo 'Detected FreeBSD'
+		PLATFORM="freebsd"
+		pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson curl
+		;;
+		
 	Haiku)
 		echo 'Haiku'
 		PLATFORM="haiku"
@@ -93,6 +99,8 @@ else
 	make -C NymphRPC/ lib
 	if [ "${PLATFORM}" == "mingw" ] || [ "${PLATFORM}" == "haiku" ]; then
 		make -C NymphRPC/ install
+	elif [ "$(PLATFORM)" == "freebsd" ]; then
+		gmake -C NymphRPC/ install
 	else
 		sudo make -C NymphRPC/ install
 	fi
@@ -121,6 +129,8 @@ else
 	make -C libnymphcast/ lib
 	if [ "${PLATFORM}" == "mingw" ] || [ "${PLATFORM}" == "haiku" ]; then
 		make -C libnymphcast/ install
+	elif [ "$(PLATFORM)" == "freebsd" ]; then
+		gmake -C libnymphcast/ install
 	else 
 		sudo make -C libnymphcast/ install
 	fi
@@ -131,7 +141,11 @@ fi
 
 # Build NymphCast server.
 #make -C src/server/ clean
-make -C src/server/
+if [ "$(PLATFORM)" == "freebsd" ]; then
+	gmake -C src/server
+else
+	make -C src/server/
+fi
 
 # Copy the wallpaper files into the bin folder.
 #mkdir -p src/server/bin/wallpapers
