@@ -49,7 +49,7 @@ case "$(uname -s)" in
 	FreeBSD)
 		echo 'Detected FreeBSD'
 		PLATFORM="freebsd"
-		pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson curl
+		pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson pkgconf curl
 		;;
 		
 	Haiku)
