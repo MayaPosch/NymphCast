@@ -117,7 +117,7 @@ ifdef OS
 else ifdef HAIKU
 	LDFLAGS += -pthread -latomic -lGL -lnetwork
 else ifdef FREEBSD
-	LDFLAGS += -pthread -latomic -lGL
+	LDFLAGS += -pthread -lGL
 else
 	LDFLAGS += -pthread -latomic -lGL -lasound
 endif
