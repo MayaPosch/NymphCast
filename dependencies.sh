@@ -55,7 +55,7 @@ case "$(uname -s)" in
 		echo 'Haiku'
 		PLATFORM="haiku"
 		if [ -x "$(command -v pkgman)" ]; then
-			pkgman install git poco poco_devel libsdl2 libsdl2_devel sdl2_image sdl2_image_devel ffmpeg ffmpeg_devel freetype freetype_devel freeimage freeimage_devel rapidjson curl curl_devel
+			pkgman install git poco poco_devel libsdl2 libsdl2_devel sdl2_image sdl2_image_devel ffmpeg ffmpeg6_devel freetype freetype_devel freeimage freeimage_devel rapidjson curl curl_devel
 		fi
 		;;
 
