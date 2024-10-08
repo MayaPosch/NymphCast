@@ -22,7 +22,6 @@ A C++17-capable GCC, Clang or MSVC toolchain is required in addition to the belo
 - libFreeImage
 - RapidJson
 - Pkg-config
-- libVLC
 - libCurl
 
 On **Debian** & derivatives:
@@ -41,6 +40,11 @@ On **Alpine** & derivatives:
 
 ```
 sudo apk add poco-dev sdl2-dev sdl2_image-dev ffmpeg-dev openssl-dev freetype-dev freeimage-dev rapidjson-dev alsa-lib-dev glew-dev nymphrpc-dev curl-dev pkg-config
+```
+
+On **FreeBSD**:
+```
+pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson curl
 ```
 
 On **MSYS2**:
@@ -65,6 +69,8 @@ Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. Use `sudo make install` to install the server and associated files.
 7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
+
+**Note**:For **FreeBSD** make sure to use `gmake` instead of `make`. Pay note to compile with Clang as well (see below), for NCS and dependencies like NymphRPC and libnymphcast.
 
 ## Clang ##
 
