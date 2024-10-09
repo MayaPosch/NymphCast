@@ -40,7 +40,13 @@ case "$(uname -s)" in
 			pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-poco mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-freetype mingw-w64-x86_64-freeimage mingw-w64-x86_64-rapidjson pkgconf curl
 		fi
 		;;
-
+		
+	FreeBSD)
+		echo 'Detected FreeBSD'
+		PLATFORM="freebsd"
+		pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson pkgconf curl
+		;;
+		
 	*)
 		echo 'Unsupported OS'
 		exit
