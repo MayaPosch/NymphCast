@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=0.2
+Name=NymphCast
+Comment=Stream audio and video content over the network.
+Exec=/usr/local/bin/nymphcast_server -c /usr/local/etc/nymphcast/nymphcast_config.ini
+Categories=AudioVideo

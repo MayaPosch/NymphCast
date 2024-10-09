@@ -20,25 +20,15 @@ fi
 # Copy files to the target folders.
 sudo make -C src/server/ install
 
-# Install systemd or openrc service.
-if [ -d "/run/systemd/system" ]; then
-	echo "Installing systemd service..."
-	sudo make -C src/server/ install-systemd
-	sudo chmod 644 /etc/systemd/user/nymphcast.service
-	#sudo systemctl enable nymphcast.service
-	systemctl --user enable nymphcast.service
-else
-	echo "Installing OpenRC service..."
-	sudo make -C src/server/ install-openrc
-fi
-
 # Set the requested configuration file.
 read -p "Desired NymphCast receiver configuration? [audio/video/screensaver/gui] " choice
 
+DESKTOP_INSTALL=true
 case $choice in
 	audio)
 		echo "Setting Audio configuration..."
 		sudo cp src/server/nymphcast_audio_config.ini /usr/local/etc/nymphcast/nymphcast_config.ini
+		DESKTOP_INSTALL=false
 		;;
 		
 	video)
@@ -61,3 +51,21 @@ case $choice in
 		
 		;;
 esac
+
+# If GUI, screensaver or video mode, install Desktop file for auto-start.
+if [ "${DESKTOP_INSTALL}" = "true" ]; then
+	# TODO: Install desktop file into $XDG_CONFIG_DIRS/autostart (/etc/xdg/autostart).
+	sudo cp src/server/autostart/nymphcast_server.desktop $XDG_CONFIG_DIRS/autostart
+else
+	# Install systemd or openrc service.
+	if [ -d "/run/systemd/system" ]; then
+		echo "Installing systemd service..."
+		sudo make -C src/server/ install-systemd
+		sudo chmod 644 /etc/systemd/user/nymphcast.service
+		#sudo systemctl enable nymphcast.service
+		systemctl --user enable nymphcast.service
+	else
+		echo "Installing OpenRC service..."
+		sudo make -C src/server/ install-openrc
+	fi
+fi
