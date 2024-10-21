@@ -55,7 +55,8 @@ esac
 # If GUI, screensaver or video mode, install Desktop file for auto-start.
 if [ "${DESKTOP_INSTALL}" = "true" ]; then
 	# TODO: Install desktop file into $XDG_CONFIG_DIRS/autostart (/etc/xdg/autostart).
-	sudo cp src/server/autostart/nymphcast_server.desktop $XDG_CONFIG_DIRS/autostart
+	#sudo cp src/server/autostart/nymphcast_server.desktop $XDG_CONFIG_DIRS/autostart
+	sudo cp src/server/autostart/nymphcast_server.desktop /etc/xdg/autostart
 else
 	# Install systemd or openrc service.
 	if [ -d "/run/systemd/system" ]; then
