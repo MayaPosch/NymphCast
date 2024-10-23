@@ -28,7 +28,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
+       <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
       </property>
       <item>
        <widget class="QLabel" name="label_2">
@@ -156,10 +156,10 @@
           <item>
            <widget class="QListWidget" name="mediaListWidget">
             <property name="verticalScrollMode">
-             <enum>QAbstractItemView::ScrollPerPixel</enum>
+             <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
             </property>
             <property name="horizontalScrollMode">
-             <enum>QAbstractItemView::ScrollPerPixel</enum>
+             <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
             </property>
            </widget>
           </item>
@@ -199,7 +199,7 @@
           <item>
            <spacer name="horizontalSpacer_4">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -247,7 +247,7 @@
              <number>1000</number>
             </property>
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -379,7 +379,7 @@
              <number>100</number>
             </property>
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -479,7 +479,7 @@
           <item>
            <widget class="QTreeView" name="sharesTreeView">
             <property name="verticalScrollMode">
-             <enum>QAbstractItemView::ScrollPerPixel</enum>
+             <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
             </property>
            </widget>
           </item>
@@ -494,6 +494,30 @@
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Receiver</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QPushButton" name="receiverScanButton">
+          <property name="text">
+           <string>Refresh receiver shares</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="receiverSharesView"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="receiverPlayButton">
+          <property name="text">
+           <string>Play Selected</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -594,7 +618,7 @@
      <x>0</x>
      <y>0</y>
      <width>360</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

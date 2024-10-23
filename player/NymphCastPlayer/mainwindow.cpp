@@ -181,6 +181,11 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->sharesScanButton, SIGNAL(clicked()), this, SLOT(scanForShares()));
     connect(ui->sharesPlayButton, SIGNAL(clicked()), this, SLOT(playSelectedShare()));
 	
+	// Receiver shares tab.
+    connect(ui->receiverScanButton, SIGNAL(clicked()), this, SLOT(receiverSharesRefresh()));
+    connect(ui->receiverPlayButton, SIGNAL(clicked()), this, SLOT(playReceiverShare()));
+	
+	
 	// General NC library.
 	connect(this, SIGNAL(playbackStatusChange(uint32_t, NymphPlaybackStatus)), 
 			this, SLOT(setPlaying(uint32_t, NymphPlaybackStatus)));
@@ -200,6 +205,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     
     // Set values.
     ui->sharesTreeView->setModel(&sharesModel);
+	ui->receiverSharesView->setModel(&receiverSharesModel);
 	
 	// Set QScroller on the list view and similar that need touch-based scrolling support.
 	QScroller::grabGesture(ui->mediaListWidget, QScroller::LeftMouseButtonGesture);
@@ -1470,6 +1476,119 @@ void MainWindow::playSelectedShare() {
     
     // Play file via media server.
     if (!client.playShare(mediaFiles[ids[0].toInt()][ids[1].toInt()], receivers)) {
+         //
+    }
+}
+
+
+// --- RECEIVER SHARES REFRESH ---
+void MainWindow::receiverSharesRefresh() {
+    // If connected to a remote server, obtain shared file list.
+    uint32_t handle;
+    if (!remoteEnsureConnected(handle)) { return; }
+    
+    receiverSharesModel.clear();
+    receiverFiles.clear();
+    QStandardItem* parentItem = receiverSharesModel.invisibleRootItem();
+	
+	// FIXME: What if a group is selected? Show error?
+	// If a group is connected, it connects to the first remote in the group, which is awkward...
+	std::vector<NymphMediaFile> files = client.getReceiverShares(handle);
+	if (files.empty()) { 
+		QMessageBox::warning(this, tr("No files found"), tr("Receiver has no shared files."));
+		return;
+	}
+	
+	// Insert into model. Use the media server's host name as top folder, with the shared
+	// files inserted underneath it in their respective media type categories.
+	// TODO: Use the provided media item categories within the UI. 
+	QStandardItem* item = new QStandardItem(QString::fromStdString(remotes[handle].remote.name));
+	item->setSelectable(false);
+	QStandardItem* audioRoot = new QStandardItem("audio");
+	QStandardItem* videoRoot = new QStandardItem("video");
+	//QStandardItem* imageRoot = new QStandardItem("image");
+	QStandardItem* playlistRoot = new QStandardItem("playlist");
+	audioRoot->setSelectable(false);
+	videoRoot->setSelectable(false);
+	playlistRoot->setSelectable(false);
+	for (uint32_t j = 0; j < files.size(); ++j) {
+		if (files[j].type == FILE_TYPE_IMAGE) { continue; }
+		QStandardItem* fn = new QStandardItem(QString::fromStdString(files[j].name));
+		QList<QVariant> ids;
+		//ids.append(QVariant(i));
+		ids.append(QVariant(j));
+		ids.append(QVariant(files[j].id));
+		receiverFiles.push_back(files);
+		ids.append(QVariant((uint32_t) mediaFiles.size()));
+		
+		fn->setData(QVariant(ids), Qt::UserRole);
+		//item->appendRow(fn);
+		if 		(files[j].type == FILE_TYPE_AUDIO) 		{ audioRoot->appendRow(fn); }
+		else if (files[j].type == FILE_TYPE_VIDEO) 		{ videoRoot->appendRow(fn); }
+		else if (files[j].type == FILE_TYPE_PLAYLIST) 	{ playlistRoot->appendRow(fn); }
+	}
+	
+	item->appendRow(audioRoot);
+	item->appendRow(videoRoot);
+	//item->appendRow(imageRoot);
+	item->appendRow(playlistRoot);
+	parentItem->appendRow(item);
+	
+	// Expand each root item.
+	ui->receiverSharesView->setExpanded(receiverSharesModel.indexFromItem(item), true);
+}
+
+
+// --- PLAY RECEIVER SHARE --
+void MainWindow::playReceiverShare() {
+	// Make sure we are connected to the remote.
+	uint32_t handle;
+    if (!remoteEnsureConnected(handle)) { return; }
+    
+    // Get the currently selected file name and obtain the ID.
+    QModelIndexList indexes = ui->receiverSharesView->selectionModel()->selectedIndexes();
+    if (indexes.size() == 0) {
+        QMessageBox::warning(this, tr("No file selected"), tr("No media files present."));
+        return;
+    }
+    else if (indexes.size() > 1) {
+        QMessageBox::warning(this, tr("Too many files selected."), tr("Select single file."));
+        return;
+    }
+    
+    QMap<int, QVariant> data = receiverSharesModel.itemData(indexes[0]);
+    QList<QVariant> ids = data[Qt::UserRole].toList();
+	
+	int index = ui->remotesComboBox->currentIndex();
+	
+    std::vector<NymphCastRemote> receivers;
+	if (index > separatorIndex) {
+		/* // Get the group and set up the master & any slave receivers.
+		NCRemoteGroup& group = groups[ui->remotesComboBox->currentData().toUInt()];
+		if (group.remotes.size() < 1) {
+			// Error: no remotes in group.
+			QMessageBox::warning(this, tr("No remotes"), tr("Group contains no remotes."));
+			return;
+		}
+			
+		// Add the receivers.
+		for (uint32_t i = 0; i < (uint32_t) group.remotes.size(); ++i) {
+			receivers.push_back(group.remotes[i].remote);
+		} */
+		QMessageBox::warning(this, tr("Group remotes"), tr("This will play only to the first receiver in the group."));
+	}
+	else if (index < separatorIndex) {
+		/* uint32_t ncid = ui->remotesComboBox->currentIndex();
+		receivers.push_back(remotes[ncid].remote); */
+	}
+	else {
+		// Separator was selected?!
+		return;
+	}
+    
+    // Play file via receiver.
+	uint32_t fileid = ids[0].toInt();
+    if (!client.playReceiverShare(handle, receiverFiles[0][fileid])) {
          //
     }
 }

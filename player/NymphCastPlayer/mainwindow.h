@@ -105,6 +105,10 @@ private slots:
     void scanForShares();
     void playSelectedShare();
 	
+	// Receiver tab.
+	void receiverSharesRefresh();
+	void playReceiverShare();
+	
 	// All tabs.
 	void remoteListRefresh();
 	void openRemotesDialog();
@@ -125,10 +129,12 @@ private:
 	std::vector<NCRemoteInstance> custom_remotes;
 	std::vector<NCRemoteGroup> groups;
     std::vector<std::vector<NymphMediaFile> > mediaFiles;
+    std::vector<std::vector<NymphMediaFile> > receiverFiles;
 	bool muted = false;
 	bool playingTrack = false;
 	bool singleCast = false;
     QStandardItemModel sharesModel;
+    QStandardItemModel receiverSharesModel;
 	QString appDataLocation;
 	int separatorIndex;
 	RemotesDialog* rd;
