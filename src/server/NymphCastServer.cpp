@@ -74,6 +74,7 @@ using namespace Poco;
 #include "INIReader.h"
 
 #include "nyansd.h"
+#include "mimetype.h"
 
 #include "nc_apps.h"
 #include "gui.h"
@@ -137,6 +138,7 @@ int screen_top = SDL_WINDOWPOS_CENTERED;
 int audio_disable;
 int video_disable;
 bool subtitle_disable = true;
+bool enable_local_media = false;
 const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
 int seek_by_bytes = -1;
 float seek_interval = 10;
@@ -168,11 +170,9 @@ const char *video_codec_name;
 double rdftspeed = 0.02;
 int64_t cursor_last_shown;
 int cursor_hidden = 0;
-#if CONFIG_AVFILTER
 const char **vfilters_list = NULL;
 int nb_vfilters = 0;
 char *afilters = NULL;
-#endif
 int autorotate = 1;
 int find_stream_info = 1;
 int filter_nbthreads = 0;
@@ -246,8 +246,87 @@ struct NymphCastSlaveRemote {
 NcsMode serverMode = NCS_MODE_STANDALONE;
 std::vector<NymphCastSlaveRemote> slave_remotes;
 uint32_t slaveLatencyMax = 0;	// Max latency to slave remote in milliseconds.
+
+// Types:
+// 0	Audio
+// 1	Video
+// 2	Image
+// 3	Playlist
+struct MediaFile {
+	std::string section;
+	std::string filename;
+	uint8_t type;
+	fs::path path;
+};
 // ---
 
+
+// array getFileList()
+std::vector<MediaFile> mediaFiles;
+NymphMessage* getFileList(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Copy values from the media file array into the new array.
+	std::vector<NymphType*>* tArr = new std::vector<NymphType*>();
+	for (uint32_t i = 0; i < mediaFiles.size(); ++i) {
+		std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>;
+		
+		NymphPair pair;
+		std::string* key = new std::string("id");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(i);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+	
+		key = new std::string("section");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&mediaFiles[i].section);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		key = new std::string("filename");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&mediaFiles[i].filename);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		key = new std::string("type");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(mediaFiles[i].type);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		tArr->push_back(new NymphType(pairs, true));
+	}
+	
+	returnMsg->setResultValue(new NymphType(tArr, true));
+	msg->discard();
+	return returnMsg;
+}
+
+
+// uint8 playMedia(uint32 id)
+// Returns: 0 on success. 1 on error.
+NymphMessage* playMedia(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the file ID to play back.
+	uint32_t fileId = msg->parameters()[0]->getUint32();
+	
+	// Obtain the file record using its ID.
+	if (fileId > mediaFiles.size()) {
+		// Invalid file ID.
+		returnMsg->setResultValue(new NymphType((uint8_t) 1));
+		msg->discard();
+		return returnMsg;
+	}
+	
+	MediaFile& mf = mediaFiles[fileId];
+	
+	// Play media file.
+	std::string url = mediaFiles[fileId].filename;
+	ffplay.streamTrack(url);
+	
+	returnMsg->setResultValue(new NymphType((uint8_t) 0));
+	msg->discard();
+	return returnMsg;
+}
 
 
 // --- MEDIA READ CALLBACK ---
@@ -2045,6 +2124,76 @@ int main(int argc, char** argv) {
 	// Set target LCDProc host.
 	std::string lcdproc_host = config.getValue<std::string>("lcdproc_host", "localhost");
 	
+	// Check for local media files.
+	enable_local_media = config.getValue<bool>("enable_local_media", false);
+	std::string media_file;
+	if (enable_local_media) {
+		// Get path to local media file and try to parse it.
+		// TODO:
+		media_file = config.getValue<std::string>("media_file", "");
+		if (!media_file.empty()) {
+			// Obtain the list of directories to scan.
+			std::cout << "Scanning directories..." << std::endl;
+			INIReader folderList(media_file);
+			if (folderList.ParseError() != 0) {
+				std::cerr << "Failed to parse the '" << media_file << "' file." << std::endl;
+				return 1;
+			}
+			
+			std::set<std::string> sections = folderList.Sections();
+			std::cout << "Found " << sections.size() << " sections in the folder list." << std::endl;
+			
+			uint32_t index = 0;
+			std::set<std::string>::const_iterator it;
+			for (it = sections.cbegin(); it != sections.cend(); ++it) {
+				// Read out each 'path' string and add the files in the folder (if it exists) to the
+				// central list.
+				std::cout << "Section: " << *it << std::endl;
+				std::string path = folderList.Get(*it, "path", "");
+				if (path.empty()) {
+					std::cerr << "Path was missing or empty for entry: " << *it << std::endl;
+					continue;
+				}
+				
+				// Check that path is a valid directory.
+				fs::path dir = path;
+				if (!fs::is_directory(dir)) {
+					std::cout << "Path is not a valid directory: " << path << ". Skipping." << std::endl;
+					continue;
+				}
+				
+				// Iterate through the directory to filter out the media files.
+				for (fs::recursive_directory_iterator next(dir); next != fs::end(next); next++) {
+					fs::path fe = next->path();
+					//std::cout << "Checking path: " << fe.string() << std::endl;
+					if (!fs::is_regular_file(fe)) {
+						continue; 
+					}
+					
+					std::string ext = fe.extension().string();
+					ext.erase(0, 1);	// Remove leading '.' character.
+					//std::cout << "Checking extension: " << ext << std::endl;
+					MediaFile mf;
+					uint8_t type;
+					if (MimeType::hasExtension(ext, type)) {
+						// Add to media file list.
+						std::cout << "Adding file: " << fe << std::endl;
+						
+						mf.path = fe;
+						mf.section = *it;
+						mf.filename = path + fe.filename().string(); // Absolute path.
+						mf.type = type;
+						mediaFiles.push_back(mf);
+					}
+				}
+			}
+		}
+		else {
+			std::cerr << "Local media file enabled, but empty path." << std::endl;
+			return 1;
+		}
+	}
+	
 	// Open the 'apps.ini' file and parse it.
 	nc_apps.setAppsFolder(appsFolder);
 	if (!nc_apps.readAppList(appsFolder + "apps.ini")) {
@@ -2318,6 +2467,17 @@ int main(int argc, char** argv) {
 	parameters.push_back(NYMPH_STRING);
 	NymphMethod appLoadResourceFunction("app_loadResource", parameters, NYMPH_STRING, app_loadResource);
 	NymphRemoteClient::registerMethod("app_loadResource", appLoadResourceFunction);
+	
+	// array getFileList()
+	parameters.clear();
+	NymphMethod getFileListFunction("getFileList", parameters, NYMPH_ARRAY, getFileList);
+	NymphRemoteClient::registerMethod("getFileList", getFileListFunction);
+	
+	// uint8 playMedia(uint32 id)
+	parameters.clear();
+	parameters.push_back(NYMPH_UINT32);
+	NymphMethod playMediaFunction("playMedia", parameters, NYMPH_UINT8, playMedia);
+	NymphRemoteClient::registerMethod("playMedia", playMediaFunction);
 	
 	
 	// Register client callbacks

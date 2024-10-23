@@ -310,6 +310,7 @@ void Ffplay::run() {
 		}
 		else {
 			input_filename = castUrl.c_str();
+			av_log(NULL, AV_LOG_INFO, "Opening URL: %s\n", input_filename);
 		}
 		
 		// Start player.
