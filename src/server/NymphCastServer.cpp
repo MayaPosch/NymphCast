@@ -320,7 +320,27 @@ NymphMessage* playMedia(int session, NymphMessage* msg, void* data) {
 	MediaFile& mf = mediaFiles[fileId];
 	
 	// Play media file.
+	// First get the filename, then handle the window mode change (if any) and start playback.
 	std::string url = mediaFiles[fileId].filename;
+	
+	// Stop screensaver.
+	if (!video_disable) {
+		if (gui_enable) {
+			// Show window.
+			SDL_Event event;
+			event.type = SDL_KEYDOWN;
+			event.key.keysym.sym = SDLK_MINUS;
+			SDL_PushEvent(&event);
+		}
+		else if (screensaver_enable) {
+			ScreenSaver::stop();
+		}
+		else {
+			// Show window.
+			SdlRenderer::showWindow();
+		}
+	}
+	
 	ffplay.streamTrack(url);
 	
 	returnMsg->setResultValue(new NymphType((uint8_t) 0));
@@ -1044,10 +1064,11 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 		}
 		else {
 			// Show window.
-			SDL_Event event;
+			SdlRenderer::showWindow();
+			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event);
+			SDL_PushEvent(&event); */
 		}
 	}
 	
