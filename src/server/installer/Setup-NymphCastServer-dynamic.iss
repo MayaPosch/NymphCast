@@ -193,33 +193,39 @@ Source: "../{#NcGuiConfig}"   ; DestDir: "{app}/config"; DestName: "{#NcDefaultC
 
 Source: "{#MyAppExeSrcPath}"; DestDir: "{app}/bin"; DestName: "{#MyAppExeDestName}"; Flags: ignoreversion
 
-Source: "{#VcpkgRoot}\{#VcpkgDllFolder}/avcodec-58.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avdevice-58.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avfilter-7.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avformat-58.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avutil-56.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avcodec-61.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avdevice-61.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avfilter-10.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avformat-61.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/avutil-59.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/brotlicommon.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/brotlidec.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/bz2.dll"            ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/deflate.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/FreeImage.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/freetype.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Half-2_5.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Iex-2_5.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmImf-2_5.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmThread-2_5.dll"  ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Imath-2_5.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
+;Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Half-2_5.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Iex-3_2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
+;Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmImf-2_5.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmThread-3_2.dll"  ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Imath-3_1.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/jasper.dll"         ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/jpeg62.dll"         ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/lcms2.dll"          ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libcrypto-1_1-x64.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libcrypto-3-x64.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libcurl.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libexpat.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/liblzma.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libpng16.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libssl-1_1-x64.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpmux.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libsharpyuv.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libssl-3-x64.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebp.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdecoder.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdemux.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXR-3_2.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXRCore-3_2.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/openjp2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre2-8.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoCrypto.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoData.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoDataSQLite.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
@@ -229,17 +235,15 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoNet.dll"        ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoNetSSL.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoUtil.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoXML.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/postproc-55.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/postproc-58.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pthreadVC3.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/raw.dll"            ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/SDL2.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/SDL2_image.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/sqlite3.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/swresample-3.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/swscale-5.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/swresample-5.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/swscale-8.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/tiff.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/webp.dll"           ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/webpdecoder.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/zlib1.dll"          ; DestDir: "{app}/bin"; Flags: ignoreversion
 
 [Icons]
