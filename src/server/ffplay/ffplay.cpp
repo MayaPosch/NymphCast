@@ -351,8 +351,15 @@ void Ffplay::run() {
 			av_freep(&ioContext);
 		}
 		
-		if (is) {
-			StreamHandler::stream_close(is);
+		if (!StreamHandler::get_fault()) {
+			if (is != 0) {
+				StreamHandler::stream_close(is);
+				is = 0;
+			}
+		}
+		else {
+			// Clear fault flag.
+			StreamHandler::clear_fault();
 			is = 0;
 		}
 		

@@ -28,6 +28,8 @@ uint32_t profcount = 0;
 std::atomic_bool StreamHandler::run;
 std::atomic<bool> StreamHandler::eof;
 
+std::atomic<bool> StreamHandler::fault = { false };
+
 AVDictionary *sws_dict;
 AVDictionary *swr_opts;
 AVDictionary *format_opts, *codec_opts, *resample_opts;
@@ -1056,7 +1058,14 @@ fail:
 	// Disable player events.
 	SdlRenderer::playerEvents(false);
 	
-	if (ic && !is->ic) {
+	if (ret == -1) {
+		// Opening stream failed. Context will have been deleted already, so safe exit.
+		fault = true;
+		av_log(NULL, AV_LOG_WARNING, "Opening stream failed. Safe exit...\n");
+		av_free(is);
+		is = 0;
+	}
+	else if (ic && !is->ic) {
 		av_log(NULL, AV_LOG_INFO, "Goto 'fail': avformat_close_input()...\n");
 		avformat_close_input(&ic);
 	}

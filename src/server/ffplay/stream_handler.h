@@ -14,6 +14,8 @@ class StreamHandler {
 	static std::atomic_bool run;
 	static std::atomic<bool> eof;
 	
+	static std::atomic<bool> fault;
+	
 	static int read_thread(void *arg);
 	
 public:
@@ -27,6 +29,9 @@ public:
 	static void stream_cycle_channel(VideoState *is, int codec_type);
 #if CONFIG_AVFILTER
 	static int opt_add_vfilter(void *optctx, const char *opt, const char *arg);
+	
+	static bool get_fault() { return fault.load(); }
+	static void clear_fault() { fault = false; }
 	
 	static void quit();
 #endif

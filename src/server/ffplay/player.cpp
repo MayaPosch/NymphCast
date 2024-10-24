@@ -411,6 +411,10 @@ void Player::run_updates() {
 		cursor_hidden = 1;
 	}
 	
+	if (StreamHandler::get_fault()) {
+		return; // Playback fault. Return immediately.
+	}
+	
 #ifdef PROFILING
 	if (!debugfile.is_open()) {
 		av_log(NULL, AV_LOG_WARNING, "Start profiling...\n");
