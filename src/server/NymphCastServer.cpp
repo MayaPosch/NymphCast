@@ -2202,7 +2202,7 @@ int main(int argc, char** argv) {
 						
 						mf.path = fe;
 						mf.section = *it;
-						mf.filename = path + fe.filename().string(); // Absolute path.
+						mf.filename = fs::absolute(fe).string(); // Absolute path.
 						mf.type = type;
 						mediaFiles.push_back(mf);
 					}
