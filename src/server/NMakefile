@@ -496,6 +496,7 @@ LIB_SOURCES_DIR = \
 	$(SRC_FOLDER)/chronotrigger.cpp \
 	$(SRC_FOLDER)/config_parser.cpp \
 	$(SRC_FOLDER)/databuffer.cpp \
+	$(SRC_FOLDER)/mimetype.cpp \
 	$(SRC_FOLDER)/nc_apps.cpp \
 	$(SRC_FOLDER)/gui.cpp \
 	$(SRC_FOLDER)/gui_event.cpp\
