@@ -77,11 +77,11 @@ if ["%VCPKG_ROOT%"] == [] (
 
 :: NymphRPC and LibNymphCast libraries:
 
-if ["%NYMPHRPC_ROOT%"] == [] (
+if [%NYMPHRPC_ROOT%] == [] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
 )
 
-if ["%LIBNYMPHCAST_ROOT%"] == [] (
+if [%LIBNYMPHCAST_ROOT%] == [] (
     set LIBNYMPHCAST_ROOT=D:\Libraries\LibNymphCast
 )
 
