@@ -92,6 +92,8 @@ And to create an [InnoSetup](https://jrsoftware.org/isinfo.php)-based installer 
 
 `Setup-NMake-vcpkg.bat package`
 
+**Note:** Visual Studio 2022 installs its own version of vcpkg which is incompatible with 'classic mode' vcpkg. Make sure that `VCPKG_ROOT` is set to the normal vcpkg (from GitHub).
+
 ## Uninstall ##
 
 An (experimental) uninstall script is provided in the project root called `uninstall_linux.sh`, which should work on all supported Linux distributions.
