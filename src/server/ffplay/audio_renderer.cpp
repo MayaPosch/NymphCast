@@ -679,7 +679,7 @@ int AudioRenderer::audio_thread(void *arg) {
             goto the_end;
 
         if (got_frame) {
-                tb = (AVRational){1, frame->sample_rate};
+                tb = {1, frame->sample_rate};
 
                 reconfigure =
                     cmp_audio_fmts(is->audio_filter_src.fmt, 
@@ -727,7 +727,7 @@ int AudioRenderer::audio_thread(void *arg) {
                 af->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
                 af->pos = fd ? fd->pkt_pos : -1;
                 af->serial = is->auddec.pkt_serial;
-                af->duration = av_q2d((AVRational){frame->nb_samples, frame->sample_rate});
+                af->duration = av_q2d({frame->nb_samples, frame->sample_rate});
 
                 av_frame_move_ref(af->frame, frame);
                 FrameQueueC::frame_queue_push(&is->sampq);
