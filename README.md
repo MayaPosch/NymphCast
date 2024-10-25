@@ -1,4 +1,4 @@
-[Repository Structure](#id-rs) &middot; [Getting Started](#id-gs) &middot; [Building From Source](#id-bfs) &middot; [Developer's Guide](#id-dg) &middot; [SDK](#id-sdk) &middot; [License](#id-lic) &middot; [Donate](#id-donate)
+[Repository Structure](#id-rs) &middot; [Getting Started](#id-gs) &middot; [Multi-Room Playback](#id-mrp) &middot; [Building From Source](#id-bfs) &middot; [Developer's Guide](#id-dg) &middot; [SDK](#id-sdk) &middot; [License](#id-lic) &middot; [Donate](#id-donate)
 
 # What is NymphCast? #
 
@@ -50,12 +50,13 @@ Please ensure that these ports are whitelisted in e.g. firewall rules if applica
 
 ## Features & Status ##
 
-Version 0.1 is the initial release. The following list contains the major features that are in the v0.1 release, along with status notes.
+The currently stable version is v0.1, with v0.2 in development. The following list contains the major features that are in these versions, along with status notes.
 
 Category | Status | Description | Notes
 ---|----|---|---
 File Streaming |100% | Streaming media files from client to server | -
 Subtitles & streams | 75% | Subtitle & stream selection support | Supports embedded bitmap (e.g. PGS) subtitles. Text & external subtitles will be added in v0.2.
+Multi-cast | 85% | Synchronised multi-room playback | Experimental in v0.1, partially tested in v0.1-alpha0.
 MediaServer | 100% | Streaming from NymphCast MediaServer instances | -
 URL Streaming | 100% | Streaming from URLs | -
 Codec support | 100% | Audio & Video codec support | Supports all codecs supported by ffmpeg.
@@ -63,13 +64,13 @@ Codec support | 100% | Audio & Video codec support | Supports all codecs support
 
 **Experimental features:**
 
-The following features are considered **experimental** and exist as a potential v0.2 preview in v0.1:
+The following features are considered **experimental** and may become a stable feature in an upcoming release.
 
 Category | Status | Description | Notes
 ---|----|---|---
 SmartTV | 75% | Stand-alone GUI mode | EmulationStation-based GUI has been integrated. Customisation and testing are in progress.
-Multi-cast | 75% | Synchronised multi-room playback | Basic implementation exists, synchronisation likely to be far from perfect.
 Apps | 25% | NymphCast Apps | AngelScript-based apps. Implemented as CLI-based interface as well as an HTML-based GUI implementation.
+Local media | 25% | Playback of local media | Basic implementation exists in v0.2-alpha0, configured via INI file.
 
 
 ## NymphCast Ecosystem ##
@@ -263,6 +264,14 @@ Options:
 ```
 
 The **NymphCast Player** is a GUI-based application and accepts no command line options.
+
+
+<a id="id-mrp"></a>
+## Multi-Room Playback ##
+
+Using the NymphCast Player (NCP) client groups of servers can be added to a group. The `Remotes` dialogue window for this can be accessed either from the top menu or the button next to the `Remotes` drop-down menu.
+
+After creating a group, it will show up in the `Remotes` drop-down in the main window of NCP, and attempting to stream local media (or an NCMS share) to the group will automatically configure synchronised playback to all of the remotes in this group.
 
 
 <a id="id-bfs"></a>
