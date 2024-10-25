@@ -59,6 +59,18 @@ void CustomRemotesDialog::addRemote() {
 	//ncr.ipv6 = ui->remoteIPv6Edit->text().toStdString();
 	ncr.port = ui->portSpinBox->value();
 	
+	if (ncr.name.empty()) {
+		QMessageBox::warning(this, tr("Empty Name"), tr("Remote name is empty. Please add a name."));
+        return;
+    }
+	
+	for (int i = 0; i < remotes.size(); i++) {
+		if (remotes[i].remote.name == ncr.name) {
+			QMessageBox::warning(this, tr("Duplicate name"), tr("Provided remote name already exists. Please pick a different name."));
+			return;
+		}
+	}
+	
 	// Add to list.
 	QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(ncr.name + " (" 
 											+ ncr.ipv4 + ")"),
