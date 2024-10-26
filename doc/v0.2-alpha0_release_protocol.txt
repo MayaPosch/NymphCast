@@ -1,0 +1,174 @@
+NymphCast v0.2 - Alpha 0
+
+Release test protocol
+---
+
+This document describes the testing protocol prior to v0.2-alpha0 release.
+
+---
+
+> Platforms
+- This release targets a range of stable and experimental platforms. Stable platform should have no blocker issues, while experimental platforms can have some. Experimental platform issues should be duly noted.
+- A pass or fail is determined by the 'Features' section (see below).
+- See remarks & notes in below platform-specific sections.
+
+Platform		Stable	Config	Result			
+-------------------------------------------------
+Windows			Y		AV		
+
+Linux			Y		AV		
+
+FreeBSD			Y		AV		
+
+Android			Y		AV		
+
+Haiku			E		AV		
+
+ESP32			E		A		
+---
+
+Y 	=> Yes
+E 	=> Experimental
+AV 	=> Audio-Video
+A	=> Audio-only
+
+
+[ Windows ]
+
+- Targeting any platform supporting MSVC 2017 and up.
+- Tested on Windows 7+, using MSYS2 GCC (MinGW) and MSVC 2017+.
+
+
+[ Linux ]
+
+- Targeting platforms that support FFmpeg 5.4+.
+- Tested on Manjaro, Debian, etc.
+
+
+[ FreeBSD ]
+
+- Targeting platforms that support FFmpeg 5.4+.
+- Tested on FreeBSD 14.1-RELEASE & GhostBSD (current).
+
+
+[ Android ]
+
+- Targeting Android API 27 (Android 8.1, Oreo).
+- Supporting Android TV, tested on Raspberry Pi B4 with LineageOS Android TV:
+	-> https://konstakang.com/devices/rpi4/LineageOS20-ATV/
+
+
+[ Haiku ]
+
+- Targeting R1 B5+.
+- Blocker: hotfix/bug in SDL2:
+	=> https://dev.haiku-os.org/ticket/6400
+
+
+[ ESP32 ]
+
+- Targeting ESP32-S3 with ESP-IDF 5.x+.
+- Test criteria are found in separate test protocol document in NCA-ESP32 project.
+
+
+--------------
+> Features
+
+- NC features are grouped into two categories: audio & video. 
+- Some platforms are A-V, meaning they support videos, others are audio-only. See the above table in this document for details.
+
+[ Audio-Video ]
+
+- Playback of all audio & video formats supported by FFmpeg & the underlying hardware.
+- Playback of all supported network streams (RTSP, etc.).
+- Multi-room playback.
+
+
+[ Audio ]
+
+- Playback of all audio formats supported by FFmpeg.
+- Playback of all supported (audio-only) network streams.
+- Multi-room playback.
+
+
+>> Notes <<
+
+- Local media playback: in NCP the host name of the receiver is often wrong. (Windows).
+
+
+-------------
+> Platform Protocols
+
+- The following are the platform-specific test protocols. Passing each is the requirement for the release.
+
+[ Windows ]
+
+- Compilation via MSYS2 (GCC) & MSVC.
+- Starting in video configuration.
+- Running through standard test videos & audio files. See below section on these.
+- Running through test network streams.
+- Playback via local media feature.
+- Screensaver mode has to work, GUI mode is experimental.
+
+
+[ Linux ] 
+
+- Same as Windows, except compilation with only GCC.
+- Also run installation routine?
+
+
+[ FreeBSD]
+
+- Same as Windows, except compilation with only clang ('make TOOLCHAIN=clang').
+- 
+
+
+[ Android ]
+
+- Build APK per the NCS-Android build instructions.
+- Install APK either via ADB or by sideloading from e.g. USB.
+- For Android TV: Ensure the app shows up in the apps & can be added to a channel.
+- Run through standard test videos & audio files.
+
+
+[ Haiku ]
+
+- Same as Windows, except compilation with only GCC.
+- Video playback issue due to Ticket #6400 is known: this makes video playback problematic for now.
+
+
+[ ESP32 ]
+
+- See separate NCA-ESP32 test protocol.
+
+
+----------------
+> Stability considerations
+
+Considering the Alpha-level nature of this release, some level of instability and glitches are acceptable. All issues discovered are expected to be analysed as well as possible and either resolved or recorded.
+
+
+-----------------
+> Standard test files
+
+For testing a range of media files and sources are to be used to get as wide of a test coverage as possible. These are divided into three groups: audio, video and network URLs.
+
+[ Audio ]
+
+- PCM WAV, MP3, Ogg, FLAC, etc.
+- High bitrates are useful for testing resource-constrained platforms.
+- Stereo as basis, try 2.1, 5.1, etc. layouts too.
+
+
+[ Video ]
+
+- Similar to Audio files.
+- Start with simple standard-resolution (~480p) content with stereo audio mix.
+- Move up to 1080p, 5.1 channel layout, push to 4K and beyond depending on the underlying hardware.
+
+
+[ URLs ]
+
+Some test URLs:
+- https://kathy.torontocast.com:3560/listen.pls (Japanese pop)
+- http://150.95.174.29:8000/by_the_sea (Shonan beach FM)
