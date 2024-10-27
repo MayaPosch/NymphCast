@@ -82,6 +82,8 @@ A	=> Audio-only
 - Playback of all audio & video formats supported by FFmpeg & the underlying hardware.
 - Playback of all supported network streams (RTSP, etc.).
 - Multi-room playback.
+- Subtitle support. (PGS-only in Alpha 0).
+- Auto-start of NCS (experimental).
 
 
 [ Audio ]
@@ -89,11 +91,15 @@ A	=> Audio-only
 - Playback of all audio formats supported by FFmpeg.
 - Playback of all supported (audio-only) network streams.
 - Multi-room playback.
+- Auto-start of NCS (supported with Systemd & OpenRC).
 
 
 >> Notes <<
 
 - Local media playback: in NCP the host name of the receiver is often wrong. (Windows).
+- Subtitle support for text-based subtitles will be added in upcoming Alpha releases.
+- Auto-start with a service (e.g. Systemd) works, but is limited to audio-only NCS.
+- Auto-start with a .desktop file is experimental & is not supported everywhere.
 
 
 -------------
