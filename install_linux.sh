@@ -84,3 +84,5 @@ else
 		sudo make -C src/server/ install-openrc
 	fi
 fi
+
+echo "Installation finished."
