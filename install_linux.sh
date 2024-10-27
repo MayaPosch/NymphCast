@@ -61,6 +61,7 @@ case $install_auto in
 		;;
 	*)
 		echo "Installation finished."
+		exit
 		;;
 esac
 
