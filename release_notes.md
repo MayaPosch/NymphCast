@@ -1,6 +1,23 @@
 NymphCast Release Notes
 ===
 
+## v0.2 ##
+
+**Alpha 0**
+
+New:
+- Platform support for Haiku (see notes) and Android (see notes).
+- Haiku: 	Requires R1 B5 or up, SDL2/Mesa bug (BLock unlock, issue #6400) => https://dev.haiku-os.org/ticket/6400
+- Android: 	API 27+, supports Android & Android/Google TV.
+
+Notes:
+- Subtitles: PGS works, text-based not yet.
+- Multi-room playback partially validated.
+
+Experimental:
+- Server:	Use Desktop start file for Linux Video/GUI mode instead of systemd service.
+- Local media feature added to NCS. Configured via INI file.
+
 ## v0.1 ##
 
 **New**
