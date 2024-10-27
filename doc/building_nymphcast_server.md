@@ -58,7 +58,7 @@ pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_i
 If using a compatible OS (e.g. **Debian**, Alpine Linux or Arch Linux), one can use the setup script: 
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
-2. Run the `install_linux.sh` script in the project root to compile & install the binaries and set up a systemd/OpenRC service on Linux systems.
+2. Run the `install_linux.sh` script in the project root to compile & install the binaries and set up a systemd/OpenRC service on Linux systems, or install a `.desktop` file for audio-video configurations.
 
 Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
 
@@ -68,7 +68,7 @@ Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
 4. Install LibNymphCast with `sudo make install`.
 5. Change to `NymphCast/src/server` and execute `make` command.
 6. Use `sudo make install` to install the server and associated files.
-7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file.
+7. Use `sudo make install-systemd` (SystemD) or `sudo make install-openrc` (OpenRC) to install the relevant service file. A `.desktop` file is also provided in the `autostart` subfolder.
 
 **Note**:For **FreeBSD** make sure to use `gmake` instead of `make`. Pay note to compile with Clang as well (see below), for NCS and dependencies like NymphRPC and libnymphcast.
 
