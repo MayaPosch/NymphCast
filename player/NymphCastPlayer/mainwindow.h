@@ -140,6 +140,7 @@ private:
 	RemotesDialog* rd;
 	CustomRemotesDialog* crd;
 	QTimer posTimer;
+	uint32_t current_remote;
 	
     QByteArray loadResource(const QUrl &name);
 	void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status);

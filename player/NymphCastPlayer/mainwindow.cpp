@@ -1186,6 +1186,7 @@ bool MainWindow::remoteEnsureConnected(uint32_t &handle) {
 	// Obtain selected ID.
 	int32_t index = ui->remotesComboBox->currentIndex();
 	uint32_t id = ui->remotesComboBox->currentData().toUInt();
+	current_remote = id;
 	
 	if (index > separatorIndex) {
 		NCRemoteGroup& group = groups[id];
@@ -1499,10 +1500,10 @@ void MainWindow::receiverSharesRefresh() {
 		return;
 	}
 	
-	// Insert into model. Use the media server's host name as top folder, with the shared
+	// Insert into model. Use the server's host name as top folder, with the shared
 	// files inserted underneath it in their respective media type categories.
-	// TODO: Use the provided media item categories within the UI. 
-	QStandardItem* item = new QStandardItem(QString::fromStdString(remotes[handle].remote.name));
+	QStandardItem* item = new QStandardItem(
+									QString::fromStdString(remotes[current_remote].remote.name));
 	item->setSelectable(false);
 	QStandardItem* audioRoot = new QStandardItem("audio");
 	QStandardItem* videoRoot = new QStandardItem("video");
