@@ -9,10 +9,15 @@
 ::
 
 :: Install vcpkg tool:
-:: > git clone https://github.com/microsoft/vcpkg
-:: > .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+:: > git clone https://github.com/microsoft/vcpkg /path/to/vcpkg-folder
+:: > .\vcpkg-folder\bootstrap-vcpkg.bat -disableMetrics
 :: > set VCPKG_ROOT=/path/to/vcpkg-folder
 ::
+
+:: Note: For most flexibility, "quote on use" is generally used and quotes in variable assignment avoided.
+:: For example:
+:: - `set var=val ue` // Note: no spaces around `=`
+:: - `echo "%var%"`
 
 echo.
 
@@ -68,20 +73,20 @@ if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
 
 :: Check for vcpkg:
 
-set vcpkg="%VCPKG_ROOT%\vcpkg.exe"
+set vcpkg=%VCPKG_ROOT%\vcpkg.exe
 
-if ["%VCPKG_ROOT%"] == [] (
+if ["%VCPKG_ROOT%"] == [""] (
     echo [Setup NCS: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
 :: NymphRPC and LibNymphCast libraries:
 
-if [%NYMPHRPC_ROOT%] == [] (
+if ["%NYMPHRPC_ROOT%"] == [""] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
 )
 
-if [%LIBNYMPHCAST_ROOT%] == [] (
+if ["%LIBNYMPHCAST_ROOT%"] == [""] (
     set LIBNYMPHCAST_ROOT=D:\Libraries\LibNymphCast
 )
 
@@ -105,7 +110,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Net\HTTPSClientSes
     echo Setup NCS: OpenSSL Poco[core,netssl] is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco\Net\HTTPSClientSession.h".
 ) else (
     echo [Installing vcpkg openssl poco[core,netssl,sqlite3]; please be patient, this may take 30 to 60 minutes...]
-    @REM %vcpkg% install --recurse --triplet %VCPKG_TRIPLET% openssl poco[netssl]
+    @REM "%vcpkg%" install --recurse --triplet %VCPKG_TRIPLET% openssl poco[netssl]
     "%vcpkg%" install --recurse --triplet %VCPKG_TRIPLET% openssl poco[core,netssl,sqlite3]
 )
 
@@ -147,7 +152,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\SDL2\SDL_image.h" (
     "%vcpkg%" install --recurse --triplet %VCPKG_TRIPLET% sdl2-image[libjpeg-turbo,libwebp]
 )
 
-set SDL2_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set SDL2_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: Ffmpeg:
 
@@ -158,8 +163,8 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\libpostproc" (
     "%vcpkg%" install --recurse --triplet %VCPKG_TRIPLET% ffmpeg[postproc]
 )
 
-set FFMPEG_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
-set LIBAVUTIL_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set FFMPEG_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
+set LIBAVUTIL_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: FreeImage:
 
@@ -170,7 +175,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\FreeImage.h" (
     "%vcpkg%" install --triplet %VCPKG_TRIPLET% freeimage
 )
 
-set FREEIMAGE_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set FREEIMAGE_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: FreeType:
 
@@ -181,7 +186,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\freetype" (
     "%vcpkg%" install --triplet %VCPKG_TRIPLET% freetype
 )
 
-set FREETYPE_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set FREETYPE_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: RapidJSON:
 
@@ -192,7 +197,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\rapidjson" (
     "%vcpkg%" install --triplet %VCPKG_TRIPLET% rapidjson
 )
 
-set RAPIDJSON_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set RAPIDJSON_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: Curl:
 
@@ -203,7 +208,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\curl" (
     "%vcpkg%" install --triplet %VCPKG_TRIPLET% curl
 )
 
-set CURL_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set CURL_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: NymphRPC - Download and build NymphRPC dependency:
 
@@ -240,17 +245,17 @@ nmake -nologo -f NMakefile ^
          NC_CONFIG=%NC_CONFIG% ^
          NC_LNKCRT=%NC_LNKCRT% ^
            VS_YEAR=%VS_YEAR% ^
-         POCO_ROOT=%POCO_ROOT% ^
-         SDL2_ROOT=%SDL2_ROOT% ^
-       FFMPEG_ROOT=%FFMPEG_ROOT% ^
-    FREEIMAGE_ROOT=%FREEIMAGE_ROOT% ^
-     FREETYPE_ROOT=%FREETYPE_ROOT% ^
-    LIBAVUTIL_ROOT=%LIBAVUTIL_ROOT% ^
-    RAPIDJSON_ROOT=%RAPIDJSON_ROOT% ^
-         CURL_ROOT=%CURL_ROOT% ^
-     NYMPHRPC_ROOT=%NYMPHRPC_ROOT% ^
- LIBNYMPHCAST_ROOT=%LIBNYMPHCAST_ROOT% ^
-    INSTALL_PREFIX=%INSTALL_PREFIX% ^
+         POCO_ROOT="%POCO_ROOT%" ^
+         SDL2_ROOT="%SDL2_ROOT%" ^
+       FFMPEG_ROOT="%FFMPEG_ROOT%" ^
+    FREEIMAGE_ROOT="%FREEIMAGE_ROOT%" ^
+     FREETYPE_ROOT="%FREETYPE_ROOT%" ^
+    LIBAVUTIL_ROOT="%LIBAVUTIL_ROOT%" ^
+    RAPIDJSON_ROOT="%RAPIDJSON_ROOT%" ^
+         CURL_ROOT="%CURL_ROOT%" ^
+     NYMPHRPC_ROOT="%NYMPHRPC_ROOT%" ^
+ LIBNYMPHCAST_ROOT="%LIBNYMPHCAST_ROOT%" ^
+    INSTALL_PREFIX="%INSTALL_PREFIX%" ^
         %*
 
 echo.

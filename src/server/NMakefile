@@ -322,17 +322,17 @@ LIB_INCLUDE = \
 	-I gui/core/renderers \
 	-I gui/core/resources \
 	-I gui/core/utils \
-	-I $(LIBNYMPHCAST_ROOT)/include \
-	-I $(NYMPHRPC_ROOT)/include \
-	-I $(CURL_ROOT)/include/curl \
-	-I $(FFMPEG_ROOT)/include \
-	-I $(FREEIMAGE_ROOT)/include \
-	-I $(FREETYPE_ROOT)/include \
-	-I $(LIBAVUTIL_ROOT)/include \
-	-I $(POCO_ROOT)/include \
-	-I $(RAPIDJSON_ROOT)/include \
-	-I $(SDL2_ROOT)/include \
-	-I $(SDL2_ROOT)/include/SDL2
+	-I "$(LIBNYMPHCAST_ROOT)/include" \
+	-I "$(NYMPHRPC_ROOT)/include" \
+	-I "$(CURL_ROOT)/include/curl" \
+	-I "$(FFMPEG_ROOT)/include" \
+	-I "$(FREEIMAGE_ROOT)/include" \
+	-I "$(FREETYPE_ROOT)/include" \
+	-I "$(LIBAVUTIL_ROOT)/include" \
+	-I "$(POCO_ROOT)/include" \
+	-I "$(RAPIDJSON_ROOT)/include" \
+	-I "$(SDL2_ROOT)/include" \
+	-I "$(SDL2_ROOT)/include/SDL2"
 
 LIB_LIBS    = \
 	NymphCast$(LIB_LNKCRT_MT).lib \
@@ -395,54 +395,54 @@ LIB_LIBS_STATIC = \
 	iphlpapi.lib
 
 LIB_DLLS = \
-	$(POCO_ROOT)/bin/PocoCrypto.dll \
-	$(POCO_ROOT)/bin/PocoData.dll \
-	$(POCO_ROOT)/bin/PocoDataSQLite.dll \
-	$(POCO_ROOT)/bin/PocoFoundation.dll \
-	$(POCO_ROOT)/bin/PocoJSON.dll \
-	$(POCO_ROOT)/bin/PocoNet.dll \
-	$(POCO_ROOT)/bin/PocoNetSSL.dll \
-	$(POCO_ROOT)/bin/PocoUtil.dll \
-	$(POCO_ROOT)/bin/PocoXML.dll \
-	$(POCO_ROOT)/bin/brotlicommon.dll \
-	$(POCO_ROOT)/bin/brotlidec.dll \
-	$(POCO_ROOT)/bin/bz2.dll \
-	$(POCO_ROOT)/bin/Half-2_5.dll \
-	$(POCO_ROOT)/bin/Iex-2_5.dll \
-	$(POCO_ROOT)/bin/IlmImf-2_5.dll \
-	$(POCO_ROOT)/bin/IlmThread-2_5.dll \
-	$(POCO_ROOT)/bin/Imath-2_5.dll \
-	$(POCO_ROOT)/bin/jasper.dll \
-	$(POCO_ROOT)/bin/jpeg62.dll \
-	$(POCO_ROOT)/bin/lcms2.dll \
-	$(POCO_ROOT)/bin/libcrypto-1_1-x64.dll \
-	$(POCO_ROOT)/bin/libexpat.dll \
-	$(POCO_ROOT)/bin/liblzma.dll \
-	$(POCO_ROOT)/bin/libpng16.dll \
-	$(POCO_ROOT)/bin/libssl-1_1-x64.dll \
-	$(POCO_ROOT)/bin/libwebpmux.dll \
-	$(POCO_ROOT)/bin/openjp2.dll \
-	$(POCO_ROOT)/bin/pcre.dll \
-	$(POCO_ROOT)/bin/pthreadVC3.dll \
-	$(POCO_ROOT)/bin/raw.dll \
-	$(POCO_ROOT)/bin/sqlite3.dll \
-	$(POCO_ROOT)/bin/swscale-5.dll \
-	$(POCO_ROOT)/bin/tiff.dll \
-	$(POCO_ROOT)/bin/webp.dll \
-	$(POCO_ROOT)/bin/webpdecoder.dll \
-	$(POCO_ROOT)/bin/zlib1.dll \
-	$(SDL2_ROOT)/bin/SDL2.dll \
-	$(SDL2_ROOT)/bin/SDL2_image.dll \
-	$(CURL_ROOT)/bin/libcurl.dll \
-	$(FFMPEG_ROOT)/bin/avcodec-58.dll \
-	$(FFMPEG_ROOT)/bin/avdevice-58.dll \
-	$(FFMPEG_ROOT)/bin/avfilter-7.dll \
-	$(FFMPEG_ROOT)/bin/avformat-58.dll \
-	$(FFMPEG_ROOT)/bin/avutil-56.dll \
-	$(FFMPEG_ROOT)/bin/postproc-55.dll \
-	$(FFMPEG_ROOT)/bin/swresample-3.dll \
-	$(FREEIMAGE_ROOT)/bin/freeimage.dll \
-	$(FREETYPE_ROOT)/bin/freetype.dll
+	"$(POCO_ROOT)/bin/PocoCrypto.dll" \
+	"$(POCO_ROOT)/bin/PocoData.dll" \
+	"$(POCO_ROOT)/bin/PocoDataSQLite.dll" \
+	"$(POCO_ROOT)/bin/PocoFoundation.dll" \
+	"$(POCO_ROOT)/bin/PocoJSON.dll" \
+	"$(POCO_ROOT)/bin/PocoNet.dll" \
+	"$(POCO_ROOT)/bin/PocoNetSSL.dll" \
+	"$(POCO_ROOT)/bin/PocoUtil.dll" \
+	"$(POCO_ROOT)/bin/PocoXML.dll" \
+	"$(POCO_ROOT)/bin/brotlicommon.dll" \
+	"$(POCO_ROOT)/bin/brotlidec.dll" \
+	"$(POCO_ROOT)/bin/bz2.dll" \
+	"$(POCO_ROOT)/bin/Half-2_5.dll" \
+	"$(POCO_ROOT)/bin/Iex-2_5.dll" \
+	"$(POCO_ROOT)/bin/IlmImf-2_5.dll" \
+	"$(POCO_ROOT)/bin/IlmThread-2_5.dll" \
+	"$(POCO_ROOT)/bin/Imath-2_5.dll" \
+	"$(POCO_ROOT)/bin/jasper.dll" \
+	"$(POCO_ROOT)/bin/jpeg62.dll" \
+	"$(POCO_ROOT)/bin/lcms2.dll" \
+	"$(POCO_ROOT)/bin/libcrypto-1_1-x64.dll" \
+	"$(POCO_ROOT)/bin/libexpat.dll" \
+	"$(POCO_ROOT)/bin/liblzma.dll" \
+	"$(POCO_ROOT)/bin/libpng16.dll" \
+	"$(POCO_ROOT)/bin/libssl-1_1-x64.dll" \
+	"$(POCO_ROOT)/bin/libwebpmux.dll" \
+	"$(POCO_ROOT)/bin/openjp2.dll" \
+	"$(POCO_ROOT)/bin/pcre.dll" \
+	"$(POCO_ROOT)/bin/pthreadVC3.dll" \
+	"$(POCO_ROOT)/bin/raw.dll" \
+	"$(POCO_ROOT)/bin/sqlite3.dll" \
+	"$(POCO_ROOT)/bin/swscale-5.dll" \
+	"$(POCO_ROOT)/bin/tiff.dll" \
+	"$(POCO_ROOT)/bin/webp.dll" \
+	"$(POCO_ROOT)/bin/webpdecoder.dll" \
+	"$(POCO_ROOT)/bin/zlib1.dll" \
+	"$(SDL2_ROOT)/bin/SDL2.dll" \
+	"$(SDL2_ROOT)/bin/SDL2_image.dll" \
+	"$(CURL_ROOT)/bin/libcurl.dll" \
+	"$(FFMPEG_ROOT)/bin/avcodec-58.dll" \
+	"$(FFMPEG_ROOT)/bin/avdevice-58.dll" \
+	"$(FFMPEG_ROOT)/bin/avfilter-7.dll" \
+	"$(FFMPEG_ROOT)/bin/avformat-58.dll" \
+	"$(FFMPEG_ROOT)/bin/avutil-56.dll" \
+	"$(FFMPEG_ROOT)/bin/postproc-55.dll" \
+	"$(FFMPEG_ROOT)/bin/swresample-3.dll" \
+	"$(FREEIMAGE_ROOT)/bin/freeimage.dll" \
+	"$(FREETYPE_ROOT)/bin/freetype.dll"
 
 !if $(LIB_STATIC) != 0
 LIB_DEFS_STATIC = -DPOCO_STATIC
@@ -805,6 +805,8 @@ LIB_COBJECTS_DIR = $(LIB_COBJECTS_TMP:./=obj/x86_64-w64-msvc/Release/)
 #
 
 all: print-configuration prg
+
+# Quote echo text to keep alignment:
 
 print-configuration:
 	@echo.

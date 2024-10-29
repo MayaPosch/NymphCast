@@ -9,10 +9,15 @@
 ::
 
 :: Install vcpkg tool:
-:: > git clone https://github.com/microsoft/vcpkg
-:: > .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+:: > git clone https://github.com/microsoft/vcpkg /path/to/vcpkg-folder
+:: > .\vcpkg-folder\bootstrap-vcpkg.bat -disableMetrics
 :: > set VCPKG_ROOT=/path/to/vcpkg-folder
 ::
+
+:: Note: For most flexibility, "quote on use" is generally used and quotes in variable assignment avoided.
+:: For example:
+:: - `set var=val ue` // Note: no spaces around `=`
+:: - `echo "%var%"`
 
 echo.
 
@@ -51,18 +56,18 @@ if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
 
 set vcpkg=%VCPKG_ROOT%\vcpkg.exe
 
-if [%VCPKG_ROOT%] == [] (
+if ["%VCPKG_ROOT%"] == [""] (
     echo [Setup NCP: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
 :: NymphRPC and LibNymphCast libraries:
 
-if [%NYMPHRPC_ROOT%] == [] (
+if ["%NYMPHRPC_ROOT%"] == [""] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
 )
 
-if [%LIBNYMPHCAST_ROOT%] == [] (
+if ["%LIBNYMPHCAST_ROOT%"] == [""] (
     set LIBNYMPHCAST_ROOT=D:\Libraries\LibNymphCast
 )
 
@@ -76,7 +81,7 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco" (
     echo Setup NCP: Poco is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco".
 ) else (
     echo Installing vcpkg Poco; please be patient, this may take about 10 minutes...
-    %vcpkg% install --triplet %VCPKG_TRIPLET% poco
+    "%vcpkg%" install --triplet %VCPKG_TRIPLET% poco
 )
 
 echo Setup NCP: Using POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -86,7 +91,7 @@ set POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 :: Qt5[core]:
 :: Note temporary workaround as vcpkg did not succeed with Qt5:
 
-if not [%QT5_ROOT%] == [] (
+if not ["%QT5_ROOT%"] == [""] (
     echo Setup NCP: Qt is already installed at "%QT5_ROOT%".
     set QT5_ROOT=%QT5_ROOT%
     set QT5_INCLUDE_FIX=
@@ -95,7 +100,7 @@ if not [%QT5_ROOT%] == [] (
         echo Setup NCP: Qt is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Qt5".
     ) else (
         echo Installing vcpkg Qt5; please be patient, this may take about 2 hours...
-        %vcpkg% install --triplet %VCPKG_TRIPLET% qt5
+        "%vcpkg%" install --triplet %VCPKG_TRIPLET% qt5
     )
 
     echo Setup NCP: Using QT5_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
@@ -139,12 +144,12 @@ nmake -nologo -f NMakefile ^
          NC_CONFIG=%NC_CONFIG% ^
         NC_CONSOLE=%NC_CONSOLE% ^
          NC_LNKCRT=%NC_LNKCRT% ^
-          QT5_ROOT=%QT5_ROOT% ^
+          QT5_ROOT="%QT5_ROOT%" ^
    QT5_INCLUDE_FIX=%QT5_INCLUDE_FIX% ^
-         POCO_ROOT=%POCO_ROOT% ^
-     NYMPHRPC_ROOT=%NYMPHRPC_ROOT% ^
- LIBNYMPHCAST_ROOT=%LIBNYMPHCAST_ROOT% ^
-    INSTALL_PREFIX=%INSTALL_PREFIX% ^
+         POCO_ROOT="%POCO_ROOT%" ^
+     NYMPHRPC_ROOT="%NYMPHRPC_ROOT%" ^
+ LIBNYMPHCAST_ROOT="%LIBNYMPHCAST_ROOT%" ^
+    INSTALL_PREFIX="%INSTALL_PREFIX%" ^
         %*
 
 echo.
