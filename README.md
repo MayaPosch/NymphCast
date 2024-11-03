@@ -95,6 +95,8 @@ The player has been successfully compiled and used on the following platforms:
 * Windows (7, 10)
 * Linux (x86, ARM: Arch, Debian)
 * Android (8+)
+* FreeBSD (14.1)
+* Haiku (R1 Beta 5)
 
 
 ### **Server Platforms** ###
@@ -111,6 +113,8 @@ Video-capable* | Platform |  OS | Notes
 ---|---|---|--
 Yes |x86_64 | Windows | Using MinGW or MSVC to compile.
 Yes | x86_64 | Linux | Stock install of Manjaro, Raspbian and Debian/Mint.
+Yes | x86_64 | FreeBSD | Both FreeBSD 14.1-RELEASE and GhostBSD, compiled with clang++.
+Yes | x86_64 | Haiku | Existing bug in Haiku SDL (issue #6400) prevents full server functionality.
 Yes | Raspberry Pi 4 | Raspbian | Tested up to 1080p at 24 FPS (h.264). Note limited support for hardware-acceleration and currently no HEVC support.
 \- | Raspberry Pi 0/2/3 | Raspbian | Ffmpeg hardware accelerated video decoding appears not functional.
 \- | Odroid-C2 | Armbian, Ubuntu Mate | No hardware accelerated video decoding present with ffmpeg.
@@ -126,19 +130,6 @@ For the Qt-based NymphCast Player, a target platform needs to support LibPoco an
 For the CLI-based NymphCast Client, only LibPoco and and C++17 support are required. All clients require the use of libnymphcast (see SDK section) as dependency.
 
 Note that all mobile platforms are a work in progress due to the limitations and peculiarities of these platforms.
-
-<a id="id-rs"></a>
-## Repository Structure ##
-
-The repository currently contains the NymphCast server, client SDK and NymphCast Player client sources.
-
-	/
-	|- player 	(the NymphCast demonstration client)
-	|- src/
-	|	|- client 		(basic CLI NymphCast client)
-	|	|- server		(the NymphCast server and NymphCast app files)
-	|- tools	(shell scripts for creating releases, in progress)
-
 
 <a id="id-gs"></a>
 ## Getting Started ##
@@ -290,6 +281,19 @@ After creating a group, it will show up in the `Remotes` drop-down in the main w
 The focus of the project is currently on the development of the NymphCast server and the protocol parts. Third parties are encouraged to contribute server-side app support of their services and developers in general to contribute to server- and client-side development.
 
 The current server and client documentation is hosted at the [Nyanko website](http://nyanko.ws/nymphcast.php).
+
+<a id="id-rs"></a>
+## Repository Structure ##
+
+The repository currently contains the NymphCast server, client SDK and NymphCast Player client sources.
+
+	/
+	|- player 	(the NymphCast demonstration client)
+	|- src/
+	|	|- client 		(basic CLI NymphCast client)
+	|	|- server		(the NymphCast server and NymphCast app files)
+	|- tools	(shell scripts for creating releases, in progress)
+
 
 <a id="id-sdk"></a>
 ## SDK ##

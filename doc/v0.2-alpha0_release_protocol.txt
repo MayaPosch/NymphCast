@@ -56,6 +56,7 @@ A	=> Audio-only
 - Targeting Android API 27 (Android 8.1, Oreo).
 - Supporting Android TV, tested on Raspberry Pi B4 with LineageOS Android TV:
 	-> https://konstakang.com/devices/rpi4/LineageOS20-ATV/
+- Bug: 5.1 audio doesn't downsample to stereo. Only front left/right. Xiaomi bug, apparently?
 
 
 [ Haiku ]
@@ -96,10 +97,11 @@ A	=> Audio-only
 
 >> Notes <<
 
-- Local media playback: in NCP the host name of the receiver is often wrong. (Windows).
 - Subtitle support for text-based subtitles will be added in upcoming Alpha releases.
 - Auto-start with a service (e.g. Systemd) works, but is limited to audio-only NCS.
+	=> System service works great for audio-only, fails with XDG & other errors with GUI window.
 - Auto-start with a .desktop file is experimental & is not supported everywhere.
+	=> Functionality seems sketchy across various Linux & BSD installations.
 
 
 -------------

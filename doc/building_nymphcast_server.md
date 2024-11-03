@@ -2,7 +2,7 @@
 
 NymphCast Server (NCS) forms the core of the [NymphCast](https://github.com/MayaPosch/NymphCast) project. It provides the software that is installed on the receiver system that is connected to the speakers, television or similar. See the [NymphCast README](https://github.com/MayaPosch/NymphCast) for detailed instructions on installing and running NCS.
 
-This document covers building NCS from source.
+This document covers building NCS from source. See the main README for precompiled binary files.
 
 
 **Note:** the `setup.sh` script in the project root automates this process.
@@ -23,6 +23,8 @@ A C++17-capable GCC, Clang or MSVC toolchain is required in addition to the belo
 - RapidJson
 - Pkg-config
 - libCurl
+
+All of these dependencies can be automatically installed on many platforms with the `dependencies.sh` script. The script runs the following commands, per platform:
 
 On **Debian** & derivatives:
 
@@ -47,6 +49,12 @@ On **FreeBSD**:
 pkg install -y gmake gcc git poco sdl2 sdl2_image ffmpeg openssl freetype2 freeimage rapidjson curl
 ```
 
+On **Haiku**:
+
+```
+pkgman install git poco poco_devel libsdl2 libsdl2_devel sdl2_image sdl2_image_devel ffmpeg ffmpeg6_devel freetype freetype_devel freeimage freeimage_devel rapidjson curl curl_devel
+```
+
 On **MSYS2**:
 
 ```
@@ -55,12 +63,12 @@ pacman -S --noconfirm --needed git mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_i
 
 ## Building The Server ##
 
-If using a compatible OS (e.g. **Debian**, Alpine Linux or Arch Linux), one can use the setup script: 
+If using a compatible OS (Debian, Alpine or Arch Linux based, or FreeBSD, MSYS2 or Haiku), one can use the setup script: 
 
 1. Run the `setup.sh` script in the project root to perform the below tasks automatically.
 2. Run the `install_linux.sh` script in the project root to compile & install the binaries and set up a systemd/OpenRC service on Linux systems, or install a `.desktop` file for audio-video configurations.
 
-Else, under Linux or MSYS2 (MinGW, Clang) use the manual procedure:
+Else use the manual procedure:
 
 1. Check-out [NymphRPC](https://github.com/MayaPosch/NymphRPC) elsewhere and build the library with `make lib`.
 2. Install NymphRPC with `sudo make install`.
