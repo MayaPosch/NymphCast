@@ -506,6 +506,11 @@ int AudioRenderer::audio_open(void *opaque, AVChannelLayout* wanted_channel_layo
         return -1;
     }
 	
+#ifdef __ANDROID__
+	av_log(NULL, AV_LOG_INFO, "Open Audio: wanted spec: %d channels, got: %d channels",
+								wanted_spec.channels, spec.channels);
+#endif
+	
     if (spec.channels != wanted_spec.channels) {
         //wanted_channel_layout = av_get_default_channel_layout(spec.channels);
 		av_channel_layout_uninit(wanted_channel_layout);
@@ -527,8 +532,11 @@ int AudioRenderer::audio_open(void *opaque, AVChannelLayout* wanted_channel_layo
 	if (av_channel_layout_copy(&audio_hw_params->ch_layout, wanted_channel_layout) < 0)
         return -1;
 	
-    audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->ch_layout.nb_channels, 1, audio_hw_params->fmt, 1);
-    audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->ch_layout.nb_channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
+    audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, 
+								audio_hw_params->ch_layout.nb_channels, 1, audio_hw_params->fmt, 1);
+    audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, 
+								audio_hw_params->ch_layout.nb_channels, 
+								audio_hw_params->freq, audio_hw_params->fmt, 1);
     if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
         av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
         return -1;
