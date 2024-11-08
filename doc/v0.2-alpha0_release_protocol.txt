@@ -56,7 +56,9 @@ A	=> Audio-only
 - Targeting Android API 27 (Android 8.1, Oreo).
 - Supporting Android TV, tested on Raspberry Pi B4 with LineageOS Android TV:
 	-> https://konstakang.com/devices/rpi4/LineageOS20-ATV/
-- Bug: 5.1 audio doesn't downsample to stereo. Only front left/right. Xiaomi bug, apparently?
+- Bug: 5.1 audio doesn't downsample to stereo. Only front left/right on Android 13.
+		=> Seems to work on Android 9. Android 13-specific problem?
+		=> 'Fixed' with forced stereo downmixing (in audio_renderer).
 
 
 [ Haiku ]
