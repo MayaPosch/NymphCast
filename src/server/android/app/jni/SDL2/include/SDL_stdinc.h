@@ -107,7 +107,7 @@
 # elif defined(__MRC__)
 void *alloca(unsigned);
 # else
-char *alloca();
+void *alloca(size_t);
 # endif
 #endif
 
@@ -253,21 +253,21 @@ typedef uint64_t Uint64;
  * <stdint.h> should define these but this is not true all platforms.
  * (for example win32) */
 #ifndef SDL_PRIs64
-#ifdef PRIs64
-#define SDL_PRIs64 PRIs64
-#elif defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIs64 "I64d"
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(PRIs64)
+#define SDL_PRIs64 PRIs64
+#elif defined(__LP64__) && !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
 #endif
 #endif
 #ifndef SDL_PRIu64
-#ifdef PRIu64
-#define SDL_PRIu64 PRIu64
-#elif defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIu64 "I64u"
+#elif defined(PRIu64)
+#define SDL_PRIu64 PRIu64
 #elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIu64 "lu"
 #else
@@ -275,10 +275,10 @@ typedef uint64_t Uint64;
 #endif
 #endif
 #ifndef SDL_PRIx64
-#ifdef PRIx64
-#define SDL_PRIx64 PRIx64
-#elif defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIx64 "I64x"
+#elif defined(PRIx64)
+#define SDL_PRIx64 PRIx64
 #elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIx64 "lx"
 #else
@@ -286,10 +286,10 @@ typedef uint64_t Uint64;
 #endif
 #endif
 #ifndef SDL_PRIX64
-#ifdef PRIX64
-#define SDL_PRIX64 PRIX64
-#elif defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIX64 "I64X"
+#elif defined(PRIX64)
+#define SDL_PRIX64 PRIX64
 #elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIX64 "lX"
 #else
@@ -377,9 +377,12 @@ typedef uint64_t Uint64;
 
 #ifndef SDL_COMPILE_TIME_ASSERT
 #if defined(__cplusplus)
+/* Keep C++ case alone: Some versions of gcc will define __STDC_VERSION__ even when compiling in C++ mode. */
 #if (__cplusplus >= 201103L)
 #define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
 #endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
 #endif

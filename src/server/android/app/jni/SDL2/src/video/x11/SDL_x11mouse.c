@@ -30,6 +30,7 @@
 
 /* FIXME: Find a better place to put this... */
 static Cursor x11_empty_cursor = None;
+static SDL_bool x11_cursor_visible = SDL_TRUE;
 
 static Display *GetDisplay(void)
 {
@@ -298,6 +299,8 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
         Display *display = GetDisplay();
         SDL_Window *window;
 
+        x11_cursor_visible = !!cursor;
+
         for (window = video->windows; window; window = window->next) {
             SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
             if (data) {
@@ -319,6 +322,18 @@ static void WarpMouseInternal(Window xwindow, const int x, const int y)
     Display *display = videodata->display;
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
+#endif
+    SDL_bool warp_hack = SDL_FALSE;
+
+    /* XWayland will only warp the cursor if it is hidden, so this workaround is required. */
+    if (videodata->is_xwayland && x11_cursor_visible) {
+        warp_hack = SDL_TRUE;
+    }
+
+    if (warp_hack) {
+        X11_ShowCursor(NULL);
+    }
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     if (X11_Xinput2IsInitialized()) {
         /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
          * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
@@ -334,6 +349,10 @@ static void WarpMouseInternal(Window xwindow, const int x, const int y)
 #endif
     {
         X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, x, y);
+    }
+
+    if (warp_hack) {
+        X11_ShowCursor(SDL_GetCursor());
     }
     X11_XSync(display, False);
     videodata->global_mouse_changed = SDL_TRUE;
@@ -475,5 +494,3 @@ void X11_QuitMouse(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */

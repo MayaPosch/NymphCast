@@ -248,12 +248,25 @@ static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_inf
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
+static void sync_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+    /* Nothing to do, just destroy the callback */
+    wl_callback_destroy(callback);
+}
+
+static struct wl_callback_listener sync_listener = {
+    sync_done_handler
+};
+
 void Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
 {
     SDL_VideoData *d = _this->driverdata;
 
-    /* TODO: Maybe use a pipe to avoid the compositor roundtrip? */
-    wl_display_sync(d->display);
+    /* Queue a sync event to unblock the event queue fd if it's empty and being waited on.
+     * TODO: Maybe use a pipe to avoid the compositor roundtrip?
+     */
+    struct wl_callback *cb = wl_display_sync(d->display);
+    wl_callback_add_listener(cb, &sync_listener, NULL);
     WAYLAND_wl_display_flush(d->display);
 }
 
@@ -1166,7 +1179,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
 
         if (scancode != SDL_SCANCODE_UNKNOWN) {
-            for (uint32_t i = 0; i < SDL_arraysize(mod_scancodes); ++i) {
+            uint32_t i;
+            for (i = 0; i < SDL_arraysize(mod_scancodes); ++i) {
                 if (mod_scancodes[i] == scancode) {
                     SDL_SendKeyboardKey(SDL_PRESSED, scancode);
                     break;
@@ -1814,7 +1828,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                     char **paths = SDL_DBus_DocumentsPortalRetrieveFiles(buffer, &path_count);
                     /* If dropped files contain a directory the list is empty */
                     if (paths && path_count > 0) {
-                        for (int i = 0; i < path_count; i++) {
+                        int i;
+                        for (i = 0; i < path_count; i++) {
                             SDL_SendDropFile(data_device->dnd_window, paths[i]);
                         }
                         dbus->free_string_array(paths);
@@ -2519,6 +2534,9 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     if (input->primary_selection_device) {
         if (input->primary_selection_device->selection_offer) {
             Wayland_primary_selection_offer_destroy(input->primary_selection_device->selection_offer);
+        }
+        if (input->primary_selection_device->primary_selection_device) {
+            zwp_primary_selection_device_v1_destroy(input->primary_selection_device->primary_selection_device);
         }
         SDL_free(input->primary_selection_device);
     }

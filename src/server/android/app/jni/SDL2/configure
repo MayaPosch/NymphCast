@@ -873,7 +873,6 @@ enable_sse2
 enable_sse3
 enable_altivec
 enable_lsx
-enable_lasx
 enable_oss
 enable_alsa
 with_alsa_prefix
@@ -1675,7 +1674,6 @@ Optional Features:
   --enable-sse3           use SSE3 assembly routines [default=maybe]
   --enable-altivec        use Altivec assembly routines [default=yes]
   --enable-lsx            use LSX assembly routines [default=yes]
-  --enable-lasx           use LASX assembly routines [default=yes]
   --enable-oss            support the OSS audio API [default=maybe]
   --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
@@ -3510,7 +3508,7 @@ orig_CFLAGS="$CFLAGS"
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=30
-SDL_MICRO_VERSION=1
+SDL_MICRO_VERSION=9
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
@@ -18818,7 +18816,7 @@ fi
 
 enable_system_iconv_default=yes
 case "$host" in
-  *-*-cygwin*|*-*-mingw*)
+  *-*-cygwin*|*-*-mingw*|*-*-darwin*|*-ios-*)
     enable_system_iconv_default=no
     ;;
 esac
@@ -19748,6 +19746,18 @@ ac_fn_c_check_func "$LINENO" "poll" "ac_cv_func_poll"
 if test "x$ac_cv_func_poll" = xyes
 then :
   printf "%s\n" "#define HAVE_POLL 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "memfd_create" "ac_cv_func_memfd_create"
+if test "x$ac_cv_func_memfd_create" = xyes
+then :
+  printf "%s\n" "#define HAVE_MEMFD_CREATE 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "posix_fallocate" "ac_cv_func_posix_fallocate"
+if test "x$ac_cv_func_posix_fallocate" = xyes
+then :
+  printf "%s\n" "#define HAVE_POSIX_FALLOCATE 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "_Exit" "ac_cv_func__Exit"
@@ -21097,80 +21107,6 @@ printf "%s\n" "$have_lsxintrin_h_hdr" >&6; }
     if test x$have_lsxintrin_h_hdr = xyes; then
 
 printf "%s\n" "#define HAVE_LSXINTRIN_H 1" >>confdefs.h
-
-    fi
-
-    # Check whether --enable-lasx was given.
-if test ${enable_lasx+y}
-then :
-  enableval=$enable_lasx;
-else $as_nop
-  enable_LASX=yes
-fi
-
-    if test x$enable_LASX = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lasx=no
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -mlasx option" >&5
-printf %s "checking for GCC -mlasx option... " >&6; }
-        lasx_CFLAGS="-mlasx"
-        CFLAGS="$save_CFLAGS $lasx_CFLAGS"
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #ifndef __loongarch_asx
-        #error Assembler CPP flag not enabled
-        #endif
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_gcc_lasx=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lasx" >&5
-printf "%s\n" "$have_gcc_lasx" >&6; }
-        CFLAGS="$save_CFLAGS"
-
-        if test x$have_gcc_lasx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lasx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lasx"
-        fi
-    fi
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lasxintrin.h" >&5
-printf %s "checking for lasxintrin.h... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <lasxintrin.h>
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_lasxintrin_h_hdr=yes
-else $as_nop
-  have_lasxintrin_h_hdr=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_lasxintrin_h_hdr" >&5
-printf "%s\n" "$have_lasxintrin_h_hdr" >&6; }
-    if test x$have_lasxintrin_h_hdr = xyes; then
-
-printf "%s\n" "#define HAVE_LASXINTRIN_H 1" >>confdefs.h
 
     fi
 
@@ -27577,18 +27513,14 @@ then :
   have_d3d11=yes
 fi
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for d3d12 Windows SDK version" >&5
-printf %s "checking for d3d12 Windows SDK version... " >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for compatible d3d12 headers" >&5
+printf %s "checking for compatible d3d12 headers... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#include <winsdkver.h>
-#include <sdkddkver.h>
 #include <d3d12.h>
+#include <d3d12sdklayers.h>
 ID3D12Device1 *device;
-#if WDK_NTDDI_VERSION <= 0x0A000008
-asdf
-#endif
 
 int
 main (void)
@@ -27607,6 +27539,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_d3d12" >&5
 printf "%s\n" "$have_d3d12" >&6; }
+
         ac_fn_c_check_header_compile "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes
 then :

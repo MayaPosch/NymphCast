@@ -331,7 +331,7 @@ static struct
 static SDL_bool xinput_device_change = SDL_TRUE;
 static SDL_bool xinput_state_dirty = SDL_TRUE;
 
-static void RAWINPUT_UpdateXInput()
+static void RAWINPUT_UpdateXInput(void)
 {
     DWORD user_index;
     if (xinput_device_change) {
@@ -371,7 +371,7 @@ static void RAWINPUT_MarkXInputSlotFree(Uint8 xinput_slot)
         xinput_state[xinput_slot].used = SDL_FALSE;
     }
 }
-static SDL_bool RAWINPUT_MissingXInputSlot()
+static SDL_bool RAWINPUT_MissingXInputSlot(void)
 {
     int ii;
     for (ii = 0; ii < SDL_arraysize(xinput_state); ii++) {
@@ -556,7 +556,7 @@ static void RAWINPUT_MarkWindowsGamingInputSlotFree(WindowsGamingInputGamepadSta
     wgi_slot->correlated_context = NULL;
 }
 
-static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot()
+static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot(void)
 {
     int ii;
     for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
@@ -567,7 +567,7 @@ static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot()
     return SDL_FALSE;
 }
 
-static void RAWINPUT_UpdateWindowsGamingInput()
+static void RAWINPUT_UpdateWindowsGamingInput(void)
 {
     int ii;
     if (!wgi_state.gamepad_statics) {
@@ -1050,7 +1050,7 @@ static int RAWINPUT_JoystickGetCount(void)
     return SDL_RAWINPUT_numjoysticks;
 }
 
-SDL_bool RAWINPUT_IsEnabled()
+SDL_bool RAWINPUT_IsEnabled(void)
 {
     return SDL_RAWINPUT_inited && !SDL_RAWINPUT_remote_desktop;
 }
@@ -1290,6 +1290,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     value_caps = SDL_stack_alloc(HIDP_VALUE_CAPS, caps.NumberInputValueCaps);
     if (SDL_HidP_GetValueCaps(HidP_Input, value_caps, &caps.NumberInputValueCaps, ctx->preparsed_data) != HIDP_STATUS_SUCCESS) {
         RAWINPUT_JoystickClose(joystick);
+        SDL_stack_free(button_caps);
         return SDL_SetError("Couldn't get device value capabilities");
     }
 
@@ -1318,6 +1319,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->button_indices = (USHORT *)SDL_malloc(joystick->nbuttons * sizeof(*ctx->button_indices));
         if (!ctx->button_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
+            SDL_stack_free(button_caps);
             return SDL_OutOfMemory();
         }
 
@@ -1341,6 +1344,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->guide_hack = SDL_TRUE;
         joystick->nbuttons += 1;
     }
+
+    SDL_stack_free(button_caps);
 
     for (i = 0; i < caps.NumberInputValueCaps; ++i) {
         HIDP_VALUE_CAPS *cap = &value_caps[i];
@@ -1371,6 +1376,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->axis_indices = (USHORT *)SDL_malloc(joystick->naxes * sizeof(*ctx->axis_indices));
         if (!ctx->axis_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
             return SDL_OutOfMemory();
         }
 
@@ -1404,6 +1410,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->hat_indices = (USHORT *)SDL_malloc(joystick->nhats * sizeof(*ctx->hat_indices));
         if (!ctx->hat_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
             return SDL_OutOfMemory();
         }
 
@@ -1421,6 +1428,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
             ctx->hat_indices[hat_index++] = cap->NotRange.DataIndex;
         }
     }
+
+    SDL_stack_free(value_caps);
 
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
@@ -2087,7 +2096,7 @@ int RAWINPUT_RegisterNotifications(HWND hWnd)
     return 0;
 }
 
-int RAWINPUT_UnregisterNotifications()
+int RAWINPUT_UnregisterNotifications(void)
 {
     int i;
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];

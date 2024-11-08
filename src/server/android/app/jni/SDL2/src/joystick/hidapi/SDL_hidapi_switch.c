@@ -332,12 +332,28 @@ typedef struct
 
 static int ReadInput(SDL_DriverSwitch_Context *ctx)
 {
+    int result;
+
     /* Make sure we don't try to read at the same time a write is happening */
     if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 
-    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    result = SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+
+    /* See if we can guess the initial input mode */
+    if (result > 0 && !ctx->m_bInputOnly && !ctx->m_nInitialInputMode) {
+        switch (ctx->m_rgucReadBuffer[0]) {
+        case k_eSwitchInputReportIDs_FullControllerState:
+        case k_eSwitchInputReportIDs_FullControllerAndMcuState:
+        case k_eSwitchInputReportIDs_SimpleControllerState:
+            ctx->m_nInitialInputMode = ctx->m_rgucReadBuffer[0];
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
 }
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
@@ -727,14 +743,12 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
-static Uint8 GetInitialInputMode(SDL_DriverSwitch_Context *ctx)
+static void GetInitialInputMode(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 input_mode = 0;
-
-    if (ReadInput(ctx) > 0) {
-        input_mode = ctx->m_rgucReadBuffer[0];
+    if (!ctx->m_nInitialInputMode) {
+        /* This will set the initial input mode if it can */
+        ReadInput(ctx);
     }
-    return input_mode;
 }
 
 static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
@@ -758,7 +772,18 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
      * battery level over Bluetooth anyway.
      */
     if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
+        /* However, switching to full controller state breaks DirectInput, so let's not do that */
+        #if 0
         input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        #endif
+
+        /* However, Joy-Con controllers switch their thumbsticks into D-pad mode in simple mode,
+         * so let's enable full controller state for them.
+         */
+        if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
+            ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+            input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        }
     }
     return input_mode;
 }
@@ -1292,6 +1317,27 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_Unknown:
         /* We couldn't read the device info for this controller, might not be fully compliant */
+        if (device->vendor_id == USB_VENDOR_NINTENDO) {
+            switch (device->product_id) {
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConLeft;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConRight;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_PRO:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_ProController;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                break;
+            default:
+                break;
+            }
+        }
         return;
     default:
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
@@ -1380,7 +1426,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     ctx->m_bSyncWrite = SDL_TRUE;
 
     if (!ctx->m_bInputOnly) {
-        ctx->m_nInitialInputMode = GetInitialInputMode(ctx);
+        GetInitialInputMode(ctx);
         ctx->m_nCurrentInputMode = ctx->m_nInitialInputMode;
 
         /* Initialize rumble data */
@@ -2208,6 +2254,10 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         ctx->m_unLastInput = now;
 
         if (!joystick) {
+            continue;
+        }
+
+        if (ctx->m_rgucReadBuffer[0] == k_eSwitchInputReportIDs_SubcommandReply) {
             continue;
         }
 

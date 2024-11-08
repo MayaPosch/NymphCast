@@ -499,6 +499,12 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             ctx->sensors_supported = SDL_TRUE;
             ctx->touchpad_supported = SDL_TRUE;
             ctx->use_alternate_report = SDL_TRUE;
+        } else if (device->vendor_id == USB_VENDOR_RAZER &&
+                   device->product_id == USB_PRODUCT_RAZER_KITSUNE) {
+            /* The Razer Kitsune doesn't respond to the detection protocol, but has a touchpad */
+            joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+            ctx->touchpad_supported = SDL_TRUE;
+            ctx->use_alternate_report = SDL_TRUE;
         }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
@@ -1494,6 +1500,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 /* Send an empty output report to tickle the Bluetooth stack */
                 HIDAPI_DriverPS5_TickleBluetooth(device);
+                ctx->last_packet = now;
             }
         } else {
             /* Reconnect the Bluetooth device once the USB device is gone */

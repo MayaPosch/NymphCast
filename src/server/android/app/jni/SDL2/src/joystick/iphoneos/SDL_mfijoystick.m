@@ -406,7 +406,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     device->is_switch_joyconL = IsControllerSwitchJoyConL(controller);
     device->is_switch_joyconR = IsControllerSwitchJoyConR(controller);
 #ifdef SDL_JOYSTICK_HIDAPI
-    if ((device->is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
+    if ((device->is_xbox && (HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE) ||
+                             HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOX360))) ||
         (device->is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
         (device->is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5)) ||
         (device->is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO)) ||
@@ -418,6 +419,10 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         return FALSE;
     }
 #endif
+    if (device->is_xbox && SDL_strncmp(name, "GamePad-", 8) == 0) {
+        /* This is a Steam Virtual Gamepad, which isn't supported by GCController */
+        return FALSE;
+    }
     CheckControllerSiriRemote(controller, &device->is_siri_remote);
 
     if (device->is_siri_remote && !SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
@@ -437,7 +442,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             device->has_xbox_share_button = TRUE;
         }
     }
-#endif // ENABLE_PHYSICAL_INPUT_PROFILE
+#endif /* ENABLE_PHYSICAL_INPUT_PROFILE */
 
     if (device->is_backbone_one) {
         vendor = USB_VENDOR_BACKBONE;

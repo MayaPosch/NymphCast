@@ -120,13 +120,27 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         return 0;
     }
 
+    /* By default, we wait for Wayland frame callback and then issue pageflip (eglSwapBuffers),
+     * but if we want low latency (double buffer scheme), we issue the pageflip
+     * and then wait immediately for Wayland frame callback.
+     */
+
+    if (data->double_buffer) {
+        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
+            return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
+        }
+
+        WAYLAND_wl_display_flush(data->waylandData->display);
+    }
+
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
         SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* 1/3 speed (or 20hz), so we'll progress even if throttled to zero. */
-        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ? (3000 / sdldisplay->current_mode.refresh_rate) : 50);
+        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay && sdldisplay->current_mode.refresh_rate ? (3000 / sdldisplay->current_mode.refresh_rate) : 50);
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
             Uint32 now;
 
@@ -162,12 +176,14 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
 
-    /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
-    if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
-        return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
-    }
+    if (!data->double_buffer) {
+        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
+            return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
+        }
 
-    WAYLAND_wl_display_flush(data->waylandData->display);
+        WAYLAND_wl_display_flush(data->waylandData->display);
+    }
 
     return 0;
 }

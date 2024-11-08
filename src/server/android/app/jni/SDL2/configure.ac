@@ -13,7 +13,7 @@ dnl Set various version strings - taken gratefully from the GTk sources
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=30
-SDL_MICRO_VERSION=1
+SDL_MICRO_VERSION=9
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
@@ -322,7 +322,7 @@ AC_ARG_ENABLE(libc,
 dnl See whether we are allowed to use system iconv
 enable_system_iconv_default=yes
 case "$host" in
-  *-*-cygwin*|*-*-mingw*)
+  *-*-cygwin*|*-*-mingw*|*-*-darwin*|*-ios-*)
     enable_system_iconv_default=no
     ;;
 esac
@@ -359,7 +359,7 @@ dnl Checks for library functions.
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ],[]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll memfd_create posix_fallocate _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
@@ -936,38 +936,6 @@ fi
     AC_MSG_RESULT($have_lsxintrin_h_hdr)
     if test x$have_lsxintrin_h_hdr = xyes; then
         AC_DEFINE(HAVE_LSXINTRIN_H, 1, [ ])
-    fi
-
-    AC_ARG_ENABLE(lasx,
-[AS_HELP_STRING([--enable-lasx], [use LASX assembly routines [default=yes]])],
-                  , enable_LASX=yes)
-    if test x$enable_LASX = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lasx=no
-        AC_MSG_CHECKING(for GCC -mlasx option)
-        lasx_CFLAGS="-mlasx"
-        CFLAGS="$save_CFLAGS $lasx_CFLAGS"
-
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-        #ifndef __loongarch_asx
-        #error Assembler CPP flag not enabled
-        #endif
-        ]], [])], [have_gcc_lasx=yes], [])
-        AC_MSG_RESULT($have_gcc_lasx)
-        CFLAGS="$save_CFLAGS"
-
-        if test x$have_gcc_lasx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lasx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lasx"
-        fi
-    fi
-
-    AC_MSG_CHECKING(for lasxintrin.h)
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <lasxintrin.h>]])],
-       [have_lasxintrin_h_hdr=yes],[have_lasxintrin_h_hdr=no])
-    AC_MSG_RESULT($have_lasxintrin_h_hdr)
-    if test x$have_lasxintrin_h_hdr = xyes; then
-        AC_DEFINE(HAVE_LASXINTRIN_H, 1, [ ])
     fi
 
 dnl See if the OSS audio interface is supported
@@ -3375,17 +3343,14 @@ CheckDIRECTX()
     if test x$enable_directx = xyes; then
         AC_CHECK_HEADER(d3d9.h, have_d3d=yes)
         AC_CHECK_HEADER(d3d11_1.h, have_d3d11=yes)
-        AC_MSG_CHECKING(for d3d12 Windows SDK version)
+        AC_MSG_CHECKING(for compatible d3d12 headers)
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <winsdkver.h>
-#include <sdkddkver.h>
 #include <d3d12.h>
+#include <d3d12sdklayers.h>
 ID3D12Device1 *device;
-#if WDK_NTDDI_VERSION <= 0x0A000008
-asdf
-#endif
             ]])], [have_d3d12=yes],[have_d3d12=no])
         AC_MSG_RESULT($have_d3d12)
+
         AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)

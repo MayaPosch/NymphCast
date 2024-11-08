@@ -128,6 +128,10 @@ static SDL_Scancode VKeytoScancodeFallback(WPARAM vkey)
         return SDL_SCANCODE_RIGHT;
     case VK_DOWN:
         return SDL_SCANCODE_DOWN;
+    case VK_CONTROL:
+        return SDL_SCANCODE_LCTRL;
+    case VK_V:
+        return SDL_SCANCODE_V;
 
     default:
         return SDL_SCANCODE_UNKNOWN;
@@ -137,6 +141,11 @@ static SDL_Scancode VKeytoScancodeFallback(WPARAM vkey)
 static SDL_Scancode VKeytoScancode(WPARAM vkey)
 {
     switch (vkey) {
+    case VK_BACK:
+        return SDL_SCANCODE_BACKSPACE;
+    case VK_CAPITAL:
+        return SDL_SCANCODE_CAPSLOCK;
+
     case VK_MODECHANGE:
         return SDL_SCANCODE_MODE;
     case VK_SELECT:
@@ -318,7 +327,7 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static SDL_bool WIN_ShouldIgnoreFocusClick()
+static SDL_bool WIN_ShouldIgnoreFocusClick(void)
 {
     return !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
@@ -629,6 +638,10 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     if (nCode < 0 || nCode != HC_ACTION) {
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
+    if (hookData->scanCode == 0x21d) {
+	    // Skip fake LCtrl when RAlt is pressed
+	    return 1;
+    }
 
     switch (hookData->vkCode) {
     case VK_LWIN:
@@ -682,6 +695,39 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+
+
+// Return 1 if spruious LCtrl is pressed
+// LCtrl is sent when RAltGR is pressed
+int skip_bad_lcrtl(WPARAM wParam, LPARAM lParam)
+{
+    MSG next_msg;
+    DWORD msg_time;
+    if (wParam != VK_CONTROL) {
+        return 0;
+    }
+    // Is this an extended key (i.e. right key)?
+    if (lParam & 0x01000000)
+                return 0;
+
+    // Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
+    // want the RALT message, so we try to see if the next message
+    // is a RALT message. In that case, this is a false LCTRL!
+    msg_time = GetMessageTime();
+    if (PeekMessage(&next_msg, NULL, 0, 0, PM_NOREMOVE)) {
+        if (next_msg.message == WM_KEYDOWN ||
+            next_msg.message == WM_SYSKEYDOWN) {
+            if (next_msg.wParam == VK_MENU &&
+                (next_msg.lParam & 0x01000000) &&
+                next_msg.time == msg_time) {
+                // Next message is a RALT down message, which
+                // means that this is NOT a proper LCTRL message!
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1000,6 +1046,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
+        if (skip_bad_lcrtl(wParam, lParam)) {
+            returnCode = 0;
+            break;
+        }
+
         /* Detect relevant keyboard shortcuts */
         if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
             /* ALT+F4: Close window */
@@ -1021,6 +1072,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+
+        if (skip_bad_lcrtl(wParam, lParam)) {
+            returnCode = 0;
+            break;
+        }
 
         if (code != SDL_SCANCODE_UNKNOWN) {
             if (code == SDL_SCANCODE_PRINTSCREEN &&
@@ -1738,7 +1794,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static void WIN_UpdateClipCursorForWindows()
+static void WIN_UpdateClipCursorForWindows(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
@@ -1760,7 +1816,7 @@ static void WIN_UpdateClipCursorForWindows()
     }
 }
 
-static void WIN_UpdateMouseCapture()
+static void WIN_UpdateMouseCapture(void)
 {
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
 
@@ -1803,6 +1859,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 int WIN_WaitEventTimeout(_THIS, int timeout)
 {
     if (g_WindowsEnableMessageLoop) {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         DWORD dwMilliseconds, ret;
         dwMilliseconds = timeout < 0 ? INFINITE : (DWORD)timeout;
         ret = MsgWaitForMultipleObjects(0, NULL, FALSE, dwMilliseconds, QS_ALLINPUT);
@@ -1811,6 +1868,35 @@ int WIN_WaitEventTimeout(_THIS, int timeout)
         } else {
             return 0;
         }
+#else
+        /* MsgWaitForMultipleObjects is desktop-only. */
+        MSG msg;
+        BOOL message_result;
+        UINT_PTR timer_id = 0;
+        if (timeout > 0) {
+            timer_id = SetTimer(NULL, 0, timeout, NULL);
+            message_result = GetMessage(&msg, 0, 0, 0);
+            KillTimer(NULL, timer_id);
+        } else if (timeout == 0) {
+            message_result = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+        } else {
+            message_result = GetMessage(&msg, 0, 0, 0);
+        }
+        if (message_result) {
+            if (msg.message == WM_TIMER && !msg.hwnd && msg.wParam == timer_id) {
+                return 0;
+            }
+            if (g_WindowsMessageHook) {
+                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+            }
+            /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            return 1;
+        } else {
+            return 0;
+        }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     } else {
         /* Fail the wait so the caller falls back to polling */
         return -1;
@@ -1927,13 +2013,26 @@ static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
     SDL_Appname = NULL;
 }
 
+static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)
+{
+    WNDCLASSEX *wcex = (WNDCLASSEX *)lParam;
+
+    (void)lpType; /* We already know that the resource type is RT_GROUP_ICON. */
+
+    /* We leave hIconSm as NULL as it will allow Windows to automatically
+       choose the appropriate small icon size to suit the current DPI. */
+    wcex->hIcon = LoadIcon(hModule, lpName);
+
+    /* Do not bother enumerating any more. */
+    return FALSE;
+}
+
 /* Register the class for this application */
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     const char *hint;
-    TCHAR path[MAX_PATH];
 #endif
 
     /* Only do this once... */
@@ -1976,9 +2075,8 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
             wcex.hIconSm = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
         }
     } else {
-        /* Use the first icon as a default icon, like in the Explorer */
-        GetModuleFileName(SDL_Instance, path, MAX_PATH);
-        ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
+        /* Use the first icon as a default icon, like in the Explorer. */
+        EnumResourceNames(SDL_Instance, RT_GROUP_ICON, WIN_ResourceNameCallback, (LONG_PTR)&wcex);
     }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
@@ -1992,7 +2090,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 }
 
 /* Unregisters the windowclass registered in SDL_RegisterApp above. */
-void SDL_UnregisterApp()
+void SDL_UnregisterApp(void)
 {
     WNDCLASSEX wcex;
 
