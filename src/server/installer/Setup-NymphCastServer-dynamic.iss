@@ -205,9 +205,9 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/deflate.dll"        ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/FreeImage.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/freetype.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
 ;Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Half-2_5.dll"       ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Iex-3_2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Iex-3_*.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 ;Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmImf-2_5.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmThread-3_2.dll"  ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/IlmThread-3_*.dll"  ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/Imath-3_1.dll"      ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/jasper.dll"         ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/jpeg62.dll"         ; DestDir: "{app}/bin"; Flags: ignoreversion
@@ -222,8 +222,8 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libssl-3-x64.dll"   ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebp.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdecoder.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdemux.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXR-3_2.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
-Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXRCore-3_2.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXR-3_*.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXRCore-3_*.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/openjp2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/pcre2-8.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/PocoCrypto.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
