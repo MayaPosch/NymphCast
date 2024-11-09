@@ -37,6 +37,7 @@ A	=> Audio-only
 
 - Targeting any platform supporting MSVC 2017 and up.
 - Tested on Windows 7+, using MSYS2 GCC (MinGW) and MSVC 2017+.
+=> Build MSVC installer for NCS, NCP.
 
 
 [ Linux ]
@@ -54,11 +55,15 @@ A	=> Audio-only
 [ Android ]
 
 - Targeting Android API 27 (Android 8.1, Oreo).
+- Supporting APIs x86_64 and AArch64.
 - Supporting Android TV, tested on Raspberry Pi B4 with LineageOS Android TV:
 	-> https://konstakang.com/devices/rpi4/LineageOS20-ATV/
 - Bug: 5.1 audio doesn't downsample to stereo. Only front left/right on Android 13.
 		=> Seems to work on Android 9. Android 13-specific problem?
 		=> 'Fixed' with forced stereo downmixing (in audio_renderer).
+- Stability: on Android 9 closing the audio stream can result in a crash (SIGSEGV) with some 
+				specific files.
+=> Build APK for easy sideloading & testing.
 
 
 [ Haiku ]

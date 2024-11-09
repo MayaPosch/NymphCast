@@ -17,6 +17,7 @@ Notes:
 
 Known Issues:
 - Subtitles: PGS works, text-based not yet.
+- Android 9: Some specific files result in a crash due to a presumed AAudio issue.
 
 ## v0.1 ##
 
