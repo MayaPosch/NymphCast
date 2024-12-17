@@ -99,6 +99,11 @@ bool Gui::init(std::string resFolder) {
 		window->renderLoadingScreen(progressText);
 	}
 
+	// TODO: load game ROMs & saves details from NCMS instance if enabled.
+	// - Connect to first NCMS found.
+	// - Use local data as primary reference when merging with NCMS.
+	// - Download from NCMS to sync missing/outdated content.
+	// - Upload to NCMS to sync outdated/missing content there.
 	if (!SystemData::loadConfig(window)) {
 		LOG(LogError) << "Error while parsing systems configuration file!";
 		return false;

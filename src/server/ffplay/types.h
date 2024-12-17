@@ -404,6 +404,7 @@ extern const char* wanted_stream_spec[AVMEDIA_TYPE_NB];
 extern int seek_by_bytes;
 extern float seek_interval;
 extern int display_disable;
+extern bool gui_enable;
 extern int borderless;
 extern int alwaysontop;
 extern int startup_volume;

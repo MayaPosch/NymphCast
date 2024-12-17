@@ -10,6 +10,8 @@
 #include <SDL.h>
 #include <stack>
 
+#include "../../../ffplay/sdl_renderer.h"
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace Renderer
@@ -64,6 +66,7 @@ namespace Renderer
 
 //////////////////////////////////////////////////////////////////////////
 
+
 	static bool createWindow()
 	{
 		LOG(LogInfo) << "Creating window...";
@@ -87,14 +90,17 @@ namespace Renderer
 		screenRotate  = Settings::getInstance()->getInt("ScreenRotate")  ? Settings::getInstance()->getInt("ScreenRotate")  : 0;
 
 		setupWindow();
+		
+		// TODO: get the existing SDL Window here.
+		sdlWindow = SdlRenderer::getSdlWindow();
 
-		const unsigned int windowFlags = (Settings::getInstance()->getBool("Windowed") ? 0 : (Settings::getInstance()->getBool("FullscreenBorderless") ? SDL_WINDOW_BORDERLESS : SDL_WINDOW_FULLSCREEN)) | getWindowFlags();
+		/* const unsigned int windowFlags = (Settings::getInstance()->getBool("Windowed") ? 0 : (Settings::getInstance()->getBool("FullscreenBorderless") ? SDL_WINDOW_BORDERLESS : SDL_WINDOW_FULLSCREEN)) | getWindowFlags();
 
 		if((sdlWindow = SDL_CreateWindow("EmulationStation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags)) == nullptr)
 		{
 			LOG(LogError) << "Error creating SDL window!\n\t" << SDL_GetError();
 			return false;
-		}
+		} */
 
 		LOG(LogInfo) << "Created window successfully.";
 		

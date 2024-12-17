@@ -40,6 +40,7 @@ public:
 	static void resizeWindow(int width, int height);
 	static void set_default_window_size(int width, int height, AVRational sar);
 	static void set_fullscreen(bool fullscreen);
+	static SDL_Window* getSdlWindow() { return window; }
 	static void video_display(VideoState *is);
 	static void image_display(std::string image);
 	static void run_event_loop();

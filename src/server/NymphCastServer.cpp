@@ -326,11 +326,13 @@ NymphMessage* playMedia(int session, NymphMessage* msg, void* data) {
 	// Stop screensaver.
 	if (!video_disable) {
 		if (gui_enable) {
+			// Using the same window, do nothing.
+			
 			// Show window.
-			SDL_Event event;
+			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event);
+			SDL_PushEvent(&event); */
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::stop();
@@ -710,11 +712,13 @@ void finishPlayback() {
 	// Start the Screensaver here for now.
 	if (!display_disable) {
 		if (gui_enable) {
+			// Using same window. Do nothing.
+			
 			// Return to GUI. Hide window.
-			SDL_Event event;
+			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_UNDERSCORE;
-			SDL_PushEvent(&event);
+			SDL_PushEvent(&event); */
 			
 			Gui::active = true;
 			Gui::resumeCv.notify_one();
@@ -1053,11 +1057,13 @@ NymphMessage* session_start(int session, NymphMessage* msg, void* data) {
 	// Stop screensaver.
 	if (!video_disable) {
 		if (gui_enable) {
+			// Using same window. Do nothing.
+			
 			// Show window.
-			SDL_Event event;
+			/* SDL_Event event;
 			event.type = SDL_KEYDOWN;
 			event.key.keysym.sym = SDLK_MINUS;
-			SDL_PushEvent(&event);
+			SDL_PushEvent(&event); */
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::stop();
@@ -2656,7 +2662,9 @@ int main(int argc, char** argv) {
 				init_success = false;
 			}
 			
-			SdlRenderer::hideWindow();
+			// Using same window. Do nothing.
+			//SdlRenderer::hideWindow();
+			SdlRenderer::showWindow();
 		}
 		else if (screensaver_enable) {
 			ScreenSaver::setDataPath(wallpapersFolder);

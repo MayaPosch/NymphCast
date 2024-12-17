@@ -83,6 +83,10 @@ bool SdlRenderer::init() {
 		if (borderless) { flags |= SDL_WINDOW_BORDERLESS; }
 		else { flags |= SDL_WINDOW_RESIZABLE; }
 		
+		if (gui_enable) {
+			flags |= SDL_WINDOW_OPENGL;
+		}
+		
 		// Obtain dimensions of primary display.
 		SDL_DisplayMode dm;
 		if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
