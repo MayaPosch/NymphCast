@@ -419,23 +419,6 @@ uint32_t DataBuffer::read(uint32_t len, uint8_t* bytes) {
 		}
 		else if (!buffering) {
 			// If we're not buffering ahead, we're still in the hunt-the-container-header phase.
-			// This means waiting for each data request. Fail if time-out.
-			/* std::unique_lock<std::mutex> lk(dataReadMutex);
-			using namespace std::chrono_literals;
-			uint32_t timeout = 5000;
-			while (dataRequestPending) { 
-				dataReadCV.wait_for(lk, 100us);
-				if (--timeout == 0) {
-#ifdef DEBUG
-					std::cerr << "Slow Read: data read timeout after 500 ms." << std::endl;
-#endif
-					break;
-				}
-			} */
-			
-#ifdef DEBUG
-			std::cout << "Slow Read: reading bytes..." << std::endl;
-#endif
 			bool success = true;
 			success = requestData();
 			if (!success) {
