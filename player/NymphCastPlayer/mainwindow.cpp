@@ -1094,6 +1094,9 @@ void MainWindow::seek() {
 			posTimer.stop();
 		}
 	}
+	
+	// Make sure we're still on the position. The posTimer callback will reset this otherwise.
+	ui->positionSlider->setValue(value);
 }
 
 
