@@ -222,6 +222,7 @@ Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libssl-3-x64.dll"   ; DestDir: "{app}/bi
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebp.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdecoder.dll" ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpdemux.dll"   ; DestDir: "{app}/bin"; Flags: ignoreversion
+Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/libwebpmux.dll"     ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXR-3_*.dll"    ; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/OpenEXRCore-3_*.dll"; DestDir: "{app}/bin"; Flags: ignoreversion
 Source: "{#VcpkgRoot}/{#VcpkgDllFolder}/openjp2.dll"        ; DestDir: "{app}/bin"; Flags: ignoreversion
