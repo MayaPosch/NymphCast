@@ -608,6 +608,8 @@ int StreamHandler::read_thread(void *arg) {
     SDL_mutex *wait_mutex = SDL_CreateMutex();
     int scan_all_pmts_set = 0;
     int64_t pkt_ts;
+	
+	std::atomic<double> last_position = 0;
 
     if (!wait_mutex) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateMutex(): %s\n", SDL_GetError());
@@ -974,13 +976,20 @@ int StreamHandler::read_thread(void *arg) {
 		debugfile << "Reading frame.\t";
 		std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
 #endif
+		// DEBUG
+		/*std::cout << "DEBUG: file position, duration: " << file_meta.position << ", " << 
+														file_meta.duration << std::endl;*/
 
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
 			// FIXME: hack.
-			if (ret == AVERROR_EOF && (file_meta.position >= file_meta.duration)) { 
-				eof = true; 
+			if (ret == AVERROR_EOF && (file_meta.position >= file_meta.duration) ||
+										(file_meta.position < last_position)) {
+				eof = true;
 				break; 
+			}
+			else {
+				last_position = file_meta.position.load();
 			}
 			
 			//av_log(NULL, AV_LOG_WARNING, "av_read_frame() returned <0, no EOF.\n");
