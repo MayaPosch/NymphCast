@@ -82,6 +82,7 @@ private slots:
 	void pause();
 	void forward();
 	void rewind();
+	void startSeek();
 	void seek();
 	void mute();
 	void adjustVolume(int value);

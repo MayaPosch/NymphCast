@@ -161,6 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
+	connect(ui->positionSlider, SIGNAL(sliderMoved()), this, SLOT(startSeek()));
 	connect(ui->subtitlesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(toggleSubtitles(int)));
 	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
 	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
@@ -1075,6 +1076,15 @@ void MainWindow::rewind() {
 	if (!remoteEnsureConnected(handle)) { return; }
 	
 	client.playbackRewind(handle);
+}
+
+
+// --- START SEEK ---
+void MainWindow::startSeek() {
+	// Slider was moved by user, disable position timer to prevent erratic position updates.
+	if (posTimer.isActive()) {
+		posTimer.stop();
+	}
 }
 
 
