@@ -609,7 +609,7 @@ int StreamHandler::read_thread(void *arg) {
     int scan_all_pmts_set = 0;
     int64_t pkt_ts;
 	
-	std::atomic<double> last_position = 0;
+	std::atomic<double> last_position = { 0 };
 
     if (!wait_mutex) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateMutex(): %s\n", SDL_GetError());
