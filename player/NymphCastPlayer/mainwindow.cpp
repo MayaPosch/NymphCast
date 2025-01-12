@@ -161,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :	 QMainWindow(parent), ui(new Ui::MainW
     connect(ui->soundToolButton, SIGNAL(clicked()), this, SLOT(mute()));
 	connect(ui->volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(adjustVolume(int)));
 	connect(ui->positionSlider, SIGNAL(sliderReleased()), this, SLOT(seek()));
-	connect(ui->positionSlider, SIGNAL(sliderMoved()), this, SLOT(startSeek()));
+	connect(ui->positionSlider, SIGNAL(sliderPressed()), this, SLOT(startSeek()));
 	connect(ui->subtitlesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(toggleSubtitles(int)));
 	connect(ui->cycleSubtitleButton, SIGNAL(clicked()), this, SLOT(cycleSubtitles()));
 	connect(ui->cycleAudioButton, SIGNAL(clicked()), this, SLOT(cycleAudio()));
@@ -523,6 +523,8 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
 	else if (paused) {
 		std::cout << "Paused playback..." << std::endl;
 		
+		if (posTimer.isActive()) { posTimer.stop(); }
+		
 		// Remote player is paused. Resume using play button.
 		ui->playToolButton->setEnabled(true);
 		ui->playToolButton->setVisible(true);
@@ -534,7 +536,7 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
         std::cout << "Status: Set playing..." << std::endl;
 		
 		// Stop updating while we're seeking.
-		if (seeking) { return; }
+		if (seeking || paused) { return; }
 		
 		// DEBUG
 		//std::cout << "updatePlayerUI: playing, duration: " << status.duration << ", position: " << status.position << std::endl;
@@ -994,6 +996,9 @@ void MainWindow::play() {
 			   playingTrack = true;
 			}
 		}
+	
+		paused = false;
+		seeking = false;
 		
 		return;
 	}
@@ -1038,6 +1043,12 @@ void MainWindow::play() {
 		}
 	}
 	
+	paused = false;
+	seeking = false;
+	
+	/* if (!posTimer.isActive()) {
+		posTimer.start();
+	} */
 }
 
 
@@ -1056,6 +1067,10 @@ void MainWindow::stop() {
 // --- PAUSE ---
 void MainWindow::pause() {
 	//if (!playingTrack) { return; }
+	
+	paused = true;
+	
+	if (posTimer.isActive()) { posTimer.stop(); }
 	
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
@@ -1085,9 +1100,8 @@ void MainWindow::rewind() {
 // --- START SEEK ---
 void MainWindow::startSeek() {
 	// Slider was moved by user, disable position timer to prevent erratic position updates.
-	if (posTimer.isActive()) {
-		posTimer.stop();
-	}
+	std::cout << "Slider started moving. Disable timer." << std::endl;
+	if (posTimer.isActive()) { posTimer.stop(); }
 	
 	// Temporary disable UI updates as well.
 	seeking = true;
@@ -1098,6 +1112,8 @@ void MainWindow::startSeek() {
 void MainWindow::seek() {
 	uint32_t handle;
 	if (!remoteEnsureConnected(handle)) { return; }
+	
+	if (posTimer.isActive()) { posTimer.stop(); }
 	
 	uint8_t value = (ui->positionSlider->value() / 10);
 	
@@ -1115,7 +1131,7 @@ void MainWindow::seek() {
 	seeking = false;
 	
 	// Make sure we're still on the position. The posTimer callback will reset this otherwise.
-	ui->positionSlider->setValue(value);
+	//ui->positionSlider->setValue(value);
 }
 
 

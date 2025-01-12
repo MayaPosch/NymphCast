@@ -135,6 +135,7 @@ private:
 	bool playingTrack = false;
 	bool singleCast = false;
 	bool seeking = false;
+	bool paused = false;
     QStandardItemModel sharesModel;
     QStandardItemModel receiverSharesModel;
 	QString appDataLocation;
