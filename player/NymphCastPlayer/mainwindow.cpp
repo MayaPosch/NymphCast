@@ -536,7 +536,20 @@ void MainWindow::updatePlayerUI(NymphPlaybackStatus status, NCRemoteInstance* ri
         std::cout << "Status: Set playing..." << std::endl;
 		
 		// Stop updating while we're seeking.
-		if (seeking || paused) { return; }
+		if (paused) { return; }
+		
+		// Update again when seek position from NCS close to slider position.
+		if (seeking) {
+			const double time_difference_to_stop_seeking_s = 2.0;  // Note: 1.0 seems too small
+			const double slider_position = ui->positionSlider->value() / 1000.0 * status.duration;
+			if (abs(status.position - slider_position) > time_difference_to_stop_seeking_s) {
+				return;
+			}
+			else {
+				// Stop seeking state, resume updating UI.
+				seeking = false;
+			}
+		}
 		
 		// DEBUG
 		//std::cout << "updatePlayerUI: playing, duration: " << status.duration << ", position: " << status.position << std::endl;
@@ -1128,7 +1141,7 @@ void MainWindow::seek() {
 	}
 	
 	// End local seeking mode as we wait for the remote update.
-	seeking = false;
+	//seeking = false;
 	
 	// Make sure we're still on the position. The posTimer callback will reset this otherwise.
 	//ui->positionSlider->setValue(value);
