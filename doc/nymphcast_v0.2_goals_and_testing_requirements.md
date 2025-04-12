@@ -14,6 +14,7 @@ New features in v0.2 include:
 - New platforms: Android, Haiku, ESP32.
 - Pipewire modules: discovery, creation of NymphCast sinks.
 - Subtitle support: all ffmpeg-supported types, instant display after seeking.
+- GUI mode: present NCMS content in a more functional manner.
 - GUI mode: integrate ROM & save files syncing with NCMS.
 
 **1.2. Player**
@@ -27,3 +28,4 @@ New features in v0.2 include:
 - Sync game ROMs & saves with other NCMS instances, if any.
 - Handle duplicate filenames for ROMs/saves. (rename/ignore/copy newer/older)
 - Periodic scanning for new content (multimedia, games)
+- Web UI for content management.
