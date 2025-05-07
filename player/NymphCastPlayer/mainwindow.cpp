@@ -1429,6 +1429,7 @@ std::vector<std::string> explode(std::string& str, char sep) {
 	std::stringstream ss(str);
 	std::string t;
 	while (std::getline(ss, t, sep)) {
+		if (t.empty()) { continue; }
 		res.push_back(t);
 	}
 	
@@ -1461,12 +1462,15 @@ void MainWindow::insertFolderView(QStandardItem* fn, NymphMediaFile& file, QStan
 		std::map<std::string, QStandardItem*>::iterator oit; // old iterator.
 		for (uint32_t k = 0; k < parts.size(); k++) {
 			// Add current index to the tpath string before testing it.
-			if (tpath.empty()) 	{ tpath = parts[k]; }
-			else 				{ tpath += "/" + parts[k]; }
+			tpath += "/" + parts[k];
 			
 			oit = it;
 			it = items.find(tpath);
 			if (it != items.end()) { continue; }
+			
+			// Debug
+			//std::cout << "tpath: " << tpath << std::endl;
+			//std::cout << "parts[" << k << "]:" << parts[k] << std::endl;
 			
 			// Create new folder with the current folder name and insert it.
 			QStandardItem* fd = new QStandardItem(QString::fromStdString(parts[k]));
