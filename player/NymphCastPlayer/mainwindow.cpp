@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 #include <QFileDialog>
 #include <QInputDialog>
@@ -1421,6 +1422,87 @@ QByteArray MainWindow::loadResource(const QUrl &name) {
 }
 
 
+// --- EXPLODE ---
+// Explode string using a separator.
+std::vector<std::string> explode(std::string& str, char sep) {
+	std::vector<std::string> res;
+	std::stringstream ss(str);
+	std::string t;
+	while (std::getline(ss, t, sep)) {
+		res.push_back(t);
+	}
+	
+	return res;
+}
+
+
+// --- INSERT FOLDER VIEW ---
+// Insert the provided item into a view list.
+void MainWindow::insertFolderView(QStandardItem* fn, NymphMediaFile& file, QStandardItem* root, 
+						std::map<std::string, QStandardItem*>& items) {
+	if (file.rel_path == "") {
+		// File is in root folder. Straight insert.
+		root->appendRow(fn);
+		return;
+	}
+
+	std::map<std::string, QStandardItem*>::iterator it;
+	it = items.find(file.rel_path);
+	if (it != items.end()) {
+		// Item found, insert into found folder.
+		it->second->appendRow(fn);
+	}
+	else {
+		// Item not found, create one QStandardItem per missing path entry.
+		// First explode the path, then match path IDs starting from the root until the
+		// first not found one.
+		std::vector<std::string> parts = explode(file.rel_path, '/');
+		std::string tpath = "";
+		std::map<std::string, QStandardItem*>::iterator oit; // old iterator.
+		for (uint32_t k = 0; k < parts.size(); k++) {
+			// Add current index to the tpath string before testing it.
+			if (tpath.empty()) 	{ tpath = parts[k]; }
+			else 				{ tpath += "/" + parts[k]; }
+			
+			oit = it;
+			it = items.find(tpath);
+			if (it != items.end()) { continue; }
+			
+			// Create new folder with the current folder name and insert it.
+			QStandardItem* fd = new QStandardItem(QString::fromStdString(parts[k]));
+			fd->setSelectable(false);
+			std::pair<std::map<std::string, QStandardItem*>::iterator, bool> ret;
+			ret = items.insert(std::pair<std::string, QStandardItem*>(tpath, fd));
+			if (ret.second == false) {
+				QMessageBox::warning(this, tr("Insert failed"), tr("Cannot display list."));
+				return;
+			}
+			
+			it = ret.first;
+			if (k == 0) {
+				// Still in the root folder.
+				root->appendRow(fd);
+			}
+			else {
+				// The oit iterator points to the parent folder.
+				oit->second->appendRow(fd);
+			}
+		}
+		
+		// Retry inserting the file item.
+		it = items.find(file.rel_path);
+		if (it == items.end()) {
+			// Error out.
+			QMessageBox::warning(this, tr("List failed"), tr("Cannot display list."));
+			return;
+		}
+		
+		// Insert item.
+		it->second->appendRow(fn);
+	}
+}
+
+
 // --- SCAN FOR SHARES ---
 void MainWindow::scanForShares() {
     // Scan for media server instances on the network.
@@ -1440,7 +1522,13 @@ void MainWindow::scanForShares() {
         
         // Insert into model. Use the media server's host name as top folder, with the shared
         // files inserted underneath it in their respective media type categories.
-		// TODO: Use the provided media item categories within the UI. 
+		// Use the provided relative path to create a mapping of QStandardItems to relative
+		// 			path. Each folder is represented by one QStandardItem. 
+		//			The std::map<std::string, QStandardItem*> allows sorting of items into their
+		//			respective folders.
+		std::map<std::string, QStandardItem*> audioItems;
+		std::map<std::string, QStandardItem*> videoItems;
+		std::map<std::string, QStandardItem*> playlistItems;
         QStandardItem* item = new QStandardItem(QString::fromStdString(mediaservers[i].name));
         item->setSelectable(false);
 		QStandardItem* audioRoot = new QStandardItem("audio");
@@ -1462,9 +1550,21 @@ void MainWindow::scanForShares() {
             
             fn->setData(QVariant(ids), Qt::UserRole);
             //item->appendRow(fn);
-			if 		(files[j].type == FILE_TYPE_AUDIO) 		{ audioRoot->appendRow(fn); }
-			else if (files[j].type == FILE_TYPE_VIDEO) 		{ videoRoot->appendRow(fn); }
-			else if (files[j].type == FILE_TYPE_PLAYLIST) 	{ playlistRoot->appendRow(fn); }
+			
+			// TODO: depending on type, try inserting into folder associated with the relative
+			//			path. If no entry found, create one QStandardItem per missing folders in 
+			//			the path.
+			if 		(files[j].type == FILE_TYPE_AUDIO) 		{
+				insertFolderView(fn, files[j], audioRoot, audioItems);
+			}
+			else if (files[j].type == FILE_TYPE_VIDEO) 		{ 
+				insertFolderView(fn, files[j], videoRoot, videoItems);
+				//videoRoot->appendRow(fn); 
+			}
+			else if (files[j].type == FILE_TYPE_PLAYLIST) 	{ 
+				insertFolderView(fn, files[j], playlistRoot, playlistItems);
+				//playlistRoot->appendRow(fn); 
+			}
         }
         
 		item->appendRow(audioRoot);
@@ -1527,8 +1627,17 @@ void MainWindow::playSelectedShare() {
 	}
     
     // Play file via media server.
-    if (!client.playShare(mediaFiles[ids[0].toInt()][ids[1].toInt()], receivers)) {
-         //
+	uint8_t res = client.playShare(mediaFiles[ids[0].toInt()][ids[1].toInt()], receivers);
+    if (res != 0) {
+		if (res == 2) {
+			QMessageBox::warning(this, tr("Playback failed"), 
+								tr("Playback failed. Refresh file list \
+									and make sure selected receiver or group is online."));
+		}
+		else if (res == 1) {
+			QMessageBox::warning(this, tr("Outdated shares"), 
+								tr("Playback started but shares list is outdated. Please refresh."));
+		}
     }
 }
 

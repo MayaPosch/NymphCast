@@ -157,6 +157,9 @@ private:
 	
 	bool loadRemotes();
 	bool saveRemotes();
+	
+	void insertFolderView(QStandardItem* fn, NymphMediaFile& file, QStandardItem* root, 
+						std::map<std::string, QStandardItem*>& items);
 };
 
 #endif // MAINWINDOW_H
