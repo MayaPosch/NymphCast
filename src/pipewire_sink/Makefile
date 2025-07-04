@@ -9,9 +9,12 @@ OUTPUT_SINK := -Wl,-soname,module-nymphcast-sink.so.$(VERSION)
 
 all: discover-module sink-module
 
-discover-module:
-	(CXX) -o module-nymphcast-discover.so.$(VERSION) module-nymphcast-discover.cpp $(LDFLAGS)
+makedir:
+	mkdir -p bin
+
+discover-module: makedir
+	(CXX) -o bin/module-nymphcast-discover.so.$(VERSION) module-nymphcast-discover.cpp $(LDFLAGS)
 	
-sink-module:
-	(CXX) -o module-nymphcast-sink.so.$(VERSION) module-nymphcast-sink.cpp $(LDFLAGS)
+sink-module: makedir
+	(CXX) -o bin/module-nymphcast-sink.so.$(VERSION) module-nymphcast-sink.cpp $(LDFLAGS)
 
