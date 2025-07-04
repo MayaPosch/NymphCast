@@ -65,9 +65,22 @@ struct impl {
 };
 
 
+/* static const struct pw_impl_module_events submodule_events = {
+	PW_VERSION_IMPL_MODULE_EVENTS,
+	.destroy = submodule_destroy,
+}; */
+
+
 // --- START NYANSD ---
 static int start_nyansd(struct impl* impl) {
 	impl->client = new NymphCastClient;
+	
+	struct pw_properties* props = NULL;
+	props = pw_properties_new(NULL, NULL);
+	if (props == NULL) {
+		pw_log_error("Can't allocate properties: %m");
+		goto done;
+	}
 	
 	// TODO: Start a loop to periodically poll for new remotes. => Use PW Loop?
 	
@@ -80,22 +93,42 @@ static int start_nyansd(struct impl* impl) {
 	// Create a module per found remote.
 	// Provide the new NC sink module with the NCS IP & port.
 	//char modname = "libpipewire-module-nymphcast-sink";
+	FILE* f;
+	char *args;
+	size_t size;
+	int res = 0;
 	for (int i = 0; i < list.size(); i++) {
-		std::string args = list[i].ipv4 + ":" + std::string(list[i].port);
-		pw_log_info("loading module: libpipewire-module-nymphcast-sink");
-		struct pw_impl_module *mod;
+		//std::string args = list[i].ipv4 + ":" + std::string(list[i].port);
+		pw_properties_setf(props, "raop.ip", "%s", list[i].ipv4.c_str());
+		pw_properties_setf(props, "raop.port", "%u", list[i].port);
+		
+		if ((f = open_memstream(&args, &size)) == NULL) { // open_memstream in libc: stdio.h
+			res = -errno;
+			pw_log_error("Can't open memstream: %m");
+			return 1;
+		}
+
+		fprintf(f, "{");
+		pw_properties_serialize_dict(f, &props->dict, 0);
+		fprintf(f, "}");
+        fclose(f);
+
+		pw_log_info("loading module args:'%s'", args);
+	
+		//pw_log_info("loading module: libpipewire-module-nymphcast-sink");
+		struct pw_impl_module* mod;
 		mod = pw_context_load_module(impl->context, 
 									"libpipewire-module-nymphcast-sink", 
-									args.c_str(), NULL);
+									args, NULL);
 		if (mod == NULL) {
 			res = -errno;
 			pw_log_error("Can't load module: %m");
 			return 1;
 		}
+		
+		// TODO: add event listener to submodule?
+		//pw_impl_module_add_listener(mod, &t->module_listener, &submodule_events, t);
 	}
-	
-	// TODO: add event listener to module, implement submodule & stuff. Optional?
-	//pw_impl_module_add_listener(mod, &t->module_listener, &submodule_events, t);
 			
 	return 0;
 }
