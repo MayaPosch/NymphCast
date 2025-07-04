@@ -40,6 +40,7 @@ uint32_t port;
 uint32_t ncs_handle;
 std::queue<uint16_t> sample_queue;
 std::mutex sample_mutex;
+uint16_t wav_header[22]; // 44 byte buffer.
 
 
 #define NAME "nymphcast-sink"
@@ -173,7 +174,7 @@ static void stream_state_changed(void *d, enum pw_stream_state old,
 		pw_impl_module_schedule_destroy(impl->module);
 		break;
 	case PW_STREAM_STATE_PAUSED:
-		// TODO: Terminate the NCS sessions.
+		// Terminate the NCS sessions.
 		impl->client.disconnectServer(ncs_handle);
 		sample_mutex.lock();
 		while (!sample_queue.empty()) {
@@ -184,9 +185,17 @@ static void stream_state_changed(void *d, enum pw_stream_state old,
 		
 		break;
 	case PW_STREAM_STATE_STREAMING:
-		// TODO: Start session with NCS.
+		// Start session with NCS.
 		// First write the prepared WAV header into the queue.
+		sample_mutex.lock();
+		for (int i = 0; i < 22; i++) { // WAV header is 44 bytes, so we read in 22 16-bit chunks.
+			sample_queue.push(wav_header[i]);
+		}
 		
+		sample_mutex.unlock();
+		
+		// Connect to the remote NCS. 
+		// TODO: handle connection error.
 		impl->client.connectServer(ip, port, ncs_handle);
 		
 		break;
@@ -217,8 +226,10 @@ static void playback_stream_process(void *d) {
 	/* write buffer contents here */
 	//pw_log_info("got buffer of size %d and data %p", size, data);
 	
-	// TODO: Write samples into queue.
-	DataBuffer::
+	// Write samples into queue.
+	sample_mutex.lock();
+	sample_queue.push((uint16_t) *data);
+	sample_mutex.unlock();
 
 	pw_stream_queue_buffer(impl->stream, buf);
 }
@@ -321,6 +332,64 @@ static const struct pw_impl_module_events module_events = {
 };
 
 
+// --- INIT WAV HEADER ---
+void init_wav_header() {
+	uint8_t* buf = &wav_header;
+	
+	char riff[] = "RIFF";
+	memcpy(buf, &riff, 4);
+	buf += 4;
+	
+	uint32_t size = 0xffffffff; // Max size for no particular reason.
+	memcpy(buf, &size, 4);
+	buf += 4;
+	
+	char wav[] = "WAVE";
+	memcpy(buf, &wav, 4);
+	buf += 4;
+	
+	char fmt[] = "fmt ";
+	memcpy(buf, &fmt, 4);
+	buf += 4;
+	
+	uint32_t chunksize = 16;
+	memcpy(buf, &chunksize, 4);
+	buf += 4;
+	
+	uint16_t audio_format = 1; // PCM.
+	memcpy(buf, &audio_format, 2);
+	buf += 2;
+	
+	uint16_t nchan = 2; // Stereo channels.
+	memcpy(buf, &nchan, 2);
+	buf += 2;
+	
+	uint32_t freq = 48000; // Sample rate frequency.
+	memcpy(buf, &freq, 4);
+	buf += 4;
+	
+	uint32_t byteps = 192000;
+	memcpy(buf, &byteps, 4);
+	buf += 4;
+	
+	uint16_t bytepb = 4; // Bytes per block. (channels * bytes per sample).
+	memcpy(buf, &bytepb, 2);
+	buf += 2;
+	
+	uint16_t bitspersample = 16;
+	memcpy(buf, &bitspersample, 2);
+	buf += 2;
+	
+	char data[] = "data";
+	memcpy(buf, &data, 4);
+	buf += 4;
+	
+	uint32_t datasize = size - 44;
+	memcpy(buf, &datasize, 4);
+	buf += 4;
+}
+
+
 SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* args) {
 	struct pw_context* context = pw_impl_module_get_context(module);
 	struct pw_properties* props = NULL;
@@ -338,6 +407,9 @@ SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* 
 	// Init NC client & set the callbacks we wish to use.
 	impl->client = new NymphCastClient;
 	impl->client.setMediaCallbacks(&MediaReadCallback, &MediaSeekCallback);
+	
+	// Prepare WAV header.
+	init_wav_header();
 
 	pw_log_debug("module %p: new %s", impl, args);if (args == NULL)
 		args = "";
