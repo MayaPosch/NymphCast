@@ -2,7 +2,7 @@
 CXX ?= g++
 
 INCLUDES := -I /usr/include/pipewire-0.3 -I /usr/include/spa-0.2
-CXX_FLAGS := $(INCLUDES)
+CXX_FLAGS := $(INCLUDES) -fPIC
 
 LIBS := -lnymphcast
 LDFLAGS += -shared $(LIBS)
