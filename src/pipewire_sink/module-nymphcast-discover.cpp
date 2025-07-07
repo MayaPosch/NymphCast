@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "config.h"
+//#include "config.h"
 
 #include <spa/utils/result.h>
 #include <spa/utils/string.h>
@@ -36,6 +36,8 @@
 
 
 #define NAME "nymphcast-discover"
+
+#define PACKAGE_VERSION "0.1"
 
 PW_LOG_TOPIC_STATIC(mod_topic, "mod." NAME);
 #define PW_LOG_TOPIC_DEFAULT mod_topic
@@ -79,13 +81,13 @@ static int start_nyansd(struct impl* impl) {
 	props = pw_properties_new(NULL, NULL);
 	if (props == NULL) {
 		pw_log_error("Can't allocate properties: %m");
-		goto done;
+		return 1;
 	}
 	
 	// TODO: Start a loop to periodically poll for new remotes. => Use PW Loop?
 	
 	// Search for remotes.
-	std::vector<NymphCastRemote> list = impl->client.findServers();
+	std::vector<NymphCastRemote> list = impl->client->findServers();
 	
 	// TODO: Compare list with known remotes. Add new module for each new remote, remove vanished.
 	
@@ -133,6 +135,20 @@ static int start_nyansd(struct impl* impl) {
 	return 0;
 }
 
+static void impl_destroy(struct impl *impl) {
+	/* if (impl->stream)
+		pw_stream_destroy(impl->stream);
+	if (impl->core && impl->do_disconnect)
+		pw_core_disconnect(impl->core); */
+
+	/* pw_properties_free(impl->stream_props);
+	pw_properties_free(impl->props); */
+	
+	delete impl->client;
+
+	free(impl);
+}
+
 
 // --- PIPEWIRE MODULE INIT ---
 SPA_EXPORT
@@ -144,7 +160,7 @@ int pipewire__module_init(struct pw_impl_module *module, const char *args) {
 
 	PW_LOG_TOPIC_INIT(mod_topic);
 
-	impl = calloc(1, sizeof(struct impl));
+	impl = (struct impl*) calloc(1, sizeof(struct impl));
 	if (impl == NULL) { goto error_errno; }
 
 	pw_log_debug("module %p: new %s", impl, args);
@@ -154,15 +170,15 @@ int pipewire__module_init(struct pw_impl_module *module, const char *args) {
 	props = pw_properties_new_string(args);
 	if (props == NULL) { goto error_errno; }
 
-	spa_list_init(&impl->tunnel_list);
+	//spa_list_init(&impl->tunnel_list);
 
 	impl->module = module;
 	impl->context = context;
 	impl->properties = props;
 
-	pw_impl_module_add_listener(module, &impl->module_listener, &module_events, impl);
+	//pw_impl_module_add_listener(module, &impl->module_listener, &module_events, impl);
 
-	pw_impl_module_update_properties(module, &SPA_DICT_INIT_ARRAY(module_props));
+	//pw_impl_module_update_properties(module, &SPA_DICT_INIT_ARRAY(module_props));
 
 	// TODO: handle error (non-zero) return value.
 	// TODO: Start a timer to call this function every N seconds.
@@ -172,7 +188,7 @@ int pipewire__module_init(struct pw_impl_module *module, const char *args) {
 
 error_errno:
 	res = -errno;
-	if (impl) { impl_free(impl); }
+	impl_destroy(impl);
 	return res;
 }
 

@@ -15,7 +15,7 @@
 #include <limits.h>
 #include <math.h>
 
-#include "config.h"
+//#include "config.h"
 
 #include <spa/utils/result.h>
 #include <spa/utils/string.h>
@@ -34,6 +34,7 @@
 #include <queue>
 #include <mutex>
 #include <cstdint>
+#include <iostream>
 
 std::string ip;
 uint32_t port;
@@ -44,6 +45,8 @@ uint16_t wav_header[22]; // 44 byte buffer.
 
 
 #define NAME "nymphcast-sink"
+
+#define PACKAGE_VERSION "0.1"
 
 PW_LOG_TOPIC_STATIC(mod_topic, "mod." NAME);
 #define PW_LOG_TOPIC_DEFAULT mod_topic
@@ -159,7 +162,7 @@ void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
 
 
 static void stream_destroy(void *d) {
-	struct impl *impl = d;
+	struct impl *impl = (struct impl*) d;
 	spa_hook_remove(&impl->stream_listener);
 	impl->stream = NULL;
 }
@@ -167,7 +170,7 @@ static void stream_destroy(void *d) {
 
 static void stream_state_changed(void *d, enum pw_stream_state old,
 		enum pw_stream_state state, const char *error) {
-	struct impl *impl = d;
+	struct impl *impl = (struct impl*) d;
 	switch (state) {
 	case PW_STREAM_STATE_ERROR:
 	case PW_STREAM_STATE_UNCONNECTED:
@@ -175,7 +178,7 @@ static void stream_state_changed(void *d, enum pw_stream_state old,
 		break;
 	case PW_STREAM_STATE_PAUSED:
 		// Terminate the NCS sessions.
-		impl->client.disconnectServer(ncs_handle);
+		impl->client->disconnectServer(ncs_handle);
 		sample_mutex.lock();
 		while (!sample_queue.empty()) {
 			sample_queue.pop();	// Clear the queue.
@@ -196,7 +199,7 @@ static void stream_state_changed(void *d, enum pw_stream_state old,
 		
 		// Connect to the remote NCS. 
 		// TODO: handle connection error.
-		impl->client.connectServer(ip, port, ncs_handle);
+		impl->client->connectServer(ip, port, ncs_handle);
 		
 		break;
 	default:
@@ -206,7 +209,7 @@ static void stream_state_changed(void *d, enum pw_stream_state old,
 
 
 static void playback_stream_process(void *d) {
-	struct impl *impl = d;
+	struct impl *impl = (struct impl*) d;
 	struct pw_buffer *buf;
 	struct spa_data *bd;
 	void *data;
