@@ -13,8 +13,8 @@ makedir:
 	mkdir -p bin
 
 discover-module: makedir
-	(CXX) -o bin/module-nymphcast-discover.so.$(VERSION) module-nymphcast-discover.cpp $(LDFLAGS)
+	$(CXX) -o bin/module-nymphcast-discover.so.$(VERSION) module-nymphcast-discover.cpp $(LDFLAGS)
 	
 sink-module: makedir
-	(CXX) -o bin/module-nymphcast-sink.so.$(VERSION) module-nymphcast-sink.cpp $(LDFLAGS)
+	$(CXX) -o bin/module-nymphcast-sink.so.$(VERSION) module-nymphcast-sink.cpp $(LDFLAGS)
 
