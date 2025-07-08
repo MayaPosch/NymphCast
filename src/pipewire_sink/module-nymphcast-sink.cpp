@@ -63,10 +63,10 @@ PW_LOG_TOPIC_STATIC(mod_topic, "mod." NAME);
 			"( node.latency=<latency as fraction> ) "				\
 			"( node.name=<name of the nodes> ) "					\
 			"( node.description=<description of the nodes> ) "			\
-			"( audio.format=<format, default:"DEFAULT_FORMAT"> ) "			\
-			"( audio.rate=<sample rate, default: "SPA_STRINGIFY(DEFAULT_RATE)"> ) "			\
-			"( audio.channels=<number of channels, default:"SPA_STRINGIFY(DEFAULT_CHANNELS)"> ) "	\
-			"( audio.position=<channel map, default:"DEFAULT_POSITION"> ) "		\
+			" ( audio.format=<format, default:"DEFAULT_FORMAT"> ) "			\
+			" ( audio.rate=<sample rate, default: "SPA_STRINGIFY(DEFAULT_RATE)"> ) "			\
+			" ( audio.channels=<number of channels, default:"SPA_STRINGIFY(DEFAULT_CHANNELS)"> ) "	\
+			" ( audio.position=<channel map, default:"DEFAULT_POSITION"> ) "		\
 			"( stream.props=<properties> ) "
 
 static const struct spa_dict_item module_props[] = {
@@ -231,7 +231,7 @@ static void playback_stream_process(void *d) {
 	
 	// Write samples into queue.
 	sample_mutex.lock();
-	sample_queue.push((uint16_t) *data);
+	sample_queue.push(*((uint16_t*) data));
 	sample_mutex.unlock();
 
 	pw_stream_queue_buffer(impl->stream, buf);
@@ -269,10 +269,10 @@ static int create_stream(struct impl *impl)
 
 	if ((res = pw_stream_connect(impl->stream,
 			PW_DIRECTION_INPUT,
-			PW_ID_ANY,
-			PW_STREAM_FLAG_AUTOCONNECT |
+			PW_ID_ANY, (pw_stream_flags)
+			(PW_STREAM_FLAG_AUTOCONNECT |
 			PW_STREAM_FLAG_MAP_BUFFERS |
-			PW_STREAM_FLAG_RT_PROCESS,
+			PW_STREAM_FLAG_RT_PROCESS),
 			params, n_params)) < 0)
 		return res;
 
@@ -281,7 +281,7 @@ static int create_stream(struct impl *impl)
 
 static void core_error(void *data, uint32_t id, int seq, int res, const char *message)
 {
-	struct impl *impl = data;
+	struct impl *impl = (struct impl*) data;
 
 	pw_log_error("error id:%u seq:%d res:%d (%s): %s",
 			id, seq, res, spa_strerror(res), message);
@@ -297,7 +297,7 @@ static const struct pw_core_events core_events = {
 
 
 static void core_destroy(void *d) {
-	struct impl *impl = d;
+	struct impl *impl = (struct impl*) d;
 	spa_hook_remove(&impl->core_listener);
 	impl->core = NULL;
 	pw_impl_module_schedule_destroy(impl->module);
@@ -323,7 +323,7 @@ static void impl_destroy(struct impl *impl) {
 
 
 static void module_destroy(void *data) {
-	struct impl *impl = data;
+	struct impl *impl = (struct impl*) data;
 	spa_hook_remove(&impl->module_listener);
 	impl_destroy(impl);
 }
@@ -337,7 +337,7 @@ static const struct pw_impl_module_events module_events = {
 
 // --- INIT WAV HEADER ---
 void init_wav_header() {
-	uint8_t* buf = &wav_header;
+	uint8_t* buf = (uint8_t*) &wav_header;
 	
 	char riff[] = "RIFF";
 	memcpy(buf, &riff, 4);
@@ -393,23 +393,34 @@ void init_wav_header() {
 }
 
 
+static void copy_props(struct impl *impl, struct pw_properties *props, const char *key) {
+	const char *str;
+	if ((str = pw_properties_get(props, key)) != NULL) {
+		if (pw_properties_get(impl->stream_props, key) == NULL)
+			pw_properties_set(impl->stream_props, key, str);
+	}
+}
+
+
 SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* args) {
 	struct pw_context* context = pw_impl_module_get_context(module);
 	struct pw_properties* props = NULL;
+	uint32_t id = pw_global_get_id(pw_impl_module_get_global(module));
+	uint32_t pid = getpid();
 	struct impl* impl;
-	//const char* str, *name, *hostname, *ip, *port;
+	const char *str;
 	int res = 0;
 
 	PW_LOG_TOPIC_INIT(mod_topic);
 
-	impl = calloc(1, sizeof(struct impl));
+	impl = (struct impl*) calloc(1, sizeof(struct impl));
 	if (impl == NULL) {
 		return -errno;
 	}
 	
 	// Init NC client & set the callbacks we wish to use.
 	impl->client = new NymphCastClient;
-	impl->client.setMediaCallbacks(&MediaReadCallback, &MediaSeekCallback);
+	impl->client->setMediaCallbacks(&MediaReadCallback, &MediaSeekCallback);
 	
 	// Prepare WAV header.
 	init_wav_header();
@@ -443,7 +454,7 @@ SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* 
 	}
 	
 	ip = std::string(pw_properties_get(props, "nc.ip"));
-	port = pw_properties_get_uint32(props, "nc.port");
+	port = pw_properties_get_uint32(props, "nc.port", 4004);
 
 	if (pw_properties_get(props, PW_KEY_NODE_VIRTUAL) == NULL)
 		pw_properties_set(props, PW_KEY_NODE_VIRTUAL, "true");
@@ -479,7 +490,7 @@ SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* 
 	
 	// TODO: Set up the audio stuff?
 	
-	impl->core = pw_context_get_object(impl->context, PW_TYPE_INTERFACE_Core);
+	impl->core = (pw_core*) pw_context_get_object(impl->context, PW_TYPE_INTERFACE_Core);
 	if (impl->core == NULL) {
 		str = pw_properties_get(props, PW_KEY_REMOTE_NAME);
 		impl->core = pw_context_connect(impl->context,
@@ -507,7 +518,12 @@ SPA_EXPORT int pipewire__module_init(struct pw_impl_module* module, const char* 
 
 	pw_impl_module_add_listener(module, &impl->module_listener, &module_events, impl);
 
-	pw_impl_module_update_properties(module, &SPA_DICT_INIT_ARRAY(module_props));
+	//pw_impl_module_update_properties(module, &SPA_DICT_INIT_ARRAY(module_props));
+	spa_dict spict;
+	spict.flags = 0;
+	spict.n_items = 1;
+	spict.items = module_props;
+	pw_impl_module_update_properties(module, (const spa_dict*) &spict);
 
 	return 0;
 
