@@ -73,6 +73,12 @@ struct impl {
 }; */
 
 
+static const struct pw_impl_module_events module_events = {
+	PW_VERSION_IMPL_MODULE_EVENTS,
+	.destroy = module_destroy,
+};
+
+
 // --- START NYANSD ---
 static int start_nyansd(struct impl* impl) {
 	impl->client = new NymphCastClient;
@@ -154,7 +160,7 @@ static void impl_destroy(struct impl *impl) {
 SPA_EXPORT
 int pipewire__module_init(struct pw_impl_module *module, const char *args) {
 	struct pw_context* context = pw_impl_module_get_context(module);
-	struct pw_properties* props;
+	struct pw_properties* props = NULL;
 	struct impl* impl;
 	int res;
 
@@ -176,9 +182,14 @@ int pipewire__module_init(struct pw_impl_module *module, const char *args) {
 	impl->context = context;
 	impl->properties = props;
 
-	//pw_impl_module_add_listener(module, &impl->module_listener, &module_events, impl);
+	pw_impl_module_add_listener(module, &impl->module_listener, &module_events, impl);
 
 	//pw_impl_module_update_properties(module, &SPA_DICT_INIT_ARRAY(module_props));
+	spa_dict spict;
+	spict.flags = 0;
+	spict.n_items = 1;
+	spict.items = module_props;
+	pw_impl_module_update_properties(module, (const spa_dict*) &spict);
 
 	// TODO: handle error (non-zero) return value.
 	// TODO: Start a timer to call this function every N seconds.
