@@ -17,8 +17,8 @@ makedir:
 	mkdir -p bin
 
 discover-module: makedir
-	$(CXX) -o bin/module-nymphcast-discover.so.$(VERSION) module-nymphcast-discover.cpp $(CXX_FLAGS) $(LDFLAGS)
+	$(CXX) -o bin/libpipewire-module-nymphcast-discover.so module-nymphcast-discover.cpp $(CXX_FLAGS) $(LDFLAGS)
 	
 sink-module: makedir
-	$(CXX) -o bin/module-nymphcast-sink.so.$(VERSION) module-nymphcast-sink.cpp $(CXX_FLAGS) $(LDFLAGS)
+	$(CXX) -o bin/libpipewire-module-nymphcast-sink.so module-nymphcast-sink.cpp $(CXX_FLAGS) $(LDFLAGS)
 
