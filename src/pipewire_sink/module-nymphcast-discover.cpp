@@ -59,7 +59,7 @@ struct impl {
 	struct pw_context *context;
 
 	struct pw_impl_module *module;
-	//struct spa_hook module_listener;
+	struct spa_hook module_listener;
 
 	struct pw_properties *properties;
 
@@ -71,6 +71,25 @@ struct impl {
 	PW_VERSION_IMPL_MODULE_EVENTS,
 	.destroy = submodule_destroy,
 }; */
+
+static void impl_destroy(struct impl *impl) {
+	/*if (impl->stream)
+		pw_stream_destroy(impl->stream);
+	if (impl->core && impl->do_disconnect)
+		pw_core_disconnect(impl->core);*/
+
+	//pw_properties_free(impl->stream_props);
+	//pw_properties_free(impl->props);
+	delete impl->client;
+
+	free(impl);
+}
+
+static void module_destroy(void *data) {
+	struct impl *impl = (struct impl*) data;
+	spa_hook_remove(&impl->module_listener);
+	impl_destroy(impl);
+}
 
 
 static const struct pw_impl_module_events module_events = {
@@ -139,20 +158,6 @@ static int start_nyansd(struct impl* impl) {
 	}
 			
 	return 0;
-}
-
-static void impl_destroy(struct impl *impl) {
-	/* if (impl->stream)
-		pw_stream_destroy(impl->stream);
-	if (impl->core && impl->do_disconnect)
-		pw_core_disconnect(impl->core); */
-
-	/* pw_properties_free(impl->stream_props);
-	pw_properties_free(impl->props); */
-	
-	delete impl->client;
-
-	free(impl);
 }
 
 
