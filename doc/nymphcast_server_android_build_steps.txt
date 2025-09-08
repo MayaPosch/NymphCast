@@ -62,6 +62,8 @@ Building NymphCast Server for Android
 
 = 7.5. Copy SDL2 files =
 
+- (optional) Copy the relevant SDL2 files including the `Android.mk` file to `app/jni/SDL2`.
+- (optional) Do the same for SDL2 Image files to `app/jni/SDL2_image`.
 - Copy all SDL2 header files from app/jni/SDL2/include into <Sysroot>/include/SDL2.
 - Copy SDL_image.h from app/jni/SDL2_image to the same folder.
 
@@ -108,3 +110,7 @@ Building NymphCast Server for Android
 - In src/server/android, execute `./gradlew assembleDebug` to build an APK.
 - The APK can be found under `NymphCast\build\outputs\apk\debug`.
 - Install APK on connected device with `./gradlew installDebug`.
+
+= 12. Build release AppBundle & sign it =
+
+- 
