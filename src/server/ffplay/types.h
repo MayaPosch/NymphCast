@@ -18,11 +18,13 @@
 
 extern "C" { 
 #include "libavutil/avstring.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/eval.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/dict.h"
+#include "libavutil/fifo.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/samplefmt.h"
 #include "libavutil/avassert.h"
@@ -31,7 +33,7 @@ extern "C" {
 #include "libavdevice/avdevice.h"
 #include "libswscale/swscale.h"
 #include "libavutil/opt.h"
-#include "libavcodec/avfft.h"
+#include "libavutil/tx.h"
 #include "libswresample/swresample.h"
 
 #if CONFIG_AVFILTER
@@ -259,9 +261,11 @@ struct VideoState {
 	int16_t sample_array[SAMPLE_ARRAY_SIZE];
 	int sample_array_index;
 	int last_i_start;
-	RDFTContext *rdft;
+	AVTXContext *rdft;
+    av_tx_fn rdft_fn;
 	int rdft_bits;
-	FFTSample *rdft_data;
+	float *real_data;
+	AVComplexFloat *rdft_data;
 	int xpos;
 	double last_vis_time;
 	SDL_Texture *vis_texture;

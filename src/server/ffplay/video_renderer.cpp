@@ -279,22 +279,20 @@ fail:
 }
 
 
-double get_rotation(AVStream *st) {
-    uint8_t* displaymatrix = av_stream_get_side_data(st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
-    double theta = 0;
-    if (displaymatrix) {
-        theta = -av_display_rotation_get((int32_t*) displaymatrix);
-	}
-
-    theta -= 360*floor(theta/360 + 0.9/360);
-
-    if (fabs(theta - 90*round(theta/90)) > 2)
-        av_log(NULL, AV_LOG_WARNING, "Odd rotation angle.\n"
-               "If you want to help, upload a sample "
-               "of this file to ftp://upload.ffmpeg.org/incoming/ "
-               "and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)");
-
-    return theta;
+double get_rotation(const int32_t *displaymatrix) {
+     double theta = 0;
+     if (displaymatrix)
+         theta = -round(av_display_rotation_get(displaymatrix));
+  
+     theta -= 360*floor(theta/360 + 0.9/360);
+  
+     if (fabs(theta - 90*round(theta/90)) > 2)
+         av_log(NULL, AV_LOG_WARNING, "Odd rotation angle.\n"
+                "If you want to help, upload a sample "
+                "of this file to https://streams.videolan.org/upload/ "
+                "and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)");
+  
+     return theta;
 }
 
 
@@ -376,7 +374,20 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 } while (0)
 
     if (autorotate) {
-        double theta  = get_rotation(is->video_st);
+        double theta = 0.0;
+        int32_t *displaymatrix = NULL;
+        AVFrameSideData *sd = av_frame_get_side_data(frame, AV_FRAME_DATA_DISPLAYMATRIX);
+        if (sd)
+            displaymatrix = (int32_t *)sd->data;
+        if (!displaymatrix) {
+            const AVPacketSideData *psd = av_packet_side_data_get(is->video_st->codecpar->coded_side_data,
+                                                                  is->video_st->codecpar->nb_coded_side_data,
+                                                                  AV_PKT_DATA_DISPLAYMATRIX);
+            if (psd)
+                displaymatrix = (int32_t *)psd->data;
+        }
+		theta = get_rotation(displaymatrix);
+        //theta  = get_rotation(is->video_st);
 
         if (fabs(theta - 90) < 1.0) {
             INSERT_FILT("transpose", "clock");
@@ -558,6 +569,9 @@ int VideoRenderer::video_thread(void *arg) {
                 ret = 0;
                 break;
             }
+			
+            FrameData *fd;
+			fd = frame->opaque_ref ? (FrameData*)frame->opaque_ref->data : NULL;
 
             is->frame_last_filter_delay = av_gettime_relative() / 1000000.0 - is->frame_last_returned_time;
             if (fabs(is->frame_last_filter_delay) > AV_NOSYNC_THRESHOLD / 10.0)
@@ -566,7 +580,7 @@ int VideoRenderer::video_thread(void *arg) {
 #endif
             duration = (frame_rate.num && frame_rate.den ? av_q2d(AVRational{frame_rate.den, frame_rate.num}) : 0);
             pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
-            ret = queue_picture(is, frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
+            ret = queue_picture(is, frame, pts, duration, fd ? fd->pkt_pos : -1, is->viddec.pkt_serial);
             av_frame_unref(frame);
 #if CONFIG_AVFILTER
             if (is->videoq.serial != is->viddec.pkt_serial)

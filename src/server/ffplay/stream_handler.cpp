@@ -427,7 +427,8 @@ static void stream_component_close(VideoState *is, int stream_index)
         is->audio_buf = NULL;
 
         if (is->rdft) {
-            av_rdft_end(is->rdft);
+            av_tx_uninit(&is->rdft);
+            av_freep(&is->real_data);
             av_freep(&is->rdft_data);
             is->rdft = NULL;
             is->rdft_bits = 0;
@@ -675,7 +676,7 @@ int StreamHandler::read_thread(void *arg) {
     if (genpts)
         ic->flags |= AVFMT_FLAG_GENPTS;
 
-    av_format_inject_global_side_data(ic);
+    //av_format_inject_global_side_data(ic);
 
     if (find_stream_info) {
 #ifdef __ANDROID__
