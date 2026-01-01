@@ -429,6 +429,11 @@ void Player::run_updates() {
 		av_usleep((int64_t)(remaining_time * 1000000.0));
 	}
 	
+	// Check again after the wait.
+	if (StreamHandler::get_fault()) {
+		return; // Playback fault. Return immediately.
+	}
+	
 	remaining_time = REFRESH_RATE;
 	if (cur_stream->show_mode != SHOW_MODE_NONE && (!cur_stream->paused || cur_stream->force_refresh)) {
 		VideoRenderer::video_refresh(cur_stream, &remaining_time);
