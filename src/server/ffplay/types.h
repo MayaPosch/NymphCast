@@ -338,6 +338,12 @@ static const TextureFormatEntry sdl_texture_format_map[] = {
 	{ AV_PIX_FMT_NONE,		   SDL_PIXELFORMAT_UNKNOWN }
 };
 
+static enum AVColorSpace sdl_supported_color_spaces[] = {
+    AVCOL_SPC_BT709,
+    AVCOL_SPC_BT470BG,
+    AVCOL_SPC_SMPTE170M,
+};
+
 
 /* options specified by the user */
 struct Config {
@@ -456,6 +462,9 @@ extern SDL_AudioDeviceID audio_dev;
 extern SDL_RendererInfo renderer_info;
 
 extern unsigned sws_flags;
+
+// FIXME: setting this to disable unsupported Vulkan rendering for now.
+static bool vk_renderer = false;
 
 // NymphCast-specific SDL event types.
 enum NymphEvents {
