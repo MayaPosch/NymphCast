@@ -301,7 +301,7 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
     enum AVPixelFormat pix_fmts[FF_ARRAY_ELEMS(sdl_texture_format_map)];
     char sws_flags_str[512] = "";
 #if LIBAVUTIL_VERSION_MAJOR <= 59
-    //char buffersrc_args[256];
+    char buffersrc_args[256];
 #endif
     int ret;
     AVFilterContext *filt_src = NULL, *filt_out = NULL, *last_filter = NULL;
