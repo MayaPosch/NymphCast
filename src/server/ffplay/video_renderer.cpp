@@ -300,7 +300,9 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 {
     enum AVPixelFormat pix_fmts[FF_ARRAY_ELEMS(sdl_texture_format_map)];
     char sws_flags_str[512] = "";
+#if LIBAVUTIL_VERSION_MAJOR <= 59
     //char buffersrc_args[256];
+#endif
     int ret;
     AVFilterContext *filt_src = NULL, *filt_out = NULL, *last_filter = NULL;
     AVCodecParameters *codecpar = is->video_st->codecpar;
@@ -321,10 +323,12 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
             }
         }
     }
+#if LIBAVUTIL_VERSION_MAJOR <= 59
     //pix_fmts[nb_pix_fmts] = AV_PIX_FMT_NONE;
+#endif
 
    //while ((e = av_dict_get(sws_dict, "", e, AV_DICT_IGNORE_SUFFIX))) {
-	   while ((e = (AVDictionaryEntry*) av_dict_iterate(sws_dict, e))) {
+	while ((e = (AVDictionaryEntry*) av_dict_iterate(sws_dict, e))) {
         if (!strcmp(e->key, "sws_flags")) {
             av_strlcatf(sws_flags_str, sizeof(sws_flags_str), "%s=%s:", "flags", e->value);
         } else
@@ -335,7 +339,8 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 
     graph->scale_sws_opts = av_strdup(sws_flags_str);
 
-    /* snprintf(buffersrc_args, sizeof(buffersrc_args),
+#if LIBAVUTIL_VERSION_MAJOR <= 59
+    snprintf(buffersrc_args, sizeof(buffersrc_args),
              "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
              frame->width, frame->height, frame->format,
              is->video_st->time_base.num, is->video_st->time_base.den,
@@ -358,8 +363,8 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
     if ((ret = av_opt_set_int_list(filt_out, "pix_fmts", pix_fmts,  AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN)) < 0)
         goto fail;
 
-    last_filter = filt_out; */
-
+    last_filter = filt_out;
+#else
 
     filt_src = avfilter_graph_alloc_filter(graph, avfilter_get_by_name("buffer"),
                                            "ffplay_buffer");
@@ -406,6 +411,7 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
         goto fail;
 
     last_filter = filt_out;
+#endif
 
 /* Note: this macro adds a filter before the lastly added filter, so the
  * processing order of the filters is in reverse */
