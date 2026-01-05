@@ -8,11 +8,12 @@
 # Usage: nmake -f NMakefile [definitions] [target]
 #
 # Definitions:
-# - CONFIG={Debug|Release}
-# - CPPSTD={flag}
-# - LNKCRT={flag}
-# - WARNING={flag}
-# - OPTIMIZATION={flag}
+# - NC_CONFIG={Debug|Release}
+# - NC_CPPSTD={flag}
+# - NC_LNKCRT={flag}
+# - NC_WARNING={flag}
+# - NC_OPTIMIZATION={flag}
+# - VS_YEAR={year}
 # - POCO_ROOT={install-folder}]
 # - NYMPHRPC_ROOT={install-folder}
 # - LIBNYMPHCAST_ROOT={install-folder}
@@ -27,11 +28,12 @@
 # - real-clean, same as dist-clean
 #
 # Configuration:
-# - `CONFIG` defaults to `Release`
-# - `CPPSTD` defaults to `-std:c++latest`.
-# - `LNKCRT` defaults to `-MD`.
-# - `WARNING` defaults to empty, default compiler behaviour.
-# - `OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - `NC_CONFIG` defaults to `Release`
+# - `NC_CPPSTD` defaults to `-std:c++latest`.
+# - `NC_LNKCRT` defaults to `-MD`.
+# - `NC_WARNING` defaults to empty, default compiler behaviour.
+# - `NC_OPTIMIZATION` defaults to `-Od` for Debug, `-O2` for Release.
+# - `VS_YEAR` defaults to 2017.
 # - If defined, environment variable `POCO_ROOT` is used for Poco dependency.
 # - If defined, environment variable `NYMPHRPC_ROOT` is used for NymphRPC dependency.
 # - If defined, environment variable `LIBNYMPHCAST_ROOT` is used for LibNymphCast dependency.
@@ -44,7 +46,7 @@
 #
 # Installation destination:
 # - `NYMPHCAST_ROOT`
-# - e.g.: `set NYMPHCAST_ROOT=C:\Libraries\NymphCast`
+# - e.g.: `set NYMPHCAST_ROOT=D:\Libraries\NymphCast`
 #
 # Product build directories:
 # - .\bin\x86_{32|64}-w64-msvc\{Debug|Release}
@@ -58,30 +60,31 @@
 
 # Note: no space before macro being defined.
 
-!ifdef CONFIG
-LIB_CONFIG = $(CONFIG)
+!ifdef NC_CONFIG
+LIB_CONFIG = $(NC_CONFIG)
 !else
 LIB_CONFIG = Release
 !endif
 
 LIB_DEF_CPPSTD = -std:c++latest
 
-!ifdef CPPSTD
-LIB_CPPSTD = $(CPPSTD)
+!ifdef NC_CPPSTD
+LIB_CPPSTD = $(NC_CPPSTD)
 !else
 LIB_CPPSTD = $(LIB_DEF_CPPSTD)
 !endif
 
 LIB_DEF_LNKCRT = -MD
 
-!ifdef LNKCRT
-LIB_LNKCRT = $(LNKCRT)
+!ifdef NC_LNKCRT
+LIB_LNKCRT = $(NC_LNKCRT)
 !else
 LIB_LNKCRT = $(LIB_DEF_LNKCRT)
 !endif
 
 !ifndef POCO_ROOT
-POCO_ROOT = D:\Libraries\Poco
+# POCO_ROOT = D:\Libraries\Poco
+POCO_ROOT = C:\Libraries\vcpkg\installed\x64-windows
 !endif
 
 !ifndef NYMPHRPC_ROOT
@@ -129,7 +132,7 @@ LIB_BITS = 64
 # Sanity checks:
 
 !if "$(LIB_CONFIG)" != "Debug" && "$(LIB_CONFIG)" != "Release"
-!error [Expecting 'CONFIG=Debug' or 'CONFIG=Release', got 'CONFIG=$(LIB_CONFIG)'. Bailing out.]
+!error [Expecting 'NC_CONFIG=Debug' or 'NC_CONFIG=Release', got 'NC_CONFIG=$(LIB_CONFIG)'. Bailing out.]
 !endif
 
 !if !exist("$(POCO_ROOT)\include\Poco\Poco.h")
@@ -180,6 +183,7 @@ CXXFLAGS    = $(LIB_CPPSTD) -EHsc $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATIO
 
 INST_FOLDER_INC = $(INSTALL_PREFIX)\include
 INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
+INST_FOLDER_BIN = $(INSTALL_PREFIX)\bin
 
 # MSVC and Windows SDK paths:
 
@@ -283,12 +287,18 @@ $(BIN_FOLDER)\$(BIN_OUTPUT): $(LIB_OBJECTS_DIR)
 install: lib makedir-install copy-install
 
 makedir-install:
-	-$(MKDIR) "$(INST_FOLDER_INC:/=\)" > nul 2>&1
-	-$(MKDIR) "$(INST_FOLDER_LIB:/=\)" > nul 2>&1
+	-$(MKDIR) "$(INST_FOLDER_BIN:/=\)" > nul 2>&1
+# 	-$(MKDIR) "$(INST_FOLDER_INC:/=\)" > nul 2>&1
+# 	-$(MKDIR) "$(INST_FOLDER_LIB:/=\)" > nul 2>&1
 
 copy-install:
-	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
-	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
+	$(CP) "$(BIN_FOLDER:/=\)\$(BIN_OUTPUT)"     "$(INST_FOLDER_BIN:/=\)\"
+	$(CP) "$(POCO_ROOT)\bin\PoCoFoundation.dll" "$(INST_FOLDER_BIN:/=\)\"
+	$(CP) "$(POCO_ROOT)\bin\PocoNet.dll"        "$(INST_FOLDER_BIN:/=\)\"
+	$(CP) "$(POCO_ROOT)\bin\utf8proc.dll"       "$(INST_FOLDER_BIN:/=\)\"
+	$(CP) "$(POCO_ROOT)\bin\pcre2-8.dll"        "$(INST_FOLDER_BIN:/=\)\"
+# 	$(CP) "$(SRC_FOLDER:/=\)\*.h" "$(INST_FOLDER_INC:/=\)\"
+# 	$(CP) "$(LIB_FOLDER:/=\)\$(LIB_OUTPUT)" "$(INST_FOLDER_LIB:/=\)\"
 
 # Clean targets:
 
