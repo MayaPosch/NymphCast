@@ -2,7 +2,7 @@
 #
 # (c) 2019 Nyanko.ws
 
-GCC = g++
+CXX = g++
 MAKEDIR = mkdir -p
 RM = rm
 
@@ -12,13 +12,22 @@ VERSIONINFO = -D__VERSION="\"$(VERSION)\""
 
 OUTPUT = nymphcast_client
 INCLUDE = -I .
-LIB := -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs
-CFLAGS := $(INCLUDE) -g3 -std=c++17 $(VERSIONINFO)
+LDFLAGS := -lnymphcast -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs
+CXXFLAGS := $(INCLUDE) -g3 -std=c++17 $(VERSIONINFO)
+
+ifeq ($(CXX),g++)
+	CXXFLAGS += -fext-numeric-literals
+endif
+
+ifndef NPOCO
+# Current Poco has troubles with MinGW, so network init has to be done manually.
+CXXFLAGS += -DPOCO_NO_AUTOMATIC_LIB_INIT
+endif
 
 # Check for MinGW and patch up POCO
 # The OS variable is only set on Windows.
 ifdef OS
-	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__
+	#CXXFLAGS := $(CFLAGS)
 	LIB += -lws2_32
 endif
 
@@ -32,10 +41,10 @@ makedir:
 	$(MAKEDIR) bin
 
 obj/%.o: %.cpp
-	$(GCC) -c -o $@ $< $(CFLAGS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 	
 bin/$(OUTPUT): $(OBJECTS)
-	$(GCC) -o $@ $(OBJECTS) $(LIB)
+	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJECTS)

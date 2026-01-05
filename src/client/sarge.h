@@ -1,20 +1,25 @@
 /*
 	sarge.h - Header file for the Sarge command line argument parser project.
-	
+
 	Revision 0
-	
+
 	Notes:
 			-
-			 
+
 	2019/03/16, Maya Posch
-	
+
 */
+
+
+#ifndef SARGE_H
+#define SARGE_H
 
 
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
+#include <cstdint>
 
 
 struct Argument {
@@ -38,7 +43,7 @@ class Sarge {
 	std::string description;
 	std::string usage;
 	std::vector<std::string> textArguments;
-	
+
 public:
 	void setArgument(std::string arg_short, std::string arg_long, std::string desc, bool hasVal);
 	void setArguments(std::vector<Argument> args);
@@ -52,3 +57,5 @@ public:
 	int flagCount() { return flagCounter; }
 	std::string executableName() { return execName; }
 };
+
+#endif
