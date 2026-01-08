@@ -215,9 +215,11 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
 #endif
     }
 
+#if LIBAVCODEC_VERSION_MAJOR > 61
 	ret = avfilter_init_dict(filt_asink, NULL);
     if (ret < 0)
         goto end;
+#endif
 
     if ((ret = configure_filtergraph(is->agraph, afilters, filt_asrc, filt_asink)) < 0)
         goto end;
