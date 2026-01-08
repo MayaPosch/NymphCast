@@ -300,7 +300,8 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 {
     enum AVPixelFormat pix_fmts[FF_ARRAY_ELEMS(sdl_texture_format_map)];
     char sws_flags_str[512] = "";
-#if LIBAVUTIL_VERSION_MAJOR <= 59
+#if LIBAVCODEC_VERSION_MAJOR <= 61
+	// FFmpeg version < 8.
     char buffersrc_args[256];
 #endif
     int ret;
@@ -323,8 +324,8 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
             }
         }
     }
-#if LIBAVUTIL_VERSION_MAJOR <= 59
-    //pix_fmts[nb_pix_fmts] = AV_PIX_FMT_NONE;
+#if LIBAVCODEC_VERSION_MAJOR <= 61
+    pix_fmts[nb_pix_fmts] = AV_PIX_FMT_NONE;
 #endif
 
    //while ((e = av_dict_get(sws_dict, "", e, AV_DICT_IGNORE_SUFFIX))) {
@@ -339,7 +340,7 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 
     graph->scale_sws_opts = av_strdup(sws_flags_str);
 
-#if LIBAVUTIL_VERSION_MAJOR <= 59
+#if LIBAVCODEC_VERSION_MAJOR <= 61
     snprintf(buffersrc_args, sizeof(buffersrc_args),
              "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
              frame->width, frame->height, frame->format,

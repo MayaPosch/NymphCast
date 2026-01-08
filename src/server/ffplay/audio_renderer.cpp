@@ -126,7 +126,8 @@ extern "C" {
 
 
 int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters, int force_output_format) {
-#if LIBAVUTIL_VERSION_MAJOR <= 59
+#if LIBAVCODEC_VERSION_MAJOR <= 61
+	// FFmpeg version < 8.
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE };
     int sample_rates[2] = { 0, -1 };
 #endif
@@ -168,7 +169,7 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
     if (ret < 0)
         goto end;
 
-#if LIBAVUTIL_VERSION_MAJOR <= 59
+#if LIBAVCODEC_VERSION_MAJOR <= 61
     ret = avfilter_graph_create_filter(&filt_asink,
                                        avfilter_get_by_name("abuffersink"), "ffplay_abuffersink",
                                        NULL, NULL, is->agraph);
@@ -193,7 +194,7 @@ int AudioRenderer::configure_audio_filters(VideoState *is, const char *afilters,
 #endif
 	
 	if (force_output_format) {
-#if LIBAVUTIL_VERSION_MAJOR <= 59
+#if LIBAVCODEC_VERSION_MAJOR <= 61
         av_bprint_clear(&bp);
         av_channel_layout_describe_bprint(&is->audio_tgt.ch_layout, &bp);
         sample_rates   [0] = is->audio_tgt.freq;
