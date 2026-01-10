@@ -29,6 +29,7 @@ std::atomic_bool StreamHandler::run;
 std::atomic<bool> StreamHandler::eof;
 
 std::atomic<bool> StreamHandler::fault = { false };
+std::atomic<bool> StreamHandler::running = { false };
 
 AVDictionary *sws_dict;
 AVDictionary *swr_opts;
@@ -873,6 +874,7 @@ int StreamHandler::read_thread(void *arg) {
 	// Start the main processing loop.
 	run = true;
 	eof = false;
+	running = true;
 	while (run) {
         if (is->abort_request) { break; }
         if (is->paused != is->last_paused) {
@@ -1066,6 +1068,7 @@ int StreamHandler::read_thread(void *arg) {
     ret = 0;
 fail:
 	// Disable player events.
+	running = false;
 	SdlRenderer::playerEvents(false);
 	
 	if (ret == -1) {

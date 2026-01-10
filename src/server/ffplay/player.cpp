@@ -411,8 +411,8 @@ void Player::run_updates() {
 		cursor_hidden = 1;
 	}
 	
-	if (StreamHandler::get_fault()) {
-		return; // Playback fault. Return immediately.
+	if (StreamHandler::get_running() == false || StreamHandler::get_fault()) {
+		return; // Playback finished or fault. Return immediately.
 	}
 	
 #ifdef PROFILING
@@ -430,8 +430,8 @@ void Player::run_updates() {
 	}
 	
 	// Check again after the wait.
-	if (StreamHandler::get_fault()) {
-		return; // Playback fault. Return immediately.
+	if (StreamHandler::get_running() == false || StreamHandler::get_fault()) {
+		return; // Playback finished or fault. Return immediately.
 	}
 	
 	remaining_time = REFRESH_RATE;

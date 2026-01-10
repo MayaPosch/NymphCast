@@ -15,6 +15,7 @@ class StreamHandler {
 	static std::atomic<bool> eof;
 	
 	static std::atomic<bool> fault;
+	static std::atomic<bool> running;
 	
 	static int read_thread(void *arg);
 	
@@ -32,6 +33,8 @@ public:
 	
 	static bool get_fault() { return fault.load(); }
 	static void clear_fault() { fault = false; }
+	
+	static bool get_running() { return running.load(); }
 	
 	static void quit();
 #endif
